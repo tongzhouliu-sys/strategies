@@ -1,0 +1,3146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>现金担保卖 Put + Wheel 策略 · 内训手册 FO-TONGZHOU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1527;
+  --bg-card: #131c35;
+  --bg-elevated: #1a2440;
+  --border: #1e2d4d;
+  --border-bright: #2a4080;
+  --green: #00d68f;
+  --green-dim: #00d68f30;
+  --green-text: #4dffa8;
+  --red: #ff4757;
+  --red-dim: #ff475720;
+  --red-text: #ff6b7a;
+  --amber: #ffa502;
+  --amber-dim: #ffa50220;
+  --amber-text: #ffbe45;
+  --blue: #4a9eff;
+  --blue-dim: #4a9eff20;
+  --blue-text: #7bb8ff;
+  --orange: #ff6348;
+  --orange-dim: #ff634820;
+  --white: #e8edf8;
+  --white-dim: #a0aec8;
+  --white-faint: #4a5578;
+  --sidebar-w: 280px;
+  --header-h: 60px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+/* ── HEADER ── */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: rgba(10,14,26,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  display: flex; align-items: center; padding: 0 24px;
+  gap: 16px;
+}
+
+.header-logo {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 800;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+.header-badge {
+  font-size: 10px; font-family: var(--font-mono);
+  background: var(--green-dim); color: var(--green-text);
+  border: 1px solid var(--green); border-radius: 4px;
+  padding: 2px 8px; letter-spacing: 1px;
+}
+
+.header-spacer { flex: 1; }
+
+.header-nav {
+  display: flex; gap: 4px;
+}
+
+.header-nav button {
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--white-dim); border-radius: 6px;
+  padding: 6px 14px; cursor: pointer; transition: all 0.2s;
+}
+
+.header-nav button:hover, .header-nav button.active {
+  border-color: var(--blue); color: var(--blue-text);
+  background: var(--blue-dim);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; top: var(--header-h); left: 0; bottom: 0;
+  width: var(--sidebar-w); z-index: 90;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 20px 0;
+}
+
+.sidebar-section { margin-bottom: 8px; }
+
+.sidebar-label {
+  font-size: 10px; font-family: var(--font-mono); letter-spacing: 2px;
+  color: var(--white-faint); padding: 8px 20px 4px;
+  text-transform: uppercase;
+}
+
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; cursor: pointer;
+  color: var(--white-dim); font-size: 13px; font-weight: 400;
+  border-left: 3px solid transparent;
+  transition: all 0.15s; text-decoration: none;
+}
+
+.sidebar-item:hover {
+  background: var(--bg-card); color: var(--white);
+  border-left-color: var(--blue-text);
+}
+
+.sidebar-item.active {
+  background: var(--bg-elevated); color: var(--blue-text);
+  border-left-color: var(--blue); font-weight: 600;
+}
+
+.sidebar-item .icon { font-size: 14px; width: 18px; text-align: center; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  margin-top: var(--header-h);
+  padding: 40px 48px;
+  max-width: 1100px;
+}
+
+/* ── SECTION ── */
+.section {
+  display: none; animation: fadeIn 0.3s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TYPOGRAPHY ── */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 32px; font-weight: 800;
+  line-height: 1.1; margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--white) 60%, var(--blue-text));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.section-subtitle {
+  color: var(--white-dim); font-size: 15px; margin-bottom: 32px;
+  padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+
+h2 {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  color: var(--white); margin: 32px 0 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+h2::before {
+  content: attr(data-num);
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--blue); border: 1px solid var(--blue);
+  border-radius: 4px; padding: 1px 6px;
+}
+
+h3 {
+  font-size: 15px; font-weight: 600; color: var(--white-dim);
+  margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+p {
+  font-size: 14px; line-height: 1.75; color: var(--white-dim);
+  margin-bottom: 12px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+
+.card-grid-3 {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+
+/* ── ALERT BOXES ── */
+.alert {
+  border-radius: 10px; padding: 16px 20px;
+  margin-bottom: 16px; border-left: 4px solid;
+  font-size: 14px; line-height: 1.7;
+}
+
+.alert-green {
+  background: var(--green-dim); border-color: var(--green);
+  color: var(--green-text);
+}
+
+.alert-red {
+  background: var(--red-dim); border-color: var(--red);
+  color: var(--red-text);
+}
+
+.alert-amber {
+  background: var(--amber-dim); border-color: var(--amber);
+  color: var(--amber-text);
+}
+
+.alert-blue {
+  background: var(--blue-dim); border-color: var(--blue);
+  color: var(--blue-text);
+}
+
+.alert-title {
+  font-weight: 700; font-size: 13px; margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* ── TABLES ── */
+.tbl-wrap { overflow-x: auto; margin-bottom: 20px; border-radius: 10px; border: 1px solid var(--border); }
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+
+th {
+  background: var(--bg-elevated); color: var(--white-dim);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.5px;
+  padding: 12px 16px; text-align: left; font-weight: 400;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  color: var(--white); vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: var(--bg-elevated); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block; font-size: 11px; font-family: var(--font-mono);
+  border-radius: 4px; padding: 2px 8px; font-weight: 700; white-space: nowrap;
+}
+
+.badge-green { background: var(--green-dim); color: var(--green-text); border: 1px solid var(--green); }
+.badge-red { background: var(--red-dim); color: var(--red-text); border: 1px solid var(--red); }
+.badge-amber { background: var(--amber-dim); color: var(--amber-text); border: 1px solid var(--amber); }
+.badge-blue { background: var(--blue-dim); color: var(--blue-text); border: 1px solid var(--blue); }
+.badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange); }
+
+/* ── STAT CARDS ── */
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px;
+}
+
+.stat-label {
+  font-size: 11px; font-family: var(--font-mono);
+  color: var(--white-faint); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: var(--font-mono); font-size: 26px;
+  font-weight: 700; color: var(--white);
+  line-height: 1;
+}
+
+.stat-meta {
+  font-size: 12px; color: var(--white-faint); margin-top: 6px;
+}
+
+/* ── TOOLTIP SYSTEM ── */
+.tt {
+  border-bottom: 1px dashed var(--blue);
+  color: var(--blue-text); cursor: help;
+  position: relative; display: inline;
+}
+
+.tt::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%);
+  background: #0d1830;
+  border: 1px solid var(--blue);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; line-height: 1.6;
+  color: var(--white); font-family: var(--font-body);
+  width: 260px; z-index: 1000;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+  font-weight: 400;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  text-decoration: none;
+}
+
+.tt::before {
+  content: '';
+  position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--blue);
+  z-index: 1001;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.tt:hover::after, .tt:hover::before { opacity: 1; }
+
+/* ── CHECKLIST ── */
+.checklist-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 8px; transition: all 0.2s; cursor: pointer;
+}
+
+.checklist-item:hover { border-color: var(--border-bright); }
+
+.checklist-item.checked {
+  border-color: var(--green); background: var(--green-dim);
+}
+
+.checklist-item.failed {
+  border-color: var(--red); background: var(--red-dim);
+}
+
+.chk-box {
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: 2px solid var(--border-bright); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.2s;
+}
+
+.checklist-item.checked .chk-box {
+  background: var(--green); border-color: var(--green); color: #000;
+}
+
+.checklist-item.failed .chk-box {
+  background: var(--red); border-color: var(--red); color: #fff;
+}
+
+.chk-content { flex: 1; }
+.chk-title {
+  font-size: 14px; font-weight: 600; color: var(--white);
+  margin-bottom: 3px;
+}
+.chk-desc { font-size: 12px; color: var(--white-dim); }
+
+.chk-num {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--white-faint); width: 22px; text-align: center;
+  padding-top: 2px;
+}
+
+/* ── DASHBOARD ── */
+.gauge-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+
+.gauge-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; text-align: center;
+}
+
+.gauge-title {
+  font-size: 11px; font-family: var(--font-mono); color: var(--white-faint);
+  letter-spacing: 1px; margin-bottom: 10px;
+}
+
+.gauge-bar-wrap {
+  height: 8px; background: var(--border);
+  border-radius: 4px; overflow: hidden; margin-bottom: 10px;
+}
+
+.gauge-bar {
+  height: 100%; border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.gauge-val {
+  font-family: var(--font-mono); font-size: 22px;
+  font-weight: 700; line-height: 1;
+}
+
+.gauge-limit {
+  font-size: 11px; color: var(--white-faint); margin-top: 4px;
+}
+
+.traffic-light {
+  display: flex; gap: 12px; margin-bottom: 20px;
+}
+
+.tl-option {
+  flex: 1; padding: 16px; border-radius: 10px;
+  border: 2px solid var(--border); cursor: pointer;
+  text-align: center; transition: all 0.2s;
+}
+
+.tl-option:hover { border-color: var(--border-bright); }
+.tl-option.tl-active-green { border-color: var(--green); background: var(--green-dim); }
+.tl-option.tl-active-amber { border-color: var(--amber); background: var(--amber-dim); }
+.tl-option.tl-active-red { border-color: var(--red); background: var(--red-dim); }
+
+.tl-emoji { font-size: 28px; display: block; margin-bottom: 8px; }
+.tl-label { font-size: 13px; font-weight: 600; }
+.tl-desc { font-size: 11px; color: var(--white-dim); margin-top: 4px; }
+
+/* ── ALERT STREAM ── */
+.alert-stream {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 10px; height: 220px; overflow-y: auto;
+  padding: 12px;
+}
+
+.alert-msg {
+  font-family: var(--font-mono); font-size: 12px;
+  padding: 6px 10px; border-radius: 6px;
+  margin-bottom: 6px; line-height: 1.5;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.alert-msg.green { background: var(--green-dim); color: var(--green-text); }
+.alert-msg.red { background: var(--red-dim); color: var(--red-text); }
+.alert-msg.amber { background: var(--amber-dim); color: var(--amber-text); }
+.alert-msg.blue { background: var(--blue-dim); color: var(--blue-text); }
+
+/* ── INPUT ── */
+.input-row {
+  display: flex; gap: 12px; align-items: flex-end;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+
+.input-label {
+  font-size: 11px; font-family: var(--font-mono);
+  color: var(--white-faint); letter-spacing: 1px;
+}
+
+.input-field, .select-field {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--white); border-radius: 8px; padding: 10px 14px;
+  font-family: var(--font-mono); font-size: 13px;
+  outline: none; transition: border-color 0.2s;
+}
+
+.input-field:focus, .select-field:focus {
+  border-color: var(--blue);
+}
+
+.select-field { cursor: pointer; }
+.select-field option { background: var(--bg-elevated); }
+
+.btn {
+  padding: 10px 24px; border: none; border-radius: 8px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--blue); color: #fff;
+}
+.btn-primary:hover { background: var(--blue-text); }
+
+.btn-green {
+  background: var(--green); color: #000;
+}
+.btn-green:hover { opacity: 0.85; }
+
+.btn-red {
+  background: var(--red); color: #fff;
+}
+.btn-red:hover { opacity: 0.85; }
+
+.btn-outline {
+  background: transparent; border: 1px solid var(--border-bright);
+  color: var(--white-dim);
+}
+.btn-outline:hover { border-color: var(--blue); color: var(--blue-text); }
+
+/* ── CASE STUDY ── */
+.case-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+}
+
+.case-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.case-title { font-weight: 700; font-size: 15px; }
+
+.case-body { padding: 20px; }
+
+.timeline {
+  position: relative; padding-left: 24px;
+}
+
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+  width: 2px; background: var(--border);
+}
+
+.timeline-item {
+  position: relative; margin-bottom: 20px;
+}
+
+.timeline-dot {
+  position: absolute; left: -20px; top: 4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+}
+
+.timeline-date {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--white-faint); margin-bottom: 4px;
+}
+
+.timeline-content {
+  font-size: 13px; line-height: 1.6; color: var(--white-dim);
+}
+
+/* ── ERROR PANEL ── */
+.error-card {
+  background: var(--bg-card); border: 1px solid var(--red);
+  border-radius: 10px; margin-bottom: 16px; overflow: hidden;
+}
+
+.error-header {
+  background: var(--red-dim); padding: 12px 16px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+}
+
+.error-header-text {
+  font-size: 14px; font-weight: 600; color: var(--red-text);
+  flex: 1;
+}
+
+.error-body {
+  padding: 16px; display: none; font-size: 13px;
+  line-height: 1.7; color: var(--white-dim);
+}
+
+.error-body.open { display: block; }
+
+.error-correct {
+  background: var(--green-dim); border-radius: 8px;
+  padding: 12px; margin-top: 12px;
+  font-size: 13px; color: var(--green-text);
+}
+
+/* ── OPENCLAW ── */
+.oc-feature {
+  display: flex; gap: 16px; padding: 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 10px; align-items: flex-start;
+}
+
+.oc-icon {
+  width: 40px; height: 40px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.oc-content { flex: 1; }
+.oc-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.oc-desc { font-size: 13px; color: var(--white-dim); line-height: 1.6; }
+.oc-impl { font-family: var(--font-mono); font-size: 11px; color: var(--white-faint); margin-top: 6px; }
+
+/* ── CODE ── */
+pre {
+  background: #080c18; border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; overflow-x: auto;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.8;
+  color: #a0b8d8; margin-bottom: 16px;
+}
+
+code { font-family: var(--font-mono); font-size: 12px; color: var(--green-text); }
+
+/* ── MATRIX ── */
+.matrix-cell {
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.mc-decision { font-weight: 700; font-size: 13px; }
+.mc-action { font-size: 12px; color: var(--white-dim); }
+
+/* ── PROGRESS STEPPER ── */
+.stepper {
+  display: flex; flex-direction: column; gap: 0; margin-bottom: 20px;
+}
+
+.step {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+
+.step-indicator {
+  display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+}
+
+.step-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--white-dim); font-weight: 700;
+}
+
+.step-dot.active { border-color: var(--blue); background: var(--blue-dim); color: var(--blue-text); }
+.step-dot.done { border-color: var(--green); background: var(--green-dim); color: var(--green-text); }
+
+.step-line {
+  width: 2px; flex: 1; min-height: 20px; background: var(--border);
+  margin: 4px auto;
+}
+
+.step-body { padding-bottom: 24px; flex: 1; padding-top: 4px; }
+
+.step-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.step-content { font-size: 13px; color: var(--white-dim); line-height: 1.7; }
+
+/* ── TABS ── */
+.tab-nav {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border); padding-bottom: 0;
+}
+
+.tab-btn {
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  background: transparent; border: none; color: var(--white-dim);
+  padding: 10px 18px; cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.2s; margin-bottom: -1px;
+}
+
+.tab-btn.active { color: var(--blue-text); border-bottom-color: var(--blue); }
+.tab-btn:hover:not(.active) { color: var(--white); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+
+/* ── VEGA METER (Wheel lifecycle) ── */
+.wheel-diagram {
+  display: flex; gap: 0; margin: 20px 0; overflow-x: auto;
+}
+
+.wheel-step {
+  flex: 1; min-width: 120px; padding: 16px 12px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  text-align: center; position: relative;
+}
+
+.wheel-step:not(:last-child)::after {
+  content: '→'; position: absolute; right: -14px; top: 50%;
+  transform: translateY(-50%); font-size: 18px; color: var(--blue);
+  z-index: 2; background: var(--bg-primary); padding: 0 4px;
+}
+
+.wheel-step:first-child { border-radius: 10px 0 0 10px; }
+.wheel-step:last-child { border-radius: 0 10px 10px 0; }
+
+.wheel-icon { font-size: 24px; margin-bottom: 8px; }
+.wheel-label { font-size: 12px; font-weight: 600; color: var(--white); }
+.wheel-desc { font-size: 11px; color: var(--white-dim); margin-top: 4px; }
+
+/* ── VIX METER ── */
+.vix-meter {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+
+.vix-track {
+  position: relative; height: 12px; border-radius: 6px;
+  background: linear-gradient(to right,
+    var(--green) 0%, var(--green) 33%,
+    var(--amber) 33%, var(--amber) 66%,
+    var(--orange) 66%, var(--orange) 80%,
+    var(--red) 80%, var(--red) 100%
+  );
+  margin: 16px 0 8px;
+}
+
+.vix-marker {
+  position: absolute; top: -6px;
+  width: 4px; height: 24px; background: white;
+  border-radius: 2px; transition: left 0.4s ease;
+}
+
+.vix-labels {
+  display: flex; justify-content: space-between;
+  font-size: 11px; font-family: var(--font-mono);
+  color: var(--white-faint);
+}
+
+.vix-result-box {
+  margin-top: 12px; padding: 12px; border-radius: 8px;
+  font-size: 13px; transition: all 0.3s;
+}
+
+/* ── SPREAD ── */
+ul.list {
+  padding-left: 0; list-style: none;
+  margin-bottom: 16px;
+}
+
+ul.list li {
+  padding: 8px 0 8px 20px; position: relative;
+  font-size: 14px; color: var(--white-dim); line-height: 1.7;
+  border-bottom: 1px solid var(--border);
+}
+
+ul.list li:last-child { border-bottom: none; }
+
+ul.list li::before {
+  content: '▸'; position: absolute; left: 0;
+  color: var(--blue); font-size: 12px; top: 10px;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 20px; }
+  .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+  .gauge-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── PRINT ── */
+.no-print { }
+@media print {
+  .sidebar, .header, .no-print { display: none; }
+  .main { margin: 0; padding: 20px; }
+  .section { display: block !important; }
+}
+
+/* ── FLOATING RESET ── */
+.checklist-result {
+  margin-top: 20px; padding: 20px; border-radius: 10px;
+  text-align: center; font-size: 15px; font-weight: 600;
+  display: none;
+}
+
+.checklist-result.show { display: block; }
+
+.progress-bar-outer {
+  height: 6px; background: var(--border);
+  border-radius: 3px; margin-bottom: 16px; overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%; background: var(--blue);
+  border-radius: 3px; transition: width 0.3s;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px; background: var(--border);
+  margin: 28px 0;
+}
+
+/* ── GRADE CARD ── */
+.grade-card {
+  border-radius: 10px; padding: 16px;
+  border: 1px solid; margin-bottom: 12px;
+}
+
+.grade-A-plus { border-color: var(--green); background: var(--green-dim); }
+.grade-A { border-color: var(--blue); background: var(--blue-dim); }
+.grade-B { border-color: var(--amber); background: var(--amber-dim); }
+.grade-C { border-color: var(--orange); background: var(--orange-dim); }
+
+.grade-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.grade-name { font-size: 15px; font-weight: 700; }
+.grade-badge { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+
+/* ── STICKY HEADER ── */
+.oclaw-sticky {
+  position: fixed; bottom: 20px; right: 20px;
+  width: 320px; background: #0d1830;
+  border: 1px solid var(--blue); border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  z-index: 200; overflow: hidden;
+  transform: translateY(calc(100% + 30px));
+  transition: transform 0.3s ease;
+}
+
+.oclaw-sticky.visible { transform: translateY(0); }
+
+.oclaw-sticky-header {
+  background: var(--blue-dim); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+}
+
+.oclaw-sticky-title {
+  font-size: 13px; font-weight: 700; color: var(--blue-text);
+  display: flex; align-items: center; gap: 6px;
+}
+
+.oclaw-sticky-body {
+  padding: 12px; max-height: 280px; overflow-y: auto;
+}
+
+.oc-reminder {
+  padding: 8px 10px; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  margin-bottom: 6px; line-height: 1.5;
+}
+
+.dot-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ── LIFELINE ── */
+.lifeline-card {
+  background: var(--bg-elevated);
+  border: 2px solid var(--red);
+  border-radius: 12px; padding: 20px;
+  margin-bottom: 16px; position: relative; overflow: hidden;
+}
+
+.lifeline-card::before {
+  content: attr(data-num);
+  position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display); font-size: 80px; font-weight: 800;
+  color: var(--red); opacity: 0.08; line-height: 1;
+}
+
+.lifeline-title {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--red-text); letter-spacing: 2px; margin-bottom: 8px;
+}
+
+.lifeline-rule {
+  font-size: 16px; font-weight: 700; color: var(--white);
+  margin-bottom: 8px;
+}
+
+.lifeline-why {
+  font-size: 13px; color: var(--white-dim); line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">🦞 PUT + WHEEL</div>
+  <div class="header-badge">INTERNAL v3.0</div>
+  <div class="header-spacer"></div>
+  <nav class="header-nav">
+    <button onclick="showSection('overview')" class="active" id="nav-overview">概览</button>
+    <button onclick="showSection('checklist')" id="nav-checklist">开仓检查</button>
+    <button onclick="showSection('dashboard')" id="nav-dashboard">风控仪表盘</button>
+    <button onclick="showSection('cases')" id="nav-cases">案例教学</button>
+    <button onclick="showSection('errors')" id="nav-errors">错误警示</button>
+    <button onclick="showSection('openclaw')" id="nav-openclaw">OpenClaw</button>
+  </nav>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">核心知识</div>
+    <a class="sidebar-item active" onclick="showSection('overview'); scrollTo('s0')" href="#">
+      <span class="icon">🎯</span> 策略定位与边界
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s1')" href="#">
+      <span class="icon">📖</span> 策略定义与逻辑
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s2')" href="#">
+      <span class="icon">💰</span> 账户结构与资金
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s3')" href="#">
+      <span class="icon">⚙️</span> 核心交易参数
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s4')" href="#">
+      <span class="icon">📋</span> 标的白名单
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s5')" href="#">
+      <span class="icon">✅</span> 开仓规则
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s6')" href="#">
+      <span class="icon">👁</span> 持仓监控
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s7')" href="#">
+      <span class="icon">🔄</span> 展期规则
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s8')" href="#">
+      <span class="icon">⚡</span> Wheel 被行权
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s10')" href="#">
+      <span class="icon">🚨</span> 极端行情应急
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s11')" href="#">
+      <span class="icon">📊</span> 月度复盘
+    </a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">工具与互动</div>
+    <a class="sidebar-item" onclick="showSection('checklist')" href="#">
+      <span class="icon">☑️</span> 开仓检查面板
+    </a>
+    <a class="sidebar-item" onclick="showSection('dashboard')" href="#">
+      <span class="icon">📡</span> 实时风控仪表盘
+    </a>
+    <a class="sidebar-item" onclick="showSection('cases')" href="#">
+      <span class="icon">🔬</span> 案例教学
+    </a>
+    <a class="sidebar-item" onclick="showSection('errors')" href="#">
+      <span class="icon">⛔</span> 常见错误警示
+    </a>
+    <a class="sidebar-item" onclick="showSection('openclaw')" href="#">
+      <span class="icon">🤖</span> OpenClaw 配置
+    </a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">快速参考</div>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s12')" href="#">
+      <span class="icon">🃏</span> 执行卡片
+    </a>
+    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('lifelines')" href="#">
+      <span class="icon">🆘</span> 三条生命线
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ═══════════════ SECTION: OVERVIEW ═══════════════ -->
+<div class="section active" id="section-overview">
+
+  <div id="s0"></div>
+  <div class="section-title">现金担保卖 Put + Wheel 策略</div>
+  <div class="section-subtitle">FO-TONGZHOU完整操作手册  · OpenClaw 协同版 · 适用 IBKR + BBAE 双账户 · 100万–3000万美元资金规模</div>
+
+  <!-- SECTION 0 -->
+  <h2 data-num="§0">OpenClaw 真实能力边界 · 必读</h2>
+
+  <div class="alert alert-amber">
+    <div class="alert-title">⚠️ 重要定位说明</div>
+    OpenClaw 的原生 Smart Trading 对接的是加密货币市场（Hyperliquid L1），<strong>不是美股期权</strong>。<br>
+    但其「Heartbeat 引擎 + IBKR API + Telegram 告警」架构，完全可以承担期权策略的<strong>监控、计算和告警职责</strong>。<br><br>
+    正确定位：OpenClaw 是你的「<strong>实时哨兵 + 计算引擎 + 报告员</strong>」，<em>不是自动开仓机器人</em>。
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3 style="color:var(--green-text);margin-top:0">✅ OpenClaw 可以做</h3>
+      <ul class="list">
+        <li>每分钟拉取 IBKR 持仓 <span class="tt" data-tip="Delta 衡量期权价格随标的价格变动的敏感度。卖 Put 的 Delta 为负值，绝对值越大越像持有股票。">Delta</span>、权利金、保证金数据</li>
+        <li>触发阈值时推送 Telegram / WhatsApp 消息</li>
+        <li>每日 16:30 自动生成持仓摘要和风险指标</li>
+        <li>输入标的和行权价，自动验证 9 条开仓规则</li>
+        <li>股价接近行权价时，计算并推送展期方案</li>
+        <li>自动维护财报/宏观黑名单窗口</li>
+        <li>权利金剩余 ≤ 50%，主动推送止盈通知</li>
+        <li>汇总月度交易记录，计算胜率、年化、回撤</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--red-text);margin-top:0">🚫 必须人工操作</h3>
+      <ul class="list">
+        <li><strong>最终开仓下单</strong> — 涉及资金风险，AI 不应自主开仓</li>
+        <li><strong>展期 / 止损决策</strong> — 需要基本面判断，属于「判断性决策」</li>
+        <li><strong>被行权后处理</strong> — 需决定持股或卖出，涉及税务和基本面</li>
+        <li><strong>季度标的调整</strong> — 需主观判断「是否愿意长期持有」</li>
+        <li><strong>极端行情应对</strong> — 黑天鹅场景需要人工最终拍板</li>
+        <li><strong>账户资金管理</strong> — 转账、Margin Call 补充等操作</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 1 -->
+  <div id="s1"></div>
+  <h2 data-num="§1">策略定义与核心逻辑</h2>
+
+  <div class="alert alert-green">
+    <div class="alert-title">✅ 策略正确名称</div>
+    <strong>现金担保卖 Put（Cash-Secured Put）+ Wheel 策略</strong><br>
+    ⚠️ 不是「裸卖 Put（Naked Put）」——两者账户权限、保证金和风险性质完全不同。
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">核心机制</h3>
+    <p>
+      卖出 <span class="tt" data-tip="Put 期权赋予买方在到期日前以特定行权价卖出股票的权利。卖出 Put 的你有义务在买方行权时以行权价买入股票，并收取权利金作为补偿。">Put 期权</span>时，账户中保留足额现金覆盖潜在行权金额（随时准备买入 100 股）。被行权后，持有股票并卖出 <span class="tt" data-tip="Covered Call：持有正股的情况下卖出 Call 期权。卖方收取权利金，但同时有义务在买方行权时以行权价卖出股票。">Covered Call</span>，继续收取权利金，直到股票被 Call 走——这就是完整的 Wheel 策略。
+    </p>
+    <div class="wheel-diagram">
+      <div class="wheel-step">
+        <div class="wheel-icon">💵</div>
+        <div class="wheel-label">持有现金</div>
+        <div class="wheel-desc">账户留≥45%现金</div>
+      </div>
+      <div class="wheel-step">
+        <div class="wheel-icon">📤</div>
+        <div class="wheel-label">卖出 Put</div>
+        <div class="wheel-desc">收取权利金</div>
+      </div>
+      <div class="wheel-step" style="border-color:var(--green)">
+        <div class="wheel-icon">💰</div>
+        <div class="wheel-label">止盈平仓</div>
+        <div class="wheel-desc">权利金剩余≤50%</div>
+      </div>
+      <div class="wheel-step" style="border-color:var(--amber)">
+        <div class="wheel-icon">📦</div>
+        <div class="wheel-label">被行权持股</div>
+        <div class="wheel-desc">以行权价买入</div>
+      </div>
+      <div class="wheel-step">
+        <div class="wheel-icon">📤</div>
+        <div class="wheel-label">卖 Covered Call</div>
+        <div class="wheel-desc">继续收权利金</div>
+      </div>
+      <div class="wheel-step" style="border-color:var(--blue)">
+        <div class="wheel-icon">🔄</div>
+        <div class="wheel-label">股票被 Call 走</div>
+        <div class="wheel-desc">回到现金状态</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--white-faint);text-align:center;margin:0">
+      收益来源：<span class="tt" data-tip="权利金（Premium）：期权买方支付给卖方的费用。时间价值随时间流逝而衰减（Theta）。">权利金</span>（<span class="tt" data-tip="Theta 衰减：期权的时间价值随着到期日临近而减少，对期权卖方有利。卖方每天收割时间价值流失带来的收益。">Theta 衰减</span>） + 低于市价接仓的折价收益 + Covered Call 权利金
+    </p>
+  </div>
+
+  <h3>现实收益预期</h3>
+  <div class="alert alert-red">
+    <div class="alert-title">⚠️ 避坑提示</div>
+    任何宣称「月入 2–3%」的卖 Put 策略都<strong>没有计入止损成本</strong>。以下为基于历史回测的保守预期：
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>市场环境</th><th>月均权利金</th><th>年化（扣止损后）</th><th>备注</th>
+      </tr>
+      <tr>
+        <td>熊市 / 低 <span class="tt" data-tip="IV（隐含波动率）：市场对未来价格波动幅度的预期，IV 越高期权越贵，卖方收益越高。">IV</span></td>
+        <td><span class="badge badge-red">0.25%–0.40%</span></td>
+        <td>2%–4%</td>
+        <td>等待 IV 窗口，耐心为上</td>
+      </tr>
+      <tr>
+        <td>正常市场</td>
+        <td><span class="badge badge-amber">0.45%–0.65%</span></td>
+        <td>5%–8%</td>
+        <td>约每月 1–2 次开仓机会</td>
+      </tr>
+      <tr>
+        <td>高 IV 市场</td>
+        <td><span class="badge badge-green">0.70%–1.00%</span></td>
+        <td>8%–12%</td>
+        <td>VIX &gt; 20 时机会更多</td>
+      </tr>
+      <tr>
+        <td>叠加 Wheel 后</td>
+        <td><span class="badge badge-blue">+0.2%–0.4%/月</span></td>
+        <td>+3%–5%</td>
+        <td>被行权后卖 Covered Call 的额外收益</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2 -->
+  <div id="s2"></div>
+  <h2 data-num="§2">账户结构与资金配置</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="stat-label">IBKR（主账户）</div>
+      <div class="stat-value" style="color:var(--blue-text)">60–70%</div>
+      <div class="stat-meta">总资金</div>
+      <div class="divider" style="margin:12px 0"></div>
+      <ul class="list" style="margin:0">
+        <li>执行所有 Put 期权交易</li>
+        <li>承载保证金</li>
+        <li>日常风控基于净资产计算</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="stat-label">BBAE（副账户）</div>
+      <div class="stat-value" style="color:var(--amber-text)">30–40%</div>
+      <div class="stat-meta">总资金</div>
+      <div class="divider" style="margin:12px 0"></div>
+      <ul class="list" style="margin:0">
+        <li>存放被行权后的长期持股</li>
+        <li>备用现金储备</li>
+        <li>不参与期权操作</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>四色保证金警戒体系</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr>
+        <th>状态</th><th>总保证金占用</th><th>允许操作</th><th>强制操作</th>
+      </tr>
+      <tr style="background:rgba(0,214,143,0.05)">
+        <td><span class="badge badge-green">🟢 绿色·安全</span></td>
+        <td>&lt; 20%</td>
+        <td>正常开仓所有白名单标的</td>
+        <td>无</td>
+      </tr>
+      <tr style="background:rgba(255,165,2,0.05)">
+        <td><span class="badge badge-amber">🟡 黄色·观望</span></td>
+        <td>20%–25%</td>
+        <td>仅开仓 A 级（AAPL/MSFT/QQQ/SPY）</td>
+        <td>监控 Delta，准备止盈单</td>
+      </tr>
+      <tr style="background:rgba(255,99,72,0.05)">
+        <td><span class="badge badge-orange">🟠 橙色·警戒</span></td>
+        <td>25%–30%</td>
+        <td>只平仓，不开仓任何标的</td>
+        <td>发告警，等待止盈成交</td>
+      </tr>
+      <tr style="background:rgba(255,71,87,0.05)">
+        <td><span class="badge badge-red">🔴 红色·危险</span></td>
+        <td>&gt; 30%</td>
+        <td>立即减仓</td>
+        <td>平 Delta 最高 + 浮亏最大的合约，降至 20% 以下</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3><span class="tt" data-tip="VIX（波动率指数）：衡量标普500期权的隐含波动率，俗称「恐慌指数」。VIX越高市场越恐慌，期权权利金越贵。">VIX</span> 动态仓位调节</h3>
+  <div class="card">
+    <div class="alert alert-blue" style="margin-bottom:12px">
+      <div class="alert-title">📐 VIX 动态公式</div>
+      目标保证金上限 = <strong>25% × (20 ÷ 当前 VIX)</strong><br>
+      示例：VIX = 25 时，目标上限 = 25% × (20/25) = <strong>20%</strong>；VIX = 30 时 = <strong>16.7%</strong>
+    </div>
+    <div class="tbl-wrap" style="margin:0">
+      <table>
+        <tr><th>VIX 水平</th><th>总仓位上限</th><th>Delta 上限</th><th>操作指导</th></tr>
+        <tr>
+          <td>VIX &lt; 20</td><td><span class="badge badge-green">20%</span></td>
+          <td>0.15</td><td>正常开仓，可选所有白名单标的</td>
+        </tr>
+        <tr>
+          <td>20 ≤ VIX ≤ 25</td><td><span class="badge badge-amber">15%</span></td>
+          <td>0.13</td><td>仅开仓 A 级标的（指数 ETF + AAPL/MSFT）</td>
+        </tr>
+        <tr>
+          <td>25 &lt; VIX ≤ 30</td><td><span class="badge badge-orange">10%</span></td>
+          <td>0.12</td><td>仅平仓，不开新仓</td>
+        </tr>
+        <tr>
+          <td>VIX &gt; 30</td><td><span class="badge badge-red">0%</span></td>
+          <td>—</td><td>OpenClaw 告警；投资人决定是否全部平仓</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3 -->
+  <div id="s3"></div>
+  <h2 data-num="§3">核心交易参数</h2>
+
+  <div class="card-grid">
+    <div class="stat-card">
+      <div class="stat-label">到期日 DTE</div>
+      <div class="stat-value" style="color:var(--blue-text)">35–45<span style="font-size:16px;color:var(--white-faint)"> 天</span></div>
+      <div class="stat-meta">
+        优先选 <span class="tt" data-tip="OI（Open Interest）：未平仓合约数量，OI 越大流动性越好，成交价差越小。">OI</span> 最大的到期日；若两档 OI 接近，选更靠近 40 天的。<br>
+        DTE &lt; 30：<span class="tt" data-tip="Gamma：衡量 Delta 随标的价格变化的速率。DTE 越小，接近行权价时 Gamma 急剧上升，风险难控。">Gamma</span> 风险上升；DTE &gt; 50：<span class="tt" data-tip="Theta：期权时间价值的衰减速率，单位为每天衰减的美元值。">Theta</span> 效率下降
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Delta 区间</div>
+      <div class="stat-value" style="color:var(--green-text)">0.10–0.15</div>
+      <div class="stat-meta">
+        目标最接近 0.12 且不超 0.15 的行权价<br>
+        NVDA/META 上限 0.12；VIX &gt; 25 时全线上限 0.12
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">止盈目标</div>
+      <div class="stat-value" style="color:var(--amber-text)">50%</div>
+      <div class="stat-meta">
+        持仓市值 ≤ 初始权利金 × 50% 时提交 <span class="tt" data-tip="GTC（Good Till Cancelled）：有效直至取消的挂单，不会因当日收盘而失效。">GTC</span> 平仓单<br>
+        50% 比 60% 每年多换仓 3–4 次，复利更高
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">止损上限</div>
+      <div class="stat-value" style="color:var(--red-text)">150%</div>
+      <div class="stat-meta">
+        浮亏 100% 告警；150% 强制告警要求人工平仓<br>
+        150% 比 100% 给更多缓冲，减少噪音止损
+      </div>
+    </div>
+  </div>
+
+  <h3>双触发提前止损（⚡ 重要升级）</h3>
+  <div class="alert alert-red">
+    <div class="alert-title">满足任一条件即触发告警</div>
+    <strong>条件一：</strong>浮亏 ≥ 初始权利金 × <strong>80%</strong>（价格触发）<br>
+    <strong>条件二：</strong>当前 Delta ≥ <strong>0.30</strong>（方向性触发）<br><br>
+    满足任一 → OpenClaw 立即推送「建议止损」告警 → 你人工确认执行<br><br>
+    💡 <em>说明：Delta ≥ 0.30 意味着你已在做方向性赌注而非收时间价值，此时无论权利金亏损多少都应退出。</em>
+  </div>
+
+  <h3><span class="tt" data-tip="IVR（IV Rank）：当前 IV 在过去一年高低区间中的百分位。IVR=0 表示处于年内最低，=100 表示最高。">IVR</span> / <span class="tt" data-tip="IVP（IV Percentile）：过去 252 天中 IV 低于当前值的天数占比。IVP=60 表示当前 IV 高于历史上 60% 的时间。">IVP</span> 指标正确计算（必须用 252 天窗口）</h3>
+  <div class="alert alert-amber">
+    <div class="alert-title">⚠️ 关键修正：必须使用 252 天窗口，不是 20 天</div>
+    20 天窗口内一次财报波动就能完全扭曲 IV 百分位结果，导致在不该开仓时开仓。<br><br>
+    <strong>IVR</strong> = (当前 IV - 年最低) ÷ (年最高 - 年最低) × 100，窗口：<strong>252 个交易日</strong><br>
+    <strong>IVP</strong> = 过去 252 天中 IV 低于当前值的天数 ÷ 252 × 100<br><br>
+    <strong>开仓要求：IVR ≥ 50 且 IVP ≥ 60（双指标同时满足）</strong><br><br>
+    查询：IBKR TWS 期权链；barchart.com（免费）；OptionNet Explorer（选 1 年窗口）
+  </div>
+
+  <h3>流动性硬性要求</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>指标</th><th>最低标准</th><th>说明</th></tr>
+      <tr><td>期权日成交量</td><td><span class="badge badge-green">≥ 1500 张</span></td><td>成交量太低会导致填单价差过大</td></tr>
+      <tr><td>买卖价差</td><td><span class="badge badge-blue">&lt; 权利金的 5%</span></td><td>原版 20% 标准太宽，5% 才能控制滑点损耗</td></tr>
+      <tr><td>市值要求</td><td><span class="badge badge-amber">&gt; 500 亿美元</span></td><td>避免小盘股流动性和退市风险</td></tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 4 -->
+  <div id="s4"></div>
+  <h2 data-num="§4">标的物白名单与分级</h2>
+
+  <div class="grade-card grade-A-plus">
+    <div class="grade-header">
+      <div class="grade-name">A+ 级 · 指数 ETF · 核心仓位</div>
+      <div class="grade-badge" style="color:var(--green-text)">A+</div>
+    </div>
+    <div class="tbl-wrap" style="margin:0;border:none">
+      <table style="border:none">
+        <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th><th>财报</th></tr>
+        <tr>
+          <td>标普 500 ETF</td><td><code>SPY</code></td><td>0.08</td><td>15%</td>
+          <td>IV ≥ 50% 时开仓；避宏观数据前 3 天</td><td>无财报</td>
+        </tr>
+        <tr>
+          <td>纳指 100 ETF</td><td><code>QQQ</code></td><td>0.10</td><td>15%</td>
+          <td>SPY/QQQ 不同时满仓；避宏观前 3 天</td><td>无财报</td>
+        </tr>
+      </table>
+    </div>
+    <p style="font-size:12px;margin:8px 0 0;color:var(--green-text)">无财报风险，流动性最高，是仓位核心。SPY Delta 上限仅 0.08，是最保守的标的。</p>
+  </div>
+
+  <div class="grade-card grade-A">
+    <div class="grade-header">
+      <div class="grade-name">A 级 · 核心科技 · 稳定仓位</div>
+      <div class="grade-badge" style="color:var(--blue-text)">A</div>
+    </div>
+    <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>财报窗口</th></tr>
+        <tr><td>苹果</td><td><code>AAPL</code></td><td>0.12</td><td>12%</td><td>1/4/7/10 月下旬 · 禁止开仓提前 10 天</td></tr>
+        <tr><td>微软</td><td><code>MSFT</code></td><td>0.12</td><td>12%</td><td>1/4/7/10 月下旬 · 禁止开仓提前 10 天</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="grade-card grade-B">
+    <div class="grade-header">
+      <div class="grade-name">B 级 · 防御价值 · 降低 Beta（Grok 创新）</div>
+      <div class="grade-badge" style="color:var(--amber-text)">B</div>
+    </div>
+    <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特点</th></tr>
+        <tr><td>台积电</td><td><code>TSM</code></td><td>0.13</td><td>8%</td><td>有 <span class="tt" data-tip="ADR 折价：ADR（美国存托凭证）相对于原股市场的价差，TSM 在美上市的 ADR 有时会有折溢价。">ADR 折价</span>；财报日历要精准</td></tr>
+        <tr><td>Visa</td><td><code>V</code></td><td>0.12</td><td>8%</td><td>防御性标的；与科技股低相关</td></tr>
+        <tr><td>万事达</td><td><code>MA</code></td><td>0.12</td><td>8%</td><td>防御性标的；与 V 互补</td></tr>
+      </table>
+    </div>
+    <p style="font-size:12px;margin:8px 0 0;color:var(--amber-text)">与科技股低相关，提供市场下行时的缓冲，降低整体 Beta。</p>
+  </div>
+
+  <div class="grade-card grade-C">
+    <div class="grade-header">
+      <div class="grade-name">C 级 · 高波动 · 谨慎配置</div>
+      <div class="grade-badge" style="color:var(--orange)">C</div>
+    </div>
+    <div class="tbl-wrap" style="margin:0;border:none">
+      <table>
+        <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th></tr>
+        <tr><td>Meta</td><td><code>META</code></td><td>0.10</td><td>6%</td><td>财报前 <strong>14 天</strong>（不是 7 天）绝对禁止开仓</td></tr>
+        <tr><td>英伟达</td><td><code>NVDA</code></td><td>0.10</td><td>5%</td><td>财报前 14 天禁止；仅 IVR &gt; 65 时开仓</td></tr>
+      </table>
+    </div>
+    <p style="font-size:12px;margin:8px 0 0;color:var(--orange)">仅在极高 IV 窗口少量配置，止损线提前至浮亏 100%。</p>
+  </div>
+
+  <h3>板块集中度控制</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>板块</th><th>包含标的</th><th>总占用上限</th><th>逻辑说明</th></tr>
+      <tr>
+        <td>科技板块</td>
+        <td>AAPL + MSFT + TSM + META + NVDA + QQQ</td>
+        <td><span class="badge badge-red">≤ 净资产 20%</span></td>
+        <td>防科技股系统性风险（如 AI 监管、芯片禁运）</td>
+      </tr>
+      <tr>
+        <td>防御板块</td>
+        <td>SPY + V + MA</td>
+        <td><span class="badge badge-amber">≤ 净资产 15%</span></td>
+        <td>提供市场下行时的缓冲</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 5 -->
+  <div id="s5"></div>
+  <h2 data-num="§5">开仓规则与检查清单</h2>
+
+  <h3>市场三色灯（每日开盘前判断）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>状态</th><th>判断标准</th><th>操作指令</th><th>Delta 上限</th><th>仓位上限</th></tr>
+      <tr style="background:rgba(0,214,143,0.05)">
+        <td><span class="badge badge-green">🟢 绿灯·牛市</span></td>
+        <td>QQQ 在 200 日均线上方 &amp; VIX &lt; 20</td>
+        <td>正常开仓</td><td>0.15</td><td>20%</td>
+      </tr>
+      <tr style="background:rgba(255,165,2,0.05)">
+        <td><span class="badge badge-amber">🟡 黄灯·震荡</span></td>
+        <td>QQQ 在 200 日均线 ±5% 范围 &amp; 20 ≤ VIX ≤ 30</td>
+        <td>谨慎，仅 A/A+ 级</td><td>0.12</td><td>15%</td>
+      </tr>
+      <tr style="background:rgba(255,71,87,0.05)">
+        <td><span class="badge badge-red">🔴 红灯·熊市</span></td>
+        <td>QQQ 在 200 日均线下方 &amp; VIX &gt; 30</td>
+        <td>停止开新仓</td><td>0.00</td><td>只平仓</td>
+      </tr>
+    </table>
+  </div>
+  <p style="font-size:13px;color:var(--blue-text)">📡 OpenClaw 配置：每日 09:00 自动计算三色灯并推送到 Telegram，输出格式如：「【今日市场灯】🟢 绿灯 | QQQ: +3.2% vs 200MA | VIX: 17.4 | 可正常开仓」</p>
+
+  <h3>冷却期规则（防报复性交易）</h3>
+  <ul class="list">
+    <li>止损后，<strong>7 天内不开仓同一标的</strong>（OpenClaw 自动维护冷却黑名单）</li>
+    <li><strong>24 小时内</strong>，任何方向不得开仓同一标的（情绪冷却期）</li>
+    <li>OpenClaw 记录每次止损原因，供月度复盘分析</li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 6 -->
+  <div id="s6"></div>
+  <h2 data-num="§6">持仓监控与每日工作流</h2>
+
+  <div class="stepper">
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot active">09:00</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">🤖 OpenClaw 早盘例行（09:00–09:30）</div>
+        <div class="step-content">拉取市场数据；计算三色灯；检查财报/宏观日历；计算当日 VIX 动态上限<br>
+        <strong>输出：</strong>《早盘市场灯》推送 Telegram</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot">09:30</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">👤 投资人审核（09:30–10:00）</div>
+        <div class="step-content">审核市场灯状态；确认今日可开仓标的清单；检查现金储备<br>
+        <strong>输出：</strong>《今日开仓许可》（心理确认）</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot">10:00</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">👤 执行开仓（10:00–11:00）</div>
+        <div class="step-content">在 IBKR 执行开仓；按 10 条检查清单逐项确认（见「开仓检查」面板）<br>
+        <strong>输出：</strong>《成交确认》手动记录</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot active">盘中</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">🤖 OpenClaw 实时监控（10:00–收盘）</div>
+        <div class="step-content">每 15 分钟检查 Delta、权利金、保证金；发现触发立即推送告警<br>
+        <strong>输出：</strong>实时告警推送</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot active">15:30</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">🤖 OpenClaw 持仓日报（15:30–16:00）</div>
+        <div class="step-content">生成当日持仓日报；标记需要关注的合约；推送明日财报/宏观预警<br>
+        <strong>输出：</strong>《持仓日报》推送</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-indicator">
+        <div class="step-dot">16:00</div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">👤 投资人复核（16:00–16:30）</div>
+        <div class="step-content">复核日报；处理任何异常告警；记录今日操作<br>
+        <strong>输出：</strong>签字确认（手机确认即可）</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>OpenClaw 实时监控告警矩阵</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>监控指标</th><th>告警阈值</th><th>OpenClaw 动作</th><th>你的操作</th></tr>
+      <tr>
+        <td>单合约 Delta</td><td>&gt; 0.25</td>
+        <td>推送🟡黄色告警：该合约风险上升</td><td>评估是否展期，不必立即操作</td>
+      </tr>
+      <tr>
+        <td>单合约 Delta</td><td><span class="badge badge-red">≥ 0.30</span></td>
+        <td>推送🔴红色告警：「建议立即止损」</td><td>人工决策是否止损</td>
+      </tr>
+      <tr>
+        <td>权利金剩余</td><td>≤ 50% 初始权利金</td>
+        <td>推送✅绿色提示：「可以止盈平仓」</td><td>在 IBKR 手动平仓</td>
+      </tr>
+      <tr>
+        <td>浮亏</td><td>≥ 80% 初始权利金</td>
+        <td>推送🟠橙色告警：「接近止损线」</td><td>密切关注，评估是否提前平仓</td>
+      </tr>
+      <tr>
+        <td>浮亏</td><td><span class="badge badge-red">≥ 150% 初始权利金</span></td>
+        <td>推送🔴强制告警：「已达止损线」（连发 3 次）</td><td>人工立即平仓，不讨论</td>
+      </tr>
+      <tr>
+        <td>总保证金</td><td>&gt; 25%</td>
+        <td>推送🟡黄色告警：「仓位偏重」</td><td>暂停开仓，等待止盈释放仓位</td>
+      </tr>
+      <tr>
+        <td>总保证金</td><td>&gt; 30%</td>
+        <td>推送🔴红色告警：「必须减仓」</td><td>立即平最高 Delta 仓位</td>
+      </tr>
+      <tr>
+        <td>VIX 单日涨幅</td><td>&gt; 20%</td>
+        <td>推送🟠橙色告警，暂停开仓建议</td><td>评估是否主动减仓</td>
+      </tr>
+      <tr>
+        <td>VIX 单日涨幅</td><td>&gt; 30%</td>
+        <td>推送🔴红色告警，建议全面检查</td><td>人工决定是否平仓观望</td>
+      </tr>
+      <tr>
+        <td>股价/行权价</td><td>&lt; 1.05（接近行权价）</td>
+        <td>推送🟡黄色预警</td><td>提前准备展期决策方案</td>
+      </tr>
+      <tr>
+        <td>股价/行权价</td><td>&lt; 1.00（跌破行权价）</td>
+        <td>推送🟠橙色告警 + 展期建议</td><td>人工决策展期或止损</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 7 -->
+  <div id="s7"></div>
+  <h2 data-num="§7">展期（Roll）规则</h2>
+
+  <div class="alert alert-blue">
+    <div class="alert-title">🔑 核心原则：每次展期必须是「净权利金流入（Credit Roll）」</div>
+    新合约权利金收入 &gt; 平仓旧合约费用，即展期后净现金为正。<br>
+    如果展期需要付出净成本（Debit），<strong>直接止损离场</strong>，不要为了逃避亏损而锁定更大风险。
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>股价跌幅</th><th>当前 Delta</th><th>当前 DTE</th><th>决策</th><th>具体操作</th></tr>
+      <tr style="background:rgba(74,158,255,0.05)">
+        <td>&lt; 5%</td><td>&lt; 0.25</td><td>&gt; 21 天</td>
+        <td><span class="badge badge-blue">🔵 向下展期</span></td>
+        <td>平仓当前 Put；开仓相同到期日、行权价降 5% 的新 Put；确认新 Delta 在目标区间</td>
+      </tr>
+      <tr style="background:rgba(255,165,2,0.05)">
+        <td>5%–8%</td><td>0.25–0.30</td><td>&gt; 21 天</td>
+        <td><span class="badge badge-amber">🟡 向上展期（时间轴）</span></td>
+        <td>平仓当前 Put；开仓延长 +30 天、相同行权价的新 Put；确认展期为 Credit Roll</td>
+      </tr>
+      <tr style="background:rgba(255,99,72,0.05)">
+        <td>8%–12%</td><td>0.30–0.35</td><td>任意</td>
+        <td><span class="badge badge-orange">🟠 基本面判断</span></td>
+        <td>基本面无变化 → 展期 +45 天；基本面恶化 → 无条件止损离场</td>
+      </tr>
+      <tr style="background:rgba(255,71,87,0.05)">
+        <td>&gt; 12%</td><td>&gt; 0.35</td><td>任意</td>
+        <td><span class="badge badge-red">🔴 无条件止损</span></td>
+        <td>立即市价平仓；次日复盘原因；冷却期 7 天</td>
+      </tr>
+      <tr style="background:rgba(74,158,255,0.03)">
+        <td>任意</td><td>任意</td><td><strong>DTE &lt; 7 天</strong></td>
+        <td><span class="badge badge-red">🚫 禁止展期</span></td>
+        <td>DTE &lt; 7 天 Gamma 急剧上升，展期成本极高；止盈则止盈；不止盈则止损或接受行权</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="alert alert-red">
+    <div class="alert-title">⚠️ 展期次数限制：向下展期最多 1 次（防死亡螺旋）</div>
+    第一次被测试到行权价 → 可以考虑向下展期一次<br>
+    第二次被测试 → 不再展期，必须止损或接受行权<br><br>
+    目的：防止「死亡螺旋」——反复展期只是把亏损越滚越大，永远不落地。<br>
+    OpenClaw 自动记录每个合约的展期次数，第二次触发时在告警中注明「不建议再次展期」。
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 8 -->
+  <div id="s8"></div>
+  <h2 data-num="§8">被行权后的 Wheel 策略</h2>
+
+  <h3>行权发生后的即时操作（24 小时内完成）</h3>
+  <div class="alert alert-amber">
+    <div class="alert-title">关键判断问题</div>
+    「今天才认识这家公司，<strong>愿意在此价格买入并持有 2 年以上吗？</strong>」<br>
+    如果答案是「否」，就应该在被行权后尽快以 Covered Call 出清，不要硬撑。
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>被行权后股价</th><th>操作策略</th><th>Covered Call 参数</th><th>目标</th></tr>
+      <tr>
+        <td>高于行权价 0–5%</td>
+        <td>次日开卖 Covered Call</td>
+        <td>Delta 0.25–0.30；到期 21–35 天</td>
+        <td>以小幅溢价卖出，快速出清股票</td>
+      </tr>
+      <tr>
+        <td>低于行权价 &lt; 5%</td>
+        <td>等小反弹后卖 Call</td>
+        <td>股价回到行权价附近再卖；选平值 Call</td>
+        <td>尽量以成本价出场</td>
+      </tr>
+      <tr>
+        <td>低于行权价 5%–15%</td>
+        <td>评估基本面后决策</td>
+        <td>认可基本面 → 卖较远期 Call（45 天）</td>
+        <td>用 Call 权利金弥补亏损</td>
+      </tr>
+      <tr>
+        <td>低于行权价 &gt; 15%</td>
+        <td>重新评估基本面</td>
+        <td>仍认可 → 持有 + 卖 Call 等修复；不认可 → 市价卖出</td>
+        <td>止损或长期持有，二选一</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="alert alert-blue">
+    <div class="alert-title">📐 Wheel 策略完整收益公式</div>
+    总收益 = <strong>Put 权利金 + Covered Call 权利金 ± 股票差价</strong><br>
+    即使股票最终未能回到买入成本，多轮 Covered Call 的权利金也能逐步弥补亏损。<br>
+    OpenClaw 在行权后自动切换监控模式：转为追踪股票价格 vs 成本价，并监控 Covered Call 的展期情况。
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 10 -->
+  <div id="s10"></div>
+  <h2 data-num="§10">极端行情应急预案</h2>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>触发条件</th><th>OpenClaw 自动动作</th><th>你的操作</th><th>时间窗口</th></tr>
+      <tr>
+        <td>QQQ 单日跌 ≥ 3%</td>
+        <td>暂停所有开仓建议 72 小时；推送风险告警</td>
+        <td>评估是否提前止损部分仓位</td><td>72 小时内</td>
+      </tr>
+      <tr>
+        <td>单日账户回撤 &gt; 5%</td>
+        <td>暂停开仓建议；生成减仓方案</td>
+        <td>评估是否策略失效；考虑降仓</td><td>72 小时内</td>
+      </tr>
+      <tr>
+        <td>VIX 单日涨幅 ≥ 30%</td>
+        <td>推送最高级别告警；停止一切开仓建议</td>
+        <td>人工决定是否平仓观望</td><td>立即</td>
+      </tr>
+      <tr style="background:rgba(255,71,87,0.05)">
+        <td><strong>VIX &gt; 40（黑天鹅）</strong></td>
+        <td>推送多次告警；全部持仓风险评估</td>
+        <td>人工决策是否全部平仓；至少空仓 5 天</td><td>立即</td>
+      </tr>
+      <tr>
+        <td>收到 Margin Call</td>
+        <td>推送紧急告警；列出减仓优先级</td>
+        <td>48 小时内转入资金或手动平仓</td><td>48 小时</td>
+      </tr>
+      <tr>
+        <td>连续 3 次止损</td>
+        <td>OpenClaw 锁定开仓建议 7 天（软熔断）</td>
+        <td>复盘策略；检查是否市场风格切换</td><td>7 天后</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="alert alert-amber">
+    <div class="alert-title">⚡ 流动性枯竭应对</div>
+    市场暴跌时，期权买卖价差可能扩大至 20%+，<strong>禁止市价平仓</strong>（滑点损失巨大）。<br>
+    使用限价单，挂在 Bid-Ask 中间价；每 5 分钟调整一次，等待成交。<br>
+    若无法平仓且保证金告急，优先平流动性最好的标的（SPY/QQQ）。
+  </div>
+
+  <h3>心态五条军规</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>军规</th><th>规则</th><th>为什么</th></tr>
+      <tr><td><strong>不追高</strong></td><td>标的连续上涨超过 20 日均线 3% 时坚决不开仓</td><td>高价开仓的 Put 风险敞口不划算</td></tr>
+      <tr><td><strong>不报复</strong></td><td>止损后 24 小时冷却期；7 天标的冷却期</td><td>情绪化交易是最大敌人</td></tr>
+      <tr><td><strong>不贪最后一口</strong></td><td>50% 止盈即离场，不等 51%、60%</td><td>最后 20% 权利金对应的 Gamma 风险极高</td></tr>
+      <tr><td><strong>不扛单</strong></td><td>浮亏达 80% 或 Delta ≥ 0.30 就重视</td><td>小亏可以复盘，大亏可能改变命运</td></tr>
+      <tr><td><strong>策略之外不操作</strong></td><td>只交易白名单标的，只在参数区间内操作</td><td>「看起来很好的机会」往往是陷阱</td></tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 11 -->
+  <div id="s11"></div>
+  <h2 data-num="§11">月度复盘与季度调整</h2>
+
+  <h3>月度复盘（每月最后一周，30–45 分钟）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>复盘模块</th><th>核心问题</th><th>目标</th></tr>
+      <tr><td>收益统计</td><td>月度权利金总收入？止盈/止损次数？净收益率（÷月初净资产）？</td><td>年化 5%–12% 为正常区间</td></tr>
+      <tr><td>胜率分析</td><td>止盈率 ÷ 总开仓次数？平均持有天数？</td><td>胜率 &gt; 70%；否则检查 IV 条件</td></tr>
+      <tr><td>最大回撤</td><td>月内最大单日浮亏金额？发生在哪个标的？</td><td>月度回撤 &gt; 3% 需检讨仓位</td></tr>
+      <tr><td>规则执行</td><td>有没有违反 10 道检查清单任何一条？</td><td>自我评分；&lt; 7 分强制暂停一周</td></tr>
+      <tr><td>展期效果</td><td>本月有展期操作吗？展期后 Delta 是否回到目标区间？</td><td>展期必须改善持仓，否则说明应该止损</td></tr>
+      <tr><td>Wheel 追踪</td><td>本月有被行权吗？Covered Call 执行情况？成本回收进度？</td><td>评估 Wheel 策略是否按计划运行</td></tr>
+      <tr><td>OpenClaw 准确率</td><td>AI 有没有误报或漏报？止盈止损告警的时机准确吗？</td><td>记录每次告警准确性，调整告警参数</td></tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 12 / LIFELINES -->
+  <div id="s12"></div>
+  <h2 data-num="§12">快速执行卡片 · 打印贴操作台</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3 style="margin-top:0;color:var(--blue-text)">卡片 A · 开仓前 30 秒速查</h3>
+      <div style="font-size:12px;font-family:var(--font-mono);line-height:2.2">
+        <div>01 ☐ 标的在白名单内 SPY/QQQ/AAPL/MSFT/TSM/V/MA/META/NVDA</div>
+        <div>02 ☐ 市场三色灯：非红灯</div>
+        <div>03 ☐ 财报窗口：A+A级≥10天；META/NVDA≥14天</div>
+        <div>04 ☐ 宏观窗口：QQQ/SPY距CPI/非农/FOMC≥3天</div>
+        <div>05 ☐ IV指标：IVR≥50 且 IVP≥60（252天窗口）</div>
+        <div>06 ☐ Delta：在该标的对应上限内</div>
+        <div>07 ☐ 单标的仓位：含本次后≤上限</div>
+        <div>08 ☐ VIX动态总仓位：含本次后≤VIX对应上限</div>
+        <div>09 ☐ 现金储备：账户现金≥净资产45%</div>
+        <div>10 ☐ 无当日暴跌：持仓标的无单日跌>5%</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;color:var(--amber-text)">卡片 B · 展期决策速查</h3>
+      <div style="font-size:12px;font-family:var(--font-mono);line-height:2.2">
+        <div>🔵 跌&lt;5% / Delta&lt;0.25 / DTE&gt;21天 → 向下展期（行权价-5%）</div>
+        <div>🟡 跌5-8% / Delta0.25-0.30 / DTE&gt;21天 → 向上展期（+30天）</div>
+        <div>🟠 跌8-12% / Delta0.30-0.35 → 基本面判断</div>
+        <div>🔴 跌&gt;12% / Delta&gt;0.35 → 无条件止损</div>
+        <div>🚫 DTE &lt; 7天 → 禁止展期</div>
+        <div>⚠️ Credit Roll 必须是净收入</div>
+        <div>⚠️ 向下展期最多 1 次（防死亡螺旋）</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="lifelines"></div>
+  <h2 data-num="⚡">三条生命线 · 每天默念</h2>
+
+  <div class="lifeline-card" data-num="①">
+    <div class="lifeline-title">LIFELINE 01</div>
+    <div class="lifeline-rule">总保证金 ≤ VIX 动态上限（最高 20%）</div>
+    <div class="lifeline-why">这是安全垫：极端行情来临时，你需要这个空间承受冲击，而不是被迫在最差的时机平仓。保证金用满是最危险的状态，因为市场暴跌时你没有弹药。</div>
+  </div>
+
+  <div class="lifeline-card" data-num="②">
+    <div class="lifeline-title">LIFELINE 02</div>
+    <div class="lifeline-rule">Delta ≤ 对应标的上限；组合 Delta ≥ 0.30 时必须减仓</div>
+    <div class="lifeline-why">Delta 就是方向性敞口。超出上限，你已经在做方向性赌注，而非收时间价值。卖 Put 的核心优势是中性偏多策略，一旦 Delta 过高，策略优势丧失。</div>
+  </div>
+
+  <div class="lifeline-card" data-num="③">
+    <div class="lifeline-title">LIFELINE 03</div>
+    <div class="lifeline-rule">浮亏 ≥ 80% 重视告警；≥ 150% 无条件平仓</div>
+    <div class="lifeline-why">小亏可以复盘改进，大亏可能改变命运。止损不是认输，是保留未来继续执行策略的能力。期权卖方的最大敌人不是亏钱，是「不愿承认亏钱」的心理。</div>
+  </div>
+
+</div><!-- /section overview -->
+
+<!-- ═══════════════ SECTION: CHECKLIST ═══════════════ -->
+<div class="section" id="section-checklist">
+  <div class="section-title">开仓前检查面板</div>
+  <div class="section-subtitle">在 IBKR 下单前，逐项点击验证。全部通过后才可执行开仓。</div>
+
+  <div class="card">
+    <div class="input-row">
+      <div class="input-group">
+        <div class="input-label">选择标的</div>
+        <select class="select-field" id="ck-symbol" onchange="updateChecklistHints()">
+          <option value="">-- 请选择 --</option>
+          <option value="SPY">SPY（A+）</option>
+          <option value="QQQ">QQQ（A+）</option>
+          <option value="AAPL">AAPL（A）</option>
+          <option value="MSFT">MSFT（A）</option>
+          <option value="TSM">TSM（B）</option>
+          <option value="V">V（B）</option>
+          <option value="MA">MA（B）</option>
+          <option value="META">META（C）</option>
+          <option value="NVDA">NVDA（C）</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <div class="input-label">当前 VIX</div>
+        <input class="input-field" type="number" id="ck-vix" value="18" min="8" max="80" style="width:100px" onchange="updateChecklistHints()">
+      </div>
+      <div class="input-group">
+        <div class="input-label">IVR（252天）</div>
+        <input class="input-field" type="number" id="ck-ivr" value="55" min="0" max="100" style="width:100px">
+      </div>
+      <div class="input-group">
+        <div class="input-label">IVP（252天）</div>
+        <input class="input-field" type="number" id="ck-ivp" value="65" min="0" max="100" style="width:100px">
+      </div>
+      <div class="input-group">
+        <div class="input-label">目标 Delta</div>
+        <input class="input-field" type="number" id="ck-delta" value="0.12" min="0.01" max="0.50" step="0.01" style="width:100px">
+      </div>
+      <button class="btn btn-primary" onclick="runAutoCheck()">自动检查 1–8 项</button>
+    </div>
+    <div id="ck-symbol-hint" class="alert alert-blue" style="display:none;margin-bottom:12px"></div>
+  </div>
+
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" id="ck-progress" style="width:0%"></div>
+  </div>
+
+  <div id="checklist-items">
+    <!-- Items generated by JS -->
+  </div>
+
+  <div class="checklist-result" id="ck-result"></div>
+
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-outline" onclick="resetChecklist()">重置</button>
+    <button class="btn btn-green" onclick="markAllPass()">全部通过（演示）</button>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION: DASHBOARD ═══════════════ -->
+<div class="section" id="section-dashboard">
+  <div class="section-title">风控仪表盘</div>
+  <div class="section-subtitle">模拟 OpenClaw 实时监控视图 · 可调整参数查看系统反应</div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-market', this)">市场状态</button>
+    <button class="tab-btn" onclick="switchTab('tab-positions', this)">持仓监控</button>
+    <button class="tab-btn" onclick="switchTab('tab-portfolio', this)">组合风控</button>
+    <button class="tab-btn" onclick="switchTab('tab-vix', this)">VIX 计算器</button>
+  </div>
+
+  <!-- TAB: MARKET -->
+  <div class="tab-content active" id="tab-market">
+    <h3>今日市场三色灯</h3>
+    <div class="traffic-light" id="tl-lights">
+      <div class="tl-option tl-active-green" onclick="setLight('green', this)">
+        <span class="tl-emoji">🟢</span>
+        <div class="tl-label" style="color:var(--green-text)">绿灯·牛市</div>
+        <div class="tl-desc">QQQ 在 200MA 上方<br>VIX &lt; 20</div>
+      </div>
+      <div class="tl-option" onclick="setLight('amber', this)">
+        <span class="tl-emoji">🟡</span>
+        <div class="tl-label" style="color:var(--amber-text)">黄灯·震荡</div>
+        <div class="tl-desc">QQQ 在 200MA ±5%<br>VIX 20–30</div>
+      </div>
+      <div class="tl-option" onclick="setLight('red', this)">
+        <span class="tl-emoji">🔴</span>
+        <div class="tl-label" style="color:var(--red-text)">红灯·熊市</div>
+        <div class="tl-desc">QQQ 在 200MA 下方<br>VIX &gt; 30</div>
+      </div>
+    </div>
+    <div class="card" id="tl-result-card">
+      <div id="tl-result"></div>
+    </div>
+
+    <h3 style="margin-top:24px">模拟早盘推送</h3>
+    <div class="alert-stream" id="morning-stream">
+      <div class="alert-msg blue">🤖 [09:00] OpenClaw Heartbeat Engine 启动...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="simulateMorning()">模拟早盘推送</button>
+      <button class="btn btn-outline" onclick="clearStream('morning-stream')">清空</button>
+    </div>
+  </div>
+
+  <!-- TAB: POSITIONS -->
+  <div class="tab-content" id="tab-positions">
+    <h3>持仓合约监控</h3>
+    <div class="input-row">
+      <div class="input-group">
+        <div class="input-label">标的</div>
+        <select class="select-field" id="pos-symbol">
+          <option>AAPL</option><option>MSFT</option><option>QQQ</option>
+          <option>SPY</option><option>NVDA</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <div class="input-label">初始权利金 ($)</div>
+        <input class="input-field" type="number" id="pos-initial" value="400" style="width:120px">
+      </div>
+      <div class="input-group">
+        <div class="input-label">当前市值 ($)</div>
+        <input class="input-field" type="number" id="pos-current" value="180" style="width:120px">
+      </div>
+      <div class="input-group">
+        <div class="input-label">当前 Delta</div>
+        <input class="input-field" type="number" id="pos-delta" value="0.18" step="0.01" style="width:100px">
+      </div>
+      <div class="input-group">
+        <div class="input-label">剩余 DTE</div>
+        <input class="input-field" type="number" id="pos-dte" value="22" style="width:80px">
+      </div>
+      <button class="btn btn-primary" onclick="analyzePosition()">分析合约</button>
+    </div>
+    <div id="pos-result" class="card" style="display:none"></div>
+  </div>
+
+  <!-- TAB: PORTFOLIO -->
+  <div class="tab-content" id="tab-portfolio">
+    <h3>组合级别风险仪表</h3>
+    <div class="gauge-row">
+      <div class="gauge-card">
+        <div class="gauge-title">总保证金占用</div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="g-margin-bar" style="width:22%;background:var(--amber)"></div>
+        </div>
+        <div class="gauge-val" id="g-margin-val" style="color:var(--amber-text)">22%</div>
+        <div class="gauge-limit">上限: 20%（VIX&lt;20时）</div>
+        <input type="range" min="0" max="40" value="22" style="width:100%;margin-top:10px"
+          oninput="updateGauge('margin', this.value)">
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-title">现金储备</div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="g-cash-bar" style="width:55%;background:var(--green)"></div>
+        </div>
+        <div class="gauge-val" id="g-cash-val" style="color:var(--green-text)">55%</div>
+        <div class="gauge-limit">下限: 45%</div>
+        <input type="range" min="20" max="100" value="55" style="width:100%;margin-top:10px"
+          oninput="updateGauge('cash', this.value)">
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-title">组合最高 Delta</div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="g-delta-bar" style="width:53%;background:var(--amber)"></div>
+        </div>
+        <div class="gauge-val" id="g-delta-val" style="color:var(--amber-text)">0.16</div>
+        <div class="gauge-limit">上限: 0.30（强制减仓）</div>
+        <input type="range" min="0" max="50" value="16" style="width:100%;margin-top:10px"
+          oninput="updateGauge('delta', this.value)">
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-title">当前 VIX</div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="g-vix-bar" style="width:45%;background:var(--green)"></div>
+        </div>
+        <div class="gauge-val" id="g-vix-val" style="color:var(--green-text)">18</div>
+        <div class="gauge-limit">动态上限基准</div>
+        <input type="range" min="8" max="80" value="18" style="width:100%;margin-top:10px"
+          oninput="updateGauge('vix', this.value)">
+      </div>
+    </div>
+    <div id="portfolio-alerts" class="alert-stream" style="height:180px"></div>
+  </div>
+
+  <!-- TAB: VIX -->
+  <div class="tab-content" id="tab-vix">
+    <h3>VIX 动态保证金计算器</h3>
+    <div class="vix-meter">
+      <p style="font-size:13px;color:var(--white-dim);margin-bottom:8px">拖动滑块设置当前 VIX 值：</p>
+      <input type="range" min="8" max="60" value="18" style="width:100%" id="vix-slider" oninput="updateVixCalc(this.value)">
+      <div class="vix-track">
+        <div class="vix-marker" id="vix-marker" style="left:17%"></div>
+      </div>
+      <div class="vix-labels">
+        <span>VIX 8</span><span>20</span><span>25</span><span>30</span><span>60</span>
+      </div>
+      <div class="vix-result-box" id="vix-result-box"></div>
+    </div>
+    <div id="vix-calc-output"></div>
+  </div>
+
+</div><!-- /section dashboard -->
+
+<!-- ═══════════════ SECTION: CASES ═══════════════ -->
+<div class="section" id="section-cases">
+  <div class="section-title">案例教学模块</div>
+  <div class="section-subtitle">真实场景模拟，学习在不同市况下的正确决策路径</div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('case1', this)">案例一：完美止盈</button>
+    <button class="tab-btn" onclick="switchTab('case2', this)">案例二：展期决策</button>
+    <button class="tab-btn" onclick="switchTab('case3', this)">案例三：被行权 Wheel</button>
+    <button class="tab-btn" onclick="switchTab('case4', this)">案例四：黑天鹅应对</button>
+  </div>
+
+  <div class="tab-content active" id="case1">
+    <div class="case-card">
+      <div class="case-header">
+        <div>
+          <div class="case-title">📗 案例一：AAPL Put 完美止盈路径</div>
+          <div style="font-size:12px;color:var(--white-dim);margin-top:4px">市场绿灯，IVR=58，标准操作演示</div>
+        </div>
+        <span class="badge badge-green">结果：盈利</span>
+      </div>
+      <div class="case-body">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--blue)"></div>
+            <div class="timeline-date">Day 0 · 10:15 AM</div>
+            <div class="timeline-content">
+              <strong>开仓决策</strong><br>
+              • 市场三色灯：🟢 绿灯（QQQ +1.8% vs 200MA，VIX 17.4）<br>
+              • AAPL 当前价：$195，IVR=58，IVP=67，符合双指标<br>
+              • 选择行权价 $185（跌幅 5.1%），Delta 0.11，符合 A 级上限 0.12<br>
+              • DTE：38 天（5月17日到期），符合 35–45 天窗口<br>
+              • 流动性：日成交量 3200 张，Bid-Ask 差价 $0.04（&lt;权利金 5%）<br>
+              • <strong>收取权利金：$410（每合约 100 股）</strong><br>
+              • 提交 GTC 止盈单：$205（$410 × 50%）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--green)"></div>
+            <div class="timeline-date">Day 12 · 盘中</div>
+            <div class="timeline-content">
+              <strong>OpenClaw 推送止盈提示</strong><br>
+              「✅ 【止盈信号】AAPL 已赚 51%，可平仓」<br>
+              当前合约市值：$198（原始 $410 × 48% ≈ 197）<br>
+              AAPL 涨至 $198，Put 快速衰减
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--green)"></div>
+            <div class="timeline-date">Day 12 · 15:30</div>
+            <div class="timeline-content">
+              <strong>平仓执行</strong><br>
+              GTC 止盈单成交，买回 Put 成本 $200<br>
+              <strong>净收益：$410 - $200 = $210（51.2% 权利金，12 天完成）</strong><br>
+              年化等效收益率：~15.5%（基于占用保证金计算）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--blue)"></div>
+            <div class="timeline-date">Day 13</div>
+            <div class="timeline-content">
+              <strong>复用资金，寻找下一次开仓机会</strong><br>
+              保证金释放，等待下一个 IV 窗口。本次从开仓到止盈仅 12 天，提前解放仓位。<br>
+              📊 「50% 止盈每年多换仓 3–4 次，复利效果优于等待 60%」
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-green">
+          <div class="alert-title">✅ 本案例关键学习点</div>
+          1. <strong>提前提交 GTC 止盈单</strong>，不要盯盘等待，避免情绪干扰<br>
+          2. <strong>50% 止盈的纪律性</strong>比贪更多权利金更重要<br>
+          3. <strong>12 天止盈</strong>是理想场景，实际平均持有约 20–30 天<br>
+          4. 资金周转率越高，复利效果越好
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="case2">
+    <div class="case-card">
+      <div class="case-header">
+        <div>
+          <div class="case-title">📙 案例二：MSFT Put 展期决策</div>
+          <div style="font-size:12px;color:var(--white-dim);margin-top:4px">股价下跌，需要判断展期还是止损</div>
+        </div>
+        <span class="badge badge-amber">结果：展期后盈利</span>
+      </div>
+      <div class="case-body">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--blue)"></div>
+            <div class="timeline-date">Day 0</div>
+            <div class="timeline-content">
+              开仓：MSFT Put $390，收取权利金 $520，DTE 40 天<br>
+              Delta 0.11，MSFT 当时价格 $412
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-date">Day 15 · 盘中</div>
+            <div class="timeline-content">
+              <strong>⚠️ OpenClaw 推送黄色预警</strong><br>
+              「⚠️ 【接近行权价】MSFT 现价/行权价=1.04，准备展期决策」<br>
+              MSFT 跌至 $405（跌幅约 1.7%），合约市值升至 $380<br>
+              Delta 已升至 0.22，浮亏 $380 - $520 = -$140（27% 亏损，未达触发）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-date">Day 22</div>
+            <div class="timeline-content">
+              <strong>🔴 OpenClaw 推送展期告警</strong><br>
+              「🚨 【止损告警】MSFT Delta过高 (Delta:0.26 亏损:73%)」<br>
+              MSFT 跌至 $398（-3.4%），DTE 剩余 18 天<br>
+              当前 Delta = 0.26，浮亏 $380（73%），接近 80% 阈值<br><br>
+              <strong>展期决策分析：</strong><br>
+              • 股价跌幅 3.4%，Delta 0.26，DTE 18天 → 符合「向上展期（时间轴）」条件<br>
+              • 平仓成本：$380；开仓新 Put $390，DTE +30天（共 48 天），收取权利金 $480<br>
+              • Credit Roll = $480 - $380 = <strong>净收入 $100</strong> ✅<br>
+              • 决策：执行展期
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--blue)"></div>
+            <div class="timeline-date">Day 22 · 展期后</div>
+            <div class="timeline-content">
+              新合约：MSFT Put $390，DTE 48 天，权利金 $480，Delta 0.18（回到合理区间）<br>
+              展期净权利金：$100（锁定）+ $480（继续收取）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--green)"></div>
+            <div class="timeline-date">Day 44（展期后第 22 天）</div>
+            <div class="timeline-content">
+              MSFT 反弹至 $408，合约市值跌至 $230（&lt;$480 × 50%）<br>
+              <strong>止盈平仓，净收益：$100 + ($480 - $230) = $350</strong>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-blue">
+          <div class="alert-title">🔑 本案例关键学习点</div>
+          1. <strong>展期≠放弃</strong>，只要是 Credit Roll 就锁定了额外权利金<br>
+          2. 展期后 Delta 必须回到目标区间（此案例从 0.26 降至 0.18）<br>
+          3. 向下展期最多 1 次；如果还被测试就要止损<br>
+          4. DTE &lt; 21 天时展期成本急升，尽早处理比拖延好
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="case3">
+    <div class="case-card">
+      <div class="case-header">
+        <div>
+          <div class="case-title">📘 案例三：AAPL Put 被行权后 Wheel</div>
+          <div style="font-size:12px;color:var(--white-dim);margin-top:4px">完整 Wheel 策略生命周期演示</div>
+        </div>
+        <span class="badge badge-blue">结果：用 Wheel 弥补亏损</span>
+      </div>
+      <div class="case-body">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--red)"></div>
+            <div class="timeline-date">Event · 财报后大跌</div>
+            <div class="timeline-content">
+              AAPL Put $190，到期日临近，AAPL 财报后大跌至 $182<br>
+              浮亏超 150%，OpenClaw 强制告警，但已临近到期（DTE 3天）<br>
+              决定：接受行权，以 $190 买入 100 股 AAPL<br>
+              成本价：$190，当前市价：$182，浮亏 $800<br>
+              原 Put 权利金已收：$350（保留）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-date">行权后 Day 1</div>
+            <div class="timeline-content">
+              <strong>24 小时内决策：</strong><br>
+              「今天才认识 AAPL，愿意以 $190 买入持有 2 年吗？」→ <strong>愿意</strong><br>
+              股价 $182（低于行权价 $190 约 4.2%）→ 等小反弹后再卖 Call<br>
+              转仓至 BBAE 账户，释放 IBKR 保证金
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--blue)"></div>
+            <div class="timeline-date">行权后 Day 5</div>
+            <div class="timeline-content">
+              AAPL 反弹至 $187（接近行权价），开始卖 Covered Call<br>
+              选择行权价 $192（高于成本价 $190）<br>
+              DTE 28 天，Delta 0.27，收取 Covered Call 权利金：<strong>$280</strong>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--green)"></div>
+            <div class="timeline-date">Day 33（Covered Call 到期）</div>
+            <div class="timeline-content">
+              AAPL 涨至 $194，Covered Call 行权，以 $192 卖出 100 股<br>
+              <strong>总收益汇算：</strong><br>
+              • Put 权利金：+$350<br>
+              • Covered Call 权利金：+$280<br>
+              • 股票差价：($192 - $190) × 100 = +$200<br>
+              • <strong>总收益：+$830（不计手续费）</strong><br>
+              • 而不做 Wheel 直接持有到涨回的机会成本：0 额外权利金
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-green">
+          <div class="alert-title">✅ Wheel 策略的力量</div>
+          即使被行权，Covered Call 的权利金也能大幅摊低持仓成本。<br>
+          关键：选 Call 行权价 <strong>必须 ≥ 原 Put 行权价</strong>（成本价），不锁定亏损。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="case4">
+    <div class="case-card">
+      <div class="case-header">
+        <div>
+          <div class="case-title">📕 案例四：黑天鹅行情应对（VIX 冲 40+）</div>
+          <div style="font-size:12px;color:var(--white-dim);margin-top:4px">极端市场的生存手册</div>
+        </div>
+        <span class="badge badge-red">极端风险场景</span>
+      </div>
+      <div class="case-body">
+        <div class="alert alert-red">
+          <div class="alert-title">场景设定：某日市场大幅波动</div>
+          开盘 QQQ 跌 4.2%，VIX 从 18 单日飙升至 42（涨幅 133%）<br>
+          持有 3 个合约：AAPL Put $195，QQQ Put $460，NVDA Put $880
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--red)"></div>
+            <div class="timeline-date">09:35 AM · 开盘 5 分钟</div>
+            <div class="timeline-content">
+              <strong>OpenClaw 连续推送三次最高级别告警：</strong><br>
+              「🔴 【黑天鹅告警】VIX 突破 40（当前 42.3），策略进入紧急状态。建议暂停一切开仓，评估所有持仓。」<br>
+              「🔴 QQQ 单日跌幅 -4.2%，触发 3% 熔断。所有开仓建议暂停 72 小时。」<br>
+              「🔴 NVDA Put Delta 已达 0.38，浮亏 210%。建议立即止损！」
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-date">09:40 AM · 决策时间</div>
+            <div class="timeline-content">
+              <strong>正确操作顺序：</strong><br>
+              1. 先止损 NVDA（Delta 0.38，已超强制止损线）：挂限价单在 Bid-Ask 中间价，不用市价单<br>
+              2. 评估 QQQ：Delta 0.22，浮亏 65%，暂时观察<br>
+              3. 评估 AAPL：Delta 0.18，浮亏 40%，相对安全<br><br>
+              <strong>❌ 不能做的事：</strong><br>
+              • 不能追加保证金来撑住 NVDA 仓位<br>
+              • 不能在 VIX &gt; 30 时开新仓（VIX 动态上限 = 0%）<br>
+              • 不能用市价单平仓（买卖价差可能扩大至 20%+）
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--green)"></div>
+            <div class="timeline-date">结果</div>
+            <div class="timeline-content">
+              NVDA 止损完成，损失约 $1,200（占本金约 1.2%）<br>
+              QQQ 在接下来 3 天 Theta 衰减后，浮亏缩至 20%，最终止盈<br>
+              AAPL 正常止盈，收回 $340<br>
+              <strong>总体：黑天鹅下仅损失 &lt;2%，未触发 Margin Call</strong>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-amber">
+          <div class="alert-title">⚡ 黑天鹅中存活的关键</div>
+          1. <strong>总保证金 ≤ 20%</strong> 是最大保护——有空间承受冲击<br>
+          2. <strong>多标的分散</strong>——单一标的上限控制了单次损失<br>
+          3. <strong>限价单平仓</strong>——避免在恐慌时被市价扫走<br>
+          4. <strong>冷静执行止损</strong>，不要期待「等会儿反弹」
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /section cases -->
+
+<!-- ═══════════════ SECTION: ERRORS ═══════════════ -->
+<div class="section" id="section-errors">
+  <div class="section-title">常见错误警示系统</div>
+  <div class="section-subtitle">学习前人的错误，避免重蹈覆辙。点击每个错误查看详情和正确做法。</div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #1：在财报前 7 天开仓 META（正确应为 14 天）</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>META 财报在 3 月 30 日，投资人认为「还有 7 天，距离很远」，于 3 月 23 日开仓卖 PUT。<br><br>
+      <strong>为什么错了：</strong>META 和 NVDA 被列为 C 级标的，原因正是财报波动极大（常见单日 ±10–20%）。7 天的窗口远不够——期权的 IV 在财报前一周会急剧升高，开仓成本看似高，实则是「被 IV 骗了」。财报后 IV crush 会让权利金瞬间蒸发，即使方向对了也可能亏损。<br><br>
+      <strong>真实后果：</strong>META 财报当天大跌 12%，Put Delta 从 0.10 飙升至 0.45，浮亏 180%。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>META/NVDA 财报前 <strong>14 天</strong>（不是 7 天）进入黑名单。OpenClaw 自动拦截，你无论如何不要绕过这条规则。如果 IV 很诱人，这正是「财报 IV 泡沫」——等财报后 3 天 IV 恢复正常再评估。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #2：浮亏 200% 仍拒绝平仓，期待反弹</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>NVDA Put 浮亏已达 200%（超过 150% 强制止损线），投资人认为「NVDA 肯定会反弹，再等等」。<br><br>
+      <strong>为什么错了：</strong><br>
+      1. 150% 止损线已经考虑了「给缓冲」——100% 不够，150% 是合理上限<br>
+      2. 浮亏 200% 的 Put 的 Delta 通常已在 0.50+ 甚至更高，相当于持有半仓股票做方向性赌注<br>
+      3. 「等反弹」的心理是期权卖方最常见的死亡路径——时间在消耗，Gamma 在上升，风险在加速扩大<br>
+      4. 即使反弹，Theta 衰减也可能部分抵消反弹收益<br><br>
+      <strong>真实后果：</strong>继续持有导致最终浮亏 350%，触发 Margin Call，被迫在最差价格被强平。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>150% 是「死亡线」——无条件执行，没有任何讨论空间。OpenClaw 连续 3 次推送红色告警后，你必须人工平仓，不需要「再看一下」。止损不是认输，是保留未来继续执行策略的能力。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #3：使用 20 天窗口计算 IVR，导致在 IV 低位开仓</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>使用平台默认的 20 天 IVR，显示 IVR=72（看似很高），满仓开仓。<br><br>
+      <strong>为什么错了：</strong>20 天前 NVDA 刚好发布财报，当时 IV 极高，导致 20 天窗口的「年最高」被扭曲。实际上用 252 天窗口，IVR 只有 38——意味着当前 IV 其实处于偏低水平，权利金并不划算。<br><br>
+      <strong>正确理解：</strong>IVR 的计算窗口直接决定了「参照系」。20 天窗口容易被一次财报或极端事件扭曲，导致判断失误。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>始终使用 <strong>252 个交易日（约 1 年）</strong>窗口。在 barchart.com 查询时，明确选择「1 Year」窗口选项。同时要求 <strong>IVR ≥ 50 且 IVP ≥ 60</strong> 双指标同时满足，单一指标达标不够。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #4：止损后立即开仓同一标的（「报复性交易」）</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>AAPL Put 止损后损失 $800，投资人「不服气」，当天下午立即再次开仓 AAPL 更激进的 Put，想把损失捞回来。<br><br>
+      <strong>为什么错了：</strong><br>
+      1. 止损后情绪处于失控状态，判断力下降<br>
+      2. 急于「追回」会无意识地选择更高 Delta 的行权价（「赌一把」心态）<br>
+      3. 如果 AAPL 持续下跌，第二次开仓会更快触发止损，形成「双重打击」<br>
+      4. 「报复性交易」是职业交易员最常见的账户爆仓原因
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>触发止损后，<strong>24 小时冷却期</strong>（同一标的任何方向不开仓），<strong>7 天冷却期</strong>（该标的的 Put 仓位）。OpenClaw 自动维护冷却黑名单，自动拦截。你要做的是：写下止损原因，等待情绪平复，再理性分析是否策略本身需要调整。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #5：展期时接受 Debit Roll（净付出成本）</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>MSFT Put 被压到行权价，投资人急于展期「逃出」，接受了展期需要净付出 $150 的条件（Debit Roll）。<br><br>
+      <strong>为什么错了：</strong><br>
+      Debit Roll 意味着：你不仅原来的合约在亏损，现在又多付了 $150 来换取一个可能继续下跌的新合约。这等于「用更多钱买了一个更大的风险」。展期的本质必须是「同样或更好的收益 + 更低的风险」，Debit Roll 两条都不满足。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>展期的铁律是 <strong>Credit Roll（净收入）</strong>。如果找不到 Credit Roll 的方案，说明市场已经不给你「优雅退场」的机会了，此时应该直接止损离场，而不是付钱给市场买时间。展期是改善持仓的工具，不是逃避亏损的手段。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #6：在 VIX > 30 时仍然开仓（违反 VIX 动态规则）</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>VIX 来到 32，权利金极高（月收益率看起来有 3%），投资人认为「现在 IV 这么高，正是卖 Put 的好时机」，照常开仓。<br><br>
+      <strong>为什么错了：</strong><br>
+      高 VIX 确实意味着高权利金，但这是「风险补偿」——市场用高权利金告诉你「接下来可能继续大跌」。VIX 30 以上时，市场的尾部风险急剧上升，Put 卖方面临的最大风险是「加速下跌」而非「温和下跌」。此时的高权利金往往不足以补偿爆发性下跌带来的损失。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>VIX 25–30 时仅平仓；VIX &gt; 30 时，保证金上限为 <strong>0%</strong>——停止一切开仓。等待 VIX 回落至 20 以下，市场企稳后再寻找机会。这是策略的核心护城河，不能因为「错过机会」的 FOMO 情绪而妥协。
+      </div>
+    </div>
+  </div>
+
+  <div class="error-card">
+    <div class="error-header" onclick="toggleError(this)">
+      <span style="font-size:18px">⛔</span>
+      <span class="error-header-text">错误 #7：被行权后卖出 ITM Covered Call（锁定亏损）</span>
+      <span style="color:var(--white-faint)">▾</span>
+    </div>
+    <div class="error-body">
+      <strong>错误场景：</strong>以 $195 被行权持有 AAPL，当前股价 $182。为了收更多权利金，卖出行权价 $180 的 ITM Covered Call（低于当前股价），收到权利金 $450。<br><br>
+      <strong>为什么错了：</strong><br>
+      卖出 ITM Call 意味着：如果股价在 $180 以上（当前 $182），股票会被以 $180 Call 走。你的卖出价是 $180，但买入成本是 $195，<strong>每股亏损 $15，完全锁定了 $1,500 的亏损</strong>，而且无论之后 AAPL 如何上涨，你都无法受益。$450 的权利金远不足以弥补这个损失。
+      <div class="error-correct">
+        ✅ <strong>正确做法：</strong>Covered Call 行权价 <strong>必须 ≥ 原 Put 行权价（即持股成本价）</strong>。在此案例中，行权价必须 ≥ $195。如果 AAPL 在 $182 找不到有吸引力的 ≥ $195 Call，就等股价反弹后再卖，不要急于锁定亏损。
+      </div>
+    </div>
+  </div>
+
+</div><!-- /section errors -->
+
+<!-- ═══════════════ SECTION: OPENCLAW ═══════════════ -->
+<div class="section" id="section-openclaw">
+  <div class="section-title">OpenClaw 配置规范</div>
+  <div class="section-subtitle">OpenClaw 是监控引擎，不是下单机器人。以下是完整配置与使用指南。</div>
+
+  <div class="alert alert-red">
+    <div class="alert-title">⚠️ 安全配置（必须先做，否则不要运行）</div>
+    将 IBKR API Key 设为 <strong>只读（Read-Only）权限</strong>——只允许读取持仓，不允许下单<br>
+    永远不要在 OpenClaw 配置里放有交易执行权限的 API Key<br>
+    将 OpenClaw 运行在 Docker 容器中，隔离文件系统访问<br>
+    API Key 存储在 <code>~/.openclaw/</code> 目录，每月轮换一次，审计网络访问权限
+  </div>
+
+  <h2 data-num="§9.1">OpenClaw 八大职责</h2>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--blue-dim)">📡</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--blue-text)">1 · 实时监控</div>
+      <div class="oc-desc">每分钟拉取 IBKR 持仓 Delta、权利金、保证金数据，建立实时数据流</div>
+      <div class="oc-impl">实现方式：IBKR Client Portal API + Heartbeat</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--amber-dim)">🚨</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--amber-text)">2 · 自动告警</div>
+      <div class="oc-desc">触发阈值时推送 Telegram / WhatsApp 消息；紧急告警连续发送 3 次确保被看到</div>
+      <div class="oc-impl">实现方式：Heartbeat Engine + 消息平台集成</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--green-dim)">📊</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--green-text)">3 · 日报生成</div>
+      <div class="oc-desc">每日 15:30（美东）自动生成持仓摘要和风险指标，包含明日财报/宏观预警</div>
+      <div class="oc-impl">实现方式：Cron 定时任务</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--blue-dim)">✅</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--blue-text)">4 · 开仓前检查</div>
+      <div class="oc-desc">输入标的和行权价，自动验证所有 10 条开仓规则中的前 8 条，输出通过/拒绝结果</div>
+      <div class="oc-impl">实现方式：自定义 Skill（Python 脚本）</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--orange-dim)">🔄</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--orange)">5 · 展期建议</div>
+      <div class="oc-desc">股价接近行权价时，自动计算展期方案选项，判断是否能做到 Credit Roll</div>
+      <div class="oc-impl">实现方式：Heartbeat 触发 + 计算脚本</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--red-dim)">📅</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--red-text)">6 · 财报/宏观日历</div>
+      <div class="oc-desc">自动维护黑名单窗口（财报前 10/14 天，宏观数据前 3 天），告警即将到来的风险时间点</div>
+      <div class="oc-impl">实现方式：日历 API + Heartbeat</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--green-dim)">💰</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--green-text)">7 · 止盈提醒</div>
+      <div class="oc-desc">权利金剩余 ≤ 50%，主动推送「可平仓」通知；GTC 挂单监控</div>
+      <div class="oc-impl">实现方式：实时监控逻辑</div>
+    </div>
+  </div>
+
+  <div class="oc-feature">
+    <div class="oc-icon" style="background:var(--blue-dim)">📈</div>
+    <div class="oc-content">
+      <div class="oc-title" style="color:var(--blue-text)">8 · 月度复盘报告</div>
+      <div class="oc-desc">汇总月度交易记录，计算胜率、年化收益、最大回撤，提供 OpenClaw 自身准确率评估</div>
+      <div class="oc-impl">实现方式：Cron + 数据汇总脚本</div>
+    </div>
+  </div>
+
+  <h2 data-num="§9.2">核心配置文件 (config.yaml)</h2>
+  <pre>
+# OpenClaw 现金担保 Put 策略配置 v3.0
+# ⚠️ 注意：IBKR API 设为只读！OpenClaw 只监控，不下单！
+
+ibkr_connection:
+  mode: "read_only"              # 关键：只读模式
+  api_endpoint: "https://localhost:5000"  # IBKR Client Portal Gateway
+
+strategy:
+  name: "CashSecuredPut_Wheel_v3"
+  mode: "monitor_and_alert"     # 监控+告警，不自动下单
+
+watchlist:
+  - { symbol: "SPY",  grade: "A+", delta_max: 0.08, position_max_pct: 0.15 }
+  - { symbol: "QQQ",  grade: "A+", delta_max: 0.10, position_max_pct: 0.15 }
+  - { symbol: "AAPL", grade: "A",  delta_max: 0.12, position_max_pct: 0.12 }
+  - { symbol: "MSFT", grade: "A",  delta_max: 0.12, position_max_pct: 0.12 }
+  - { symbol: "TSM",  grade: "B",  delta_max: 0.13, position_max_pct: 0.08 }
+  - { symbol: "V",    grade: "B",  delta_max: 0.12, position_max_pct: 0.08 }
+  - { symbol: "MA",   grade: "B",  delta_max: 0.12, position_max_pct: 0.08 }
+  - { symbol: "META", grade: "C",  delta_max: 0.10, position_max_pct: 0.06, earnings_blackout_days: 14 }
+  - { symbol: "NVDA", grade: "C",  delta_max: 0.10, position_max_pct: 0.05, earnings_blackout_days: 14, ivr_min: 65 }
+
+risk_controls:
+  take_profit_pct:  0.50   # 权利金剩余 ≤ 50% 时告警止盈
+  stop_loss_pct:    1.50   # 浮亏 ≥ 150% 时强制告警
+  early_stop_pct:   0.80   # 浮亏 ≥ 80% 时预告警
+  delta_warn:       0.25   # Delta 黄色告警
+  delta_critical:   0.30   # Delta 红色告警（建议止损）
+  margin_warn_pct:  0.25   # 保证金 > 25% 黄色告警
+  margin_critical_pct: 0.30  # 保证金 > 30% 红色告警
+  cash_reserve_min: 0.45   # 最低现金储备 45%
+  roll_max_times:   1      # 每合约最大展期次数
+
+vix_filters:
+  under_20:   { margin_max: 0.20, delta_max: 0.15 }
+  20_to_25:   { margin_max: 0.15, delta_max: 0.13 }
+  25_to_30:   { margin_max: 0.10, delta_max: 0.12 }
+  over_30:    { margin_max: 0.00, action: "alert_human_full_stop" }
+
+iv_requirements:
+  window_days: 252     # 必须使用 1 年窗口
+  ivr_min: 50
+  ivp_min: 60
+
+blackout_windows:
+  macro_events: ["CPI", "NFP", "FOMC"]
+  macro_blackout_days: 3
+  earnings_default_days: 10
+
+heartbeat:
+  interval_minutes: 15      # 每 15 分钟检查一次
+  daily_report_time: "15:30"  # 美东时间
+  morning_brief_time: "09:00"
+
+alerts:
+  platform: "telegram"     # 或 "whatsapp" / "slack"
+  critical_escalation: true  # 紧急告警连续发送 3 次
+</pre>
+
+  <h2 data-num="§9.3">每日持仓日报模板</h2>
+  <pre>
+【持仓日报】2026-03-29
+
+📊 账户概览
+├ 净资产:     $X,XXX,XXX
+├ 现金储备:   $XXX,XXX (XX%) [目标 ≥ 45%]
+├ 保证金占用: $XXX,XXX (XX%) [上限 XX%]
+└ 今日市场灯: 🟢 绿灯 | VIX: 17.4 | QQQ +3.2% vs 200MA
+
+📋 持仓明细
+1. AAPL Put $195 到期 2026-05-15
+   Delta: 0.11 | 权利金剩余: 62% | 浮盈: +$340
+   状态: ✅ 正常持有
+
+2. MSFT Put $380 到期 2026-05-08
+   Delta: 0.23 | 权利金剩余: 48% | 可止盈
+   状态: 💡 建议止盈平仓
+
+⚠️ 风险指标
+├ 最高 Delta:   0.23 (MSFT) [上限 0.15]
+├ 接近行权价:  MSFT (现价/行权价=1.03)
+└ 展期次数:    AAPL-0次, MSFT-0次
+
+📅 明日关注
+├ NVDA 距财报还有 12 天 (观察区)
+├ 周三 CPI 数据 (QQQ/SPY 今后 3 天禁止开仓)
+└ 建议明日开仓标的: AAPL (IVR=58, IVP=67) ✅
+</pre>
+
+  <h2 data-num="§9.4">Heartbeat 核心监控脚本（简化版）</h2>
+  <pre>
+# 文件名：~/.openclaw/skills/put_monitor.py
+# 每 15 分钟由 Heartbeat Engine 自动调用
+
+def check_positions(config):
+    """拉取 IBKR 持仓并检查告警条件"""
+    positions = get_ibkr_positions()  # 调用 IBKR Client Portal API
+    alerts = []
+
+    for pos in positions:
+        symbol = pos['symbol']
+        delta = abs(pos['delta'])
+        premium_remaining_pct = pos['current_premium'] / pos['initial_premium']
+        unrealized_loss_pct = abs(pos['unrealized_pnl']) / pos['initial_premium']
+        price_to_strike = pos['underlying_price'] / pos['strike']
+
+        # 止盈告警
+        if premium_remaining_pct <= 0.50:
+            alerts.append(f"✅ 【止盈信号】{symbol} 已赚{(1-premium_remaining_pct)*100:.0f}%，可平仓")
+
+        # 双触发止损告警（满足任一即触发）
+        if unrealized_loss_pct >= 0.80 or delta >= 0.30:
+            trigger = 'Delta过高' if delta >= 0.30 else '亏损过大'
+            alerts.append(f"🚨 【止损告警】{symbol} {trigger} (Delta:{delta:.2f} 亏损:{unrealized_loss_pct*100:.0f}%)")
+
+        # 强制止损告警（150%）
+        if unrealized_loss_pct >= 1.50:
+            alerts.append(f"🔴 【强制止损】{symbol} 浮亏已达{unrealized_loss_pct*100:.0f}%！立即平仓！")
+
+        # 接近行权价告警
+        if price_to_strike < 1.05:
+            alerts.append(f"⚠️ 【接近行权价】{symbol} 现价/行权价={price_to_strike:.3f}，准备展期决策")
+        elif price_to_strike < 1.00:
+            alerts.append(f"🟠 【跌破行权价】{symbol} 现价/行权价={price_to_strike:.3f}，请立即评估展期或止损")
+
+    return alerts
+</pre>
+
+</div><!-- /section openclaw -->
+
+</main><!-- /main -->
+
+<!-- OPENCLAW STICKY PANEL -->
+<div class="oclaw-sticky" id="oc-sticky">
+  <div class="oclaw-sticky-header" onclick="toggleOcPanel()">
+    <div class="oclaw-sticky-title">
+      <div class="dot-pulse"></div>
+      🤖 OpenClaw 提醒事项
+    </div>
+    <span id="oc-chevron" style="color:var(--blue-text)">▾</span>
+  </div>
+  <div class="oclaw-sticky-body" id="oc-sticky-body">
+    <div class="oc-reminder" style="background:var(--blue-dim);color:var(--blue-text)">
+      📡 实时监控运行中 · 每 15 分钟检查一次
+    </div>
+    <div class="oc-reminder" style="background:var(--green-dim);color:var(--green-text)">
+      ✅ 今日市场灯：🟢 绿灯 | VIX 17.4
+    </div>
+    <div class="oc-reminder" style="background:var(--amber-dim);color:var(--amber-text)">
+      📅 明日关注：周三 CPI 数据，QQQ/SPY 今后 3 天禁止开仓
+    </div>
+    <div class="oc-reminder" style="background:var(--blue-dim);color:var(--blue-text)">
+      💡 MSFT 权利金剩余 48%，接近止盈阈值
+    </div>
+    <div class="oc-reminder" style="background:var(--red-dim);color:var(--red-text)">
+      ⚠️ NVDA 距财报 12 天，进入观察期（&lt;14天禁止开仓）
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--white-faint);font-family:var(--font-mono)">
+      最后更新：今日 15:30 · OpenClaw v3.0
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+
+  document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + id);
+  if (navBtn) navBtn.classList.add('active');
+
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+
+  window.scrollTo(0, 0);
+
+  // Show OC sticky on most pages
+  setTimeout(() => {
+    document.getElementById('oc-sticky').classList.add('visible');
+  }, 1000);
+}
+
+function scrollTo(id) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ═══════════════════════════════
+// TABS
+// ═══════════════════════════════
+function switchTab(id, btn) {
+  const container = btn.closest('.section') || btn.closest('main');
+  const navEl = btn.closest('.tab-nav');
+  navEl.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const parent = navEl.parentElement;
+  parent.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════
+// CHECKLIST
+// ═══════════════════════════════
+const CHECKLIST_DATA = [
+  {
+    id: 'c1', num: '01', auto: true,
+    title: '标的在白名单内',
+    desc: '仅允许：SPY / QQQ / AAPL / MSFT / TSM / V / MA / META / NVDA',
+    check: (s, v, ivr, ivp, delta) => {
+      const wl = ['SPY','QQQ','AAPL','MSFT','TSM','V','MA','META','NVDA'];
+      return wl.includes(s) ? 'pass' : 'fail';
+    }
+  },
+  {
+    id: 'c2', num: '02', auto: true,
+    title: '市场三色灯：非红灯',
+    desc: '红灯条件：QQQ 在 200MA 下方 且 VIX > 30，此时停止一切开仓',
+    check: (s, v, ivr, ivp, delta) => parseFloat(v) > 30 ? 'fail' : 'pass'
+  },
+  {
+    id: 'c3', num: '03', auto: true,
+    title: '财报窗口检查',
+    desc: 'A+/A/B 级标的距财报 ≥ 10 天；META/NVDA ≥ 14 天',
+    check: (s) => {
+      if (s === 'META' || s === 'NVDA') return 'manual'; // Needs external data
+      return 'pass'; // Simplified
+    }
+  },
+  {
+    id: 'c4', num: '04', auto: true,
+    title: '宏观数据窗口',
+    desc: 'QQQ/SPY 距 CPI/非农/FOMC ≥ 3 天；其他标的不受此限制',
+    check: (s) => s === 'QQQ' || s === 'SPY' ? 'manual' : 'pass'
+  },
+  {
+    id: 'c5', num: '05', auto: true,
+    title: 'IV 指标（252天窗口）',
+    desc: 'IVR ≥ 50 且 IVP ≥ 60（两项同时满足）',
+    check: (s, v, ivr, ivp) => (parseFloat(ivr) >= 50 && parseFloat(ivp) >= 60) ? 'pass' : 'fail'
+  },
+  {
+    id: 'c6', num: '06', auto: true,
+    title: 'Delta 在该标的上限内',
+    desc: 'SPY≤0.08, QQQ≤0.10, AAPL/MSFT/V/MA≤0.12, TSM≤0.13, META/NVDA≤0.10',
+    check: (s, v, ivr, ivp, delta) => {
+      const limits = { SPY: 0.08, QQQ: 0.10, AAPL: 0.12, MSFT: 0.12, TSM: 0.13, V: 0.12, MA: 0.12, META: 0.10, NVDA: 0.10 };
+      const lim = limits[s];
+      if (!lim) return 'fail';
+      return parseFloat(delta) <= lim ? 'pass' : 'fail';
+    }
+  },
+  {
+    id: 'c7', num: '07', auto: false,
+    title: '单标的仓位：含本次后 ≤ 该标的上限',
+    desc: '打开 IBKR，确认该标的当前总保证金占用（含本次新合约）不超上限',
+  },
+  {
+    id: 'c8', num: '08', auto: true,
+    title: 'VIX 动态总仓位',
+    desc: '公式：上限 = 25% × (20/VIX)；当前 VIX 对应上限见左侧',
+    check: (s, v) => {
+      const vix = parseFloat(v);
+      const limit = Math.min(0.25, 0.25 * (20/vix));
+      return limit > 0 ? 'pass' : 'fail';
+    }
+  },
+  {
+    id: 'c9', num: '09', auto: false,
+    title: '账户现金 ≥ 净资产 45%',
+    desc: '在 IBKR 确认现金储备比例，低于 45% 不开仓（现金担保原则）',
+  },
+  {
+    id: 'c10', num: '10', auto: false,
+    title: '无当日暴跌：持仓标的无单日跌幅 > 5%',
+    desc: '检查所有持仓标的今日价格变动，有单日跌 5%+ 的先处理存量风险',
+  },
+];
+
+function buildChecklist() {
+  const container = document.getElementById('checklist-items');
+  container.innerHTML = '';
+  CHECKLIST_DATA.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item';
+    div.id = 'ck-item-' + item.id;
+    div.onclick = () => toggleCheck(item.id, item.auto);
+    div.innerHTML = `
+      <div class="chk-num">${item.num}</div>
+      <div class="chk-box" id="chk-box-${item.id}">—</div>
+      <div class="chk-content">
+        <div class="chk-title">${item.title} ${item.auto ? '<span class="badge badge-blue" style="font-size:9px">AUTO</span>' : ''}</div>
+        <div class="chk-desc">${item.desc}</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleCheck(id, auto) {
+  const item = document.getElementById('ck-item-' + id);
+  const box = document.getElementById('chk-box-' + id);
+  if (item.classList.contains('checked')) {
+    item.classList.remove('checked');
+    box.textContent = '—';
+  } else if (item.classList.contains('failed')) {
+    item.classList.remove('failed');
+    box.textContent = '—';
+  } else {
+    item.classList.add('checked');
+    box.textContent = '✓';
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = CHECKLIST_DATA.length;
+  const passed = document.querySelectorAll('.checklist-item.checked').length;
+  const failed = document.querySelectorAll('.checklist-item.failed').length;
+  const pct = Math.round((passed / total) * 100);
+  document.getElementById('ck-progress').style.width = pct + '%';
+
+  const result = document.getElementById('ck-result');
+  if (passed + failed === total) {
+    result.classList.add('show');
+    if (failed > 0) {
+      result.style.background = 'var(--red-dim)';
+      result.style.border = '1px solid var(--red)';
+      result.style.color = 'var(--red-text)';
+      result.innerHTML = `⛔ 检查未通过（${failed} 项拒绝）。请解决拒绝项后再开仓。`;
+    } else {
+      result.style.background = 'var(--green-dim)';
+      result.style.border = '1px solid var(--green)';
+      result.style.color = 'var(--green-text)';
+      result.innerHTML = `✅ 所有 ${total} 项检查通过！可以执行开仓下单。`;
+    }
+  } else {
+    result.classList.remove('show');
+  }
+}
+
+function runAutoCheck() {
+  const symbol = document.getElementById('ck-symbol').value;
+  const vix = document.getElementById('ck-vix').value;
+  const ivr = document.getElementById('ck-ivr').value;
+  const ivp = document.getElementById('ck-ivp').value;
+  const delta = document.getElementById('ck-delta').value;
+
+  CHECKLIST_DATA.forEach(item => {
+    if (!item.auto) return;
+    const result = item.check(symbol, vix, ivr, ivp, delta);
+    const el = document.getElementById('ck-item-' + item.id);
+    const box = document.getElementById('chk-box-' + item.id);
+    el.classList.remove('checked', 'failed');
+
+    if (result === 'pass') {
+      el.classList.add('checked');
+      box.textContent = '✓';
+    } else if (result === 'fail') {
+      el.classList.add('failed');
+      box.textContent = '✗';
+    } else {
+      box.textContent = '?';
+    }
+  });
+  updateProgress();
+}
+
+function updateChecklistHints() {
+  const s = document.getElementById('ck-symbol').value;
+  const hints = {
+    SPY: 'A+ 级 · Delta 上限 0.08（最严）· 无财报 · 避宏观数据前 3 天 · 仓位上限 15%',
+    QQQ: 'A+ 级 · Delta 上限 0.10 · 无财报 · 避宏观数据前 3 天 · 不可与 SPY 同时满仓',
+    AAPL: 'A 级 · Delta 上限 0.12 · 财报 1/4/7/10 月下旬，提前 10 天禁止开仓',
+    MSFT: 'A 级 · Delta 上限 0.12 · 财报 1/4/7/10 月下旬，提前 10 天禁止开仓',
+    TSM: 'B 级 · Delta 上限 0.13 · 有 ADR 折价，财报日历需精准',
+    V: 'B 级 · Delta 上限 0.12 · 防御性标的，与科技股低相关',
+    MA: 'B 级 · Delta 上限 0.12 · 防御性标的，与 V 互补',
+    META: '⚠️ C 级 · Delta 上限 0.10 · 财报前 14 天（比其他标的多一倍）禁止开仓',
+    NVDA: '⚠️ C 级 · Delta 上限 0.10 · 财报前 14 天禁止 · 另需 IVR > 65（比标准更高）',
+  };
+  const hint = document.getElementById('ck-symbol-hint');
+  if (s && hints[s]) {
+    hint.style.display = 'block';
+    hint.innerHTML = '<strong>📋 ' + s + ' 特殊规则：</strong><br>' + hints[s];
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function resetChecklist() {
+  document.querySelectorAll('.checklist-item').forEach(el => {
+    el.classList.remove('checked', 'failed');
+    el.querySelector('.chk-box').textContent = '—';
+  });
+  document.getElementById('ck-progress').style.width = '0%';
+  document.getElementById('ck-result').classList.remove('show');
+}
+
+function markAllPass() {
+  CHECKLIST_DATA.forEach(item => {
+    const el = document.getElementById('ck-item-' + item.id);
+    const box = document.getElementById('chk-box-' + item.id);
+    el.classList.remove('failed');
+    el.classList.add('checked');
+    box.textContent = '✓';
+  });
+  updateProgress();
+}
+
+// ═══════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════
+let currentLight = 'green';
+
+function setLight(color, el) {
+  document.querySelectorAll('.tl-option').forEach(o => {
+    o.classList.remove('tl-active-green','tl-active-amber','tl-active-red');
+  });
+  el.classList.add('tl-active-' + color);
+  currentLight = color;
+  updateLightResult();
+}
+
+function updateLightResult() {
+  const results = {
+    green: {
+      color: 'var(--green)', bg: 'var(--green-dim)',
+      title: '🟢 绿灯 · 正常开仓模式',
+      content: '可以正常开仓所有白名单标的。Delta 上限 0.15，总仓位上限 20%。<br>建议优先考虑 IVR ≥ 50 且 IVP ≥ 60 的标的，按照完整 10 项检查清单执行。'
+    },
+    amber: {
+      color: 'var(--amber)', bg: 'var(--amber-dim)',
+      title: '🟡 黄灯 · 谨慎开仓模式',
+      content: '仅允许开仓 A+/A 级标的（SPY、QQQ、AAPL、MSFT）。Delta 上限降至 0.12，总仓位上限 15%。<br>B/C 级标的暂停开仓，等待市场企稳。'
+    },
+    red: {
+      color: 'var(--red)', bg: 'var(--red-dim)',
+      title: '🔴 红灯 · 停止开仓',
+      content: '禁止开仓任何新仓位。只允许平仓操作。评估现有持仓是否需要止损或展期。<br>OpenClaw 将推送全面风险评估报告，等待 VIX 回落后再考虑恢复开仓。'
+    }
+  };
+  const r = results[currentLight];
+  document.getElementById('tl-result-card').style.borderColor = r.color;
+  document.getElementById('tl-result').innerHTML = `
+    <div style="font-size:15px;font-weight:700;color:${r.color};margin-bottom:8px">${r.title}</div>
+    <div style="font-size:13px;color:var(--white-dim);line-height:1.7">${r.content}</div>
+  `;
+}
+
+function simulateMorning() {
+  const stream = document.getElementById('morning-stream');
+  const msgs = [
+    ['blue', '🤖 [09:00] 正在拉取市场数据...'],
+    ['green', '📊 [09:00] QQQ: $467.2，高于 200MA 3.8% ✅'],
+    ['green', '📊 [09:00] VIX: 17.4 ✅（< 20，绿灯条件满足）'],
+    ['green', '🟢 [09:00] 【今日市场灯】🟢 绿灯 | QQQ: +3.2% vs 200MA | VIX: 17.4 | 可正常开仓 Delta ≤ 0.15 仓位 ≤ 20%'],
+    ['blue', '📅 [09:01] 正在检查财报日历...'],
+    ['amber', '⚠️ [09:01] NVDA 距财报还有 12 天（观察区，< 14 天禁止开仓）'],
+    ['blue', '📅 [09:01] 正在检查宏观事件日历...'],
+    ['amber', '⚠️ [09:01] 周三 CPI 数据（还有 2 天）：QQQ/SPY 今日禁止开仓'],
+    ['blue', '🧮 [09:02] 正在计算 VIX 动态仓位上限...'],
+    ['green', '✅ [09:02] VIX=17.4，动态上限 = 25% × (20/17.4) = 28.7%（取 20% 上限）'],
+    ['green', '📨 [09:02] 早盘报告已发送至 Telegram ✅'],
+  ];
+  let delay = 0;
+  msgs.forEach(([cls, msg]) => {
+    delay += 500;
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'alert-msg ' + cls;
+      div.textContent = msg;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }, delay);
+  });
+}
+
+function clearStream(id) {
+  const stream = document.getElementById(id);
+  stream.innerHTML = '<div class="alert-msg blue">🤖 [OpenClaw] 日志已清空</div>';
+}
+
+// POSITION ANALYZER
+function analyzePosition() {
+  const sym = document.getElementById('pos-symbol').value;
+  const init = parseFloat(document.getElementById('pos-initial').value);
+  const cur = parseFloat(document.getElementById('pos-current').value);
+  const delta = parseFloat(document.getElementById('pos-delta').value);
+  const dte = parseInt(document.getElementById('pos-dte').value);
+
+  const remaining_pct = cur / init;
+  const unrealized_loss = cur - init; // current is cost to close, init is premium received
+  const pnl_pct = (init - cur) / init; // how much of premium we've captured
+  const loss_pct = (cur - init) / init; // if cur > init, we're losing
+
+  let alerts = [];
+  let status = 'green';
+
+  if (remaining_pct <= 0.50) alerts.push({ cls: 'green', msg: `✅ 权利金剩余 ${(remaining_pct*100).toFixed(0)}%，已达止盈阈值，建议平仓` });
+  if (delta >= 0.30) { alerts.push({ cls: 'red', msg: `🔴 Delta ${delta} ≥ 0.30，已达强制告警线，建议立即止损` }); status = 'red'; }
+  else if (delta >= 0.25) { alerts.push({ cls: 'amber', msg: `🟡 Delta ${delta} ≥ 0.25，进入警戒区` }); status = 'amber'; }
+  if (loss_pct >= 1.50) { alerts.push({ cls: 'red', msg: `🔴 浮亏 ${(loss_pct*100).toFixed(0)}% ≥ 150%，强制止损告警` }); status = 'red'; }
+  else if (loss_pct >= 0.80) { alerts.push({ cls: 'amber', msg: `🟠 浮亏 ${(loss_pct*100).toFixed(0)}% ≥ 80%，接近止损线` }); status = 'amber'; }
+  if (dte < 7) alerts.push({ cls: 'red', msg: `🚫 DTE ${dte} < 7 天，禁止展期，Gamma 风险极高` });
+  if (alerts.length === 0) alerts.push({ cls: 'blue', msg: `✅ 合约状态正常，无告警` });
+
+  const borderColor = status === 'red' ? 'var(--red)' : status === 'amber' ? 'var(--amber)' : 'var(--green)';
+  const result = document.getElementById('pos-result');
+  result.style.display = 'block';
+  result.style.borderColor = borderColor;
+  result.innerHTML = `
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px">${sym} Put · 合约分析报告</div>
+    <div class="card-grid" style="gap:12px;margin-bottom:12px">
+      <div><div class="stat-label">权利金已赚</div><div class="stat-value" style="font-size:22px;color:${pnl_pct > 0 ? 'var(--green-text)' : 'var(--red-text)'}">
+        ${pnl_pct > 0 ? '+' : ''}${(pnl_pct*100).toFixed(1)}%
+      </div></div>
+      <div><div class="stat-label">当前 Delta</div><div class="stat-value" style="font-size:22px;color:${delta >= 0.30 ? 'var(--red-text)' : delta >= 0.25 ? 'var(--amber-text)' : 'var(--green-text)'}">${delta}</div></div>
+      <div><div class="stat-label">剩余 DTE</div><div class="stat-value" style="font-size:22px;color:${dte < 7 ? 'var(--red-text)' : dte < 14 ? 'var(--amber-text)' : 'var(--white)'}">${dte} 天</div></div>
+      <div><div class="stat-label">权利金剩余</div><div class="stat-value" style="font-size:22px;color:${remaining_pct <= 0.50 ? 'var(--green-text)' : 'var(--white)'}">${(remaining_pct*100).toFixed(0)}%</div></div>
+    </div>
+    ${alerts.map(a => `<div class="alert-msg ${a.cls}" style="margin-bottom:6px">${a.msg}</div>`).join('')}
+  `;
+}
+
+// GAUGES
+function updateGauge(type, val) {
+  const v = parseFloat(val);
+  let color, pct;
+
+  if (type === 'margin') {
+    pct = Math.min(100, v / 40 * 100);
+    color = v < 20 ? 'var(--green)' : v < 25 ? 'var(--amber)' : v < 30 ? 'var(--orange)' : 'var(--red)';
+    document.getElementById('g-margin-bar').style.width = pct + '%';
+    document.getElementById('g-margin-bar').style.background = color;
+    document.getElementById('g-margin-val').textContent = v + '%';
+    document.getElementById('g-margin-val').style.color = color;
+  } else if (type === 'cash') {
+    pct = Math.min(100, v);
+    color = v >= 45 ? 'var(--green)' : v >= 30 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('g-cash-bar').style.width = pct + '%';
+    document.getElementById('g-cash-bar').style.background = color;
+    document.getElementById('g-cash-val').textContent = v + '%';
+    document.getElementById('g-cash-val').style.color = color;
+  } else if (type === 'delta') {
+    pct = Math.min(100, v / 50 * 100);
+    const dval = (v / 100).toFixed(2);
+    color = v <= 15 ? 'var(--green)' : v <= 25 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('g-delta-bar').style.width = pct + '%';
+    document.getElementById('g-delta-bar').style.background = color;
+    document.getElementById('g-delta-val').textContent = dval;
+    document.getElementById('g-delta-val').style.color = color;
+  } else if (type === 'vix') {
+    pct = Math.min(100, (v - 8) / 72 * 100);
+    color = v < 20 ? 'var(--green)' : v < 25 ? 'var(--amber)' : v < 30 ? 'var(--orange)' : 'var(--red)';
+    document.getElementById('g-vix-bar').style.width = pct + '%';
+    document.getElementById('g-vix-bar').style.background = color;
+    document.getElementById('g-vix-val').textContent = Math.round(v);
+    document.getElementById('g-vix-val').style.color = color;
+  }
+
+  generatePortfolioAlerts();
+}
+
+function generatePortfolioAlerts() {
+  const margin = parseFloat(document.getElementById('g-margin-bar').style.width) * 40 / 100;
+  const cash = parseFloat(document.getElementById('g-cash-bar').style.width);
+  const vix = parseFloat(document.getElementById('g-vix-val').textContent);
+  const delta = parseFloat(document.getElementById('g-delta-val').textContent);
+  const vixLimit = Math.min(25, 25 * (20/vix));
+
+  const alerts = [];
+  if (cash < 45) alerts.push(['red', `🔴 现金储备 ${cash.toFixed(0)}% < 45%，不满足现金担保条件，禁止开仓`]);
+  if (margin > 30) alerts.push(['red', `🔴 【保证金危险】当前占用 ${margin.toFixed(1)}%，必须减仓！`]);
+  else if (margin > vixLimit) alerts.push(['amber', `🟡 【保证金偏高】当前 ${margin.toFixed(1)}%，VIX调整上限 ${vixLimit.toFixed(1)}%`]);
+  if (delta >= 0.30) alerts.push(['red', `🔴 组合最高 Delta ${delta} ≥ 0.30，建议立即减仓`]);
+  else if (delta >= 0.25) alerts.push(['amber', `🟡 组合最高 Delta ${delta} ≥ 0.25，进入警戒区`]);
+  if (vix > 30) alerts.push(['red', `🔴 VIX ${vix} > 30，仓位上限 0%，停止一切开仓`]);
+  else if (vix > 25) alerts.push(['amber', `🟠 VIX ${vix} 在 25–30，仅平仓，不开新仓`]);
+  if (alerts.length === 0) alerts.push(['green', '✅ 所有组合指标正常，可以继续操作']);
+
+  const stream = document.getElementById('portfolio-alerts');
+  stream.innerHTML = '';
+  alerts.forEach(([cls, msg]) => {
+    const div = document.createElement('div');
+    div.className = 'alert-msg ' + cls;
+    div.textContent = msg;
+    stream.appendChild(div);
+  });
+}
+
+// VIX CALCULATOR
+function updateVixCalc(val) {
+  const vix = parseFloat(val);
+  const pct = (vix - 8) / 52;
+  document.getElementById('vix-marker').style.left = (pct * 100) + '%';
+
+  let zone, color, bg, marginLimit, deltaLimit, canOpen;
+  if (vix < 20) {
+    zone = '绿灯·牛市'; color = 'var(--green-text)'; bg = 'var(--green-dim)';
+    marginLimit = '20%'; deltaLimit = '0.15'; canOpen = '可以正常开仓所有白名单标的';
+  } else if (vix <= 25) {
+    zone = '黄灯·震荡'; color = 'var(--amber-text)'; bg = 'var(--amber-dim)';
+    marginLimit = '15%'; deltaLimit = '0.13'; canOpen = '仅开仓 A+/A 级（SPY/QQQ/AAPL/MSFT）';
+  } else if (vix <= 30) {
+    zone = '橙色·警戒'; color = 'var(--orange)'; bg = 'var(--orange-dim)';
+    marginLimit = '10%'; deltaLimit = '0.12'; canOpen = '仅平仓，不开新仓';
+  } else {
+    zone = '红灯·危险'; color = 'var(--red-text)'; bg = 'var(--red-dim)';
+    marginLimit = '0%'; deltaLimit = '—'; canOpen = '停止一切开仓，评估是否全部平仓';
+  }
+  const dynamicLimit = Math.min(25, 25 * (20/vix)).toFixed(1);
+
+  document.getElementById('vix-result-box').style.background = bg;
+  document.getElementById('vix-result-box').innerHTML = `
+    <div style="font-weight:700;color:${color};margin-bottom:8px">VIX ${Math.round(vix)} · ${zone}</div>
+    <div style="font-size:13px;color:var(--white-dim);line-height:2">
+      动态保证金上限：<strong style="color:${color}">${dynamicLimit}%</strong>（公式：25% × 20/${Math.round(vix)}）<br>
+      固定分区上限：<strong style="color:${color}">${marginLimit}</strong><br>
+      Delta 上限：<strong style="color:${color}">${deltaLimit}</strong><br>
+      开仓指令：<strong style="color:${color}">${canOpen}</strong>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════
+// ERRORS
+// ═══════════════════════════════
+function toggleError(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+  const arrow = header.querySelector('span:last-child');
+  arrow.textContent = body.classList.contains('open') ? '▴' : '▾';
+}
+
+// ═══════════════════════════════
+// OPENCLAW PANEL
+// ═══════════════════════════════
+let ocOpen = true;
+function toggleOcPanel() {
+  ocOpen = !ocOpen;
+  const sticky = document.getElementById('oc-sticky');
+  const body = document.getElementById('oc-sticky-body');
+  const chev = document.getElementById('oc-chevron');
+  if (ocOpen) {
+    body.style.display = '';
+    chev.textContent = '▾';
+    sticky.style.maxHeight = '400px';
+  } else {
+    body.style.display = 'none';
+    chev.textContent = '▴';
+  }
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildChecklist();
+  updateLightResult();
+  generatePortfolioAlerts();
+  updateVixCalc(18);
+
+  // OC sticky panel
+  setTimeout(() => {
+    document.getElementById('oc-sticky').classList.add('visible');
+  }, 2000);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>META 波动率溢价增强策略 — 机构级操作手册 V3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+
+  .term:hover::after { opacity: 1; }
+
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .nav-item.sub {
+    padding-left: 38px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .hero::before {
+    content: 'META';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION STYLES
+  ═══════════════════════════════════════════ */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+
+  .stat-card .stat-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+
+  .callout.gold {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+  }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+
+  .checklist li::before {
+    content: '☐';
+    font-size: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .checklist li.required::before {
+    color: var(--gold);
+  }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula-box {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2;
+  }
+
+  .formula-box .comment {
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════
+     FLOW STEPS
+  ═══════════════════════════════════════════ */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    padding: 14px 0;
+    position: relative;
+  }
+
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--navy-card);
+    border: 2px solid var(--navy-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+  }
+
+  .flow-step-body {
+    flex: 1;
+    padding-top: 8px;
+  }
+
+  .flow-step-body strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-body span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     STATE MATRIX CARDS
+  ═══════════════════════════════════════════ */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .state-card {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid;
+  }
+
+  .state-card.state-a {
+    background: var(--green-dim);
+    border-color: rgba(92,184,122,0.3);
+  }
+  .state-card.state-b {
+    background: var(--blue-dim);
+    border-color: rgba(91,141,200,0.3);
+  }
+  .state-card.state-c {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .state-card.state-d {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.3);
+  }
+
+  .state-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .state-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .state-a .state-badge { background: rgba(92,184,122,0.2); color: var(--green); }
+  .state-b .state-badge { background: rgba(91,141,200,0.2); color: var(--blue); }
+  .state-c .state-badge { background: rgba(224,123,60,0.2); color: var(--orange); }
+  .state-d .state-badge { background: rgba(224,92,92,0.2); color: var(--red); }
+
+  .state-card .state-name { font-size: 13px; font-weight: 600; }
+  .state-a .state-name { color: var(--green); }
+  .state-b .state-name { color: var(--blue); }
+  .state-c .state-name { color: var(--orange); }
+  .state-d .state-name { color: var(--red); }
+
+  .state-card ul {
+    list-style: none;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .state-card ul li { color: var(--text-secondary); }
+  .state-card ul li::before { content: '›  '; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER
+  ═══════════════════════════════════════════ */
+  .circuit-level {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+
+  .circuit-level.l1 {
+    background: var(--yellow-dim);
+    border-color: rgba(212,184,74,0.3);
+  }
+  .circuit-level.l2 {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .circuit-level.l3 {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.35);
+  }
+
+  .circuit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .circuit-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .l1 .circuit-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .l2 .circuit-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .l3 .circuit-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .circuit-level h4 { margin: 0; }
+  .l1 h4 { color: var(--yellow); }
+  .l2 h4 { color: var(--orange); }
+  .l3 h4 { color: var(--red); }
+
+  .circuit-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 13.5px;
+  }
+
+  .trigger-list, .action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .trigger-list .label, .action-list .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .trigger-list li, .action-list li {
+    list-style: none;
+    color: var(--text-secondary);
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .trigger-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-muted); }
+  .action-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 2px; }
+
+  /* ═══════════════════════════════════════════
+     CAPITAL ALLOCATION TIERS
+  ═══════════════════════════════════════════ */
+  .tier-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .tier-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tier-1 .tier-header { background: rgba(92,184,122,0.07); border-bottom: 1px solid rgba(92,184,122,0.2); }
+  .tier-2 .tier-header { background: rgba(91,141,200,0.07); border-bottom: 1px solid rgba(91,141,200,0.2); }
+  .tier-3 .tier-header { background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); }
+
+  .tier-icon {
+    font-size: 22px;
+    width: 40px;
+    text-align: center;
+  }
+
+  .tier-header-info .tier-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .tier-1 .tier-range { color: var(--green); }
+  .tier-2 .tier-range { color: var(--blue); }
+  .tier-3 .tier-range { color: var(--gold-light); }
+
+  .tier-header-info .tier-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .tier-body {
+    padding: 18px 22px;
+    background: var(--navy-card);
+  }
+
+  .alloc-bar-wrap {
+    margin: 12px 0 8px;
+  }
+
+  .alloc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .alloc-label { width: 160px; color: var(--text-secondary); flex-shrink: 0; }
+  .alloc-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--navy-border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .alloc-bar { height: 100%; border-radius: 3px; }
+  .alloc-pct {
+    width: 40px;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .redline-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+  }
+
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .redline-text {
+    font-size: 13.5px;
+    color: #F0A0A0;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     SOP TIMELINE
+  ═══════════════════════════════════════════ */
+  .sop-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sop-step {
+    display: flex;
+    gap: 18px;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .sop-step:hover { border-color: rgba(201,168,76,0.3); }
+
+  .sop-step-icon {
+    font-size: 20px;
+    width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sop-step-content strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .sop-step-content .time-badge {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+
+  .sop-step-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 6px 0 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     LOG TABLE
+  ═══════════════════════════════════════════ */
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* ═══════════════════════════════════════════
+     DIVIDER
+  ═══════════════════════════════════════════ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     DISCLAIMER
+  ═══════════════════════════════════════════ */
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+
+  .disclaimer strong { color: var(--text-secondary); }
+
+  /* ═══════════════════════════════════════════
+     PRINT / RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .state-grid, .circuit-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════════ */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+
+  strong { color: var(--text-primary); }
+
+  .highlight { color: var(--gold-light); font-weight: 500; }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.bullets li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  ul.bullets li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 11px;
+    top: 3px;
+  }
+
+  .page-break { page-break-before: always; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR NAVIGATION
+══════════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">META 期权增强<br>操作手册</div>
+    <div class="logo-ver">V3.0 · 2026 年 4 月</div>
+  </div>
+
+  <div class="nav-section-label">策略框架</div>
+  <a href="#s1" class="nav-item">01 · 策略定位与核心逻辑</a>
+  <a href="#s2" class="nav-item">02 · NRA 合规与税务</a>
+  <a href="#s3" class="nav-item">03 · 资金分层与仓位架构</a>
+
+  <div class="nav-section-label">交易决策</div>
+  <a href="#s4" class="nav-item">04 · 市场状态决策引擎</a>
+  <a href="#s4a" class="nav-item sub">— 状态矩阵</a>
+  <a href="#s4b" class="nav-item sub">— IVR 硬约束</a>
+  <a href="#s4c" class="nav-item sub">— 事件风控</a>
+  <a href="#s5" class="nav-item">05 · 核心交易策略</a>
+  <a href="#s5a" class="nav-item sub">— Put Spread</a>
+  <a href="#s5b" class="nav-item sub">— Covered Call</a>
+  <a href="#s5c" class="nav-item sub">— EV 公式</a>
+  <a href="#s5d" class="nav-item sub">— 开仓参数矩阵</a>
+
+  <div class="nav-section-label">风险管理</div>
+  <a href="#s6" class="nav-item">06 · 三级熔断机制</a>
+  <a href="#s7" class="nav-item">07 · 25% 下跌切换</a>
+  <a href="#s8" class="nav-item">08 · 尾部对冲配置</a>
+
+  <div class="nav-section-label">执行与记录</div>
+  <a href="#s9" class="nav-item">09 · 月度标准化 SOP</a>
+  <a href="#s10" class="nav-item">10 · 绩效台账模板</a>
+  <a href="#s11" class="nav-item">11 · 纪律红线</a>
+  <a href="#s12" class="nav-item">12 · 应急预案</a>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">机构级卖方策略 · 客户内部文件</div>
+    <h1>META 单一标的<br>波动率溢价增强策略</h1>
+    <p class="hero-sub">围绕 Meta Platforms Inc. 构建"分层卖波动率 + 尾部保护"体系，在控制跳空风险的前提下，通过系统性卖出期权收取保费，实现长期复利收益增强。</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="label">版本</span>
+        <span class="value">V3.0 综合优化版</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">适用对象</span>
+        <span class="value">NRA · IBKR 保证金账户</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">核心标的</span>
+        <span class="value">META (Meta Platforms)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">资金规模</span>
+        <span class="value">$15 万 — $1,000 万+</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">编制日期</span>
+        <span class="value">2026 年 4 月</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════
+       SECTION 1: 策略定位
+  ═════════════════════════ -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <div>
+        <div class="section-title">策略定位与核心逻辑</div>
+        <div class="section-subtitle">理解"保险公司"角色，建立正确的交易认知</div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">◆</span>
+      <div><strong>核心定位：</strong>您不是 META 股价的短期投机者，而是一家以 META 股票为核心资产的<strong>「专业风险承保商」</strong>。通过系统性卖出期权向市场收取"保费"（<span class="term" data-tip="时间价值（Time Value）：期权价格中，除内在价值以外的部分，随时间推移自然衰减，这个衰减速度称为 Theta。卖方通过持有期权至衰减获利。">时间价值</span>与<span class="term" data-tip="波动率溢价（Volatility Premium）：市场隐含波动率通常高于实际历史波动率，两者之差构成系统性的卖方盈利来源，也称「波动率风险溢价」。">波动率溢价</span>），在大多数时间赚取稳定现金流；当极端行情出现时，通过预设的「再保险」机制确保核心资本安全。
+      </div>
+    </div>
+
+    <div class="card-grid-3">
+      <div class="stat-card">
+        <div class="stat-label">年化收益目标</div>
+        <div class="stat-value">10–20%</div>
+        <div class="stat-note">基于期权增强，不含正股涨幅</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">最大回撤控制</div>
+        <div class="stat-value">≤ 15%</div>
+        <div class="stat-note">通过三级熔断+尾部对冲</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">META 历史 IVR 中位数</div>
+        <div class="stat-value">45–55%</div>
+        <div class="stat-note">财报前后常飙升至 80+</div>
+      </div>
+    </div>
+
+    <h3>三大核心优势</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>① 标的深度适配</h4>
+        <p>META 具备高<span class="term" data-tip="隐含波动率（Implied Volatility，IV）：从期权市场价格反推出的市场对未来波动率的预期，通常高于实际历史波动率，是卖方期权收益的核心来源。">隐含波动率</span>、强事件驱动特性（财报、AI 产品发布、监管事件），为期权卖方提供远超指数的权利金收益空间。</p>
+      </div>
+      <div class="card">
+        <h4>② NRA 税务结构优势</h4>
+        <p>针对个股期权，<span class="term" data-tip="NRA（Non-Resident Alien，非居民外国人）：指既非美国公民又非美国永久居民的外国人。在税务处理上与美国居民有显著差异。">NRA</span> 身份下权利金收入及资本利得<strong>均免征美国联邦预扣税</strong>，净收益显著高于美国居民投资者。</p>
+      </div>
+      <div class="card">
+        <h4>③ IBKR 执行效率</h4>
+        <p>利用 Interactive Brokers 的<span class="term" data-tip="投资组合保证金（Portfolio Margin，PM）：一种基于风险的保证金计算方式，相较于标准 Reg-T 保证金，通常可大幅降低保证金要求，提高资金利用效率。账户净值需 ≥ $110,000。">组合保证金（PM）</span>模式、低佣金结构和价差组合单功能，实现高效的价差管理与滚动操作。</p>
+      </div>
+      <div class="card">
+        <h4>④ 系统化风控</h4>
+        <p>引入机构级三级熔断、ADX辅助趋势判断、修正版<span class="term" data-tip="预期价值（Expected Value，EV）：考虑概率后的加权平均收益。EV = 盈利概率 × 盈利金额 - 亏损概率 × 亏损金额。正 EV 是开仓的必要条件。">EV 过滤</span>、尾部对冲配置，规避单一标的黑天鹅事件。</p>
+      </div>
+    </div>
+
+    <h3>META 关键波动特性（必须理解）</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>特性</th>
+            <th>具体表现</th>
+            <th>策略含义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>高波动</td>
+            <td>历史 52 周振幅约 ±65%，单日最大跌幅超 26%（2022.02）</td>
+            <td>必须使用<span class="term" data-tip="价差策略（Spread）：同时买卖相同标的、不同行权价的期权，以限制最大亏损。Bull Put Spread 即卖出较高行权价 Put 同时买入较低行权价 Put。">价差结构</span>限制最大亏损，禁止裸卖</td>
+          </tr>
+          <tr>
+            <td>事件驱动强</td>
+            <td>财报、AI 产品发布、FTC 监管公告均可引发 ±15% 单日波动</td>
+            <td>财报前 10 个交易日禁止新开仓</td>
+          </tr>
+          <tr>
+            <td>长期向上斜率</td>
+            <td>2023–2025 年多次从极端低位强劲反弹，具备良好的长期基本面</td>
+            <td>深度回撤是低成本建仓机会，而非灾难</td>
+          </tr>
+          <tr>
+            <td>左尾肥厚</td>
+            <td><span class="term" data-tip="肥尾分布（Fat-Tail / Leptokurtosis）：与正态分布相比，极端事件（大幅涨跌）发生概率更高。META 历史数据显示左尾（大幅下跌）比正态分布厚约 1.8 倍。">肥尾分布</span>特性使 Delta=0.20 的 Put 实际行权概率约 0.26–0.32，远超理论值</td>
+            <td>EV 计算须使用修正系数，避免低估风险</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 2: 合规
+  ═════════════════════════ -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <div>
+        <div class="section-title">NRA 合规与税务防火墙</div>
+        <div class="section-subtitle">强制前置核查 — 违规风险高于市场风险</div>
+      </div>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">⚠</span>
+      <div><strong>关键前提：</strong>作为 NRA，您最大的风险不是市场波动，而是<strong>遗产税</strong>与<strong>预扣税误判</strong>。以下所有合规确认项在开始任何交易前必须由持牌 CPA 及律师书面确认，方可执行。</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>确认事项</th>
+            <th>核心要求</th>
+            <th>执行标准</th>
+            <th>违规后果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong><span class="term" data-tip="W-8BEN 表格：外国个人向美国支付人（如券商）证明其非美国人身份的税务表格，有效期通常为 3 年。持有有效 W-8BEN 可享受相应税务条约待遇。">W-8BEN</span> 有效性</strong></td>
+            <td>确保 IBKR 账户内 W-8BEN 表格在有效期（3 年）内</td>
+            <td>每年 1 月 15 日前复核。过期立即暂停所有期权交易</td>
+            <td>权利金收入可能被预扣<strong>最高 30%</strong> 税款</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong><span class="term" data-tip="遗产税（Estate Tax）：美国对死亡时名下资产征收的税。NRA 持有美国境内资产（如美股正股）的免税额仅为 6 万美元，超出部分最高征收 40%。">遗产税</span>红线</strong></td>
+            <td>个人账户持有 META 正股市值<strong>严禁超过 $60,000</strong></td>
+            <td>超额部分须在 5 个交易日内减持或转至<span class="term" data-tip="BVI 公司（British Virgin Islands Company）：在英属维尔京群岛注册的离岸公司，因其税务优惠和保密性常用于跨境投资架构，通过公司持有美国资产可有效规避 NRA 遗产税风险。">BVI 离岸公司</span>账户</td>
+            <td>超额资产面临最高 <strong>40%</strong> 遗产税</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>权利金税务性质</strong></td>
+            <td>META 个股期权权利金属于<span class="term" data-tip="资本利得（Capital Gain）：出售资本资产（如股票、期权）产生的收益。NRA 的资本利得在美国通常免征联邦预扣税，不同于属于 FDAP 收入的股息。">资本利得</span>，免征联邦预扣税</td>
+            <td>IBKR 不会对权利金进行预扣。已确认</td>
+            <td>无风险，但需保留台账供 CPA 核查</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>股息预扣税</strong></td>
+            <td>META 派息时自动预扣 <strong>30%</strong> 股息税</td>
+            <td>除息日前 3 天内禁止新开卖 Put 仓位，规避股息影响</td>
+            <td>这是不可规避的硬成本，需纳入收益测算</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><strong>离岸架构（大资金）</strong></td>
+            <td>净值 >$50 万 或 个人正股 >$6 万时，须通过<span class="term" data-tip="离岸架构：通过在低税率或税收中性司法管辖区（如 BVI、开曼群岛）注册的公司持有美国资产，以规避美国遗产税风险并优化税务结构。">BVI/开曼离岸公司</span>持有正股</td>
+            <td>需提前联系跨境律师 + CPA 联合设立，维护年费约 $3,000–$5,000</td>
+            <td>资产传承风险，税务合规风险</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>台账记录强制要求（每笔交易必填）</h3>
+    <div class="card">
+      <ul class="bullets">
+        <li>交易日期 / 合约代码 / 操作类型（开仓/平仓）/ 张数</li>
+        <li>权利金净收入或支出（美元）</li>
+        <li>税务标记：<code>权利金收入</code> / <code>接货成本调整</code> / <code>资本利得</code></li>
+        <li>CNY 折算金额：按交易当日中国人民银行中间价折算，用于境内税务申报</li>
+        <li>开仓时的市场状态（A/B/C/D）、<span class="term" data-tip="IVR（IV Rank）：当前隐含波动率在过去 52 周历史区间中的百分位排名。IVR=50 表示当前 IV 处于过去一年的中间水平。用于评估权利金的"贵贱"。">IVR</span>、<span class="term" data-tip="Delta（Δ）：期权价格随标的资产价格变动的敏感度。Delta=0.20 意味着标的每涨/跌 $1，期权价格相应涨/跌 $0.20。也近似代表期权到期时价内的概率。">Delta</span></li>
+        <li>EV 计算结果及合格状态</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 3: 资金分层
+  ═════════════════════════ -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <div>
+        <div class="section-title">资金分层与仓位架构</div>
+        <div class="section-subtitle">按资金规模动态适配 — META 总名义敞口上限 30%</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-icon">◈</span>
+      <div><strong>铁律：</strong><span class="term" data-tip="名义敞口（Nominal Exposure）：包含正股市值与期权 Delta 加权后的总等效股票敞口。例如持有 10 张 Delta=0.20 的 Put 相当于 -200 股的 Delta 敞口（负向）。">META 总名义敞口</span>（正股 + 期权 Delta 敞口）<strong>严禁超过账户净值的 30%</strong>。原版 50% 上限经实证验证过高，META 2022 年 2 月财报单日跌 26%，50% 敞口下单日净值损耗可达 13%，轻易触发 L3 紧急熔断。</div>
+    </div>
+
+    <!-- Tier 1 -->
+    <div class="tier-card tier-1">
+      <div class="tier-header">
+        <div class="tier-icon">🌱</div>
+        <div class="tier-header-info">
+          <div class="tier-range">$15 万 — $50 万</div>
+          <div class="tier-desc">积累期 · 学习与验证阶段</div>
+        </div>
+        <div style="margin-left:auto">
+          <span class="badge badge-green">小资金</span>
+        </div>
+      </div>
+      <div class="tier-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>存活第一，收益第二。<strong>强制使用 Put Spread</strong>，禁止裸卖 Put。</p>
+        <div class="alloc-bar-wrap">
+          <div class="alloc-row">
+            <span class="alloc-label">现金 + <span class="term" data-tip="SGOV：iShares 0-3 Month Treasury Bond ETF，持有极短期美国国债，收益率接近联邦基金利率，风险极低，常作为期权保证金的底层资产。">SGOV 短债</span></span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:65%;background:var(--green)"></div></div>
+            <span class="alloc-pct">≥65%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">期权保证金（Put Spread）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:25%;background:var(--blue)"></div></div>
+            <span class="alloc-pct">≤25%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">META 正股（个人账户）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:8%;background:var(--gold)"></div></div>
+            <span class="alloc-pct">≤$6万</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">尾部对冲</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:0.5%;background:var(--red)"></div></div>
+            <span class="alloc-pct">0.5%</span>
+          </div>
+        </div>
+        <ul class="bullets" style="font-size:13px">
+          <li>不使用杠杆；仅允许 Put Spread，同时持仓 ≤ 3 个</li>
+          <li>单笔最大风险 ≤ 净值 3%（约 $4,500–$15,000）</li>
+          <li>建议先进行至少 2 个财报周期的模拟交易（Paper Trading）再实盘</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tier 2 -->
+    <div class="tier-card tier-2">
+      <div class="tier-header">
+        <div class="tier-icon">📈</div>
+        <div class="tier-header-info">
+          <div class="tier-range">$50 万 — $500 万</div>
+          <div class="tier-desc">结构化增强期 · 稳定现金流阶段</div>
+        </div>
+        <div style="margin-left:auto">
+          <span class="badge badge-blue">中大资金</span>
+        </div>
+      </div>
+      <div class="tier-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>稳定现金流，可引入少量备兑 Call。超额正股须转至离岸账户。</p>
+        <div class="alloc-bar-wrap">
+          <div class="alloc-row">
+            <span class="alloc-label">现金 + SGOV 短债</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:45%;background:var(--green)"></div></div>
+            <span class="alloc-pct">≥45%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">期权保证金（价差组合）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:30%;background:var(--blue)"></div></div>
+            <span class="alloc-pct">≤30%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">META 正股（离岸持有）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:10%;background:var(--gold)"></div></div>
+            <span class="alloc-pct">≤10%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">尾部对冲预算</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:1%;background:var(--red)"></div></div>
+            <span class="alloc-pct">1%</span>
+          </div>
+        </div>
+        <ul class="bullets" style="font-size:13px">
+          <li>个人账户正股 ≤ $6 万；超额部分通过 BVI 离岸公司持有</li>
+          <li>引入<span class="term" data-tip="备兑看涨期权（Covered Call）：持有正股的同时卖出该股票的看涨期权，以收取权利金降低持仓成本。被称为"备兑"是因为有正股作为担保。">备兑 Call</span>（CC）策略，仅对离岸持有的正股执行</li>
+          <li>可开始使用 IBKR <span class="term" data-tip="投资组合保证金（Portfolio Margin）：基于整体组合净风险而非单一仓位计算保证金，通常比标准 Reg-T 模式节省 40%-60% 保证金占用。开启条件：账户净值 ≥ $110,000。">PM 模式</span>提高资金效率</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tier 3 -->
+    <div class="tier-card tier-3">
+      <div class="tier-header">
+        <div class="tier-icon">🏛</div>
+        <div class="tier-header-info">
+          <div class="tier-range">$500 万 — $1,000 万+</div>
+          <div class="tier-desc">机构化保险期 · 系统对冲阶段</div>
+        </div>
+        <div style="margin-left:auto">
+          <span class="badge badge-gold">大资金</span>
+        </div>
+      </div>
+      <div class="tier-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>单一标的集中度严格管控，对冲层必配，向家族办公室结构演进。</p>
+        <div class="alloc-bar-wrap">
+          <div class="alloc-row">
+            <span class="alloc-label">现金 + SGOV 短债</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:45%;background:var(--green)"></div></div>
+            <span class="alloc-pct">≥45%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">期权保证金</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:20%;background:var(--blue)"></div></div>
+            <span class="alloc-pct">≤20%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">META 正股（离岸）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:6%;background:var(--gold)"></div></div>
+            <span class="alloc-pct">≤6%</span>
+          </div>
+          <div class="alloc-row">
+            <span class="alloc-label">尾部对冲（必配）</span>
+            <div class="alloc-bar-bg"><div class="alloc-bar" style="width:4%;background:var(--red)"></div></div>
+            <span class="alloc-pct">3–5%</span>
+          </div>
+        </div>
+        <ul class="bullets" style="font-size:13px">
+          <li>META 总名义敞口（含所有账户）≤ 总净值 20%</li>
+          <li>对冲工具：META 远月<span class="term" data-tip="OTM Put（Out-of-The-Money Put）：行权价低于当前股价的看跌期权。深度 OTM Put 成本低廉，但提供极端下跌（黑天鹅）保护。">OTM Put</span> + QQQ Put + 少量 VIX Call</li>
+          <li>分层卖 Delta：0.10 / 0.15 / 0.25，形成多层次权利金收入</li>
+          <li>季度再平衡：若 META 敞口超限，必须减持或对冲</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 4: 决策引擎
+  ═════════════════════════ -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <div>
+        <div class="section-title">市场状态决策引擎</div>
+        <div class="section-subtitle">每周一美东时间 9:30 执行判定，决定本周操作系数</div>
+      </div>
+    </div>
+
+    <div id="s4a">
+      <h3>4.1 META 市场状态矩阵（趋势 + ADX 双因子确认）</h3>
+      <p>技术状态由价格与均线关系、<span class="term" data-tip="ADX（Average Directional Index，平均趋向指数）：衡量趋势强度的技术指标，范围 0-100。ADX>25 表明趋势明确，ADX<20 表明无明显趋势（震荡市）。由 Welles Wilder 开发。">ADX</span> 指标共同决定，防止在无方向的震荡市中产生误判。</p>
+
+      <div class="state-grid">
+        <div class="state-card state-a">
+          <div class="state-card-header">
+            <span class="state-badge">A</span>
+            <span class="state-name">强势上涨</span>
+            <span class="badge badge-green" style="margin-left:auto">1.0×</span>
+          </div>
+          <ul>
+            <li>股价 &gt; <span class="term" data-tip="MA20（20日移动平均线）：过去 20 个交易日收盘价的算术平均，反映股价短期趋势，是判断多空格局的核心参考线。">MA20</span> &gt; <span class="term" data-tip="MA50（50日移动平均线）：过去 50 个交易日收盘价的平均，反映中期趋势方向。价格在 MA50 上方通常被视为中期多头格局。">MA50</span>，MA20 斜率向上</li>
+            <li>ADX &gt; 25（趋势明确）</li>
+            <li>IVR &lt; 40</li>
+            <li>积极开仓，Put 行权价可上移</li>
+          </ul>
+        </div>
+        <div class="state-card state-b">
+          <div class="state-card-header">
+            <span class="state-badge">B</span>
+            <span class="state-name">震荡偏多</span>
+            <span class="badge badge-blue" style="margin-left:auto">0.8×</span>
+          </div>
+          <ul>
+            <li>股价 &gt; MA20，MA20 走平或缓升</li>
+            <li>ADX 15–25（趋势一般）</li>
+            <li>IVR 30–60</li>
+            <li>标准参数，正常执行</li>
+          </ul>
+        </div>
+        <div class="state-card state-c">
+          <div class="state-card-header">
+            <span class="state-badge">C</span>
+            <span class="state-name">震荡偏空</span>
+            <span class="badge badge-orange" style="margin-left:auto">0.5×</span>
+          </div>
+          <ul>
+            <li>股价 &lt; MA20，但 &gt; MA50</li>
+            <li>ADX 15–25</li>
+            <li>IVR 50–75</li>
+            <li><strong>强制使用价差结构</strong>，禁止裸卖 Put</li>
+          </ul>
+        </div>
+        <div class="state-card state-d">
+          <div class="state-card-header">
+            <span class="state-badge">D</span>
+            <span class="state-name">强势下跌</span>
+            <span class="badge badge-red" style="margin-left:auto">0×</span>
+          </div>
+          <ul>
+            <li>股价 &lt; MA20 &lt; MA50，MA20 向下</li>
+            <li>ADX &gt; 30（下跌趋势明确）</li>
+            <li>IVR &gt; 70</li>
+            <li><strong>全面禁止新开仓，管理存量仓位</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="s4b">
+      <h3>4.2 IVR 独立硬约束（优先级高于状态判断）</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>IVR 水平</th>
+              <th>含义解读</th>
+              <th>执行动作</th>
+              <th>开仓系数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-gray">&lt; 20</span></td>
+              <td>权利金极薄，卖方性价比极低</td>
+              <td>暂停裸卖 Put；仅允许极小仓位 Put Spread；等待 IV 回升</td>
+              <td><code>0.25×</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue">20 – 50</span></td>
+              <td>正常区间，统计优势稳定</td>
+              <td>按市场状态正常执行</td>
+              <td><code>1.0×</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">50 – 80</span></td>
+              <td>卖方黄金窗口，权利金丰厚</td>
+              <td>可积极开仓，系数可放大</td>
+              <td><code>1.0–1.2×</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">&gt; 80</span></td>
+              <td>市场恐慌期，统计优势消失，尾部风险急剧升高</td>
+              <td><strong>立即暂停</strong>所有新开卖方仓位；检查并补充现有仓位的对冲保护</td>
+              <td><code>0×</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="s4c">
+      <h3>4.3 事件风控前置（禁开仓日历）</h3>
+      <div class="callout danger">
+        <span class="callout-icon">🚫</span>
+        <div>以下场景期间，<strong>禁止新开任何卖方仓位</strong>。财报前 IV 已在爬升，卖方不占优；财报后 <span class="term" data-tip="IV Crush（波动率崩塌）：财报或重大事件发布后，隐含波动率迅速从高位回落至正常水平，导致期权时间价值大幅缩水。对期权买方不利，对卖方有利，但需要正确的时机选择。">IV Crush</span> 最剧烈，最佳时机是财报发布后第 2 个交易日起。</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>事件类型</th><th>禁开仓窗口</th><th>理由</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>META 季报发布</td>
+              <td><strong>财报前 10 个交易日 — 财报发布后第 1 个交易日</strong></td>
+              <td>IV 爬升期卖方无优势；财报当日跳空风险极高；5 天窗口不足</td>
+            </tr>
+            <tr>
+              <td>AI/重大产品发布会</td>
+              <td>发布前 5 个交易日</td>
+              <td>不确定性高，方向和幅度均无法预判</td>
+            </tr>
+            <tr>
+              <td>FTC/欧盟监管重大公告</td>
+              <td>公告日当天及前 1 日</td>
+              <td>单日可导致 ±10% 波动，风险远超正常期权定价</td>
+            </tr>
+            <tr>
+              <td>扎克伯格重大讲话 / AI 战略公告</td>
+              <td>前 2 个交易日</td>
+              <td>事件驱动风险，IV 定价可能未充分反映</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 5: 核心策略
+  ═════════════════════════ -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <div>
+        <div class="section-title">核心交易策略</div>
+        <div class="section-subtitle">Put Spread + Covered Call 双引擎体系</div>
+      </div>
+    </div>
+
+    <div id="s5a">
+      <h3>5.1 策略一：Bull Put Spread（看跌价差）— 核心首选</h3>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <div><strong><span class="term" data-tip="Bull Put Spread（牛市看跌价差）：同时卖出较高行权价的 Put（收权利金）+ 买入较低行权价的 Put（付权利金），净收取权利金。最大盈利 = 净权利金收入；最大亏损 = 价差宽度 − 净权利金。">Bull Put Spread</span></strong>：通过同时卖出较高行权价 Put（K1）和买入较低行权价 Put（K2），将最大亏损限制在价差宽度之内。<strong>$15 万以下资金强制使用，禁止裸卖 Put。</strong></div>
+      </div>
+
+      <div id="s5d">
+        <h4>开仓 Delta 矩阵（<span class="term" data-tip="DTE（Days to Expiration）：期权距到期日的剩余天数。通常 30-45 天的期权具有最优的 Theta 衰减速率，是卖方开仓的"甜蜜区间"。">DTE</span> 30–45 天）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>股价位置（相对 MA20）</th>
+                <th>状态 A</th>
+                <th>状态 B</th>
+                <th>状态 C</th>
+                <th>状态 D</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>高位区（&gt; MA20 × 1.05）</td>
+                <td>0.10 – 0.15</td>
+                <td>0.12 – 0.18</td>
+                <td><span class="text-red">不开仓</span></td>
+                <td><span class="text-red">禁止</span></td>
+              </tr>
+              <tr>
+                <td>中位区（MA20 ± 5%）</td>
+                <td>0.12 – 0.18</td>
+                <td>0.15 – 0.22</td>
+                <td>0.18 – 0.25</td>
+                <td><span class="text-red">禁止</span></td>
+              </tr>
+              <tr>
+                <td>低位区（MA20 × 0.85 – 0.95）</td>
+                <td>0.15 – 0.20</td>
+                <td>0.18 – 0.25</td>
+                <td>0.22 – 0.28</td>
+                <td><span class="text-red">禁止</span></td>
+              </tr>
+              <tr>
+                <td>极端区（&lt; MA20 × 0.85）</td>
+                <td><span class="text-red">暂停</span></td>
+                <td><span class="text-red">暂停</span></td>
+                <td>Delta &lt; 0.18，<strong>必须价差</strong></td>
+                <td><span class="text-red">禁止</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>价差宽度矩阵（改为股价百分比，适应不同价格区间）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>IVR 水平</th>
+                <th>价差宽度（股价百分比）</th>
+                <th>约合金额示例（$650 股价）</th>
+                <th>权利金/最大亏损比目标</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-gray">IVR &lt; 30</span></td>
+                <td>1.5% – 2.0%</td>
+                <td>约 $10–$13</td>
+                <td>15% – 25%</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">IVR 30 – 60</span></td>
+                <td>2.0% – 3.5%</td>
+                <td>约 $13–$23</td>
+                <td>20% – 35%</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">IVR &gt; 60</span></td>
+                <td>3.5% – 5.0%</td>
+                <td>约 $23–$33</td>
+                <td>25% – 40%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h4>开仓执行流程</h4>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <div class="flow-step-body">
+            <strong>确认市场状态与 IVR</strong>
+            <span>状态必须为 A/B/C；IVR 须 ≥ 20；无事件禁开仓期；行权价距当前股价 ≥ 8%</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <div class="flow-step-body">
+            <strong>选择行权价 K1（卖出腿）</strong>
+            <span>根据 Delta 矩阵选定，确保 Delta 在目标区间内，且距现价 ≥ 8% 的<span class="term" data-tip="OTM（Out-of-The-Money，价外）：Put 期权行权价低于当前股价，或 Call 期权行权价高于当前股价。价外期权没有内在价值，全部由时间价值构成。">OTM</span> 水平</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <div class="flow-step-body">
+            <strong>选择保护腿 K2（买入腿）</strong>
+            <span>K2 = K1 − 价差宽度（根据 IVR 矩阵确定）；小资金账户强制执行此步骤</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <div class="flow-step-body">
+            <strong>计算修正版 EV，达标方可开仓</strong>
+            <span>EV &gt; 0 且 EV / 权利金 &gt; 25%（详见第 5.3 节公式）</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">5</div>
+          <div class="flow-step-body">
+            <strong>确定张数（分批执行）</strong>
+            <span>单批名义敞口 = 净值 × 8% × 仓位系数；60% 张数限价单立即执行，剩余 40% 次个交易日补仓</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">6</div>
+          <div class="flow-step-body">
+            <strong>设置 GTC 止盈单</strong>
+            <span>权利金衰减 50% 时自动平仓（<span class="term" data-tip="GTC（Good Till Canceled）：有效期至取消的挂单，挂单后持续有效，直到被成交或主动取消，无需每日重新挂单。">GTC</span> 单）。高 IVR 环境（&gt;60）可放宽至 60% 止盈。持仓超过 21 天仍未达止盈目标，主动评估是否平仓</span>
+          </div>
+        </div>
+      </div>
+
+      <h4>止损 / Roll 规则</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>情形</th><th>触发条件</th><th>操作</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>正常止盈</td>
+              <td>权利金衰减 50%</td>
+              <td>立即市价或限价平仓，锁定利润，不持仓至<span class="term" data-tip="到期日（Expiration Date）：期权合约失效的日期。临近到期时 Gamma 急剧增大，同等价格变动对 Delta 的影响放大，风险管理难度提升。">到期日</span></td>
+            </tr>
+            <tr>
+              <td>价格逼近行权价</td>
+              <td>股价距 K1 &lt; 5%</td>
+              <td>评估<span class="term" data-tip="Roll（移仓/展期）：平仓现有期权仓位的同时，开立更远到期日或不同行权价的新仓位。Credit Roll 是净收权利金的展期；Debit Roll 是净付权利金的展期，通常为避免被强制行权而采用。">Roll</span>：优先向更低行权价 + 更远 DTE 的 Credit Roll；若无法净收款，允许小额 Debit Roll（&lt; 原权利金 30%）避免强制行权</td>
+            </tr>
+            <tr>
+              <td>极端行情止损</td>
+              <td>浮亏达到最大亏损 × 80%</td>
+              <td>市价平仓，接受损失。禁止"扛单"等待反弹</td>
+            </tr>
+            <tr>
+              <td>DTE 临近到期</td>
+              <td>DTE &lt; 14 天</td>
+              <td><span class="term" data-tip="Gamma（Γ）：Delta 随标的资产价格变动的变化速率。临近到期时 Gamma 急速增大，意味着小幅价格变动可能导致 Delta 大幅变化，风险急剧上升。">Gamma</span> 风险急剧上升，强制减仓或提前平仓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div id="s5b">
+      <h3>5.2 策略二：Covered Call（备兑看涨）— 持股增强</h3>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠</span>
+        <div><strong>遗产税硬约束：</strong>此策略<strong>仅当</strong>通过<strong>离岸公司账户</strong>持有 META 正股时，才可大规模执行。个人账户正股市值严禁超过 $60,000。</div>
+      </div>
+
+      <h4>开仓参数（DTE 30–40 天）</h4>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>股价位置（相对 MA20）</th>
+              <th>状态 A</th>
+              <th>状态 B</th>
+              <th>状态 C</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>高位区（&gt; MA20 × 1.05）</td>
+              <td>0.12 – 0.18</td>
+              <td>0.15 – 0.22</td>
+              <td>仅维护存量</td>
+            </tr>
+            <tr>
+              <td>正常区（MA20 ± 5%）</td>
+              <td>0.15 – 0.20</td>
+              <td>0.18 – 0.25</td>
+              <td>0.22 – 0.30</td>
+            </tr>
+            <tr>
+              <td>低位区（&lt; MA20 × 0.95）</td>
+              <td>0.18 – 0.25</td>
+              <td>0.22 – 0.30</td>
+              <td>0.25 – 0.35</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>向上滚动（Roll Up）规则</h4>
+      <ul class="bullets">
+        <li><strong>触发条件：</strong>META 股价上涨至距行权价 &lt; 5%，且市场状态为 A 或 B，且 ADX &gt; 25</li>
+        <li><strong>优先操作：</strong>Credit Roll（新行权价 ≥ 当前股价 + 5%，<strong>注意：</strong>强势 A 状态下允许将"≥8%"放宽至"≥5%"，减少踏空）</li>
+        <li><strong>例外允许：</strong>当股价强势上涨时，允许 Debit Roll（净付权利金），付费上限 ≤ 原权利金的 30%，避免核心持仓被<span class="term" data-tip="行权（Exercise / Assignment）：期权买方行使权利，卖方（被指派）须按约定行权价买入或卖出标的资产。备兑 Call 被行权意味着持有的股票将被以行权价强制卖出。">强制行权</span></li>
+        <li><strong>强势市场策略：</strong>状态 A 下，仅对 50% 的正股持仓卖出 Call，保留另外 50% 完整享受上涨收益</li>
+      </ul>
+
+      <h4>被行权后处理</h4>
+      <ul class="bullets">
+        <li>正股被行权卖出后，于 1–3 个交易日内评估是否以现价重新买入（通过离岸账户）</li>
+        <li>重新买入后立即开始新一轮低 Delta Covered Call，降低重建成本</li>
+        <li>被行权属于策略计划内的成功，<strong>禁止追高重买</strong></li>
+      </ul>
+    </div>
+
+    <hr class="divider">
+
+    <div id="s5c">
+      <h3>5.3 修正版 EV 公式（META 左尾校准）</h3>
+
+      <p>标准 EV 公式直接使用 <span class="term" data-tip="Delta 作为行权概率的代理：理论上，期权的 Delta 值（绝对值）近似等于其到期时价内的概率。但由于 META 的左尾肥厚分布，实际行权概率比 Delta 高约 20%-30%，必须引入修正系数以避免低估风险。">Delta 近似概率</span>，忽略 META 肥尾特性，系统性低估左尾风险。本版本引入修正系数。</p>
+
+      <div class="formula-box">
+        <div><span style="color:var(--text-muted)">// Step 1: 修正行权概率（META 左尾肥尾系数 1.20）</span></div>
+        <div>P_adjusted = |Delta| × 1.20</div>
+        <br>
+        <div><span style="color:var(--text-muted)">// Step 2: 计算修正版 EV</span></div>
+        <div>EV = (净权利金 × 100) × (1 − P_adjusted)</div>
+        <div style="padding-left:32px">−  (最大亏损 × P_adjusted)</div>
+        <br>
+        <div><span style="color:var(--text-muted)">// Step 3: 合格判断</span></div>
+        <div>合格条件：EV &gt; 0  <span style="color:var(--text-muted)">AND</span>  EV / (净权利金 × 100) &gt; <span style="color:var(--green)">25%</span></div>
+        <div>财报窗口后第 2–10 天：门槛提升至 <span style="color:var(--orange)">30%</span></div>
+        <br>
+        <div class="comment">示例：卖出 META $600P，收权利金 $3.80；买入 $585P，付权利金 $2.20</div>
+        <div class="comment">净权利金 = $1.60 × 100 = $160；最大亏损 = ($600-$585-$1.60) × 100 = $1,340</div>
+        <div class="comment">假设 Delta = 0.20，P_adjusted = 0.24</div>
+        <div class="comment">EV = $160 × 0.76 − $1,340 × 0.24 = $121.6 − $321.6 = <span style="color:var(--red)">−$200 ❌ 不合格</span></div>
+        <div class="comment">→ 权利金需 ≥ 最大亏损 × P_adjusted / (1 − P_adjusted) = $1,340 × 0.24 / 0.76 ≈ $422 才合格</div>
+        <div class="comment">→ 即净权利金需 ≥ $4.22 或缩窄价差宽度</div>
+      </div>
+
+      <div class="callout gold">
+        <span class="callout-icon">◆</span>
+        <div><strong>实践建议：</strong>将 EV 计算制成 Excel 表格，每次开仓前输入权利金、Delta、价差宽度即可自动判断是否合格。这是避免情绪化开仓的最有效工具。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 6: 三级熔断
+  ═════════════════════════ -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <div>
+        <div class="section-title">三级熔断机制</div>
+        <div class="section-subtitle">触发即执行，无例外 — 阈值已较原版下调以预留强平缓冲</div>
+      </div>
+    </div>
+
+    <p>为防止<span class="term" data-tip="保证金追缴（Margin Call）：当账户保证金不足以覆盖持仓风险时，券商要求追加保证金。若无法及时补充，券商将强制平仓（通常以市价），往往在最糟糕的时机出现。">保证金追缴</span>在极端行情下瞬间触发强制平仓，本版本将熔断阈值较原版下调约 15%，确保系统有足够缓冲空间执行主动风控。</p>
+
+    <div class="circuit-level l1">
+      <div class="circuit-header">
+        <div class="circuit-dot"></div>
+        <h4>L1 · 黄色预警</h4>
+        <span class="badge badge-yellow" style="margin-left:auto">24小时自动解除</span>
+      </div>
+      <div class="circuit-body">
+        <div class="trigger-list">
+          <span class="label">触发条件（满足任一）</span>
+          <li>META 单日跌幅 &gt; 5%</li>
+          <li>账户浮亏超净值 5%</li>
+          <li>保证金使用率 &gt; <strong>40%</strong>（原版 55%，已下调）</li>
+        </div>
+        <div class="action-list">
+          <span class="label">强制执行动作</span>
+          <li>立即停止所有新开卖方仓位</li>
+          <li>检查所有 Put 距行权价距离，评估被击穿风险</li>
+          <li>24 小时后若无进一步恶化，自动解除预警</li>
+        </div>
+      </div>
+    </div>
+
+    <div class="circuit-level l2">
+      <div class="circuit-header">
+        <div class="circuit-dot"></div>
+        <h4>L2 · 橙色警戒</h4>
+        <span class="badge badge-orange" style="margin-left:auto">24小时内必须完成</span>
+      </div>
+      <div class="circuit-body">
+        <div class="trigger-list">
+          <span class="label">触发条件（满足任一）</span>
+          <li>META 3 日累计跌幅 &gt; 12%</li>
+          <li>保证金使用率 &gt; <strong>50%</strong>（原版 65%，已下调）</li>
+          <li>任意卖 Put 价差的保护腿（K2）被击穿</li>
+        </div>
+        <div class="action-list">
+          <span class="label">强制执行动作（24小时内）</span>
+          <li>平仓 50% 的备兑 Covered Call</li>
+          <li>止损所有已价内（<span class="term" data-tip="ITM（In-The-Money，价内）：Put 期权行权价高于当前股价（或 Call 期权行权价低于当前股价），具有内在价值，面临被行权的风险。">ITM</span>）的 Put 价差</li>
+          <li>买入 QQQ 或 SPY 远月 Put 作为系统性对冲</li>
+          <li>将保证金使用率压降至 40% 以下</li>
+        </div>
+      </div>
+    </div>
+
+    <div class="circuit-level l3">
+      <div class="circuit-header">
+        <div class="circuit-dot"></div>
+        <h4>L3 · 红色紧急</h4>
+        <span class="badge badge-red" style="margin-left:auto">立即执行 · 强制停盘30天</span>
+      </div>
+      <div class="circuit-body">
+        <div class="trigger-list">
+          <span class="label">触发条件（满足任一）</span>
+          <li>META 5 日累计跌幅 &gt; 18%（原版 20%，已下调）</li>
+          <li>收到券商保证金追缴通知</li>
+          <li>账户浮亏超净值 <strong>12%</strong>（原版 15%，已下调）</li>
+        </div>
+        <div class="action-list">
+          <span class="label">强制执行动作（立即）</span>
+          <li><strong>市价平仓所有期权仓位</strong>（不等待反弹，不讨价还价）</li>
+          <li>全部资金转入 SGOV / 现金，停止一切市场操作</li>
+          <li><strong>强制停盘至少 30 个日历日</strong></li>
+          <li>停盘期满后须经本操作手册系统审查才可恢复</li>
+        </div>
+      </div>
+    </div>
+
+    <h3>单日跳空专项应急（META 特有风险）</h3>
+    <div class="callout danger">
+      <span class="callout-icon">⚡</span>
+      <div><strong>极端情形：</strong>META 历史上曾出现单日跳空跌幅 &gt; 25%（如 2022 年 2 月财报后 -26.4%）。此时 25% 下跌切换机制（见第 7 节）的"T+1 执行"已无意义，必须在开盘后直接执行：
+        <br><br>
+        <strong>单日跌 &gt; 8% 立即触发 L2 级操作</strong>（而非等到 3 日累计 12%），24 小时内强制减仓并补充对冲。</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 7: 25% 切换
+  ═════════════════════════ -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <div>
+        <div class="section-title">25% 下跌切换机制</div>
+        <div class="section-subtitle">策略灵魂 — 将极端回撤转化为低成本建仓机会</div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">◆</span>
+      <div><strong>核心认知：</strong>META 从近期高点下跌超过 25% 时，期权卖方的统计优势已不复存在，继续卖方策略是在<span class="term" data-tip="负期望价值（Negative EV）：期望收益为负的操作，即从长期来看必然亏损。极端下跌中，IV 飙升使买方期权获得超额回报，此时卖方不具备统计优势。">负 EV</span> 环境中操作。此时应切换为"保存实力 + 等待右侧"模式。</div>
+    </div>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">触发</div>
+        <div class="flow-step-body">
+          <strong>META 从近期高点（滚动 60 日最高价）下跌超过 25%</strong>
+          <span>触发当日即进入切换流程，不等次日</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">T+1</div>
+        <div class="flow-step-body">
+          <strong>市价平仓所有卖方仓位（Put 价差 + 备兑 Call）</strong>
+          <span>接受损失，锁定状态，停止一切卖方操作</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">等待</div>
+        <div class="flow-step-body">
+          <strong>等待企稳信号（全部满足）</strong>
+          <span>① 连续 3 个交易日股价不再创新低 ② META 的 IV / IVR 从高点回落 ≥ 20% ③ 大盘（QQQ）日线止跌</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">重建</div>
+        <div class="flow-step-body">
+          <strong>分批建仓 + 低 Delta 备兑</strong>
+          <span>将原计划"接货"资金分 3 批买入 META 正股（通过离岸账户，每批间隔 5–7 天）；立即开始低 Delta（&lt; 0.12）备兑 Call 降低成本</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">恢复</div>
+        <div class="flow-step-body">
+          <strong>满足以下所有条件后，恢复卖方策略</strong>
+          <span>① 股价从最低点反弹 ≥ 20% ② 股价站上 MA20 并维持 3 个交易日 ③ IVR 回落至 50 以下 ④ 市场状态重新进入 A 或 B</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 8: 尾部对冲
+  ═════════════════════════ -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <div>
+        <div class="section-title">尾部对冲配置</div>
+        <div class="section-subtitle">用小成本换取"不会爆仓"的保障</div>
+      </div>
+    </div>
+
+    <p>本版本新增必配尾部对冲层（原版缺失），预算为<strong>净值的 3%–5%</strong>。对冲成本是策略的保险费，不应视为损失。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>对冲工具</th>
+            <th>作用</th>
+            <th>配置比例</th>
+            <th>参数</th>
+            <th>滚动周期</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>META 远月 OTM Put</strong></td>
+            <td>对冲 META 个股黑天鹅（监管、跳空、财报）</td>
+            <td>净值 1%–2%</td>
+            <td>Delta ≈ 0.05–0.10；DTE ≥ 90 天</td>
+            <td>每季度滚动一次</td>
+          </tr>
+          <tr>
+            <td><strong>QQQ / SPY 远月 Put</strong></td>
+            <td>对冲科技股系统性崩盘（相关性高）</td>
+            <td>净值 1%–2%</td>
+            <td>Delta ≈ 0.10；DTE ≥ 60 天</td>
+            <td>每季度滚动一次</td>
+          </tr>
+          <tr>
+            <td><strong>VIX Call（大资金可选）</strong></td>
+            <td>对冲波动率急剧飙升，与 Put 结合形成"尾部套利"</td>
+            <td>净值 0%–1%</td>
+            <td>在 IVR &lt; 30 时配置；VIX &lt; 15 时加倍</td>
+            <td>月度评估</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>对冲动态调整规则</h3>
+    <div class="two-col">
+      <div class="card">
+        <h4>何时增加对冲</h4>
+        <ul class="bullets">
+          <li>IVR &lt; 30（对冲成本低廉，此时加倍配置性价比极高）</li>
+          <li>进入财报前 15 天窗口</li>
+          <li>市场状态由 B 转向 C</li>
+          <li>META 股价创近 90 日新高（潜在回调风险上升）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>何时减少对冲</h4>
+        <ul class="bullets">
+          <li>IVR &gt; 60（对冲成本过高，可临时减半）</li>
+          <li>已触发 L3 熔断，所有仓位已平，无需对冲</li>
+          <li>已进入 25% 切换模式，主动保护已到位</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 9: 月度 SOP
+  ═════════════════════════ -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <div>
+        <div class="section-title">月度标准化操作 SOP</div>
+        <div class="section-subtitle">标准执行日：每月第二个周二 · 美东时间 9:30 起</div>
+      </div>
+    </div>
+
+    <div class="sop-steps">
+      <div class="sop-step">
+        <div class="sop-step-icon">📊</div>
+        <div class="sop-step-content">
+          <strong><span class="time-badge">20 min</span>环境分析</strong>
+          <p>① 判定 META 市场状态（A/B/C/D）<br>
+          ② 记录当前 IVR（可使用 IBKR TWS 或 OptionVue）<br>
+          ③ 查询 ADX 值，确认趋势强度<br>
+          ④ 检查未来 15 天财报日历和重大事件<br>
+          ⑤ 确认保证金使用率和账户健康状态</p>
+        </div>
+      </div>
+
+      <div class="sop-step">
+        <div class="sop-step-icon">✏️</div>
+        <div class="sop-step-content">
+          <strong><span class="time-badge">30 min</span>制定方案</strong>
+          <p>① 核心层：根据状态和 Delta 矩阵，选定 1–3 个 Put Spread 行权价；计算修正版 EV，仅保留 EV &gt; 25% 的方案<br>
+          ② 备兑层：若离岸账户有正股，按矩阵选择备兑行权价（仅 CC 策略）<br>
+          ③ 对冲层：检查尾部 Put 持仓状态，评估是否需要滚动或补充</p>
+        </div>
+      </div>
+
+      <div class="sop-step">
+        <div class="sop-step-icon">⚡</div>
+        <div class="sop-step-content">
+          <strong><span class="time-badge">25 min</span>执行交易</strong>
+          <p>① IBKR 优先使用<strong>价差组合单（Combo Order）</strong>，避免两腿分开下单产生的滑点风险<br>
+          ② <strong>禁止市价单</strong>，始终使用限价单<br>
+          ③ 为所有新仓位立即设置 50% GTC 止盈单<br>
+          ④ 对存量仓位检查是否触发滚动条件</p>
+        </div>
+      </div>
+
+      <div class="sop-step">
+        <div class="sop-step-icon">🛡</div>
+        <div class="sop-step-content">
+          <strong><span class="time-badge">10 min</span>风控核查</strong>
+          <p>① 总名义敞口 ≤ 净值 30% ✓<br>
+          ② 保证金使用率 &lt; 40% ✓<br>
+          ③ 个人账户 META 正股市值 ≤ $60,000 ✓<br>
+          ④ 尾部对冲仓位有效期 &gt; 30 天 ✓</p>
+        </div>
+      </div>
+
+      <div class="sop-step">
+        <div class="sop-step-icon">📝</div>
+        <div class="sop-step-content">
+          <strong><span class="time-badge">10 min</span>台账更新</strong>
+          <p>录入所有新开仓位信息，包含 EV 计算结果、税务标记、CNY 折算金额，标记本月市场状态归因。</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>每周快速检查（每周一开盘，约 10 分钟）</h3>
+    <ul class="checklist">
+      <li class="required">重新判定市场状态，与上周相比是否发生变化</li>
+      <li class="required">检查各持仓 Delta 是否超出目标区间，评估是否需要调整</li>
+      <li class="required">保证金使用率检查，确保 &lt; 40%</li>
+      <li class="required">确认本周是否进入任何事件禁开仓窗口</li>
+    </ul>
+
+    <h3>每日快速扫描（约 2 分钟）</h3>
+    <ul class="checklist">
+      <li>META 单日跌幅是否 &gt; 5%（L1 预警触发）</li>
+      <li>是否收到 IBKR 保证金预警邮件</li>
+      <li>GTC 止盈单是否被触发（如有，更新台账）</li>
+    </ul>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 10: 台账模板
+  ═════════════════════════ -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <div>
+        <div class="section-title">绩效台账模板</div>
+        <div class="section-subtitle">机构级记录标准 — 每笔交易必填，CPA 核查必需</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>字段</th>
+            <th>填写示例</th>
+            <th>用途说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="log-field">开仓日期</span></td>
+            <td>2026-04-15（美东时间）</td>
+            <td>时效性追踪、税务年度归属</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">账户类型</span></td>
+            <td>IBKR 个人 / IBKR (BVI 离岸)</td>
+            <td>税务 / 遗产税归属区分</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">策略类型</span></td>
+            <td>Put Spread / Covered Call</td>
+            <td>收益归因分析</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">合约代码</span></td>
+            <td>META 260516P600/585</td>
+            <td>唯一合约标识（到期日+类型+行权价）</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">张数</span></td>
+            <td>10 张</td>
+            <td>交易规模</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">净权利金/张</span></td>
+            <td>$1.65 （卖 $3.85 − 买 $2.20）</td>
+            <td>实际净收入，需扣除<span class="term" data-tip="Bid-Ask Spread（买卖价差）：市场买价（Bid）与卖价（Ask）之间的价差，是交易的隐性成本。对于流动性较差的期权，价差可能占权利金的 20%+。">买卖价差</span>和佣金</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">开仓时 Delta</span></td>
+            <td>-0.18（卖出腿）</td>
+            <td>风险评估、EV 计算基础</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">开仓时 IVR</span></td>
+            <td>58%</td>
+            <td>波动率环境记录，用于事后绩效归因</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">市场状态</span></td>
+            <td>B（震荡偏多）</td>
+            <td>开仓决策依据追溯</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">EV 核查</span></td>
+            <td>EV = $210，EV率 = 28.4% ✓</td>
+            <td><strong>纪律凭证，必须填写</strong></td>
+          </tr>
+          <tr>
+            <td><span class="log-field">平仓日期/价格</span></td>
+            <td>2026-05-08 / $0.78</td>
+            <td>盈亏确认</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">净盈亏（USD）</span></td>
+            <td>+$870（10张 × $0.87 × 100）</td>
+            <td>绩效统计</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">税务标记</span></td>
+            <td>权利金收入（资本利得）</td>
+            <td>CPA 税务申报必需</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">CNY 折算</span></td>
+            <td>¥6,264（汇率 7.20）</td>
+            <td>中国境内税务申报备用</td>
+          </tr>
+          <tr>
+            <td><span class="log-field">月度策略贡献</span></td>
+            <td>本笔 = 持仓成本降低 1.4%</td>
+            <td>量化策略对降低持仓成本的贡献</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>季度绩效复盘指标</h3>
+    <div class="card-grid-3">
+      <div class="stat-card">
+        <div class="stat-label">月度胜率目标</div>
+        <div class="stat-value">&gt; 70%</div>
+        <div class="stat-note">低于此值需检查 EV 过滤执行情况</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">平均盈亏比目标</div>
+        <div class="stat-value">&gt; 2.5</div>
+        <div class="stat-note">盈利笔均盈 / 亏损笔均亏</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">年化持仓成本降低</div>
+        <div class="stat-value">10–20%</div>
+        <div class="stat-note">权利金收入 / META 持仓市值</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 11: 纪律红线
+  ═════════════════════════ -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <div>
+        <div class="section-title">绝对纪律红线</div>
+        <div class="section-subtitle">违反任意一条，强制停盘 2 周并提交书面复盘</div>
+      </div>
+    </div>
+
+    <div class="redlines">
+      <div class="redline-item">
+        <span class="redline-num">RL-01</span>
+        <span class="redline-text"><strong>在市场状态 D 或 IVR &gt; 80 时，卖出任何 Put 期权。</strong><br>危机时期统计优势消失，卖方处于系统性劣势，此时收取的权利金无法补偿实际承担的风险。</span>
+      </div>
+      <div class="redline-item">
+        <span class="redline-num">RL-02</span>
+        <span class="redline-text"><strong>修正版 EV 未达标（&lt; 25%），仍强行开仓。</strong><br>这是情绪主导决策的最明确信号，打破 EV 过滤等同于放弃策略的数学根基。</span>
+      </div>
+      <div class="redline-item">
+        <span class="redline-num">RL-03</span>
+        <span class="redline-text"><strong>为弥补亏损而超出 30% 名义敞口上限加仓（"摊平"或"赌翻"）。</strong><br>期权卖方账户爆仓的首要原因，在极端行情中杠杆式加仓将使亏损呈指数级扩大。</span>
+      </div>
+      <div class="redline-item">
+        <span class="redline-num">RL-04</span>
+        <span class="redline-text"><strong>个人账户持有 META 正股市值超过 $60,000，且未在 5 个交易日内处理。</strong><br>对遗产税风险的严重漠视，可能导致高达 40% 的资产被征税。</span>
+      </div>
+      <div class="redline-item">
+        <span class="redline-num">RL-05</span>
+        <span class="redline-text"><strong>财报发布前 10 个交易日内，开立新的卖方仓位。</strong><br>财报期 IV 急剧攀升，已有仓位的 Delta 可能发生剧烈变化，此时新开仓成本极高且风险不对称。</span>
+      </div>
+      <div class="redline-item">
+        <span class="redline-num">RL-06</span>
+        <span class="redline-text"><strong>熔断机制触发后，拒不执行规定的风控动作，以"等待反弹"为由拖延。</strong><br>熔断机制的价值在于机械执行，任何理性化拖延都将使系统性风控形同虚设。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════
+       SECTION 12: 应急预案
+  ═════════════════════════ -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <div>
+        <div class="section-title">应急预案联络表</div>
+        <div class="section-subtitle">明确各情境下的第一动作与责任归属</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>触发情境</th>
+            <th>第一动作</th>
+            <th>第二动作</th>
+            <th>时限</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>收到 Margin Call</strong></td>
+            <td>立即存入现金至保证金充足，或市价平仓 50% 期权</td>
+            <td>联系 IBKR 客服（+1-877-442-2757）确认保证金要求；禁止在保证金不足期间开立任何新仓位</td>
+            <td>当天收市前</td>
+          </tr>
+          <tr>
+            <td><strong>财报大幅不及预期（单日跌 &gt; 15%）</strong></td>
+            <td>不要在开盘前 30 分钟下任何单；等待价格稳定后执行 L2/L3 操作</td>
+            <td>评估 25% 下跌切换机制是否触发；通知 CPA 准备税务损失记录</td>
+            <td>当日盘中</td>
+          </tr>
+          <tr>
+            <td><strong>W-8BEN 即将到期或已过期</strong></td>
+            <td>立即暂停所有期权交易，避免权利金被预扣</td>
+            <td>登录 IBKR 账户管理页面，重新提交 W-8BEN；通常 1–3 个工作日生效</td>
+            <td>24 小时内</td>
+          </tr>
+          <tr>
+            <td><strong>离岸架构变更（公司注销/法律变动）</strong></td>
+            <td>立即暂停离岸账户的正股买卖</td>
+            <td>联系跨境律师确认税务影响；评估是否需要紧急减持正股至 $6 万以下</td>
+            <td>5 个交易日内</td>
+          </tr>
+          <tr>
+            <td><strong>IBKR 系统故障（无法下单）</strong></td>
+            <td>电话联系 IBKR 交易台（+1-312-542-6901）下达语音指令</td>
+            <td>记录通话时间和指令内容；风控操作不得以"系统故障"为由延迟</td>
+            <td>立即</td>
+          </tr>
+          <tr>
+            <td><strong>META 宣布重大并购或被收购传闻</strong></td>
+            <td>暂停所有新开仓；评估持仓 Delta 变化</td>
+            <td>等待官方确认；并购通常推高股价，需检查备兑 Call 是否需要 Roll Up</td>
+            <td>当日</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>关键联系方式</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>IBKR 客服</h4>
+        <ul class="bullets">
+          <li>交易台（紧急下单）：+1-312-542-6901</li>
+          <li>客服（保证金问题）：+1-877-442-2757</li>
+          <li>在线客服：ibkr.com → Help Center</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>专业顾问（须事先委托）</h4>
+        <ul class="bullets">
+          <li>跨境 CPA：负责 W-8BEN、税务台账、年度申报</li>
+          <li>美国税务律师：负责遗产税规划、离岸架构合规</li>
+          <li>BVI 注册代理：负责离岸公司年度维护与申报</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 策略信条 -->
+  <div class="card" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.04);text-align:center;padding:36px 40px;margin-bottom:32px">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">策略信条</div>
+    <p style="font-family:'Playfair Display',serif;font-size:19px;color:var(--text-primary);line-height:1.7;font-style:italic;max-width:640px;margin:0 auto">
+      "我们不是赌财报的投机客。我们是 META 的长期股东，通过向市场出售保险，将持仓成本每年降低 10%–20%。偶尔的股价大跌是我们低价加仓的机会，偶尔的大涨是我们阶段性盈利的兑现。坚持系统，让概率和时间为我们工作。"
+    </p>
+  </div>
+
+  <!-- 免责声明 -->
+  <div class="disclaimer">
+    <strong>免责声明</strong><br>
+    本操作手册基于 META Platforms Inc. 历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。META 受监管变化、业绩表现、行业竞争、技术迭代等因素影响，可能出现超出历史经验的极端波动。<br><br>
+    本手册所涉及的全部税务处理方式、遗产税规划、离岸公司架构，须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
+    <strong>版本：V3.0 · 综合优化版 · 2026 年 4 月 · 客户内部文件 · 禁止对外传阅</strong>
+  </div>
+
+</main>
+</div>
+
+<script>
+  // Smooth active nav highlighting
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.style.borderLeftColor = 'transparent';
+          item.style.background = '';
+          item.style.color = '';
+        });
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) {
+          active.style.borderLeftColor = 'var(--gold)';
+          active.style.background = 'var(--gold-dim)';
+          active.style.color = 'var(--gold-light)';
+        }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

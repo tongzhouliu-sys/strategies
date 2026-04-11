@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全球期权卖方波动率策略 · 综合操作手册 V1.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  --ink: #0d1117;
+  --ink2: #1a2030;
+  --ink3: #252d3d;
+  --line: #2a3350;
+  --line2: #3d4f70;
+  --gold: #c8973a;
+  --gold-soft: #e8b85a;
+  --gold-dim: rgba(200,151,58,0.12);
+  --green: #1a9e6e;
+  --green-dim: rgba(26,158,110,0.12);
+  --red: #c13535;
+  --red-dim: rgba(193,53,53,0.12);
+  --amber: #c47d1a;
+  --amber-dim: rgba(196,125,26,0.12);
+  --blue: #2a7ab5;
+  --blue-dim: rgba(42,122,181,0.12);
+  --text: #d8dde8;
+  --text2: #8a95b0;
+  --text3: #5a6480;
+  --sidebar-w: 268px;
+  --hdr: 56px;
+  --serif: 'Noto Serif SC', serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body { font-family: var(--sans); background: var(--ink); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+
+/* ─── HEADER ─── */
+.hdr {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--hdr);
+  background: rgba(13,17,23,0.97);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; padding: 0 20px 0 28px;
+  gap: 14px;
+}
+.hdr-logo {
+  font-family: var(--serif);
+  font-size: 15px; font-weight: 600; color: var(--gold-soft);
+  white-space: nowrap; letter-spacing: 0.02em;
+}
+.hdr-ver {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(200,151,58,0.35);
+  border-radius: 3px; padding: 2px 7px;
+}
+.hdr-spacer { flex: 1; }
+.hdr-tag {
+  font-size: 11px; color: var(--text2); font-family: var(--mono);
+  background: var(--ink2); border: 1px solid var(--line);
+  border-radius: 3px; padding: 3px 9px;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed; top: var(--hdr); left: 0; bottom: 0;
+  width: var(--sidebar-w); z-index: 100;
+  background: var(--ink2);
+  border-right: 1px solid var(--line);
+  overflow-y: auto; padding: 18px 0 40px;
+}
+.nav-group { margin-bottom: 6px; }
+.nav-label {
+  font-size: 9px; font-family: var(--mono); letter-spacing: 0.15em;
+  color: var(--text3); text-transform: uppercase;
+  padding: 10px 20px 5px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 20px; cursor: pointer;
+  color: var(--text2); font-size: 12.5px; font-weight: 400;
+  border-left: 2px solid transparent;
+  transition: all 0.15s; text-decoration: none;
+  line-height: 1.4;
+}
+.nav-item:hover { background: var(--ink3); color: var(--text); border-left-color: var(--line2); }
+.nav-item.active { background: var(--ink3); color: var(--gold-soft); border-left-color: var(--gold); font-weight: 500; }
+.nav-num { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 22px; }
+
+/* ─── MAIN ─── */
+.main {
+  margin-left: var(--sidebar-w);
+  margin-top: var(--hdr);
+  padding: 48px 56px 80px 52px;
+  max-width: 980px;
+}
+
+/* ─── SECTIONS ─── */
+.section { margin-bottom: 72px; scroll-margin-top: calc(var(--hdr) + 24px); }
+
+.sec-eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 8px;
+}
+.sec-title {
+  font-family: var(--serif); font-size: 26px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px; line-height: 1.25;
+}
+.sec-lead {
+  font-size: 14px; color: var(--text2); line-height: 1.7;
+  margin-bottom: 28px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  max-width: 680px;
+}
+
+h3 {
+  font-family: var(--serif); font-size: 17px; font-weight: 600;
+  color: var(--text); margin: 28px 0 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+h3::before { content: ''; display: block; width: 3px; height: 16px; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
+h4 { font-size: 13px; font-weight: 600; color: var(--gold-soft); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--mono); }
+
+p { font-size: 14px; line-height: 1.75; color: var(--text2); margin-bottom: 10px; }
+
+/* ─── TOOLTIP SYSTEM ─── */
+.t {
+  border-bottom: 1px dashed var(--gold);
+  cursor: help; position: relative; color: var(--gold-soft);
+  white-space: nowrap;
+}
+.t::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink3);
+  border: 1px solid var(--line2);
+  color: var(--text);
+  font-size: 12px; font-family: var(--sans); font-weight: 400;
+  line-height: 1.55; white-space: normal;
+  width: 280px; max-width: 90vw;
+  padding: 9px 12px; border-radius: 6px;
+  pointer-events: none; z-index: 9999;
+  opacity: 0; transition: opacity 0.18s;
+}
+.t::before {
+  content: '';
+  position: absolute; bottom: calc(100% + 2px); left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--line2);
+  pointer-events: none; z-index: 9999;
+  opacity: 0; transition: opacity 0.18s;
+}
+.t:hover::after, .t:hover::before { opacity: 1; }
+
+/* ─── ALERT BOXES ─── */
+.alert {
+  border-radius: 7px; padding: 14px 18px;
+  margin: 14px 0; border-left: 3px solid;
+  font-size: 13.5px; line-height: 1.65;
+}
+.alert-red { background: var(--red-dim); border-color: var(--red); }
+.alert-red strong { color: #e06060; }
+.alert-amber { background: var(--amber-dim); border-color: var(--amber); }
+.alert-amber strong { color: #dfa060; }
+.alert-green { background: var(--green-dim); border-color: var(--green); }
+.alert-green strong { color: #50c896; }
+.alert-blue { background: var(--blue-dim); border-color: var(--blue); }
+.alert-blue strong { color: #7ab8e0; }
+.alert-gold { background: var(--gold-dim); border-color: var(--gold); }
+.alert-gold strong { color: var(--gold-soft); }
+
+/* ─── TABLES ─── */
+.tbl-wrap { overflow-x: auto; margin: 16px 0; border-radius: 7px; border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  background: var(--ink3); color: var(--text2); font-weight: 500;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid var(--line2); white-space: nowrap;
+}
+tbody td { padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--text2); vertical-align: top; line-height: 1.5; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.td-bold { font-weight: 600; color: var(--text); }
+.td-code { font-family: var(--mono); font-size: 11px; color: var(--gold-soft); }
+.td-green { color: #50c896; font-weight: 500; }
+.td-red { color: #e06060; font-weight: 500; }
+.td-amber { color: #dfa060; font-weight: 500; }
+.td-blue { color: #7ab8e0; }
+
+/* ─── BADGES ─── */
+.badge {
+  display: inline-block; font-size: 10px; font-family: var(--mono);
+  border-radius: 3px; padding: 2px 7px; font-weight: 600;
+  letter-spacing: 0.04em; white-space: nowrap;
+}
+.b-green { background: var(--green-dim); color: #50c896; border: 1px solid rgba(26,158,110,0.4); }
+.b-amber { background: var(--amber-dim); color: #dfa060; border: 1px solid rgba(196,125,26,0.4); }
+.b-red { background: var(--red-dim); color: #e06060; border: 1px solid rgba(193,53,53,0.4); }
+.b-blue { background: var(--blue-dim); color: #7ab8e0; border: 1px solid rgba(42,122,181,0.4); }
+.b-gold { background: var(--gold-dim); color: var(--gold-soft); border: 1px solid rgba(200,151,58,0.4); }
+.b-gray { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--line); }
+
+/* ─── CARDS ─── */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
+.card {
+  background: var(--ink2); border: 1px solid var(--line);
+  border-radius: 7px; padding: 16px;
+}
+.card-label { font-size: 10px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.card-val { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.card-sub { font-size: 11.5px; color: var(--text2); }
+
+/* ─── CHECKLIST ─── */
+.checklist { list-style: none; margin: 10px 0; }
+.checklist li {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13.5px; color: var(--text2); line-height: 1.55;
+}
+.checklist li:last-child { border-bottom: none; }
+.chk {
+  width: 18px; height: 18px; border: 1px solid var(--line2);
+  border-radius: 3px; flex-shrink: 0; margin-top: 1px;
+  background: var(--ink3); cursor: pointer; position: relative;
+  transition: all 0.15s;
+}
+.chk:hover { border-color: var(--gold); }
+.chk.checked { background: var(--gold-dim); border-color: var(--gold); }
+.chk.checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--gold); font-size: 11px; font-weight: 700; }
+
+/* ─── STATE COLORS ─── */
+.state-a { color: #50c896; }
+.state-b { color: #7ab8e0; }
+.state-c { color: #dfa060; }
+.state-d { color: #e06060; }
+.state-l1 { color: #dfa060; }
+.state-l2 { color: #e08040; }
+.state-l3 { color: #e06060; }
+
+/* ─── STEP LIST ─── */
+.steps { counter-reset: step; list-style: none; margin: 10px 0; }
+.steps li {
+  counter-increment: step;
+  display: flex; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13.5px; color: var(--text2); line-height: 1.6;
+}
+.steps li:last-child { border-bottom: none; }
+.steps li::before {
+  content: counter(step,'decimal-leading-zero');
+  font-family: var(--mono); font-size: 11px; color: var(--gold);
+  background: var(--gold-dim); border: 1px solid rgba(200,151,58,0.3);
+  border-radius: 4px; padding: 2px 7px; height: fit-content;
+  white-space: nowrap; margin-top: 1px; flex-shrink: 0;
+}
+.steps li strong { color: var(--text); }
+
+/* ─── FORMULA BOX ─── */
+.formula {
+  background: var(--ink3); border: 1px solid var(--line2);
+  border-radius: 7px; padding: 16px 20px; margin: 14px 0;
+  font-family: var(--mono); font-size: 13px; color: var(--gold-soft);
+  line-height: 1.8; overflow-x: auto;
+}
+.formula .comment { color: var(--text3); font-size: 11.5px; }
+
+/* ─── DIVIDER ─── */
+.divider {
+  height: 1px; background: var(--line); margin: 32px 0;
+}
+
+/* ─── LAYER BADGE ─── */
+.layer-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.layer-row:last-child { border-bottom: none; }
+.layer-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.layer-body { flex: 1; }
+.layer-title { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.layer-desc { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+.layer-yield { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 3px; }
+
+/* ─── RED LINES ─── */
+.redline {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--red-dim); border: 1px solid rgba(193,53,53,0.3);
+  border-radius: 7px; padding: 12px 16px; margin: 8px 0;
+}
+.redline-icon { color: #e06060; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.redline-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.redline-text strong { color: #e06060; }
+
+/* ─── FOOTER ─── */
+.doc-footer {
+  margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line);
+  font-size: 11.5px; color: var(--text3); line-height: 1.7; font-family: var(--mono);
+}
+
+/* ─── PRINT ─── */
+@media print {
+  .hdr, .sidebar { display: none; }
+  .main { margin: 0; padding: 24px; max-width: 100%; }
+  .t::after, .t::before { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header class="hdr">
+  <div class="hdr-logo">全球期权卖方波动率策略</div>
+  <div class="hdr-ver">V 1.0 · 2026-04</div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-tag">NRA · IBKR · $150K–$10M</div>
+</header>
+
+<!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+<nav class="sidebar">
+  <div class="nav-group">
+    <div class="nav-label">强制前置</div>
+    <a class="nav-item active" href="#s00"><span class="nav-num">§00</span>税务合规框架</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">账户与资金</div>
+    <a class="nav-item" href="#s01"><span class="nav-num">§01</span>账户架构与资金分配</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">市场决策系统</div>
+    <a class="nav-item" href="#s02"><span class="nav-num">§02</span>市场状态引擎</a>
+    <a class="nav-item" href="#s03"><span class="nav-num">§03</span>三因子量化决策模型</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">标的与参数</div>
+    <a class="nav-item" href="#s04"><span class="nav-num">§04</span>全球标的池评级矩阵</a>
+    <a class="nav-item" href="#s05"><span class="nav-num">§05</span>EV门槛与Delta矩阵</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">收益结构</div>
+    <a class="nav-item" href="#s06"><span class="nav-num">§06</span>五层收益结构</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">核心操作手册</div>
+    <a class="nav-item" href="#s07"><span class="nav-num">§07</span>现金担保卖Put操作</a>
+    <a class="nav-item" href="#s08"><span class="nav-num">§08</span>Wheel备兑层操作</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">风险控制</div>
+    <a class="nav-item" href="#s09"><span class="nav-num">§09</span>三级熔断与极端行情</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">日常运营</div>
+    <a class="nav-item" href="#s10"><span class="nav-num">§10</span>月度操作SOP</a>
+    <a class="nav-item" href="#s11"><span class="nav-num">§11</span>绩效追踪台账</a>
+    <a class="nav-item" href="#s12"><span class="nav-num">§12</span>心理纪律守则</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<main class="main">
+
+<!-- ─── HERO ─── -->
+<div style="margin-bottom:52px; padding-bottom:32px; border-bottom:1px solid var(--line);">
+  <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.15em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;">综合操作手册 · 机构级定制版</div>
+  <div style="font-family:var(--serif);font-size:32px;font-weight:600;color:var(--text);line-height:1.2;margin-bottom:10px;">全球期权卖方<br>波动率收益策略</div>
+  <div style="font-size:14px;color:var(--text2);line-height:1.75;max-width:600px;margin-bottom:24px;">
+    你不是在预测涨跌——你是一家全球多资产
+    <span class="t" data-tip="波动率风险溢价（Volatility Risk Premium）：期权的隐含波动率长期高于标的资产实际波动率，这一差值即为卖方可系统性收取的统计溢价。">VRP</span>
+    保险公司。本手册融合九份顶级AI策略的最佳实践，为 NRA 身份、IBKR 账户、$150K–$10M 资金规模量身定制，可直接落地执行。
+  </div>
+  <div class="card-grid" style="grid-template-columns:repeat(4,1fr);gap:10px;">
+    <div class="card"><div class="card-label">目标年化（税后）</div><div class="card-val" style="color:var(--green);">7–14%</div><div class="card-sub">保守首年 6–10%</div></div>
+    <div class="card"><div class="card-label">最大可接受回撤</div><div class="card-val" style="color:var(--amber);">≤15%</div><div class="card-sub">压力情景 ≤20%</div></div>
+    <div class="card"><div class="card-label">月度胜率目标</div><div class="card-val">≥75%</div><div class="card-sub">基于历史回测</div></div>
+    <div class="card"><div class="card-label">核心操作频率</div><div class="card-val">月度</div><div class="card-sub">每月第2周二</div></div>
+  </div>
+</div>
+
+<!-- ══════════ §00 ══════════ -->
+<section class="section" id="s00">
+  <div class="sec-eyebrow">§ 00 · 强制前置条件</div>
+  <h2 class="sec-title">税务合规框架</h2>
+  <p class="sec-lead">以下六项税务确认在获得持牌 CPA 书面回复前，账户仅允许持有 <span class="t" data-tip="SGOV 是追踪0–3个月美国国债的ETF，BIL 类似，均为无信用风险的超短期现金替代工具，适合作为期权保证金的担保品。">SGOV/BIL</span> 短期国债，或对已持有正股执行最低风险的备兑 Call 操作。<strong style="color:#e06060;">任何违反将使整套策略的税务架构失效。</strong></p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>确认事项</th><th>核心关切</th><th>未确认时限制</th></tr></thead>
+      <tbody>
+        <tr><td class="td-code">01</td><td class="td-bold">美股期权权利金预扣税</td><td>AAPL/SPY 等美式期权权利金，<span class="t" data-tip="W-8BEN：美国国税局表格，非美国公民/居民提交以声明其外国身份，可凭此享受相关税收协定优惠，有效期3年。">W-8BEN</span> 下是否触发 30% <span class="t" data-tip="FDAP（Fixed, Determinable, Annual, Periodical）：美国税法中对非居民外国人特定被动收入（如股息、利息、权利金等）的分类，可能被预扣30%税款。">FDAP</span> 预扣？</td><td class="td-red">禁止所有期权卖出</td></tr>
+        <tr><td class="td-code">02</td><td class="td-bold">被行权后资本利得税</td><td>正股接货后卖出，<span class="t" data-tip="NRA（Non-Resident Alien）：非居民外国人。美国税法将个人分为居民和非居民，NRA通常对在美来源的资本利得免缴联邦所得税，但须通过W-8BEN确认身份。">NRA</span> 身份是否免联邦资本利得税？</td><td class="td-red">禁止 Wheel 接货操作</td></tr>
+        <tr><td class="td-code">03</td><td class="td-bold">股息预扣税</td><td>持有 AAPL/META 正股期间，股息按 30% 还是协定税率（如 15%）预扣？</td><td class="td-amber">股息收益按 85% 折算；正股仓位上限调低</td></tr>
+        <tr><td class="td-code">04</td><td class="td-bold">Wash Sale 适用性</td><td><span class="t" data-tip="洗售规则（Wash Sale Rule）：出售亏损证券后30天内重新买入相同或实质相同证券，亏损将被递延计入成本，无法当年抵税。NRA是否豁免需CPA确认。">Wash Sale</span> 规则对 NRA 是否完整适用？30 天隔离期如何执行？</td><td class="td-amber">执行 30 天冷却期，同标的分批建仓</td></tr>
+        <tr><td class="td-code">05</td><td class="td-bold">遗产税红线</td><td>NRA 持有美国境内资产（正股、期权）免税额仅 <strong style="color:#e06060;">$60,000</strong>，超出部分面临 40% 遗产税风险</td><td class="td-red">单账户美国正股市值 ≤ $60,000；超出须评估离岸架构</td></tr>
+        <tr><td class="td-code">06</td><td class="td-bold">Portfolio Margin 资格</td><td><span class="t" data-tip="Portfolio Margin（PM）：基于整体组合风险净值的保证金模式，通常比Reg-T节省30%–50%保证金。IBKR要求净值≥$110,000方可申请，NRA身份需确认是否可用。">Portfolio Margin</span> NRA 是否可申请（IBKR 要求净值≥ $110K）？</td><td class="td-amber">仅使用 <span class="t" data-tip="Reg-T（联邦储备条例T）：标准保证金规定，股票通常需支付50%保证金，期权现金担保时需全额现金。比PM保守，资金效率较低。">Reg-T</span> 模式，保证金效率降低约 40%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>W-8BEN 年度维护 SOP</h3>
+  <ul class="steps">
+    <li><strong>每年 1 月 15 日前</strong>：登录 IBKR → 账户管理 → 税务表格，确认 W-8BEN 有效期（3年）。距到期 30 天内提前重新提交电子版。</li>
+    <li><strong>每笔交易台账标记</strong>：区分税务事件类型——权利金收入 / 接货成本调整 / 资本利得 / 对冲损失。同步记录当日人民币汇率（中国人民银行中间价），备用境外所得申报。</li>
+    <li><strong>季度末对账</strong>：导出 IBKR 交易记录（CSV）转交国内税务师，评估中国申报义务。每年 5–6 月个税汇算清缴时主动申报境外所得（即使免税也需申报）。</li>
+    <li><strong>遗产税动态监控</strong>：每月检查 IBKR 主账户美国正股市值是否超 $60,000。超出部分须立即评估转移至离岸持股架构或减仓。</li>
+  </ul>
+</section>
+
+<!-- ══════════ §01 ══════════ -->
+<section class="section" id="s01">
+  <div class="sec-eyebrow">§ 01 · 账户架构与资金分配</div>
+  <h2 class="sec-title">账户架构与资金分配</h2>
+  <p class="sec-lead">双账户分工确保税务隔离与保证金效率，资金分层铁律以净值动态调整，任何规模均适用同一分层逻辑。</p>
+
+  <h3>双账户分工矩阵</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>账户</th><th>角色</th><th>必须开通权限</th><th>允许操作</th><th>禁止操作</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">IBKR 主账户</td>
+          <td>核心策略全量执行</td>
+          <td>期权 Level 3–4<br>PM（净值≥$110K）<br>期货权限（对冲用）<br>全球市场（Eurex/TSE）</td>
+          <td>全部标的期权卖方操作<br>SGOV/BIL 现金管理<br>VX 期货/GLD 对冲</td>
+          <td class="td-red">裸卖 Put/Call<br>保证金使用率 &gt; 65%<br>美国正股市值 &gt; $60,000</td>
+        </tr>
+        <tr>
+          <td class="td-bold">BBAE 备用账户</td>
+          <td>应急现金 + 长期持股</td>
+          <td>期权 Level 2（最低）</td>
+          <td>META 等长期底仓<br>SGOV 现金管理<br>备兑 Call 增强（已持股）</td>
+          <td class="td-red">任何卖 Put 操作<br>SX5E/1321 等复杂标的</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>资金分层铁律（按净值规模）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>净值规模</th><th>现金+SGOV 安全垫</th><th>期权保证金上限</th><th>长期持股（BBAE）</th><th>灵活缓冲</th><th>保证金模式</th></tr></thead>
+      <tbody>
+        <tr><td class="td-code">$150K</td><td class="td-green">≥ 50%</td><td>≤ 20%</td><td>≤ 10%</td><td>~20%</td><td><span class="badge b-amber">Reg-T 仅</span></td></tr>
+        <tr><td class="td-code">$500K</td><td class="td-green">≥ 45%</td><td>≤ 25%</td><td>≤ 15%</td><td>~15%</td><td><span class="badge b-blue">PM 推荐</span></td></tr>
+        <tr><td class="td-code">$1M</td><td class="td-green">≥ 40%</td><td>≤ 25%</td><td>≤ 20%</td><td>~15%</td><td><span class="badge b-blue">PM 必须</span></td></tr>
+        <tr><td class="td-code">$3M+</td><td class="td-green">≥ 35%</td><td>≤ 25%</td><td>≤ 25%</td><td>~15%</td><td><span class="badge b-blue">PM 机构级</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>VIX 动态保证金上限公式（所有规模通用）：</strong><br>
+    实际上限 = MIN（基准上限，基准上限 × 20 / 当前 <span class="t" data-tip="VIX（CBOE波动率指数）：衡量标普500指数未来30天预期年化波动率的实时指标。VIX &lt; 15 为低恐慌，15–25 为正常，&gt; 30 为高恐慌，&gt; 40 为市场极端压力。">VIX</span>）<br>
+    <span style="color:var(--text3);font-size:12px;">示例：基准25%，VIX=30 → 实际上限=25%×(20/30)=16.7%；VIX=15 → 维持25%上限</span>
+  </div>
+
+  <div class="alert alert-red">
+    <strong>遗产税硬红线：</strong>IBKR 主账户中 AAPL、META 等美国正股（包括被行权接货的股票）市值之和，任何时刻不得超过 <strong>$60,000</strong>。超出后须立即将超额部分转入 BBAE 账户或启动离岸控股架构评估。
+  </div>
+</section>
+
+<!-- ══════════ §02 ══════════ -->
+<section class="section" id="s02">
+  <div class="sec-eyebrow">§ 02 · 市场决策系统</div>
+  <h2 class="sec-title">市场状态引擎</h2>
+  <p class="sec-lead">每周一美东时间 9:00–9:30 完成唯一状态判定，驱动本周全部开仓决策。状态一旦确定，本周内不再更改（熔断触发除外）。以 SPX（宽基市场）和 AAPL（科技）同步评估，取保守值。</p>
+
+  <h3>四状态定义矩阵</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>状态</th><th>技术条件（需同时满足）</th><th>VIX 参考</th><th>策略基调</th><th>开仓系数</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="state-a" style="font-weight:700;">▲ A · 强势上涨</span></td>
+          <td>SPX &gt; <span class="t" data-tip="MA20（20日移动平均线）：近20个交易日收盘价的算术平均值。价格在MA20上方视为短期偏多，下方视为偏空。">MA20</span> &gt; <span class="t" data-tip="MA50（50日移动平均线）：近50个交易日收盘价的算术平均值。常用于判断中期趋势，价格在MA50上方视为中期多头。">MA50</span>，MA20 斜率向上</td>
+          <td>&lt; 18</td>
+          <td>积极卖方，行权价可上移</td>
+          <td><strong class="state-a">1.0×</strong></td>
+        </tr>
+        <tr>
+          <td><span class="state-b" style="font-weight:700;">→ B · 震荡偏多</span></td>
+          <td>SPX &gt; MA20，MA20 走平或缓升，MA50 向上</td>
+          <td>15–22</td>
+          <td>标准卖方，严格按矩阵</td>
+          <td><strong class="state-b">0.8×</strong></td>
+        </tr>
+        <tr>
+          <td><span class="state-c" style="font-weight:700;">→ C · 震荡偏空</span></td>
+          <td>SPX &lt; MA20 但 &gt; MA50，或 MA20 走平转下</td>
+          <td>20–30</td>
+          <td>防御价差，强制保护腿</td>
+          <td><strong class="state-c">0.5×</strong></td>
+        </tr>
+        <tr>
+          <td><span class="state-d" style="font-weight:700;">▼ D · 强势下跌</span></td>
+          <td>SPX &lt; MA20 &lt; MA50，MA20 斜率向下</td>
+          <td>&gt; 28</td>
+          <td>全面暂停卖方，仅管理存量</td>
+          <td><strong class="state-d">0×</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>VIX 独立硬约束（优先于状态判断）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>VIX 水平</th><th>执行动作</th><th>叠加系数</th></tr></thead>
+      <tbody>
+        <tr><td>≤ 20</td><td>正常按状态执行，无额外限制</td><td class="td-green">1.0×</td></tr>
+        <tr><td>20–28</td><td>新仓规模减半，仅状态 A/B 可开仓</td><td class="td-amber">0.5×</td></tr>
+        <tr><td>28–35</td><td>新仓规模减至 1/4，仅状态 A 可开仓</td><td class="td-amber">0.25×</td></tr>
+        <tr><td>&gt; 35</td><td><strong style="color:#e06060;">全面停止新开卖方仓位</strong>，仅管理存量</td><td class="td-red">0×</td></tr>
+        <tr><td>单日涨幅 &gt; 25%</td><td><strong style="color:#e06060;">立即启动 L1 熔断</strong>，当日禁止一切新开仓</td><td class="td-red">紧急</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>每周判定 SOP（15 分钟）</h3>
+  <ul class="steps">
+    <li><strong>获取数据：</strong>IBKR 图表打开 SPX 和 AAPL 周线，分别添加 SMA20 和 SMA50，记录：当前价格 / MA20 数值 / MA50 数值 / MA20 本周斜率方向（上 / 平 / 下）。</li>
+    <li><strong>查看 VIX 期限结构：</strong>CBOE 官网查看即期 VIX 和 VIX3M。若 VIX &gt; VIX3M（期限结构倒挂），代表短期恐慌溢价，卖方权利金更厚但风险更高，建议收紧 <span class="t" data-tip="Delta：衡量期权价格相对标的资产价格变动1美元的变化量。Put的Delta介于-1至0，绝对值越大代表越接近实值。通常用作被行权概率的近似值。">Delta</span> 上限 0.01–0.02。</li>
+    <li><strong>判断唯一状态：</strong>对照状态矩阵，边界情况优先判断为更保守状态（B/C 边界定为 C）。在台账「周状态日志」记录：日期 / 状态 / SPX 价格 / MA20 / MA50 / VIX / 本周开仓系数。</li>
+  </ul>
+</section>
+
+<!-- ══════════ §03 ══════════ -->
+<section class="section" id="s03">
+  <div class="sec-eyebrow">§ 03 · 市场决策系统</div>
+  <h2 class="sec-title">三因子量化决策模型</h2>
+  <p class="sec-lead">每个交易日开盘后 15 分钟内，通过三因子加权得分计算当日仓位系数，替代主观判断。得分 &lt; 50 不开新仓，无论市场多诱人。</p>
+
+  <div class="formula">
+    综合得分 = F₁(波动率溢价) × 40% + F₂(安全边际) × 30% + F₃(趋势强度) × 30%
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>得分规则</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">F₁ 波动率溢价</td>
+          <td>40%</td>
+          <td>CBOE：VIX − VIX3M</td>
+          <td>差值在过去 252 交易日中的<br><span class="t" data-tip="IV Rank（IVR）：当前隐含波动率在过去252个交易日（约1年）中的百分位排名。IVR=0%代表IV在年内最低，100%代表最高。IVR≥50%通常为卖方开仓的理想区间。">IVR</span> 百分位排名</td>
+          <td>≥70% → 100分<br>50–70% → 60分<br>&lt;50% → 20分</td>
+        </tr>
+        <tr>
+          <td class="td-bold">F₂ 安全边际</td>
+          <td>30%</td>
+          <td>multpl.com Shiller CAPE / 个股 PE</td>
+          <td>历史百分位（逆向打分，<br>估值越低得分越高）</td>
+          <td>≤30% → 100分<br>30–60% → 60分<br>&gt;80% → 10分</td>
+        </tr>
+        <tr>
+          <td class="td-bold">F₃ 趋势强度</td>
+          <td>30%</td>
+          <td>IBKR 图表 <span class="t" data-tip="ADX（Average Directional Index，平均趋向指数）：衡量趋势强度的技术指标，范围0–100。ADX&gt;25代表趋势明显，但不含方向信息；需结合价格与均线判断趋势方向。">ADX</span>(20)</td>
+          <td>ADX × 方向因子<br>（价格 &gt; MA20 时 +1，&lt; MA20 时 −1）</td>
+          <td>强势上涨 → 100分<br>强势下跌 → 0分</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>综合得分 → 仓位系数映射</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th><th>典型市场环境（出现概率）</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold" style="color:#50c896;">≥ 70 分</td><td class="td-bold" style="color:#50c896;">1.0×</td><td>满仓按 Delta 矩阵开仓</td><td>低VIX + 低估值 + 上涨趋势（约20%时间）</td></tr>
+        <tr><td class="td-bold">50–69 分</td><td class="td-bold">0.5×</td><td>半仓开仓，优先偏保守行权价</td><td>正常市场（最常见，约45%时间）</td></tr>
+        <tr><td class="td-bold" style="color:#dfa060;">30–49 分</td><td class="td-bold" style="color:#dfa060;">0.25×</td><td>仅开最优质仓位（A+/A 级）</td><td>VIX 偏高或趋势不明（约25%时间）</td></tr>
+        <tr><td class="td-bold" style="color:#e06060;">&lt; 30 分</td><td class="td-bold" style="color:#e06060;">0×</td><td>不开新仓，仅管理存量</td><td>高VIX + 下跌趋势（约10%时间）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ §04 ══════════ -->
+<section class="section" id="s04">
+  <div class="sec-eyebrow">§ 04 · 标的与参数</div>
+  <h2 class="sec-title">全球标的池评级矩阵</h2>
+  <p class="sec-lead">五级标的评级基于：期权流动性（日均成交量、<span class="t" data-tip="未平仓合约（Open Interest，OI）：市场上尚未平仓的期权合约总数。OI越高代表市场参与度越高，流动性越好，交易时买卖价差通常越窄。">OI</span>、买卖价差）、标的与 SPX 的相关性、波动率特征、财报风险窗口。主仓位（≥70%资金）集中于 A+/A 级，卫星仓位（≤30%）配置 B/C 级。D 级全球标的需 $500K+ 账户且已确认时区/保证金权限。</p>
+
+  <h3>A+ 级 · 全球核心指数（无财报风险，最高优先级）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标的</th><th>代码</th><th>市场</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th><th>与 SPX 相关性</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">标普 500 ETF</td><td class="td-code">SPY</td><td>美国</td><td>0.08</td><td>15%</td><td>宏观数据（CPI/FOMC/非农）前3天不开仓</td><td>1.00</td></tr>
+        <tr><td class="td-bold">纳指 100 ETF</td><td class="td-code">QQQ</td><td>美国</td><td>0.10</td><td>15%</td><td>与 SPY 不同时满仓；宏观数据前3天停开</td><td>0.92</td></tr>
+        <tr><td class="td-bold">欧洲斯托克50</td><td class="td-code">SX5E (OESX)</td><td>Eurex</td><td>0.10</td><td>10%</td><td>欧式现金结算，无早行权风险；CET 08:00–22:00</td><td>0.75</td></tr>
+        <tr><td class="td-bold">日经 225 ETF</td><td class="td-code">1321/EWJ</td><td>日本/美国</td><td>0.10</td><td>8%</td><td>日元计价，避险属性；$500K+ 账户方可配置</td><td>0.60</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>A 级 · 全球科技蓝筹（财报窗口控制）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>财报黑名单</th><th>额外条件</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">苹果</td><td class="td-code">AAPL</td><td>0.12</td><td>12%</td><td>财报前10天</td><td>Wheel 首选标的，流动性最佳</td></tr>
+        <tr><td class="td-bold">微软</td><td class="td-code">MSFT</td><td>0.12</td><td>12%</td><td>财报前10天</td><td>防御 + 成长，IV 曲线平滑</td></tr>
+        <tr><td class="td-bold">诺和诺德</td><td class="td-code">NVO</td><td>0.12</td><td>8%</td><td>财报前10天</td><td>与科技股相关性 &lt; 0.45，分散效果佳</td></tr>
+        <tr><td class="td-bold">阿斯麦</td><td class="td-code">ASML</td><td>0.12</td><td>6%</td><td>财报前10天</td><td>EUV 垄断，欧洲科技龙头；$1M+ 账户</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>B 级 · 防御 / 价值（低波动稳定现金流）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">Visa</td><td class="td-code">V</td><td>0.12</td><td>8%</td><td>支付网络，低波动，防御性强</td></tr>
+        <tr><td class="td-bold">黄金 ETF</td><td class="td-code">GLD</td><td>0.12</td><td>6%</td><td>仅 VIX&gt;22 或地缘危机时开仓；与 SPX 相关性约 −0.20</td></tr>
+        <tr><td class="td-bold">公用事业 ETF</td><td class="td-code">XLU</td><td>0.12</td><td>5%</td><td>稳定股息，低波动，危机时避险属性</td></tr>
+        <tr><td class="td-bold">台积电 ADR</td><td class="td-code">TSM</td><td>0.12</td><td>6%</td><td>注意 ADR 折溢价；地缘风险事件前减仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>C 级 · 高波动（仅在 IVR &gt; 60 时轻仓参与）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>强制条件</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">Meta</td><td class="td-code">META</td><td>0.10</td><td>5%</td><td>财报前14天禁止开仓；客户持有底仓时禁止同时卖 Put（方向重叠）</td></tr>
+        <tr><td class="td-bold">英伟达</td><td class="td-code">NVDA</td><td>0.10</td><td>4%</td><td>财报前14天禁止；IVR&gt;65 才可参与；最高集中度限制最严</td></tr>
+        <tr><td class="td-bold">特斯拉</td><td class="td-code">TSLA</td><td>0.06</td><td>2%</td><td>IVR&gt;80 且股价在 200MA 上方方可开仓；单次最多2张合约</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-amber">
+    <strong>流动性硬性门槛（开仓前必查，任一不达标则放弃该合约）：</strong><br>
+    日均期权成交量 ≥ 1,500 张 &nbsp;|&nbsp; <span class="t" data-tip="OI（未平仓合约）：市场上尚未结清的期权合约总数，是流动性深度的重要指标。OI&lt;5,000张时，大单可能造成明显价格冲击。">OI</span> ≥ 5,000 张 &nbsp;|&nbsp; 买卖价差 &lt; 权利金的 5%（即 (Ask-Bid)/Mid &lt; 5%）
+  </div>
+</section>
+
+<!-- ══════════ §05 ══════════ -->
+<section class="section" id="s05">
+  <div class="sec-eyebrow">§ 05 · 标的与参数</div>
+  <h2 class="sec-title">EV 强制门槛与 Delta 矩阵</h2>
+  <p class="sec-lead">每笔卖出期权操作，执行前必须计算预期价值（EV）。未达标则<strong style="color:#e06060;">禁止开仓</strong>，任何主观判断不得替代量化结果。</p>
+
+  <h3>预期价值（EV）强制门槛</h3>
+  <div class="formula">
+    EV = 权利金收入 × (1 − 被行权概率) − 最大亏损 × 被行权概率
+    <br><br>
+    <span class="comment">── 双重门槛，两项均须满足方可开仓 ──</span>
+    <br>
+    门槛① EV &gt; 0
+    <br>
+    门槛② EV / 权利金收入 &gt; 20%
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>计算要素</th><th>具体方法</th><th>注意事项</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">被行权概率</td>
+          <td>SPX/SX5E（欧式）≈ ∣Delta∣<br>个股（美式）≈ ∣Delta∣ × 1.1（<span class="t" data-tip="胖尾修正：真实金融资产的价格分布比正态分布有更厚的尾部，极端事件（大跌）发生概率被Black-Scholes模型低估。对个股Delta乘以1.1是一种简单的保守修正，提高被行权概率的估计值。">胖尾修正</span>）</td>
+          <td>IBKR 期权链直接读取 Delta 值</td>
+        </tr>
+        <tr>
+          <td class="td-bold">最大亏损</td>
+          <td>价差结构：(卖出行权价 − 买入行权价) × 100 × 张数 − 已收权利金<br>裸卖：行权价 × 100 × 张数 − 已收权利金</td>
+          <td><strong>强烈建议使用价差结构限制最大亏损。$300K 以下账户须全额现金担保。</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>卖 Put 行权价 Delta 矩阵（DTE 35–45 天）</h3>
+  <p style="font-size:12.5px;color:var(--text3);margin-bottom:8px;">卖出行权价距当前价格须 ≥ 6%（AAPL等个股）/ ≥ 8%（指数类）作为跳空缓冲</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标的位置（相对 MA20）</th><th>状态 A · VIX&lt;18</th><th>状态 B · VIX 15–22</th><th>状态 C · VIX 20–30</th><th>状态 D</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">高位区（&gt; MA20 × 1.05）</td><td>0.10–0.15</td><td>0.12–0.18</td><td class="td-red">不开仓</td><td class="td-red">不开仓</td></tr>
+        <tr><td class="td-bold">中位区（MA20 × 0.95–1.05）</td><td>0.12–0.18</td><td>0.15–0.22</td><td>0.18–0.25</td><td class="td-red">不开仓</td></tr>
+        <tr><td class="td-bold">低位区（MA20 × 0.85–0.95）</td><td>0.15–0.20</td><td>0.18–0.25</td><td>0.22–0.28</td><td class="td-red">不开仓</td></tr>
+        <tr><td class="td-bold">极端区（&lt; MA20 × 0.85）</td><td class="td-amber">暂停</td><td class="td-amber">暂停</td><td>仅 Delta&lt;0.18 + 强制价差</td><td class="td-red">不开仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>价差宽度矩阵（价差结构保护腿）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>VIX 水平</th><th>建议价差宽度</th><th>单张最大亏损</th><th>目标权利金/价差比</th></tr></thead>
+      <tbody>
+        <tr><td>≤ 18</td><td>$5</td><td>$500</td><td>14%–24%</td></tr>
+        <tr><td>18–25</td><td>$10</td><td>$1,000</td><td>18%–35%</td></tr>
+        <tr><td>25–35</td><td>$15</td><td>$1,500</td><td>20%–40%</td></tr>
+        <tr><td>&gt; 35</td><td class="td-red" colspan="3">禁止开仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ §06 ══════════ -->
+<section class="section" id="s06">
+  <div class="sec-eyebrow">§ 06 · 收益结构</div>
+  <h2 class="sec-title">五层收益结构</h2>
+  <p class="sec-lead">通过五层低相关性收益叠加，在不同市场环境下平滑年化曲线。<span class="t" data-tip="Theta（θ）：期权的时间价值衰减率，即在其他条件不变时，期权每经过一天所损失的价值。对期权卖方而言，Theta为正（每天赚取时间价值）；越接近到期日，衰减越快（非线性加速）。">Theta</span> 层是基础，利息层保证现金底仓收益，备兑层降低持股成本，套利层捕捉结构性机会，对冲层控制尾部风险。</p>
+
+  <div style="background:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:20px;margin:16px 0;">
+    <div class="layer-row">
+      <div class="layer-num" style="background:var(--green-dim);color:#50c896;border:1px solid rgba(26,158,110,0.4);">L1</div>
+      <div class="layer-body">
+        <div class="layer-title">核心层 · 全球卖 Put 价差</div>
+        <div class="layer-desc">SPX / SX5E / QQQ / AAPL / MSFT 等 A+/A 级标的的 <span class="t" data-tip="现金担保卖Put（Cash-Secured Put, CSP）：卖出看跌期权的同时，账户持有等额现金作为担保，确保能够履行在行权价买入标的的义务。是Wheel策略的入场腿。">CSP</span> 或 <span class="t" data-tip="Bull Put Spread（牛市卖Put价差）：同时卖出较高行权价的Put并买入较低行权价的Put（保护腿），限制最大亏损，是现金担保卖Put的优化版本，适合保证金受限账户。">Bull Put Spread</span>，每月滚动，DTE 35–45 天</div>
+        <div class="layer-yield">目标年化贡献：6%–10%</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num" style="background:var(--blue-dim);color:#7ab8e0;border:1px solid rgba(42,122,181,0.4);">L2</div>
+      <div class="layer-body">
+        <div class="layer-title">利息层 · 短期国债</div>
+        <div class="layer-desc">SGOV / BIL 长期持有，既是现金垫又是 CSP 担保品，实现无风险底仓收益</div>
+        <div class="layer-yield">目标年化贡献：4.0%–4.8%（取决于联储利率政策）</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(200,151,58,0.4);">L3</div>
+      <div class="layer-body">
+        <div class="layer-title">备兑层 · Covered Call 增强</div>
+        <div class="layer-desc">被行权接货后的 AAPL/META 正股，每月卖出 <span class="t" data-tip="Covered Call（备兑看涨期权）：持有正股（100股）的同时卖出看涨期权。若股价上涨超过行权价，股票被「Call走」（以行权价卖出）；若未超过，权利金全部保留，持股成本下降。是Wheel策略的出场腿。">Covered Call</span>，DTE 30–40 天</div>
+        <div class="layer-yield">目标年化贡献：3%–6%（降低持股成本或溢价离场）</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num" style="background:rgba(160,80,200,0.12);color:#c090e0;border:1px solid rgba(160,80,200,0.4);">L4</div>
+      <div class="layer-body">
+        <div class="layer-title">套利层 · 波动率曲面套利（信号触发）</div>
+        <div class="layer-desc">当 <span class="t" data-tip="CBOE SKEW 指数：衡量市场对尾部风险（大幅下跌）保护需求的指标，通常在100–150之间。SKEW≥145代表市场对跌期权定价极高（曲面倾斜），可构建Delta中性的卖Put/买Call组合套利价差。">SKEW ≥ 145</span> 时构建 Delta 中性价差（卖虚值 Put + 买虚值 Call），仓位 ≤ 净值 5%</div>
+        <div class="layer-yield">目标年化贡献：0.5%–1.5%（约每年触发 1–3 次）</div>
+      </div>
+    </div>
+    <div class="layer-row" style="border-bottom:none;">
+      <div class="layer-num" style="background:var(--red-dim);color:#e06060;border:1px solid rgba(193,53,53,0.4);">L5</div>
+      <div class="layer-body">
+        <div class="layer-title">对冲层 · 动态尾部保护（条件触发）</div>
+        <div class="layer-desc">VIX &gt; 25 时买入近月 VX 期货（名义 ≤ 净值 0.5%）或买入 AAPL/SPY 保护性 Put（覆盖核心敞口 20%–30%）</div>
+        <div class="layer-yield">年化成本：−0.8%~−1.5%（「再保险」成本，危机时转为盈利）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-blue">
+    <strong>初期建议：</strong>资金 &lt; $500K 时，仅执行 L1+L2+L3 三层，确保策略简单可执行。L4/L5 在账户净值 &gt; $500K 且策略运行稳定超过 6 个月后逐步引入。L4 每次仓位 ≤ 净值 5%。
+  </div>
+</section>
+
+<!-- ══════════ §07 ══════════ -->
+<section class="section" id="s07">
+  <div class="sec-eyebrow">§ 07 · 核心操作手册</div>
+  <h2 class="sec-title">现金担保卖 Put 操作手册</h2>
+  <p class="sec-lead">本节为 L1 核心层的完整操作流程，从开仓前检查到持仓管理，每一步均需人工最终确认。严格执行清单优先于任何主观判断。</p>
+
+  <h3>开仓前 10 项强制检查清单</h3>
+  <p style="font-size:12.5px;color:var(--text3);margin-bottom:10px;">全部打勾方可执行。建议打印并放于操作台旁。</p>
+  <ul class="checklist" id="cklist">
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>§00 税务六项确认已获 CPA 书面回复</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>当前市场状态非 D，且 VIX ≤ 35</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>三因子综合得分 ≥ 50，仓位系数 ≥ 0.5×</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>标的在白名单内，且距财报 ≥ A级10天/C级14天</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>今日无重大宏观事件（FOMC/CPI/非农）；SPY/QQQ 宏观数据前3天不开</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>流动性三指标均达标（成交量≥1,500 / OI≥5,000 / 价差&lt;权利金5%）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>EV 计算已完成并达标（EV&gt;0 且 EV/权利金&gt;20%），截图存档</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>卖出行权价距当前价格 ≥ 6%（个股）/ ≥ 8%（指数），满足跳空缓冲</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>加入本批后，单标的仓位 ≤ 该级别上限；总保证金使用率 &lt; 60%</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>当日无持仓标的单日跌幅 &gt; 5%</span></li>
+  </ul>
+
+  <h3>逐步开仓流程（IBKR TWS）</h3>
+  <ul class="steps">
+    <li><strong>选择到期日（DTE 35–45 天）：</strong>TWS → OptionTrader → 输入标的 → 筛选到期日列。优先选择每月第三个周五（整月到期），流动性最佳，成交量通常是周到期的 3–5 倍。</li>
+    <li><strong>按 Delta 矩阵选定行权价：</strong>根据当前价格相对 MA20 位置与市场状态，查§05矩阵获取目标 Delta 范围。在期权链中筛选 Put，选择最接近目标的行权价。验证跳空缓冲（当前价 − 行权价）/ 当前价 ≥ 6% 或 8%。</li>
+    <li><strong>选择保护腿（价差结构时）：</strong>K₂ = K₁ − 价差宽度（参考§05价差宽度矩阵）。确认净权利金（卖出K₁权利金 − 买入K₂权利金）。</li>
+    <li><strong>计算 EV 并验证：</strong>填写公式，验证双重门槛，不达标则换参数或放弃本次开仓，不得妥协。</li>
+    <li><strong>确定张数（含仓位系数）：</strong>单批名义敞口上限 = 净值 × 单标上限% × 仓位系数。张数 = 上限 ÷ (K₁ × 100)，向下取整，至少1张。</li>
+    <li><strong>分两批执行（间隔1个交易日）：</strong>第一批 60%：当日以 (Ask+Bid)/2 挂限价单，有效期「当日有效」。第二批 40%：次日观察盘中波动后执行。<strong>绝对禁止使用市价单。</strong></li>
+    <li><strong>同步挂 GTC 止盈单：</strong>开仓成功后立即：反向买入平仓，限价 = 开仓净权利金 × 50%，有效期 GTC（持续有效直到取消）。目的：权利金衰减50%时自动止盈，不追求最后 50% 收益（<span class="t" data-tip="Gamma（Γ）：Delta对标的价格变化的变化率，即Delta的变化速度。期权到期前7–14天Gamma急速上升，意味着同等价格变动会引起Delta更大幅度变化，风险急剧上升，是期权卖方最需警惕的阶段。">Gamma</span> 风险急速上升）。</li>
+  </ul>
+
+  <h3>持仓管理规则</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>触发条件</th><th>执行动作</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold td-green">正常止盈</td><td>GTC 单自动触发（权利金衰减50%）</td><td>自动平仓，记录收益，释放保证金</td><td>不手动干预，信任系统</td></tr>
+        <tr><td class="td-bold">时间止损</td><td>持仓超21天，盈利&lt;50%</td><td>评估 <span class="t" data-tip="Credit Roll（展期）：平仓当前合约并开立更远到期日（或更低行权价）的新合约。核心要求是净权利金为正（即新合约收入 &gt; 平仓成本），否则不如直接止损。每一合约只允许展期一次。">Credit Roll</span>（仅限1次，新权利金≥原60%），否则直接平仓</td><td>避免「时间耗尽」Gamma 急升风险</td></tr>
+        <tr><td class="td-bold td-amber">价格预警</td><td>AAPL 距行权价 &lt; 3%（距离&lt;3%）</td><td>启动每日监控，评估是否提前平仓</td><td>不自动执行，需人工判断基本面</td></tr>
+        <tr><td class="td-bold td-amber">双触发预警</td><td>浮亏 ≥ 初始权利金×80% <strong>或</strong> Delta ≥ 0.25</td><td>推送告警，人工确认，限价单平仓</td><td>满足任一即触发，不讨论</td></tr>
+        <tr><td class="td-bold td-red">双触发强制</td><td>浮亏 ≥ 初始权利金×150% <strong>或</strong> Delta ≥ 0.35</td><td><strong>立即平仓，不得犹豫</strong></td><td>限价单挂在 Bid-Ask 中间，每5分钟向 Bid 方向调整</td></tr>
+        <tr><td class="td-bold td-red">紧急平仓</td><td>市场状态恶化为 D 或 VIX &gt; 35</td><td>不论盈亏，限价单平仓所有新仓</td><td>优先平流动性好的指数，最后平个股</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Credit Roll 操作规则</h3>
+  <div class="formula">
+    净权利金 = 新合约卖出 Bid 价 − 当前合约买入 Ask 价
+    <br><br>
+    <span class="comment">── 硬性要求：净权利金 &gt; 0（至少+$5/手），否则直接止损 ──</span>
+    <br>
+    最多展期：1次（同一合约第二次测试行权价 → 必须止损或接受行权）
+  </div>
+
+  <div class="alert alert-red">
+    <strong>展期的三个禁止：</strong>① 禁止 Debit Roll（花钱展期）；② 禁止在 DTE &lt; 7 天时展期（Gamma 风险极高）；③ 禁止向上展期到比原行权价更高的价格（锁定更大亏损）。
+  </div>
+</section>
+
+<!-- ══════════ §08 ══════════ -->
+<section class="section" id="s08">
+  <div class="sec-eyebrow">§ 08 · 核心操作手册</div>
+  <h2 class="sec-title">Wheel 备兑层操作手册</h2>
+  <p class="sec-lead"><span class="t" data-tip="Wheel 策略：期权策略的循环体系。阶段一：卖现金担保Put，收取权利金。若到期未被行权，权利金全部保留，重新卖Put；若被行权，以行权价买入股票，进入阶段二。阶段二：卖备兑Call，持股同时收取权利金。若被行权（股价超过Call行权价），股票以行权价卖出，回到阶段一；若未被行权，继续持股卖Call，摊低成本。">Wheel 策略</span>在被行权接货后进入第二阶段。核心原则：不在亏损状态下卖 Call 锁死亏损；备兑行权价必须不低于综合持股成本；每次只允许 Credit Roll。</p>
+
+  <h3>被行权前24小时决策</h3>
+  <div class="alert alert-gold">
+    <strong>关键问题：</strong>「我是否愿意以当前行权价买入该股票并持有至少12个月？」<br>
+    是 → 准备现金接货，进入 Covered Call 阶段。<br>
+    否 → <strong>立即止损平仓 Put</strong>，不接货，冷却7天后方可重新开仓同标的。
+  </div>
+
+  <h3>Covered Call Delta 矩阵（DTE 30–40 天）</h3>
+  <p style="font-size:12.5px;color:var(--text3);margin-bottom:8px;">行权价必须高于当前价格 ≥ 8%，且不低于综合持股成本（禁止卖Call锁定亏损）</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>股价位置（相对持股成本）</th><th>状态 A</th><th>状态 B</th><th>状态 C</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">高位（&gt; 成本 × 1.10）</td><td>0.12–0.18</td><td>0.15–0.22</td><td>仅维护存量</td></tr>
+        <tr><td class="td-bold">正常区（成本 × 0.95–1.10）</td><td>0.15–0.20</td><td>0.18–0.25</td><td>0.22–0.30</td></tr>
+        <tr><td class="td-bold">低位（&lt; 成本 × 0.95）</td><td>0.18–0.25</td><td>0.22–0.30</td><td>0.25–0.35（快速降本）</td></tr>
+        <tr><td class="td-bold">接货后1–3日内（强制快速降本）</td><td colspan="3" style="color:#dfa060;">强制开仓，Delta 0.25–0.35，行权价须≥成本价</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>被行权处理标准化流程</h3>
+  <ul class="steps">
+    <li><strong>情景 A：行权价 &gt; 综合成本（已解套）：</strong>3 日内开始备兑 Call，Delta 0.20–0.30，目标行权价 ≥ 当前股价 × 1.08。若被 Call 走（股票被买走），收回现金，完成一个 Wheel 循环，计算总收益。</li>
+    <li><strong>情景 B：行权价 ≈ 综合成本（保本区）：</strong>卖备兑 Call，行权价设为当前价格 × 1.05–1.10，以期小幅盈利出场。避免行权价低于成本价。</li>
+    <li><strong>情景 C：行权价 &lt; 综合成本（浮亏区）：</strong>不卖 Call（否则锁死亏损）。持有等待股价回升至成本附近。若基本面未变，期间以极低 Delta（0.15 以下）卖远期 Call 轻微摊薄成本。若基本面恶化，直接市价卖出股票，止损离场，冷却 14 天。</li>
+    <li><strong>META 底仓特殊规则（客户长期看好）：</strong>被行权后<strong>不强制卖出</strong>。情景A时可50%卖出 + 50%留存长期；情景B/C时全部长期持有，不卖备兑 Call（保留上行空间），将持仓转入 BBAE 账户，注意单账户正股市值 $60,000 遗产税红线。</li>
+  </ul>
+
+  <h3>Covered Call 向上滚动规则</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>要素</th><th>规则</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">触发条件</td><td>AAPL 价格上涨至距备兑行权价 &lt; 5%（AAPL ≥ 行权价 × 95%），且状态 A 或 B</td></tr>
+        <tr><td class="td-bold">操作</td><td>买入平仓当前 Call + 卖出更高行权价/更远到期日新 Call（组合限价单）</td></tr>
+        <tr><td class="td-bold">净权利金要求</td><td class="td-green"><strong>必须为正（Credit Roll）</strong>——净收权利金，绝不接受 Debit Roll</td></tr>
+        <tr><td class="td-bold">新行权价要求</td><td>≥ 当前行权价 × 105%，且 ≥ 当前价格 × 108%</td></tr>
+        <tr><td class="td-bold">若 Credit Roll 不可行</td><td class="td-amber">接受被行权，股票卖出，回到 CSP 阶段，重新开始 Wheel 循环</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula">
+    Wheel 总收益 = Put 权利金收入 + Covered Call 权利金收入 + (股票卖出价 − 行权价)
+    <br>
+    综合持股成本 = (行权价 × 股数 − 累计 Put 权利金) ÷ 当前股数
+  </div>
+</section>
+
+<!-- ══════════ §09 ══════════ -->
+<section class="section" id="s09">
+  <div class="sec-eyebrow">§ 09 · 风险控制</div>
+  <h2 class="sec-title">三级熔断与极端行情应对</h2>
+  <p class="sec-lead">三级熔断为刚性纪律，触发即执行，不得以「市场可能反弹」为由延迟。25% 跌幅切换机制是整套策略的最终兜底，执行后至少等待 VIX 回落 ≥ 20% 再恢复。</p>
+
+  <h3>三级熔断机制</h3>
+
+  <div class="alert alert-amber" style="margin-bottom:8px;">
+    <strong class="state-l1">L1 黄色预警（触发任一）：</strong>SPX 单日跌 &gt; 3% | VIX 单日涨 &gt; 25% | 账户浮亏超净值 6% | 保证金使用率 &gt; 55%<br>
+    <strong>强制动作：</strong>停止所有新开卖方仓位；检查所有持仓 Delta 是否超0.25；台账记录触发原因+时间戳；24小时后自动解除（若无升级）。
+  </div>
+  <div class="alert alert-amber" style="margin-bottom:8px;border-color:var(--red);background:rgba(196,125,26,0.1);">
+    <strong class="state-l2">L2 橙色警戒（触发任一）：</strong>SPX 3日累计跌 &gt; 6% | 保证金使用率 &gt; 65% | 任意 Put 价差保护腿接近实值 | 账户浮亏超净值 10%<br>
+    <strong>强制动作（24小时内完成）：</strong>平仓 50% 期权仓位（优先平 Delta 最高的）；止损所有价内 Put 价差；买入 SPX/QQQ 保护 Put（覆盖核心敞口30%）；将保证金使用率压至 50% 以下。
+  </div>
+  <div class="alert alert-red" style="margin-bottom:0;">
+    <strong class="state-l3">L3 红色紧急（触发任一）：</strong>SPX 5日累计跌 &gt; 12% | 收到经纪商 Margin Call | VIX &gt; 40 且 SPX &lt; MA200 × 80% | 账户浮亏超净值 15%<br>
+    <strong>立即执行（市价单）：</strong>市价平仓所有期权仓位（优先流动性好的指数，最后个股）；资金全部转入 SGOV/现金；暂停交易至少 30 个日历日；30 天后经系统重新评估方可恢复。
+  </div>
+
+  <h3>25% 跌幅切换机制</h3>
+  <p>当核心指数（SPX 或 QQQ）从近期高点下跌 ≥ 25%，策略从「卖方收权利金」模式切换为「持有指数等待反弹」模式。</p>
+
+  <div class="alert alert-blue">
+    <strong>触发条件（任一满足，需连续 5 日确认；若10日内跌&gt;20%则无需确认）：</strong><br>
+    ① SPX/QQQ 较策略启动基准价下跌 ≥ 25%<br>
+    ② SPX/QQQ 较 MA200 下跌 ≥ 25%<br>
+    ③ 10 个交易日内跌幅 &gt; 20%（实时监测）
+  </div>
+
+  <ul class="steps">
+    <li><strong>T 日（触发确认后）：</strong>评估所有卖方仓位当前平仓成本。若总平仓成本 ≤ 净值 5%，全部平仓；否则逐笔计算，优先平仓最高风险仓位。</li>
+    <li><strong>T+1 开盘：</strong>市价买入平仓所有 SPX/SX5E 卖 Put 价差；市价平仓所有备兑 Call。将核心仓资金 50%–60% 转为 SPY/QQQ 正股（等待反弹买入，而非清仓离场）。</li>
+    <li><strong>持有指数模式：</strong>停止所有卖 Put 操作。对指数仓位执行低 Delta（≤ 0.10）备兑 Call，轻微增收。</li>
+    <li><strong>恢复条件（三项全满足）：</strong>指数从最低点反弹 ≥ 20% | SPX 站上 MA20 并维持 3 天 | VIX &lt; 25。以 0.25× 系数试仓，连续2月稳健后逐步恢复正常系数。</li>
+  </ul>
+
+  <h3>极端流动性枯竭应对</h3>
+  <div class="alert alert-amber">
+    市场暴跌时期权买卖价差可能扩大至 20%+，<strong>禁止使用市价单平仓</strong>，滑点将吞噬大量资金。<br>
+    正确做法：用限价单挂在 (Bid + Ask) / 2，每5分钟向 Bid 方向移动 $0.05，直到成交。多个合约平仓时，<strong>优先平 SPY/QQQ/SX5E 等高流动性指数</strong>，最后处理个股。
+  </div>
+</section>
+
+<!-- ══════════ §10 ══════════ -->
+<section class="section" id="s10">
+  <div class="sec-eyebrow">§ 10 · 日常运营</div>
+  <h2 class="sec-title">月度操作 SOP</h2>
+  <p class="sec-lead">标准执行日为每月第 2 个周二（避开期权到期周前后的流动性异常），全程约 90 分钟。建议固定时间段执行，形成操作肌肉记忆。</p>
+
+  <h3>第一步 · 环境分析（20 分钟）</h3>
+  <ul class="checklist">
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>IBKR 图表打开 SPX 周线，记录价格/MA20/MA50/MA20斜率，判断市场状态（§02）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>记录 VIX 即时值和 VIX3M，判断 VIX 硬约束级别；VIX&gt;VIX3M 时注意期限结构倒挂</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>运行三因子模型（§03），计算 F1/F2/F3 → 获取综合得分和仓位系数</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>查询期权链 <span class="t" data-tip="IVR（IV Rank）：当前隐含波动率在过去1年（252个交易日）历史区间中的百分位排名。IVR=60%代表当前IV高于过去1年60%的时间，是卖方开仓性价比的核心指标，通常≥50%才开仓。">IVR</span>（252天），IVR ≥ 50% 为理想开仓区间</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>查看 CBOE SKEW 指数（是否触发 L4 套利条件：SKEW≥145 或≤115）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>检查全球标的财报日历（AAPL/MSFT/META/NVO/ASML等），确认开仓窗口</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>检查 IBKR 账户：美国正股市值是否接近 $60,000 遗产税红线</span></li>
+  </ul>
+
+  <h3>第二步 · 制定方案（30 分钟）</h3>
+  <ul class="steps">
+    <li><strong>核心层（L1）：</strong>若仓位系数 ≥ 0.5 且 VIX ≤ 35，按§05 Delta 矩阵逐一筛选 2–4 个标的的开仓方案；计算每笔 EV；确定张数（含仓位系数和单标上限）。</li>
+    <li><strong>备兑层（L3）：</strong>若持有 AAPL/META 正股，按§08矩阵选备兑 Call 参数；验证行权价不低于综合成本；EV 验证。</li>
+    <li><strong>对冲层（L5）：</strong>若 VIX &gt; 25，评估是否买入近月 VX 期货或 SPX 保护性 Put（覆盖核心敞口 20%–30%，成本 ≤ 净值 1%）。</li>
+    <li><strong>汇总校验：</strong>预估新增保证金占用 → 确认执行后总保证金使用率 &lt; 60% → 确认现金+SGOV余额 ≥ 净值 35%。</li>
+  </ul>
+
+  <h3>第三步 · 执行交易（25 分钟）</h3>
+  <ul class="steps">
+    <li>IBKR 核心层：第一批（60%）以中间价挂限价组合单（Vertical Spread Order 或单腿 CSP）</li>
+    <li>为所有新仓位同步设置 GTC 止盈单（权利金衰减 50%）</li>
+    <li>设置价格告警：行权价 × 97%（提前3%预警） / 行权价 × 100%（立即评估）</li>
+    <li>备兑层：限价单，挂中间价；META 底仓仅 BBAE 账户操作</li>
+    <li>截图存档：成交确认 + GTC 止盈单设置 + 当日台账截图</li>
+    <li>次日：观察盘中波动后执行第二批（40%）；若价格显著改善可调整限价</li>
+  </ul>
+
+  <h3>第四步 · 风控检查（10 分钟）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr></thead>
+      <tbody>
+        <tr><td>总卖 Put 名义敞口</td><td>≤ 净值 50%</td><td>超过则平仓至满足</td></tr>
+        <tr><td>现金+SGOV 余额</td><td>≥ 净值 35%（$150K 账户 ≥ 45%）</td><td>不足则停止新开任何仓位</td></tr>
+        <tr><td>保证金使用率</td><td>&lt; 60%</td><td>&gt; 65% 触发 L2 熔断</td></tr>
+        <tr><td>AAPL/META 正股市值</td><td>≤ $60,000</td><td>超过立即评估转移或减仓</td></tr>
+        <tr><td>熔断状态</td><td>无 L1/L2/L3 触发</td><td>有触发则按§09执行，禁止新开仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>第五步 · 台账更新（10 分钟）</h3>
+  <ul class="checklist">
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>录入每笔新仓位全部必填字段（见§11台账模板）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>计算本月净权利金 → 更新累计收益追踪表</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>CNY 折算：记录所有收益的人民币等值（按平仓日中间汇率）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>设置下月操作日日历提醒（下月第2个周二）</span></li>
+    <li><div class="chk" onclick="this.classList.toggle('checked')"></div><span>备份：导出台账 CSV + 截图关键决策点，加密存储</span></li>
+  </ul>
+</section>
+
+<!-- ══════════ §11 ══════════ -->
+<section class="section" id="s11">
+  <div class="sec-eyebrow">§ 11 · 日常运营</div>
+  <h2 class="sec-title">绩效追踪台账</h2>
+  <p class="sec-lead">台账是策略的镜子，也是税务的原始凭证。每笔期权操作均须完整录入，缺一不可。建议使用 Excel 或 Google Sheets 并开启自动版本历史。</p>
+
+  <h3>核心收益计算公式</h3>
+  <div class="formula">
+    月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%
+    <br>
+    年化收益率（复利）= (1 + 月化收益率)¹² − 1
+    <br>
+    综合持股成本 = (原综合成本 × 持仓数 − 本月净权利金) ÷ 当前持仓数
+    <br>
+    税后收益率 = 税前收益率 × (1 − 预扣税率)  <span class="comment">// NRA权利金通常免税，股息适用协定税率</span>
+  </div>
+
+  <h3>台账必填字段（每笔期权，缺一不可）</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>字段</th><th>示例</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold">开仓日期</td><td class="td-code">2026-04-15</td><td>时间序列分析</td></tr>
+        <tr><td class="td-bold">账户</td><td class="td-code">IBKR / BBAE</td><td>账户归因</td></tr>
+        <tr><td class="td-bold">策略层级</td><td class="td-code">L1 核心层</td><td>收益归因分析</td></tr>
+        <tr><td class="td-bold">合约标识</td><td class="td-code">AAPL 260516 P 195</td><td>唯一识别</td></tr>
+        <tr><td class="td-bold">张数</td><td class="td-code">3</td><td>规模统计</td></tr>
+        <tr><td class="td-bold">开仓权利金/张（净）</td><td class="td-code">$3.50</td><td>收益确认基准</td></tr>
+        <tr><td class="td-bold">Delta（开仓时）</td><td class="td-code">−0.14</td><td>风险评估</td></tr>
+        <tr><td class="td-bold">DTE（开仓时）</td><td class="td-code">38 天</td><td>持有期分析</td></tr>
+        <tr><td class="td-bold">IVR（开仓时）</td><td class="td-code">57%</td><td>波动率环境记录</td></tr>
+        <tr><td class="td-bold">市场状态</td><td class="td-code">B</td><td>策略适应性分析</td></tr>
+        <tr><td class="td-bold">三因子得分/仓位系数</td><td class="td-code">65分 → 0.5×</td><td>决策质量审计</td></tr>
+        <tr><td class="td-bold">EV 合格确认</td><td class="td-code">EV=$195, EV率=27.3% ✓</td><td>纪律记录</td></tr>
+        <tr><td class="td-bold">平仓日期/价格</td><td class="td-code">2026-05-08 / $1.72</td><td>持有期收益计算</td></tr>
+        <tr><td class="td-bold">净收益</td><td class="td-code">+$534</td><td>绩效统计</td></tr>
+        <tr><td class="td-bold td-red">税务事件标记</td><td class="td-code">权利金收入</td><td>CPA 申报必需</td></tr>
+        <tr><td class="td-bold td-red">CNY 折算金额</td><td class="td-code">¥3,845（汇率7.20）</td><td>中国申报备用</td></tr>
+        <tr><td class="td-bold">备注</td><td class="td-code">财报前12天，流动性略差但达标</td><td>决策上下文</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>季度复盘核心指标</h3>
+  <div class="card-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="card"><div class="card-label">月度胜率</div><div class="card-val" style="color:var(--green);">≥75%</div><div class="card-sub">止盈次数/总开仓</div></div>
+    <div class="card"><div class="card-label">平均盈亏比</div><div class="card-val">≥2.5</div><div class="card-sub">平均盈利/平均亏损</div></div>
+    <div class="card"><div class="card-label">EV 实现率</div><div class="card-val">≈1.0</div><div class="card-sub">实际/预期收益</div></div>
+    <div class="card"><div class="card-label">红线违反次数</div><div class="card-val" style="color:var(--green);">= 0</div><div class="card-sub">任何违反需书面反思</div></div>
+  </div>
+</section>
+
+<!-- ══════════ §12 ══════════ -->
+<section class="section" id="s12">
+  <div class="sec-eyebrow">§ 12 · 日常运营</div>
+  <h2 class="sec-title">心理纪律守则</h2>
+  <p class="sec-lead">期权卖方策略的最终 Alpha 在于纪律，而非预测能力。顶级执行是枯燥的重复，不是激动人心的博弈。以下五大心理陷阱是绝大多数亏损的根本来源。</p>
+
+  <h3>五大心理陷阱与应对 SOP</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>心理陷阱</th><th>症状</th><th>正确认知</th><th>纪律 SOP</th></tr></thead>
+      <tbody>
+        <tr><td class="td-bold td-amber">踏空懊悔</td><td>备兑被行权后股价大涨，后悔「卖飞了」</td><td>行权价高于综合成本就是完整盈利，这是策略的正常结果，不是失误</td><td>立即按§08流程处理，禁止在更高价追涨建仓</td></tr>
+        <tr><td class="td-bold td-amber">接货恐慌</td><td>Put 被行权后股价继续下跌，想割肉离场</td><td>行权价已在支撑位下方，接货后立即备兑，时间是盟友，以12个月视角持仓</td><td>1–3日内强制开始备兑，禁止裸持正股超过3天</td></tr>
+        <tr><td class="td-bold td-amber">低 IV 焦虑</td><td>VIX&lt;15 时权利金太少，想降低标准开仓</td><td>低 IV = 市场认为风险低 = 卖方策略本身风险也低；不是机会减少，是风险减少</td><td>看滚动12个月均值，接受6%年化，不降开仓标准</td></tr>
+        <tr><td class="td-bold td-red">赌徒谬误</td><td>连续亏损后，想「加倍赚回来」</td><td>亏损后加仓是期权卖方爆仓的最直接原因，连续亏损往往意味着市场风格切换</td><td>触发 L1 熔断，强制24小时冷静期，禁止报复性交易</td></tr>
+        <tr><td class="td-bold td-blue">过度对冲</td><td>担心黑天鹅，买入大量保护侵蚀收益</td><td>对冲是运营成本，纳入年度预算（≤1.5%），过度对冲等于自我征税</td><td>严格执行L5预算，超出则减量而非取消</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>四条绝对红线</h3>
+  <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">违反任何一条，强制停止操作 2 周。停盘期间仅允许持有现金/SGOV，禁止任何期权操作（存量除外）。违反须提交书面反思并录入台账。</p>
+
+  <div class="redline">
+    <div class="redline-icon">①</div>
+    <div class="redline-text"><strong>状态 D 或 VIX &gt; 35 时卖任何 Put</strong><br>危机期间波动率极度不稳定，卖方策略的统计优势已不存在。此时任何卖方操作都是赌博，不是交易。</div>
+  </div>
+  <div class="redline">
+    <div class="redline-icon">②</div>
+    <div class="redline-text"><strong>EV 未达标仍强行开仓（主观代替量化）</strong><br>EV 门槛是客观保护机制，跳过它意味着情绪在主导决策。这是策略失控的早期信号。</div>
+  </div>
+  <div class="redline">
+    <div class="redline-icon">③</div>
+    <div class="redline-text"><strong>为弥补亏损而超系数上限加倍仓位</strong><br>亏损后加仓的冲动是人类最难克服的认知偏差。在期权卖方中，这往往是爆仓的直接原因。</div>
+  </div>
+  <div class="redline">
+    <div class="redline-icon">④</div>
+    <div class="redline-text"><strong>单账户美国正股市值 &gt; $60,000</strong><br>遗产税红线。NRA 身份下，超额部分将面临 40% 遗产税风险，这是不可逆的法律风险。</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div style="background:var(--gold-dim);border:1px solid rgba(200,151,58,0.3);border-radius:8px;padding:20px 24px;margin-top:16px;">
+    <div style="font-family:var(--serif);font-size:15px;font-weight:600;color:var(--gold-soft);margin-bottom:10px;">策略信条</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.85;">
+      你是一家全球多资产波动率保险公司，每个月向市场收取保费。<br>
+      大多数时间保险不触发，你积累复利；偶尔极端波动，你用多资产分散 + 现金储备 + 动态对冲三层再保险限制最大赔付。<br>
+      成功不来自于某次精彩预测，而来自于日复一日对流程的枯燥、严格的执行，并依靠概率和复利获得长期胜利。
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div>全球期权卖方波动率策略 · 综合操作手册 V1.0 · 2026-04</div>
+    <div style="margin-top:4px;">本手册基于历史数据与量化模型制定，不构成投资建议或税务建议。期权交易存在导致本金全部损失的风险。所有税务相关内容须经持牌 CPA 书面确认方可执行。过往绩效不代表未来收益。</div>
+    <div style="margin-top:4px;color:var(--text3);">下次审查：2026-07-01 · 保密文件，请勿外传</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ── NAV ACTIVE STATE ──
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const hdrH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hdr')) || 56;
+
+function updateNav() {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY + hdrH + 60 >= s.offsetTop) current = s.id;
+  });
+  navItems.forEach(n => {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+</script>
+</body>
+</html>

@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美股期权完整实战学习计划 · 终极版</title>
+<style>
+:root {
+  --ink: #1a1a18;
+  --paper: #f6f3ee;
+  --paper2: #ede9e0;
+  --paper3: #e4dfd5;
+  --gold: #b08a0e;
+  --rust: #b83c28;
+  --sage: #3d7a58;
+  --slate: #2e4f78;
+  --purple: #5a3fa0;
+  --dim: #6b6558;
+  --rule: rgba(26,26,24,0.1);
+  --green-bg: rgba(61,122,88,0.07);
+  --red-bg: rgba(184,60,40,0.06);
+  --blue-bg: rgba(46,79,120,0.07);
+  --gold-bg: rgba(176,138,14,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--paper);color:var(--ink);font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;font-size:15px;line-height:1.75;}
+.page{max-width:900px;margin:0 auto;padding:60px 36px 120px;}
+
+/* MASTHEAD */
+.masthead{border-bottom:3px solid var(--ink);padding-bottom:32px;margin-bottom:52px;}
+.badge-line{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1.5px solid;}
+.badge-g{border-color:var(--sage);color:var(--sage);}
+.badge-b{border-color:var(--slate);color:var(--slate);}
+.badge-o{border-color:var(--gold);color:var(--gold);}
+.badge-r{border-color:var(--rust);color:var(--rust);}
+h1{font-size:clamp(32px,5.5vw,54px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .sub{font-size:clamp(18px,3vw,26px);font-weight:300;color:var(--dim);letter-spacing:0;}
+.intro{font-size:15px;color:var(--dim);line-height:1.8;margin-top:18px;max-width:720px;}
+
+/* NAV */
+.toc{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:22px 26px;margin-bottom:52px;}
+.toc-title{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;}
+@media(max-width:600px){.toc-grid{grid-template-columns:1fr;}}
+.toc-item{font-size:13px;color:var(--slate);padding:4px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;}
+.toc-item a{color:var(--slate);text-decoration:none;}
+.toc-item a:hover{color:var(--ink);}
+.toc-num{font-size:11px;color:var(--dim);}
+
+/* SECTION */
+.sec{margin-top:64px;}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--rule);}
+h2{font-size:30px;font-weight:700;margin-bottom:6px;line-height:1.2;}
+h2.rust{color:var(--rust);}
+h2.sage{color:var(--sage);}
+h2.slate{color:var(--slate);}
+h2.gold{color:var(--gold);}
+h2.purple{color:var(--purple);}
+.sec-intro{font-size:14.5px;color:var(--dim);margin-bottom:24px;line-height:1.8;max-width:740px;}
+
+/* PHASE CARD */
+.phase{border:1px solid var(--rule);border-radius:6px;margin-bottom:18px;overflow:hidden;}
+.phase-header{display:flex;align-items:stretch;background:var(--paper2);border-bottom:1px solid var(--rule);}
+.phase-num{font-size:42px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1.5px var(--ink);line-height:1;padding:18px 22px 18px 18px;display:flex;align-items:center;}
+.phase-meta{padding:16px 20px 16px 0;flex:1;}
+.phase-title{font-size:17px;font-weight:700;margin-bottom:3px;}
+.phase-sub{font-size:12.5px;color:var(--dim);}
+.phase-tag{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 9px;border-radius:2px;margin-left:auto;margin-right:16px;align-self:center;white-space:nowrap;}
+.tag-now{background:var(--sage);color:#fff;}
+.tag-soon{background:var(--slate);color:#fff;}
+.tag-later{background:var(--gold);color:#fff;}
+.tag-adv{background:var(--purple);color:#fff;}
+.phase-body{padding:22px 24px;}
+.phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:600px){.phase-cols{grid-template-columns:1fr;}}
+.col-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.col-title.blue{color:var(--slate);}
+.col-title.red{color:var(--rust);}
+.col-title.green{color:var(--sage);}
+ul.items{list-style:none;}
+ul.items li{font-size:13.5px;padding:5px 0 5px 20px;position:relative;border-bottom:1px solid var(--rule);line-height:1.55;}
+ul.items li:last-child{border-bottom:none;}
+ul.items li::before{content:'›';position:absolute;left:0;color:var(--gold);font-size:17px;top:4px;}
+ul.items li strong{font-weight:600;}
+ul.items li .note{display:block;font-size:12px;color:var(--dim);margin-top:2px;font-style:italic;}
+.phase-goal{background:var(--paper3);border-radius:4px;padding:12px 16px;font-size:13.5px;margin-top:18px;line-height:1.65;}
+.phase-goal strong{color:var(--gold);}
+
+/* STRATEGY CARD */
+.strat{border:1px solid var(--rule);border-radius:6px;margin-bottom:22px;overflow:hidden;}
+.strat-header{background:var(--paper2);padding:14px 20px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px;}
+.strat-icon{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;}
+.si-green{background:var(--green-bg);color:var(--sage);}
+.si-blue{background:var(--blue-bg);color:var(--slate);}
+.si-gold{background:var(--gold-bg);color:var(--gold);}
+.si-red{background:var(--red-bg);color:var(--rust);}
+.strat-name{font-size:16px;font-weight:700;}
+.strat-name small{font-size:12px;font-weight:400;color:var(--dim);margin-left:8px;}
+.strat-body{padding:20px 22px;}
+.strat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px;}
+@media(max-width:650px){.strat-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:400px){.strat-grid{grid-template-columns:1fr;}}
+.param{background:var(--paper2);border-radius:4px;padding:12px 14px;}
+.param-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.param-val{font-size:15px;font-weight:700;color:var(--ink);}
+.param-note{font-size:11.5px;color:var(--dim);margin-top:3px;}
+
+/* CHECKLIST */
+.checklist{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:18px 22px;margin:16px 0;}
+.checklist-title{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13.5px;}
+.check-item:last-child{border-bottom:none;}
+.cb{width:18px;height:18px;border:1.5px solid var(--dim);border-radius:3px;flex-shrink:0;margin-top:2px;}
+.check-q{flex:1;line-height:1.55;}
+.check-q .fill{font-size:11px;font-weight:600;color:var(--slate);background:var(--blue-bg);padding:1px 7px;border-radius:2px;margin-left:6px;}
+
+/* ALERT / NOTICE */
+.alert{background:var(--red-bg);border-left:3px solid var(--rust);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.alert-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--rust);margin-bottom:6px;}
+.alert p{font-size:13.5px;line-height:1.65;}
+.notice{background:var(--green-bg);border-left:3px solid var(--sage);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.notice-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--sage);margin-bottom:6px;}
+.notice p{font-size:13.5px;line-height:1.65;}
+.info{background:var(--blue-bg);border-left:3px solid var(--slate);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.info-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;}
+.info p{font-size:13.5px;line-height:1.65;}
+
+/* RISK TABLE */
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;}
+@media(max-width:600px){.risk-grid{grid-template-columns:1fr 1fr;}}
+.risk-card{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;position:relative;padding-left:52px;}
+.risk-n{position:absolute;left:14px;top:14px;font-size:26px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--ink);line-height:1;}
+.risk-title{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+.risk-desc{font-size:12.5px;color:var(--dim);line-height:1.5;margin-bottom:6px;}
+.risk-val{font-size:12px;font-weight:700;color:var(--rust);background:var(--red-bg);padding:3px 8px;border-radius:3px;display:inline-block;}
+
+/* REGIME TABLE */
+table.regime{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+table.regime th{background:var(--paper3);padding:9px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);}
+table.regime td{padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top;}
+table.regime tr:last-child td{border-bottom:none;}
+table.regime tr:nth-child(even){background:rgba(0,0,0,0.02);}
+.regime-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:0.04em;}
+.rt-sell{background:var(--green-bg);color:var(--sage);}
+.rt-buy{background:var(--blue-bg);color:var(--slate);}
+.rt-wait{background:var(--gold-bg);color:var(--gold);}
+.rt-iron{background:rgba(90,63,160,0.08);color:var(--purple);}
+.rt-reduce{background:var(--red-bg);color:var(--rust);}
+
+/* ROUTINE */
+.routine{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:14px 0;}
+.routine-row{display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--rule);}
+.routine-row:last-child{border-bottom:none;}
+.routine-time{background:var(--paper3);padding:14px 16px;font-size:12px;font-weight:700;color:var(--dim);display:flex;align-items:flex-start;}
+.routine-content{padding:14px 18px;}
+.routine-content strong{font-size:14px;font-weight:700;}
+.routine-content p{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.6;}
+.r-tag{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-left:8px;}
+.r-analyze{background:var(--blue-bg);color:var(--slate);}
+.r-trade{background:var(--green-bg);color:var(--sage);}
+.r-review{background:var(--gold-bg);color:var(--gold);}
+.r-rule{background:var(--red-bg);color:var(--rust);}
+
+/* JOURNAL */
+table.journal{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0;min-width:600px;}
+table.journal th{background:var(--paper3);padding:8px 10px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);white-space:nowrap;}
+table.journal td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top;font-size:12px;color:var(--dim);font-style:italic;}
+.scroll-wrap{overflow-x:auto;}
+
+/* NRA BOX */
+.nra-box{border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:14px 0;}
+.nra-row{display:grid;grid-template-columns:180px 1fr;border-bottom:1px solid var(--rule);}
+.nra-row:last-child{border-bottom:none;}
+.nra-label{background:var(--paper2);padding:12px 16px;font-size:13px;font-weight:700;}
+.nra-val{padding:12px 16px;font-size:13px;line-height:1.6;}
+.ok{color:var(--sage);font-weight:700;}
+.warn{color:var(--rust);font-weight:700;}
+.neutral{color:var(--slate);font-weight:700;}
+
+/* BOOKS */
+.book-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:600px){.book-list{grid-template-columns:1fr;}}
+.book{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;gap:14px;}
+.book-order{font-size:28px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--gold);min-width:36px;line-height:1;}
+.book-title{font-size:14px;font-weight:700;}
+.book-author{font-size:12px;color:var(--dim);margin-top:2px;}
+.book-when{font-size:11px;font-weight:700;color:var(--slate);margin-top:4px;}
+.book-note{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5;}
+
+/* TOOLS */
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0;}
+@media(max-width:600px){.tools{grid-template-columns:1fr 1fr;}}
+.tool{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:14px;}
+.tool-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.tool-type{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.tool-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+
+/* MILESTONES */
+.milestones{position:relative;padding-left:36px;}
+.milestones::before{content:'';position:absolute;left:12px;top:20px;bottom:20px;width:1.5px;background:var(--rule);}
+.ms{position:relative;margin-bottom:28px;}
+.ms-dot{position:absolute;left:-30px;top:3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--dim);background:var(--paper);}
+.ms-dot.done{background:var(--sage);border-color:var(--sage);}
+.ms-dot.active{background:var(--slate);border-color:var(--slate);box-shadow:0 0 0 3px rgba(46,79,120,0.15);}
+.ms-month{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:3px;}
+.ms-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.ms-desc{font-size:13px;color:var(--dim);line-height:1.6;}
+
+/* CODE BLOCK */
+.code{background:var(--paper3);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;font-family:monospace;font-size:13px;margin:14px 0;line-height:1.7;white-space:pre-wrap;}
+
+/* FORMULA */
+.formula{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px 20px;margin:16px 0;text-align:center;font-size:18px;font-weight:700;letter-spacing:0.02em;}
+.formula small{display:block;font-size:12px;font-weight:400;color:var(--dim);margin-top:6px;}
+
+/* GREEK CARDS */
+.greek-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0;}
+@media(max-width:700px){.greek-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:440px){.greek-grid{grid-template-columns:repeat(2,1fr);}}
+.greek{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:14px;text-align:center;}
+.greek-sym{font-size:28px;font-weight:900;margin-bottom:4px;}
+.greek-name{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.greek-def{font-size:12px;color:var(--dim);line-height:1.5;text-align:left;}
+.greek-key{font-size:11px;font-weight:700;margin-top:6px;padding:3px 7px;border-radius:3px;display:inline-block;}
+
+/* SPX DECISION TREE */
+.decision{background:var(--blue-bg);border:1px solid rgba(46,79,120,0.2);border-radius:6px;padding:16px 20px;margin:16px 0;}
+.d-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate);margin-bottom:12px;}
+.d-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;font-size:13.5px;}
+.d-cond{font-weight:700;min-width:180px;}
+.d-arrow{color:var(--slate);font-weight:700;}
+
+/* ROLLING */
+.roll-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:600px){.roll-cards{grid-template-columns:1fr;}}
+.roll{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;}
+.roll-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.roll-when{font-size:11px;font-weight:700;color:var(--slate);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;}
+.roll-desc{font-size:12.5px;color:var(--dim);line-height:1.6;}
+.roll-example{font-size:12px;color:var(--slate);background:var(--blue-bg);padding:8px 10px;border-radius:4px;margin-top:10px;font-style:italic;}
+
+/* PSYCHOLOGY */
+.psych-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:550px){.psych-grid{grid-template-columns:1fr;}}
+.psych{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;}
+.psych-title{font-size:13.5px;font-weight:700;margin-bottom:8px;}
+.psych-body{font-size:12.5px;color:var(--dim);line-height:1.65;}
+
+/* PORTFOLIO */
+.port-table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+.port-table th{background:var(--paper3);padding:9px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);}
+.port-table td{padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top;}
+.port-table tr:last-child td{border-bottom:none;}
+
+/* FUND LADDER */
+.ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0;}
+@media(max-width:550px){.ladder{grid-template-columns:1fr;}}
+.ladder-step{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;position:relative;}
+.l-num{font-size:36px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--ink);position:absolute;top:10px;right:12px;line-height:1;}
+.l-phase{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.l-amount{font-size:18px;font-weight:800;margin-bottom:6px;}
+.l-detail{font-size:12.5px;color:var(--dim);line-height:1.6;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--rule);margin:56px 0;}
+
+/* FOOTER */
+.footer{text-align:center;font-size:12px;color:var(--dim);margin-top:32px;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="badge-line">
+    <span class="badge badge-g">新加坡 NRA 优化版</span>
+    <span class="badge badge-b">IBKR 实操导向</span>
+    <span class="badge badge-o">36周完整体系</span>
+    <span class="badge badge-r">2026 最终版</span>
+  </div>
+  <h1>美股期权<br><span class="sub">从零到实盘的完整学习与交易系统</span></h1>
+  <p class="intro">本计划整合七大AI方案精华，覆盖认知重构、策略体系、Rolling管理、组合级风控、心理建设与税务优化，共六大阶段36周。每个模块都有可直接执行的操作清单与验收标准，不是"教你学知识"，而是帮你建立一套能<strong>长期稳定赚钱的交易系统</strong>。</p>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <div class="toc-grid">
+    <div class="toc-item"><a href="#s0">阶段0：合规基建与账户配置</a><span class="toc-num">第1周</span></div>
+    <div class="toc-item"><a href="#s1">阶段1：期权认知重构</a><span class="toc-num">第2–5周</span></div>
+    <div class="toc-item"><a href="#s2">阶段2：核心策略体系</a><span class="toc-num">第6–12周</span></div>
+    <div class="toc-item"><a href="#s3">阶段3：Rolling管理系统</a><span class="toc-num">第13–15周</span></div>
+    <div class="toc-item"><a href="#s4">阶段4：实盘验证与心理建设</a><span class="toc-num">第16–22周</span></div>
+    <div class="toc-item"><a href="#s5">阶段5：组合管理与规模扩展</a><span class="toc-num">第23–36周</span></div>
+    <div class="toc-item"><a href="#risk">六大风控铁律</a><span class="toc-num">全程遵守</span></div>
+    <div class="toc-item"><a href="#regime">市场状态识别系统</a><span class="toc-num">全程遵守</span></div>
+    <div class="toc-item"><a href="#nra">NRA税务要点</a><span class="toc-num">合规必读</span></div>
+    <div class="toc-item"><a href="#routine">新加坡时区交易日程</a><span class="toc-num">每日执行</span></div>
+    <div class="toc-item"><a href="#journal">交易日志模板</a><span class="toc-num">每笔记录</span></div>
+    <div class="toc-item"><a href="#milestone">12个月里程碑</a><span class="toc-num">检查点</span></div>
+    <div class="toc-item"><a href="#books">按阶段书单</a><span class="toc-num">配套阅读</span></div>
+    <div class="toc-item"><a href="#tools">必备工具清单</a><span class="toc-num">全部免费</span></div>
+  </div>
+</div>
+
+<!-- ===================== PHASE 0 ===================== -->
+<div class="sec" id="s0">
+  <div class="sec-label">阶段零</div>
+  <h2 class="sage">合规基建与账户配置</h2>
+  <p class="sec-intro">在碰任何期权合约之前，先把账户状态、税务身份、工具链配置到"可交易状态"。这一步通常被忽视，但每一项都会影响你的实际盈亏。预计耗时：7天内完成。</p>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">0</div>
+      <div class="phase-meta">
+        <div class="phase-title">基础设施搭建</div>
+        <div class="phase-sub">第1周 · 7个任务 · 全部必须完成</div>
+      </div>
+      <span class="phase-tag tag-now">立即执行</span>
+    </div>
+    <div class="phase-body">
+      <div class="phase-cols">
+        <div>
+          <div class="col-title">账户与税务配置</div>
+          <ul class="items">
+            <li><strong>W-8BEN有效期确认</strong><span class="note">IBKR → Client Portal → Settings → Account Information → Tax Forms。截图保存，设置3年后到期提醒。到期未续签将被按30%预扣税。</span></li>
+            <li><strong>申请期权 Level 2 权限</strong><span class="note">申请理由：有美股交易经验、了解基础风险概念。Level 2允许Cash-Secured Put和Covered Call，是最安全的起步权限。</span></li>
+            <li><strong>申请期权 Level 3 权限</strong><span class="note">Level 3允许Spread策略（Bull Put Spread / Iron Condor等）。若IBKR要求，可提交交易记录或说明，耐心等待审批。</span></li>
+            <li><strong>激活Paper Trading账户</strong><span class="note">IBKR → Client Portal → Settings → Paper Trading。初始资金设为 $100,000（贴近真实杠杆感受）。这是你接下来3个月的主战场。</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title blue">工具链配置（全部免费）</div>
+          <ul class="items">
+            <li><strong>TWS桌面版配置</strong><span class="note">安装TWS桌面版 + IBKR Mobile。在期权链中配置显示列：Delta、Gamma、Theta、Vega、IV%、Open Interest、Bid/Ask、Volume。</span></li>
+            <li><strong>注册 Market Chameleon</strong><span class="note">市场上最好的免费IV Rank数据源。每日开盘前查询目标标的的IV Rank、IV Percentile、历史波动率曲线。</span></li>
+            <li><strong>注册 OptionStrat</strong><span class="note">每笔交易开仓前必须在这里建模，直观看盈亏曲线、Greeks变化，和最大亏损。养成"先建模再下单"的习惯。</span></li>
+            <li><strong>其他工具注册</strong><span class="note">Barchart.com（Put/Call Ratio）、Earnings Whispers（财报日历）、CBOE Options Institute（免费官方课程，先刷完Options 101视频系列）。</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-head">✓ 阶段0 验收标准</div>
+        <p>完成时必须能做到：(1) 截图显示W-8BEN有效期；(2) IBKR Paper Trading账户可以下期权单；(3) 能在Market Chameleon查到SPY的IV Rank；(4) 在OptionStrat成功建模一笔Bull Put Spread。<strong>全部完成后才进入阶段1。</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PHASE 1 ===================== -->
+<div class="sec" id="s1">
+  <div class="sec-label">阶段一</div>
+  <h2 class="slate">期权认知重构</h2>
+  <p class="sec-intro">绝大多数人期权亏钱，不是因为不懂策略，而是用了错误的底层认知框架。这个阶段不背概念，而是建立三个核心认知：期权的本质、Greeks的动态感知、IV作为定价核心。完成后你能用数字解释任何一笔期权盈亏。</p>
+
+  <div class="notice">
+    <div class="notice-head">核心比喻：先用这个框架理解所有期权</div>
+    <p><strong>买方 = 买保险</strong>：支付保费（权利金），买一个在特定价格成交的权利。大概率白费保费，但在黑天鹅时获得保护。<br>
+    <strong>卖方 = 卖保险</strong>：收取保费，承担对方的风险，赚大概率的小钱。你的目标是做一个<strong>长期有利可图的保险公司</strong>，不是赌单次暴涨暴跌。</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div class="phase-meta">
+        <div class="phase-title">期权本质与定价直觉</div>
+        <div class="phase-sub">第2–3周 · 建立量化定价框架</div>
+      </div>
+      <span class="phase-tag tag-now">基础必学</span>
+    </div>
+    <div class="phase-body">
+
+      <div class="formula">
+        期权价格 ≈ 内在价值 + 时间价值
+        <small>内在价值 = max(S − K, 0)（Call）或 max(K − S, 0)（Put）；时间价值受 IV、DTE、Gamma 影响</small>
+      </div>
+
+      <div class="formula">
+        持仓盈亏 ≈ Δ · ΔS &nbsp;+&nbsp; Θ · Δt &nbsp;+&nbsp; V · ΔIV
+        <small>方向贡献 + 时间贡献 + 波动率贡献 &nbsp;—&nbsp; 每笔交易前都要能拆解这三个来源</small>
+      </div>
+
+      <div class="col-title" style="margin-bottom:10px;">五大Greeks：每一个都要能口头解释</div>
+      <div class="greek-grid">
+        <div class="greek">
+          <div class="greek-sym" style="color:var(--slate);">Δ</div>
+          <div class="greek-name">Delta</div>
+          <div class="greek-def">标的每涨$1，期权价格变化多少。也约等于到期时价内的概率。</div>
+          <div class="greek-key" style="background:var(--blue-bg);color:var(--slate);">卖方选 Delta 0.15–0.25</div>
+        </div>
+        <div class="greek">
+          <div class="greek-sym" style="color:var(--gold);">Γ</div>
+          <div class="greek-name">Gamma</div>
+          <div class="greek-def">Delta对标的价格变化的敏感度。临近到期时Gamma爆炸，卖方最危险的时段。</div>
+          <div class="greek-key" style="background:var(--red-bg);color:var(--rust);">DTE &lt; 7天警戒</div>
+        </div>
+        <div class="greek">
+          <div class="greek-sym" style="color:var(--sage);">Θ</div>
+          <div class="greek-name">Theta</div>
+          <div class="greek-def">每天流逝的时间价值（美元）。卖方收益，买方成本。30–45 DTE时衰减最稳定。</div>
+          <div class="greek-key" style="background:var(--green-bg);color:var(--sage);">卖方的日收入</div>
+        </div>
+        <div class="greek">
+          <div class="greek-sym" style="color:var(--purple);">V</div>
+          <div class="greek-name">Vega</div>
+          <div class="greek-def">IV每变化1%，期权价格变化多少。财报/事件前IV膨胀，事件后IV崩塌（IV Crush）。</div>
+          <div class="greek-key" style="background:rgba(90,63,160,0.1);color:var(--purple);">IV高时卖，低时买</div>
+        </div>
+        <div class="greek">
+          <div class="greek-sym" style="color:var(--rust);">ρ</div>
+          <div class="greek-name">Rho</div>
+          <div class="greek-def">利率变化对期权价格的影响。短期期权影响极小，长期LEAPS才需考虑。</div>
+          <div class="greek-key" style="background:var(--red-bg);color:var(--rust);">初期可忽略</div>
+        </div>
+      </div>
+
+      <div class="phase-cols" style="margin-top:20px;">
+        <div>
+          <div class="col-title">每日训练任务（第2–3周，每天30分钟）</div>
+          <ul class="items">
+            <li><strong>开盘前（新加坡时间 18:00）</strong><span class="note">查SPY/QQQ的VIX、IV Rank（Market Chameleon）、term structure（不同到期日的IV比较）。记录到笔记本。</span></li>
+            <li><strong>开盘后（21:30）</strong><span class="note">打开IBKR Paper Trading期权链，观察ATM Call/Put的Bid-Ask spread，感受流动性差异。记录IV变化方向。</span></li>
+            <li><strong>每天回答3个问题</strong><span class="note">① 今天IV在上升还是下降？② 如果我现在卖30天到期的ATM Put，每天赚多少Theta？③ 如果明天IV +5%，我的假想持仓会亏损还是盈利？</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title blue">三个关键实验（Paper Trading完成）</div>
+          <ul class="items">
+            <li><strong>实验A：Theta衰减可视化</strong><span class="note">在Paper Trading中买入30天ATM SPY Call，持有7天，每天记录期权价值变化。亲眼见证时间价值流失。</span></li>
+            <li><strong>实验B：IV Crush体验</strong><span class="note">找一个即将公布财报的个股，在财报前3天买入ATM Straddle（理论上稳赚策略），财报后观察IV崩塌。即使方向对，也可能亏钱。</span></li>
+            <li><strong>实验C：Gamma爆炸警示</strong><span class="note">持有到期前3天的ATM期权，观察价格对标的涨跌的敏感度。理解为什么卖方必须在DTE≤7天前平仓。</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-goal"><strong>阶段1验收标准：</strong>不看任何工具，口头解释 SPY 当前一笔 Put 的定价来源——哪部分是内在价值，哪部分是时间价值，IV高/低对卖方分别意味着什么。能口头算出一张 SPY 450/445 Bull Put Spread 的最大亏损、最大收益、盈亏平衡点。</div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">1B</div>
+      <div class="phase-meta">
+        <div class="phase-title">IV与隐含波动率直觉</div>
+        <div class="phase-sub">第4–5周 · 期权定价最核心变量</div>
+      </div>
+      <span class="phase-tag tag-now">基础必学</span>
+    </div>
+    <div class="phase-body">
+
+      <p style="font-size:14px;margin-bottom:16px;line-height:1.8;color:var(--dim);">IV（Implied Volatility，隐含波动率）不是"预测未来波动的指标"，而是<strong>市场对未来波动的定价</strong>。你要把IV当成期权的"价格标签"，而不是行情判断工具。</p>
+
+      <div class="phase-cols">
+        <div>
+          <div class="col-title">必须理解的IV核心概念</div>
+          <ul class="items">
+            <li><strong>IV Rank（IVR）</strong><span class="note">当前IV相对于过去52周IV范围的百分位。IVR = 70意味着当前IV比过去一年的70%时间都要高。这才是判断卖方时机的核心指标，不是IV的绝对数字。</span></li>
+            <li><strong>IV Percentile（IVP）</strong><span class="note">当前IV高于过去365天中的百分之几的日子。与IVR相似但计算方式不同。Market Chameleon两个都会显示，优先看IVP。</span></li>
+            <li><strong>IV Crush（波动率崩塌）</strong><span class="note">财报/FOMC等事件后，IV从高位急速下跌。即使标的涨了，买方也可能亏损——因为期权的"保险溢价"消失了。卖方在事件后获益。</span></li>
+            <li><strong>Volatility Skew（波动率偏斜）</strong><span class="note">同一到期日，不同行权价的IV不同。通常Put端IV高于Call端（市场对下跌恐惧 > 对上涨贪婪）。这解释了为什么同等距离的卖Put收益通常高于卖Call。</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title blue">IV操作铁律（记住就够了）</div>
+          <ul class="items">
+            <li><strong>IVR > 30%：卖方市场，可以开仓</strong><span class="note">IV处于相对高位，卖出的期权权利金"偏贵"，有优势。这是卖方策略（CSP、Bull Put Spread）的核心进场信号。</span></li>
+            <li><strong>IVR < 20%：买方市场或观望</strong><span class="note">IV处于相对低位，期权便宜，买方占优。此时开卖方仓位权利金太薄，性价比差。应降低开仓频率或完全观望。</span></li>
+            <li><strong>财报前7天：减仓或对冲</strong><span class="note">不管方向判断多准确，财报前IV高企，卖方风险极大。持有仓位要么平仓，要么买入对冲腿转成Spread，限制最大亏损。</span></li>
+            <li><strong>VIX > 30：降低总仓位</strong><span class="note">市场恐慌时，虽然卖方收益看起来丰厚，但黑天鹅风险极大。此时应将保证金使用率降至20%以下，只做定义风险的Spread策略。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PHASE 2 ===================== -->
+<div class="sec" id="s2">
+  <div class="sec-label">阶段二</div>
+  <h2 class="gold">核心策略体系</h2>
+  <p class="sec-intro">只需要掌握4个策略，不需要更多。每个策略都有完整的开仓参数、检查清单和退出规则。Paper Trading完成50笔有记录的交易后才进入阶段3。</p>
+
+  <!-- Strategy 1: CSP -->
+  <div class="strat">
+    <div class="strat-header">
+      <div class="strat-icon si-green">P</div>
+      <div class="strat-name">现金担保看跌期权（CSP）<small>Cash-Secured Put — 你的核心收益引擎</small></div>
+    </div>
+    <div class="strat-body">
+      <p style="font-size:14px;line-height:1.8;margin-bottom:16px;color:var(--dim);"><strong>本质：</strong>设定一个你愿意买入SPY/QQQ的理想价格，卖出对应Put，收取权利金。你不是在做方向判断，而是在"挂买单"同时收保证金利息。如果标的不跌到你的价格，权利金是纯收益；如果跌到了，你以心仪价格买入资产（且有权利金折价）。</p>
+
+      <div class="strat-grid">
+        <div class="param"><div class="param-label">标的优先级</div><div class="param-val">XSP / SPX</div><div class="param-note">其次SPY/QQQ，优先现金结算产品避免行权风险</div></div>
+        <div class="param"><div class="param-label">Delta目标</div><div class="param-val">0.15 – 0.25</div><div class="param-note">约75–85%胜率，价外15–25%的Put</div></div>
+        <div class="param"><div class="param-label">到期时间</div><div class="param-val">30 – 45 DTE</div><div class="param-note">Theta衰减速度最稳定的区间</div></div>
+        <div class="param"><div class="param-label">IV Rank门槛</div><div class="param-val">IVR > 30%</div><div class="param-note">低于此值不开仓，期权太便宜</div></div>
+        <div class="param"><div class="param-label">单笔资金上限</div><div class="param-val">账户 ≤ 15%</div><div class="param-note">$50K账户每笔保证金 ≤ $7,500</div></div>
+        <div class="param"><div class="param-label">止盈目标</div><div class="param-val">权利金 50%</div><div class="param-note">收到$100权利金 → 剩$50时平仓</div></div>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-title">⬛ CSP 开仓前检查清单（每次必须全部打勾）</div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">当前 XSP/SPY IV Rank = <span class="fill">填入____%</span>，确认 IVR &gt; 30%？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">目标行权价 = <span class="fill">$____</span>，Delta = <span class="fill">____</span>，确认在 0.15–0.25 范围内？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">到期日 = <span class="fill">____</span>，DTE = <span class="fill">____</span>天，确认在 30–45 天？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">权利金收入 = <span class="fill">$____</span>，年化收益率 = <span class="fill">____</span>%，是否符合预期？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">如果被行权，我真的愿意以 $<span class="fill">____</span> 的价格买入该资产吗？（非常重要，务必诚实回答）</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">此笔占用保证金 = $<span class="fill">____</span>，占当前账户净值 <span class="fill">____</span>%，是否在15%以内？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">查 Earnings Whispers，未来 30 天内有财报/FOMC吗？<span class="fill">有/无</span></div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">在 OptionStrat 建模完成，确认最大亏损 = $<span class="fill">____</span>，可以承受？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">已写好退出规则：止盈价 $<span class="fill">____</span>（50%权利金）；止损价 $<span class="fill">____</span>（亏损达200%权利金）</div></div>
+      </div>
+
+      <div class="phase-cols">
+        <div>
+          <div class="col-title green">退出规则（必须预先写好）</div>
+          <ul class="items">
+            <li><strong>止盈（优先）</strong><span class="note">权利金剩余 ≤ 50% 时平仓。例：收$200权利金，买回价格达$100时平仓。不要贪最后的时间价值，早平仓留资金做下一笔。</span></li>
+            <li><strong>止损（纪律）</strong><span class="note">亏损达权利金的 200% 时必须平仓。例：收$100权利金，当平仓成本达$300时（亏$200）必须止损。不得加仓摊低。</span></li>
+            <li><strong>DTE ≤ 14天：评估展期</strong><span class="note">临近到期的仓位Gamma风险急剧上升。若仍有浮亏，评估是否需要Rolling（见阶段3）。</span></li>
+            <li><strong>财报前7天：强制处理</strong><span class="note">要么平仓，要么买入保护腿转成Bull Put Spread，不可裸仓过财报。</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title blue">NRA特别优化：为什么选XSP/SPX而非SPY</div>
+          <ul class="items">
+            <li><strong>现金结算，无行权风险</strong><span class="note">XSP/SPX到期时直接结算现金差价，不会半夜被assign收到100股股票。对新加坡时差用户极为重要。</span></li>
+            <li><strong>1256合约税务优势</strong><span class="note">SPX/XSP属于Section 1256合约，享有60%长期/40%短期资本利得税率处理。作为NRA此优势有限，但确认税务处理方式更清晰。</span></li>
+            <li><strong>XSP = SPX的十分之一</strong><span class="note">XSP每张合约 = SPX的1/10，约$5,700保证金（行权价570×10）。$50K账户做XSP比SPX更灵活，可以同时开多笔不同到期日的仓位。</span></li>
+            <li><strong>股息陷阱规避</strong><span class="note">SPY会发放股息，NRA需缴纳30%股息预扣税。XSP/SPX为指数期权，无股息问题，收益全为权利金（按资本利得处理，NRA通常0%预扣）。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy 2: Bull Put Spread -->
+  <div class="strat">
+    <div class="strat-header">
+      <div class="strat-icon si-blue">↗</div>
+      <div class="strat-name">牛市价差 / Bull Put Spread<small>风险定义型收益引擎，比CSP更安全</small></div>
+    </div>
+    <div class="strat-body">
+      <p style="font-size:14px;line-height:1.8;margin-bottom:16px;color:var(--dim);"><strong>结构：</strong>同时卖出较高行权价Put（收权利金）+ 买入较低行权价Put（付保护费）。结果是：最大亏损被锁定，资金效率提升，更适合$50K量级的账户。在IVR高时，这是比裸CSP更聪明的选择。</p>
+
+      <div class="strat-grid">
+        <div class="param"><div class="param-label">卖出腿 Delta</div><div class="param-val">0.20 – 0.30</div><div class="param-note">卖出这条腿收权利金</div></div>
+        <div class="param"><div class="param-label">买入腿 Delta</div><div class="param-val">0.05 – 0.15</div><div class="param-note">买入保护，锁定最大亏损</div></div>
+        <div class="param"><div class="param-label">价差宽度</div><div class="param-val">$5 – $10</div><div class="param-note">XSP用5点，SPY用5–10点</div></div>
+        <div class="param"><div class="param-label">收益目标</div><div class="param-val">价差20–33%</div><div class="param-note">$5价差→收$1–1.65净权利金</div></div>
+        <div class="param"><div class="param-label">DTE</div><div class="param-val">30 – 45天</div><div class="param-note">同CSP，不变</div></div>
+        <div class="param"><div class="param-label">单笔最大亏损</div><div class="param-val">≤ 账户2%</div><div class="param-note">$50K账户 ≤ $1,000/笔</div></div>
+      </div>
+
+      <div class="alert">
+        <div class="alert-head">⚠ 关键理解：Bull Put Spread vs CSP 的本质区别</div>
+        <p><strong>CSP</strong> = 裸卖Put，最大亏损理论上是行权价 × 100（标的跌到零）。$50K账户做3张SPY Put，理论最大亏损超过$15万——虽然现实中不会发生，但保证金占用大，精神压力也大。<br>
+        <strong>Bull Put Spread</strong> = 最大亏损 = (价差宽度 − 净权利金) × 合约乘数。5点价差收$1权利金，最大亏损 = ($5 − $1) × 100 = $400。这是真正的"定义风险"，让你睡得安稳。</p>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-title">⬛ Bull Put Spread 开仓前检查清单</div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">卖出Put：行权价 $<span class="fill">____</span>，Delta = <span class="fill">____</span>，收权利金 $<span class="fill">____</span></div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">买入Put：行权价 $<span class="fill">____</span>，Delta = <span class="fill">____</span>，付权利金 $<span class="fill">____</span></div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">净权利金收入 = $<span class="fill">____</span>，价差宽度 = $<span class="fill">____</span>，收益率 = <span class="fill">____</span>%</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">最大亏损 = $<span class="fill">____</span>，占账户净值 <span class="fill">____</span>%，是否在2%以内？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">盈亏平衡点 = $<span class="fill">____</span>（卖出行权价 − 净权利金），是否在合理支撑位下方？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">IVR = <span class="fill">____</span>%，是否 &gt; 30%？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">在OptionStrat确认建模，最大亏损数字与计算一致？</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy 3: Covered Call -->
+  <div class="strat">
+    <div class="strat-header">
+      <div class="strat-icon si-gold">C</div>
+      <div class="strat-name">备兑看涨期权（Covered Call）<small>已持仓转现金流的最低风险策略</small></div>
+    </div>
+    <div class="strat-body">
+      <p style="font-size:14px;line-height:1.8;margin-bottom:16px;color:var(--dim);"><strong>适用场景：</strong>你已经持有某股票（100股以上），想每月额外增加收益，同时愿意在某个价格卖出持仓。这是期权中风险最低的策略之一，因为你的股票就是"担保品"。</p>
+
+      <div class="strat-grid">
+        <div class="param"><div class="param-label">卖出Call Delta</div><div class="param-val">0.25 – 0.35</div><div class="param-note">稍高于CSP的Delta，平衡权利金与被行权风险</div></div>
+        <div class="param"><div class="param-label">DTE</div><div class="param-val">21 – 35天</div><div class="param-note">比CSP稍短，快速收租</div></div>
+        <div class="param"><div class="param-label">止盈</div><div class="param-val">权利金 50%</div><div class="param-note">同CSP止盈逻辑</div></div>
+      </div>
+
+      <div class="phase-cols">
+        <div>
+          <div class="col-title green">核心优势</div>
+          <ul class="items">
+            <li><strong>降低持仓成本</strong><span class="note">每月收取权利金，等于每月在降低买入成本。持有6个月可显著改善持仓的盈亏平衡点。</span></li>
+            <li><strong>心理平衡</strong><span class="note">股票横盘或小跌时，Covered Call的权利金可以弥补浮亏，让你不那么焦虑。</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title red">核心风险</div>
+          <ul class="items">
+            <li><strong>"卖飞"风险</strong><span class="note">标的大涨时，你的股票可能被强制以行权价卖出，错过上涨收益。所以行权价要设在你愿意卖出的价格以上。</span></li>
+            <li><strong>NRA分红注意</strong><span class="note">持有SPY正股期间若经过分红，NRA需缴30%预扣税。卖Call时要确认分红日，必要时提前平仓。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy 4: Iron Condor -->
+  <div class="strat">
+    <div class="strat-header">
+      <div class="strat-icon si-red">⟺</div>
+      <div class="strat-name">铁鹰组合（Iron Condor）<small>震荡市双边收租——第10周后引入</small></div>
+    </div>
+    <div class="strat-body">
+      <p style="font-size:14px;line-height:1.8;margin-bottom:16px;color:var(--dim);"><strong>结构：</strong>同时持有 Bull Put Spread（下方保护）+ Bear Call Spread（上方保护），在价格区间内双边收取权利金。适合VIX高且市场横盘震荡的环境。</p>
+
+      <div class="alert">
+        <div class="alert-head">⚠ Iron Condor 学习时序要求</div>
+        <p>必须先熟练掌握Bull Put Spread（至少10笔有记录的Paper Trading），再引入Iron Condor。因为Iron Condor本质上是两个Spread同时管理，如果连单个Spread的调整逻辑都不熟悉，Iron Condor会让你手忙脚乱。<strong>第10周前禁止在实盘操作Iron Condor。</strong></p>
+      </div>
+
+      <div class="strat-grid">
+        <div class="param"><div class="param-label">适用场景</div><div class="param-val">VIX &gt; 20 + 横盘</div><div class="param-note">两边IV都高时才值得做</div></div>
+        <div class="param"><div class="param-label">Put端Delta</div><div class="param-val">0.15 – 0.20</div><div class="param-note">下方安全距离</div></div>
+        <div class="param"><div class="param-label">Call端Delta</div><div class="param-val">0.15 – 0.20</div><div class="param-note">上方安全距离</div></div>
+        <div class="param"><div class="param-label">单侧最大亏损</div><div class="param-val">≤ 账户2%</div><div class="param-note">整个Condor ≤ 4%</div></div>
+        <div class="param"><div class="param-label">止盈</div><div class="param-val">总权利金 50%</div><div class="param-note">不贪，早平仓</div></div>
+        <div class="param"><div class="param-label">DTE</div><div class="param-val">30 – 45天</div><div class="param-note">标准时间框架</div></div>
+      </div>
+
+      <div class="phase-goal"><strong>阶段2验收标准：</strong>Paper Trading完成以下记录：CSP 15笔（含至少2笔亏损/止损）、Bull Put Spread 15笔（含至少1笔展期）、Covered Call 10笔、Iron Condor 10笔。每笔都有完整的开仓前检查清单记录和退出记录。连续两个完整周期（约45–60天）总Theta收入为正。</div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <div class="notice-head">✓ Paper Trading训练要求</div>
+    <p>Paper Trading不只是"练习下单"，而是<strong>建立反射性纪律</strong>。要求：每笔都有完整的9项检查清单记录；至少经历3笔亏损并执行止损（没有亏损经历的学习是无效的）；记录开仓时的IV Rank和当时VIX；记录持仓期间最大浮亏（MFE最大有利运动 & MAE最大不利运动）。</p>
+  </div>
+</div>
+
+<!-- ===================== PHASE 3: ROLLING ===================== -->
+<div class="sec" id="s3">
+  <div class="sec-label">阶段三</div>
+  <h2 class="rust">Rolling滚动管理系统</h2>
+  <p class="sec-intro">这是其他AI方案最缺失的核心内容，也是将"普通期权学习者"和"能长期盈利的交易者"区分开来的关键。Rolling的本质是：<strong>用结构调整代替止损，用时间换空间</strong>。</p>
+
+  <div class="roll-cards">
+    <div class="roll">
+      <div class="roll-when">何时用：仓位有盈亏但逻辑未变</div>
+      <div class="roll-title">类型一：时间滚动（Roll Out）</div>
+      <div class="roll-desc">将当前仓位展期到更远的到期日，同时收取额外权利金。适合标的横盘、仓位轻微亏损、但你仍然看好方向的情况。</div>
+      <div class="roll-example">操作：买回当前Put（平仓），同时卖出相同行权价但更远30天的Put。目标：展期权利金 > 买回成本，即净收入或平价展期。</div>
+    </div>
+    <div class="roll">
+      <div class="roll-when">何时用：标的下跌，接近行权价</div>
+      <div class="roll-title">类型二：价格滚动（Roll Down）</div>
+      <div class="roll-desc">将行权价向下调整到更低的价位，同时通常配合展期。用损失一部分权利金的代价换取安全距离。适合标的已经跌破你的"心理支撑位"。</div>
+      <div class="roll-example">操作：买回450 Put，同时卖出430 Put（更远到期日）。行权价降低$20，增加安全距离，代价是权利金减少。</div>
+    </div>
+    <div class="roll">
+      <div class="roll-when">何时用：风险过大，需要锁定亏损上限</div>
+      <div class="roll-title">类型三：转Spread（Roll to Spread）</div>
+      <div class="roll-desc">将裸CSP转化为Bull Put Spread，通过买入更低行权价的保护腿，锁定最大亏损。适合IV突然上升、账户风险超过容忍度的情况。</div>
+      <div class="roll-example">操作：持有SPY 450 Put → 买入SPY 440 Put。支付保护费，但最大亏损从理论无限变为$1,000。</div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div class="phase-meta">
+        <div class="phase-title">Rolling决策树</div>
+        <div class="phase-sub">第13–15周 · 必须内化为反射动作</div>
+      </div>
+      <span class="phase-tag tag-soon">核心技能</span>
+    </div>
+    <div class="phase-body">
+
+      <div class="col-title" style="margin-bottom:12px;">完整Rolling判断流程（从上到下依次判断）</div>
+      <div class="code">当仓位出现压力时，按顺序回答以下问题：
+
+1. 距离到期还有多少天（DTE）？
+   ├─ DTE > 21天：有足够时间，先观察，不急于行动
+   └─ DTE ≤ 21天：必须开始处理（平仓、展期或转Spread）
+
+2. 当前亏损幅度是多少？
+   ├─ 亏损 < 权利金100%：正常浮亏范围，继续观察或小幅调整
+   ├─ 亏损 100%–200%：评估展期（Roll Out/Down）
+   └─ 亏损 > 200%：触发止损线，直接平仓，不做Rolling
+
+3. 标的方向是否改变？
+   ├─ 方向未变（只是短期波动）：可以Roll Out（同行权价展期）
+   ├─ 方向偏弱（标的弱势但未破关键支撑）：Roll Down + Roll Out
+   └─ 方向完全改变（跌破关键支撑，趋势反转）：直接平仓止损，不执行Rolling
+
+4. Rolling后能否获得额外权利金？
+   ├─ 净权利金为正（Roll后仍收到钱）：合理，执行
+   ├─ 平价展期（收支平衡）：可以考虑，用时间换空间
+   └─ 需要支付权利金（Roll出去还要付钱）：通常不合算，直接止损更好
+
+5. 考虑IV环境：
+   ├─ IV高时：展期更有价值，Rolling更合算
+   └─ IV低时：展期权利金薄，止损后等机会重新开仓可能更好</div>
+
+      <div class="alert">
+        <div class="alert-head">⚠ Rolling的两个禁忌</div>
+        <p>① <strong>不要无限Rolling</strong>：Rolling是"给仓位时间"，不是"永远不止损"。如果连续Rolling 3次仍然没有好转，说明你的市场判断是错误的，必须平仓认输。<br>
+        ② <strong>不要为了心理舒适而Rolling</strong>：有些人Rolling只是因为不想承认亏损，而不是因为市场逻辑支持继续持仓。每次Rolling前问自己：如果这是全新的一笔交易，我现在会开这个仓位吗？如果答案是否，就平仓。</p>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-title">⬛ Rolling执行前检查清单</div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">Rolling的理由是什么？是"市场逻辑支持继续持有"还是"我不想承认亏损"？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">展期权利金 vs 买回成本：净权利金为正或接近平价？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">Rolling后的新仓位，从零开始重新做检查清单，各项是否仍然合格？</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">这是第几次Rolling同一个仓位？超过2次则认真考虑止损。</div></div>
+        <div class="check-item"><div class="cb"></div><div class="check-q">Rolling后保证金占用是否超过账户15%？是则必须减仓后再Rolling。</div></div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-head">✓ 阶段3 训练任务</div>
+        <p>人为制造3种不利场景进行Rolling演练：① 在Paper Trading中让标的"模拟大跌5%"，练习Roll Down + Roll Out；② 模拟IV暴涨20%，练习CSP转Spread；③ 模拟横盘耗时间（DTE快到而标的不动），练习Roll Out获取额外Theta。每种情况至少完成2次完整Rolling操作。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PHASE 4: LIVE TRADING ===================== -->
+<div class="sec" id="s4">
+  <div class="sec-label">阶段四</div>
+  <h2 class="slate">实盘验证与心理建设</h2>
+  <p class="sec-intro">从Paper Trading过渡到实盘是最难的一步。不是技术难，而是心理难。账户里每一个数字都是真实的钱，任何Paper Trading都无法完全模拟这种感受。这个阶段的目标不是盈利，而是验证策略可执行性，并建立心理耐受度。</p>
+
+  <div class="ladder">
+    <div class="ladder-step">
+      <div class="l-num">1</div>
+      <div class="l-phase">第15–18周 · 微型实盘</div>
+      <div class="l-amount">$2,000 – $3,000</div>
+      <div class="l-detail">账户资金的5%。每次只做1张合约。只做XSP的Bull Put Spread（定义风险）。目标：验证下单流程、感受真实滑点、测试心理承受力。不看收益，看执行纪律。</div>
+    </div>
+    <div class="ladder-step">
+      <div class="l-num">2</div>
+      <div class="l-phase">第19–22周 · 扩展实盘</div>
+      <div class="l-amount">$5,000 – $8,000</div>
+      <div class="l-detail">账户资金的10–15%。可增至2–3张合约，引入CSP。开始跟踪真实交易的Greeks和日志。目标：累计20笔实盘记录，胜率&gt;60%，每笔都有完整日志。</div>
+    </div>
+    <div class="ladder-step">
+      <div class="l-num">3</div>
+      <div class="l-phase">第23周+ · 正式扩展</div>
+      <div class="l-amount">$15,000 – $25,000</div>
+      <div class="l-detail">账户资金30–50%。多个到期日的仓位并行。引入组合层面的Greeks监控。可考虑SPX大合约和个股期权。</div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div class="phase-meta">
+        <div class="phase-title">心理建设系统</div>
+        <div class="phase-sub">第16–22周 · 软技能 = 真实盈亏的关键</div>
+      </div>
+      <span class="phase-tag tag-soon">不可跳过</span>
+    </div>
+    <div class="phase-body">
+
+      <div class="psych-grid">
+        <div class="psych">
+          <div class="psych-title">每周日进行"压力预演"（30分钟）</div>
+          <div class="psych-body">
+            回顾本周最大浮亏时刻，用文字描述当时的身体感受（手心出汗？心跳加速？想马上平仓？）。<br><br>
+            模拟极端场景：如果明天开盘SPX跌5%，你的当前仓位会怎样？写出具体应对步骤（不是情绪反应，是具体操作）。<br><br>
+            如果连续3笔亏损，执行72小时暂停规则，只复盘，禁止新开仓。
+          </div>
+        </div>
+        <div class="psych">
+          <div class="psych-title">实盘特有的心理挑战与应对</div>
+          <div class="psych-body">
+            <strong>报复性交易</strong>：亏损后想"扳回来"而快速开新仓。应对：亏损后强制等待24小时，重新过检查清单。<br><br>
+            <strong>过早止盈焦虑</strong>：仓位盈利后担心回撤，过早平仓。应对：信任检查清单设定的50%止盈点，不随意提前平仓。<br><br>
+            <strong>半夜盯盘冲动</strong>：新加坡时区，美股深夜仍在交易。应对：设好IBKR价格Alert，手机通知触发才看账户，否则强制关掉App。
+          </div>
+        </div>
+        <div class="psych">
+          <div class="psych-title">实盘日志的心理指标（额外字段）</div>
+          <div class="psych-body">
+            在标准交易日志基础上，每笔额外记录：<br><br>
+            <strong>持仓恐惧指数</strong>：1–10分（10分 = 随时想平仓）<br>
+            <strong>夜间醒来次数</strong>：每夜因担心仓位而醒来的次数<br>
+            <strong>后悔事件</strong>："如果当时能..."的具体想法<br><br>
+            这些数据6个月后会告诉你：哪些仓位类型超出了你的心理承受边界。
+          </div>
+        </div>
+        <div class="psych">
+          <div class="psych-title">何时扩大仓位（判断标准）</div>
+          <div class="psych-body">
+            <strong>不是</strong>：连续赚了几笔就可以加仓<br>
+            <strong>而是满足以下全部条件：</strong><br><br>
+            ① 连续20笔实盘记录，胜率 &gt; 60%<br>
+            ② 最大单笔亏损未超过账户2%<br>
+            ③ 日志显示你执行了检查清单（有据可查）<br>
+            ④ 持仓恐惧指数平均 &lt; 5分（说明仓位在舒适区内）<br>
+            ⑤ 没有违反任何风控规则记录
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-head">✓ 实盘与Paper Trading的关键差异</div>
+        <p>实盘会有真实<strong>滑点</strong>（实际成交价 vs 理论中间价的差距）。流动性差的合约滑点可能吃掉利润的10–20%。建议始终用Limit单，以中间价（Bid+Ask÷2）为基准，最多让步0.01–0.02。IBKR的Adaptive Algo算法单会自动寻找最优价格，推荐使用。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PHASE 5: PORTFOLIO ===================== -->
+<div class="sec" id="s5">
+  <div class="sec-label">阶段五</div>
+  <h2 class="purple">组合管理与规模扩展</h2>
+  <p class="sec-intro">从"一笔一笔交易"的思维，升级到"整个组合"的视角。你管理的不再是几张期权合约，而是一个有Delta、Theta、Vega净敞口的投资组合。这个视角的转变是走向成熟交易者的关键。</p>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div class="phase-meta">
+        <div class="phase-title">组合层面Greeks监控</div>
+        <div class="phase-sub">第23周+ · 每日查看</div>
+      </div>
+      <span class="phase-tag tag-later">进阶</span>
+    </div>
+    <div class="phase-body">
+
+      <table class="port-table">
+        <thead>
+          <tr><th>组合指标</th><th>目标范围</th><th>含义</th><th>超限应对措施</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>净 Delta</strong></td><td>−50 到 +50<br><small>（以账户价值为基准）</small></td><td>组合整体的方向性暴露。正Delta = 偏多，负Delta = 偏空。</td><td>偏空过多 → 加Bull Put Spread；偏多过多 → 加Bear Call Spread或减仓</td></tr>
+          <tr><td><strong>净 Theta</strong></td><td>每日收取账户价值的0.05%–0.10%</td><td>组合每天自动产生的时间价值收益。这是你的"被动租金"。</td><td>Theta为负 → 检查是否买入头寸过多；减少买方仓位</td></tr>
+          <tr><td><strong>净 Vega</strong></td><td>&lt; 账户价值5%</td><td>IV每变化1%，组合盈亏变化多少。卖方为负Vega（IV涨则亏）。</td><td>Vega暴露过大 → 临近事件前降仓，减少IV敏感度</td></tr>
+          <tr><td><strong>保证金使用率</strong></td><td>&lt; 40%</td><td>已用保证金占账户净值的比例。60%以上开始有爆仓风险。</td><td>超40% → 停止开新仓，优先关闭盈利最小的仓位</td></tr>
+          <tr><td><strong>单月最大回撤</strong></td><td>&lt; 6%</td><td>当月亏损超过账户6%则停止开新仓，只管理现有仓位。</td><td>超限 → 月内停止开仓，月初重置</td></tr>
+        </tbody>
+      </table>
+
+      <div class="col-title" style="margin-bottom:12px;margin-top:20px;">现金流结构：多个到期日并行</div>
+      <div class="code">理想的组合结构（$50K账户参考）：
+
+层次1：主收益层（30–45 DTE）
+  └─ XSP Bull Put Spread × 3–4张
+  └─ 保证金占用约 $12,000–15,000（账户25–30%）
+  └─ 预期Theta收入：每日 $25–40
+
+层次2：辅助加速层（14–21 DTE）
+  └─ XSP Bull Put Spread × 1–2张（较保守的行权价）
+  └─ 保证金占用约 $4,000–6,000（账户8–12%）
+  └─ 每月轮换一次，利用短期高Theta
+
+层次3：尾部保护层（长期持有）
+  └─ XSP深度价外Put（90–95 Delta OTM）× 2–3张
+  └─ 使用组合Theta收益的3–5%购买保护
+  └─ 相当于给整个组合买保险，覆盖2020式黑天鹅
+
+总保证金使用率维持在35%以内，保留65%作为缓冲</div>
+
+      <div class="phase-cols">
+        <div>
+          <div class="col-title">进阶：申请Portfolio Margin（PM）</div>
+          <ul class="items">
+            <li><strong>资格条件</strong><span class="note">账户净资产 &gt; $110,000，且IBKR要求证明有期权交易经验（6个月以上实盘记录）。</span></li>
+            <li><strong>优势</strong><span class="note">PM的保证金计算基于风险，通常比Reg T保证金效率高30–50%。相同仓位占用更少保证金，或相同保证金可做更多仓位。</span></li>
+            <li><strong>风险</strong><span class="note">PM本质上是更高杠杆，资金管理要求更严格。建议在实盘满1年、系统稳定后再申请。</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-title blue">税务优化进阶（年度规划）</div>
+          <ul class="items">
+            <li><strong>每年3月</strong><span class="note">确认W-8BEN有效期（3年一次）。下载IBKR年度账单，确认所有XSP/SPX交易正确标记为1256合约。</span></li>
+            <li><strong>每年9月</strong><span class="note">审查全年交易结构，规划年底前的仓位调整，确保SPX/XSP的税务身份一致。</span></li>
+            <li><strong>每年12月</strong><span class="note">IBKR自动进行mark-to-market。下载1042-S表，保存至少5年备IRAS核查。遗产税提醒：若美国证券超$60,000，未来规模大时咨询跨境税务律师。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== RISK RULES ===================== -->
+<div class="sec" id="risk">
+  <div class="sec-label">风控系统</div>
+  <h2 class="rust">六大风控铁律</h2>
+  <p class="sec-intro">这六条规则是整个交易系统的底线。违反任何一条可能导致灾难性损失。它们不是"建议"，是不可商量的硬性约束。把它们打印出来贴在电脑旁边。</p>
+
+  <div class="risk-grid">
+    <div class="risk-card">
+      <div class="risk-n">01</div>
+      <div class="risk-title">单笔最大亏损 ≤ 账户2%</div>
+      <div class="risk-desc">每笔交易的最大亏损（对于Spread = 价差宽度-权利金）不得超过账户净值的2%。$50K账户单笔亏损上限$1,000。开仓前必须先算出这个数字。</div>
+      <div class="risk-val">$50K账户 → 单笔 ≤ $1,000</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-n">02</div>
+      <div class="risk-title">保证金使用率 ≤ 40%</div>
+      <div class="risk-desc">已用保证金不超过账户净值40%。这是为黑天鹅事件留出的缓冲。市场极端波动时，保证金要求会突然增加，若满仓则无法调整。</div>
+      <div class="risk-val">随时检查 → 超40%停止开仓</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-n">03</div>
+      <div class="risk-title">DTE ≤ 7天无条件平仓</div>
+      <div class="risk-desc">卖方策略到期前5–7天必须平仓或展期。最后一周Gamma爆炸，风险/收益比急剧恶化。不贪最后几美元的剩余价值。</div>
+      <div class="risk-val">DTE ≤ 7天 → 执行平仓</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-n">04</div>
+      <div class="risk-title">财报前7天减仓或对冲</div>
+      <div class="risk-desc">持仓标的的财报日前7天内，要么平仓，要么买入保护腿转成定义风险的Spread。不可裸仓过财报。个股尤其严格。</div>
+      <div class="risk-val">财报 -7天 → 强制处理仓位</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-n">05</div>
+      <div class="risk-title">连亏3笔后强制暂停72小时</div>
+      <div class="risk-desc">连续亏损说明市场状态与策略不匹配，或情绪影响判断。72小时内只复盘，不开新仓。明确找到亏损原因后才能恢复交易。</div>
+      <div class="risk-val">连亏3笔 → 停72小时复盘</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-n">06</div>
+      <div class="risk-title">单月回撤 > 6% 停止开仓</div>
+      <div class="risk-desc">当月亏损超过账户6%，当月剩余时间只管理现有仓位，不开新仓。月初重置。这防止在糟糕的月份继续挖坑。</div>
+      <div class="risk-val">当月亏损 &gt; 6% → 停止开仓</div>
+    </div>
+  </div>
+
+  <div class="alert">
+    <div class="alert-head">⚠ 三件事永远禁止</div>
+    <p>① <strong>裸卖Call</strong>：亏损理论无限，倾家荡产的最快路径，永久禁止。卖Call必须手里有股票（Covered Call）或有对冲腿（Bear Call Spread）。<br>
+    ② <strong>0DTE（当天到期）期权</strong>：Gamma处于极端状态，可在分钟内归零。新加坡用户时差劣势使此风险更大。前18个月内完全禁止。<br>
+    ③ <strong>未过检查清单就开仓</strong>：哪怕"感觉很好"，哪怕"这次机会太明显了"，只要9项检查清单没有完成，绝不开仓。情绪确定性 ≠ 概率优势。</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== REGIME ===================== -->
+<div class="sec" id="regime">
+  <div class="sec-label">市场状态识别</div>
+  <h2>四大市场状态与对应策略</h2>
+  <p class="sec-intro">期权交易没有"万能策略"，只有在正确的市场状态下使用正确的策略。每天开仓前，先判断当前处于哪种状态。</p>
+
+  <table class="regime">
+    <thead>
+      <tr><th>市场状态</th><th>识别信号</th><th>适用策略</th><th>禁止策略</th><th>仓位建议</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>高IV + 震荡</strong></td>
+        <td>VIX &gt; 25，IVR &gt; 50%，大盘无明显趋势</td>
+        <td><span class="regime-tag rt-sell">卖方</span> CSP、Bull Put Spread、Iron Condor</td>
+        <td>买方策略、Long Straddle</td>
+        <td>最大化仓位（保证金至35%）</td>
+      </tr>
+      <tr>
+        <td><strong>高IV + 单边下跌</strong></td>
+        <td>VIX &gt; 25，大盘强势下跌</td>
+        <td><span class="regime-tag rt-sell">卖方</span> Bull Put Spread（保守行权价）</td>
+        <td>裸CSP、Iron Condor Call端</td>
+        <td>仅定义风险策略，仓位减半</td>
+      </tr>
+      <tr>
+        <td><strong>低IV + 震荡</strong></td>
+        <td>VIX &lt; 15，IVR &lt; 20%，横盘</td>
+        <td><span class="regime-tag rt-wait">观望</span> 减少开仓，等待IV回升</td>
+        <td>卖方策略权利金太薄</td>
+        <td>保证金降至10–15%</td>
+      </tr>
+      <tr>
+        <td><strong>低IV + 强势上涨</strong></td>
+        <td>VIX &lt; 15，大盘趋势向上</td>
+        <td><span class="regime-tag rt-buy">买方</span> Covered Call（已持仓者）、Long Call Diagonal</td>
+        <td>卖Put（减少方向性风险）</td>
+        <td>轻仓，以Covered Call为主</td>
+      </tr>
+      <tr>
+        <td><strong>极端恐慌</strong></td>
+        <td>VIX &gt; 40，市场连续大跌</td>
+        <td><span class="regime-tag rt-reduce">降险</span> 关闭所有非Spread仓位，保留现金</td>
+        <td>一切新开仓</td>
+        <td>保证金降至0–5%，只持有尾部保护</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info">
+    <div class="info-head">每日15秒状态判断流程</div>
+    <p>开盘前看3个数字：① VIX 当前值；② SPY IVR（Market Chameleon）；③ SPY 5日价格趋势方向。三个数字 + 上表 = 确定今晚策略方向。不需要分析新闻，不需要研究基本面。</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== NRA ===================== -->
+<div class="sec" id="nra">
+  <div class="sec-label">合规要点</div>
+  <h2>NRA税务要点速查</h2>
+  <p class="sec-intro">以下信息基于一般规则，具体情况请咨询持牌税务顾问。税务规则可能随政策变化。</p>
+
+  <div class="nra-box">
+    <div class="nra-row">
+      <div class="nra-label">期权权利金收入</div>
+      <div class="nra-val"><span class="ok">✓ 按资本利得处理</span>，W-8BEN有效前提下，美国通常0%预扣税。这是NRA的最大优势，保护好它。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">股票股息</div>
+      <div class="nra-val"><span class="warn">⚠ 30%预扣税</span>（或按中新税收协定减免）。尽量避免持有高分红正股，优先选XSP/SPX等无股息风险产品。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">1256合约（SPX/XSP）</div>
+      <div class="nra-val"><span class="neutral">ℹ 60%长期/40%短期</span>资本利得税率处理，且年底自动mark-to-market。对NRA而言更重要的是避免股息和行权问题，税率优势相对有限。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">新加坡端税务</div>
+      <div class="nra-val"><span class="ok">✓ 个人投资资本利得0%</span>，前提：不被认定为"交易性质"。确保有主业收入、不是全职炒期权、持仓&gt;3天。日志记录有助于证明投资而非交易性质。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">W-8BEN有效期</div>
+      <div class="nra-val">每3年在IBKR重新提交一次。到期后未续签，IBKR会按30%预扣全部收益。现在就设好日历提醒，提前90天更新。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">183天居住规则</div>
+      <div class="nra-val">若某年在美国实际居住≥183天，NRA身份失效，资本利得将被征税。新加坡居民通常无此风险，但若有长期赴美计划须注意。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">记录保存义务</div>
+      <div class="nra-val">保留所有IBKR交易记录至少5年，备IRAS核查。IBKR年底自动生成1042-S税务表，每年下载存档。</div>
+    </div>
+    <div class="nra-row">
+      <div class="nra-label">遗产税风险</div>
+      <div class="nra-val"><span class="warn">⚠ 高风险预警</span>：NRA在美证券资产超$60,000面临40%美国联邦遗产税。资产规模扩大后务必咨询专门处理跨境资产的税务律师。</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== ROUTINE ===================== -->
+<div class="sec" id="routine">
+  <div class="sec-label">执行系统</div>
+  <h2>新加坡时区标准交易日程</h2>
+  <p class="sec-intro">期权卖方的最大优势：时间站在你这边，<strong>熟睡即赚Theta</strong>。整个交易流程设计为每天不超过1小时，其余时间交给系统自动运作。</p>
+
+  <div class="routine">
+    <div class="routine-row">
+      <div class="routine-time">18:00 – 19:00<br><small>盘前分析</small></div>
+      <div class="routine-content">
+        <strong>市场状态判断</strong><span class="r-tag r-analyze">分析</span>
+        <p>查VIX当前值（finance.yahoo.com 或 IBKR）；查SPY/XSP的IV Rank（Market Chameleon）；查今日标的有无财报/FOMC/重大事件（Earnings Whispers）；根据状态判断表确定今晚策略方向。决定今晚是否有交易计划，写下拟开仓的具体参数（行权价、到期日、Delta目标）。没有清晰计划则不交易。</p>
+      </div>
+    </div>
+    <div class="routine-row">
+      <div class="routine-time">19:00 – 21:30<br><small>建模验证</small></div>
+      <div class="routine-content">
+        <strong>OptionStrat建模 + 检查清单</strong><span class="r-tag r-analyze">准备</span>
+        <p>如果今晚有交易计划，在OptionStrat中建模确认盈亏曲线、Greeks、最大亏损。逐项完成开仓前检查清单（9项或7项，视策略而定）。确认所有项目通过后，准备好下单参数，等待开盘。</p>
+      </div>
+    </div>
+    <div class="routine-row">
+      <div class="routine-time">21:30 – 22:30<br><small>开盘执行</small></div>
+      <div class="routine-content">
+        <strong>开盘操作窗口</strong><span class="r-tag r-trade">交易</span>
+        <p>使用Limit单（不用Market单），以Bid-Ask中间价为基础挂单。若1–2分钟内未成交，向卖方方向让步$0.01–0.02再试。不超过5次调整。若无法以合理价格成交，放弃该笔交易，下次再找机会。执行完已计划的操作（通常不超过30分钟）后，关闭TWS。不做临时决策，不看盘面"找新机会"。</p>
+      </div>
+    </div>
+    <div class="routine-row">
+      <div class="routine-time">22:30 → 次日<br><small>不盯盘原则</small></div>
+      <div class="routine-content">
+        <strong>设Alert后睡觉</strong><span class="r-tag r-rule">纪律</span>
+        <p>在IBKR Mobile设置价格Alert（当标的触及止损线时发送手机通知）。除非Alert触发，不查看账户。期权卖方的时间价值衰减在你睡觉时也在发生，盯盘不会增加Theta，只会增加焦虑和冲动交易的风险。</p>
+      </div>
+    </div>
+    <div class="routine-row">
+      <div class="routine-time">次日清晨<br><small>15分钟复盘</small></div>
+      <div class="routine-content">
+        <strong>收盘数据记录</strong><span class="r-tag r-review">复盘</span>
+        <p>查看昨晚持仓的变化（盈亏、Greeks变化）；更新交易日志（若有昨晚新开仓或平仓）；记录一句话总结："昨晚市场做了什么，我的仓位如何响应，有无需要注意的信号"；检查是否有仓位触近止盈/止损线，若有则在今晚执行操作。</p>
+      </div>
+    </div>
+    <div class="routine-row">
+      <div class="routine-time">每周日<br><small>1小时复盘</small></div>
+      <div class="routine-content">
+        <strong>周度系统复盘</strong><span class="r-tag r-review">复盘</span>
+        <p>① 回顾本周所有交易记录，计算周胜率、总Theta收入、最大单笔浮亏；② 分析本周任何违规行为（是否有忘记过检查清单、是否有报复性交易）；③ 进行"压力预演"（见心理建设部分）；④ 规划下周的学习重点（书本/视频）；⑤ 确认下周有无重大事件（财报/FOMC/选举等）。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== JOURNAL ===================== -->
+<div class="sec" id="journal">
+  <div class="sec-label">记录系统</div>
+  <h2>完整交易日志模板</h2>
+  <p class="sec-intro">每笔交易都要记录，不论盈亏。六个月后你会感谢自己。建议用Google Sheets或Notion，字段如下。</p>
+
+  <div class="scroll-wrap">
+  <table class="journal">
+    <thead>
+      <tr>
+        <th>开仓日期</th>
+        <th>标的</th>
+        <th>策略</th>
+        <th>行权价 / 到期</th>
+        <th>IVR开仓时</th>
+        <th>VIX</th>
+        <th>权利金收/付</th>
+        <th>最大亏损</th>
+        <th>止盈目标</th>
+        <th>平仓日期</th>
+        <th>平仓价</th>
+        <th>最终盈亏</th>
+        <th>退出原因</th>
+        <th>检查清单√</th>
+        <th>恐惧指数</th>
+        <th>夜醒次数</th>
+        <th>复盘一句话</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2026-XX-XX</td>
+        <td>XSP</td>
+        <td>Bull Put Spread</td>
+        <td>540/535 · 38DTE</td>
+        <td>42%</td>
+        <td>18.5</td>
+        <td>+$90</td>
+        <td>-$410</td>
+        <td>$45（50%）</td>
+        <td>2026-XX-XX</td>
+        <td>$45</td>
+        <td>+$45</td>
+        <td>50%止盈平仓</td>
+        <td>✓ 全部</td>
+        <td>3/10</td>
+        <td>0次</td>
+        <td>IVR合适，执行完美，提前13天止盈</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;line-height:1.6;">关键字段说明：<strong>IVR开仓时</strong>（判断时机的核心）、<strong>最大亏损</strong>（开仓前必须算出）、<strong>检查清单√</strong>（纪律执行的书面证据）、<strong>恐惧指数和夜醒次数</strong>（识别心理边界的关键数据）。</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== MILESTONES ===================== -->
+<div class="sec" id="milestone">
+  <div class="sec-label">里程碑</div>
+  <h2>12个月检查点</h2>
+  <p class="sec-intro">每个里程碑都有具体的可验证标准。未达到前不进入下一阶段。时间节点是参考，以能力验收为准。</p>
+
+  <div class="milestones">
+    <div class="ms">
+      <div class="ms-dot done"></div>
+      <div class="ms-month">现在 · 第1周末</div>
+      <div class="ms-title">阶段0完成：基础设施就绪</div>
+      <div class="ms-desc">W-8BEN有效期截图存档；期权Level 2权限已开通；Paper Trading账户激活；Market Chameleon + OptionStrat注册完成；CBOE Options 101视频至少完成前5个。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot active"></div>
+      <div class="ms-month">第5周末</div>
+      <div class="ms-title">认知重构完成：能量化解释期权定价</div>
+      <div class="ms-desc">能不看工具口头解释任何一笔Put的内在价值+时间价值；能解释IV Crush是什么；完成三个实验（Theta衰减、IV Crush、Gamma风险）；三个每日训练任务（VIX/IVR/Theta问题）连续执行10天。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第12周末</div>
+      <div class="ms-title">策略体系建立：Paper Trading达标</div>
+      <div class="ms-desc">CSP 15笔（含2笔止损）；Bull Put Spread 15笔（含1笔展期）；Covered Call 10笔；Iron Condor 10笔。每笔都有完整检查清单记录和退出记录。连续2个月Theta收入为正。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第15周末</div>
+      <div class="ms-title">Rolling系统：三种情景演练完成</div>
+      <div class="ms-desc">在Paper Trading中完成：标的跌5%时的Roll Down + Roll Out；IV暴涨时的CSP转Spread；横盘DTE压力下的Roll Out。能不查决策树口头解释Rolling判断逻辑。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第16周</div>
+      <div class="ms-title">进入实盘：微型实盘启动</div>
+      <div class="ms-desc">$2,000–$3,000实盘资金投入；只做XSP Bull Put Spread；每次1张合约；开始正式实盘日志记录（含心理字段）。目标：第一笔交易无执行错误（下单、止盈止损设置正确）。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第22周末</div>
+      <div class="ms-title">实盘验证：系统可靠性确认</div>
+      <div class="ms-desc">累计20笔实盘记录完成；实盘胜率 &gt; 60%；每笔都执行了检查清单（有记录）；没有违反任何风控铁律；持仓恐惧指数平均 &lt; 5分；能分析每笔亏损的具体原因。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第30周末</div>
+      <div class="ms-title">组合思维：升级到组合层面管理</div>
+      <div class="ms-desc">开始每日查看账户整体Delta/Theta/Vega；建立30–45 DTE主层 + 14–21 DTE辅层的两层结构；引入尾部保护（深度OTM Put）；保证金使用率稳定控制在35%以内。</div>
+    </div>
+    <div class="ms">
+      <div class="ms-dot"></div>
+      <div class="ms-month">第36周末（12个月）</div>
+      <div class="ms-title">成熟交易者标准</div>
+      <div class="ms-desc">年化收益目标：15–25%（具体取决于市场环境，不是保证）；最大回撤 &lt; 10%；夏普比率 &gt; 1.0；拥有固定的周度复盘流程和可重复执行的交易系统；能用书面形式写出个人交易规则手册。</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== BOOKS ===================== -->
+<div class="sec" id="books">
+  <div class="sec-label">配套阅读</div>
+  <h2>按阶段书单</h2>
+  <p class="sec-intro">不需要买很多书，读对的书比读多更重要。以下按阶段排序，每本书的阅读范围和优先级都已注明。</p>
+
+  <div class="book-list">
+    <div class="book">
+      <div class="book-order">1</div>
+      <div>
+        <div class="book-title">Option Volatility &amp; Pricing</div>
+        <div class="book-author">Sheldon Natenberg</div>
+        <div class="book-when">阶段1–2 · 读第1–5章即可</div>
+        <div class="book-note">期权人的圣经。第1–5章建立波动率思维，后面章节作字典查阅。重点：IV的本质、定价模型直觉、Greeks的相互关系。不需要从头读完，读懂前五章已超越90%的期权学习者。</div>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-order">2</div>
+      <div>
+        <div class="book-title">Tastytrade Research Compendium</div>
+        <div class="book-author">Tastytrade（免费，官网下载）</div>
+        <div class="book-when">阶段2–3 · 全部阅读</div>
+        <div class="book-note">基于数万笔真实交易数据的策略研究：最优止盈比例（50%优于持有到期）、DTE最优选择（45天入场，21天平仓）、IV Rank筛选效果。比任何教科书都实用，且完全免费。</div>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-order">3</div>
+      <div>
+        <div class="book-title">Options as a Strategic Investment</div>
+        <div class="book-author">Lawrence McMillan</div>
+        <div class="book-when">阶段2–3 · 作字典查阅</div>
+        <div class="book-note">期权策略百科全书。不建议从头读，遇到不熟悉的策略时查对应章节。财报期权和Volatility Skew章节值得精读。如果只读一本完整教材，选这本。</div>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-order">4</div>
+      <div>
+        <div class="book-title">The Black Swan</div>
+        <div class="book-author">Nassim Nicholas Taleb</div>
+        <div class="book-when">阶段4（亏过真钱后再读）</div>
+        <div class="book-note">不是技术书，是认知书。亏过真钱后读，体会完全不同。Taleb本人是期权交易员出身。核心：你的风险模型对极端事件的低估远比你以为的严重。这本书解释了为什么尾部保护不是可选项而是必须项。</div>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-order">5</div>
+      <div>
+        <div class="book-title">Dynamic Hedging</div>
+        <div class="book-author">Nassim Nicholas Taleb</div>
+        <div class="book-when">阶段5 · 进阶必读</div>
+        <div class="book-note">Taleb的技术书，面向有一年以上实盘经验的交易者。理解Greeks的动态对冲、非线性风险管理。不是入门书，建议有扎实基础后再读。</div>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-order">6</div>
+      <div>
+        <div class="book-title">CBOE Options Institute 免费课程</div>
+        <div class="book-author">CBOE官方（cboe.com）</div>
+        <div class="book-when">阶段0–1 · 第一优先</div>
+        <div class="book-note">期权监管机构的权威免费课程。Options 101视频系列约10小时，配合阶段1学习。官方内容确保概念正确，不会学到错误框架。建议把这个排在所有书之前先完成。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== TOOLS ===================== -->
+<div class="sec" id="tools">
+  <div class="sec-label">工具清单</div>
+  <h2>必备工具（全部免费）</h2>
+  <p class="sec-intro">不需要付费订阅任何工具。以下免费工具已足够建立完整的交易系统。</p>
+
+  <div class="tools">
+    <div class="tool">
+      <div class="tool-name">IBKR TWS</div>
+      <div class="tool-type">主交易平台</div>
+      <div class="tool-desc">主战场。重点学：期权链Greeks列显示；Portfolio页面的账户整体Greeks；Alert设置（价格/百分比触发手机通知）；Adaptive Algo算法单（自动寻价）。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">Market Chameleon</div>
+      <div class="tool-type">IV分析</div>
+      <div class="tool-desc">每日必查。功能：IV Rank、IV Percentile、历史波动率走势、财报预期IV（对比历史IV Crush幅度）。免费版已经够用。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">OptionStrat</div>
+      <div class="tool-type">策略建模</div>
+      <div class="tool-desc">开仓前必须在这里建模。可视化盈亏曲线随时间/价格/IV变化。能模拟不同市场情景。养成"先建模再下单"习惯。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">CBOE Options Institute</div>
+      <div class="tool-type">官方课程</div>
+      <div class="tool-desc">权威免费课程。Options 101视频系列，阶段1必须全部完成。还有进阶的Greeks和Volatility课程，阶段2–3继续学习。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">Barchart.com</div>
+      <div class="tool-type">期权数据</div>
+      <div class="tool-desc">查Put/Call Ratio（市场情绪）、Max Pain（最大痛苦点，机构力量集中的行权价）。辅助判断市场整体倾向，不作为主要开仓信号。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">Earnings Whispers</div>
+      <div class="tool-type">财报日历</div>
+      <div class="tool-desc">每周必查。确认持仓标的的未来30天财报日期。绝不可以无意识地持有过财报。这是风控铁律04的执行工具。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">Tastytrade Research</div>
+      <div class="tool-type">策略研究</div>
+      <div class="tool-desc">免费下载Research Compendium。基于实际数据的策略研究，是阶段2–3的核心配套阅读材料。比任何付费课程都有用。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">Google Sheets</div>
+      <div class="tool-type">交易日志</div>
+      <div class="tool-desc">建议用Google Sheets建立本文件中的交易日志模板。可以添加自动计算公式（盈亏、年化收益率、胜率统计）。免费且跨设备同步。</div>
+    </div>
+    <div class="tool">
+      <div class="tool-name">IBKR Mobile</div>
+      <div class="tool-type">Alert接收</div>
+      <div class="tool-desc">主要用于接收价格Alert通知，而不是盯盘。设置好后让手机替你盯盘，触发时才行动。这是"不盯盘原则"的执行工具。</div>
+    </div>
+  </div>
+
+  <div class="alert">
+    <div class="alert-head">⚠ 三个警告：哪些不要碰</div>
+    <p>① <strong>不要买"期权课程"</strong>：市面上大多数期权付费课程教的内容，本计划已经全部覆盖，而且是免费的。在你有1年实盘经验之前，任何几千元的付费课程都是浪费。<br>
+    ② <strong>不要用未经验证的"工具"</strong>：市面上很多期权软件声称能"自动筛选最优合约"或"AI预测胜率"。在你自己建立了判断框架之前，这些工具只会让你失去独立思考能力。<br>
+    ③ <strong>不要加"期权群"</strong>：大多数期权社群充斥着选择性展示盈利截图的氛围，对你的心理建设和系统执行是负面影响而非正面。</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FINAL NOTE -->
+<div class="sec">
+  <div class="sec-label">写在最后</div>
+  <h2>你真正需要记住的三件事</h2>
+  <div class="notice">
+    <div class="notice-head">核心原则一：系统稳定 &gt; 策略正确</div>
+    <p>你最终不是靠某个"神奇策略"赚钱，而是靠<strong>风险分布 + 现金流结构 + 长期执行纪律</strong>的组合赚钱。一个平庸的策略 + 完美的纪律，长期结果远好于一个聪明的策略 + 糟糕的纪律。</p>
+  </div>
+  <div class="info">
+    <div class="info-head">核心原则二：先活下来，再谈盈利</div>
+    <p>期权市场不会消失。每一次你保住了本金，你就保住了继续参与的机会。每一次你因为贪婪或恐惧而违反风控规则，你都在透支这个机会。<strong>永远把"不爆仓"排在"高收益"之前。</strong></p>
+  </div>
+  <div class="notice">
+    <div class="notice-head">核心原则三：记录 = 你最好的老师</div>
+    <p>这份计划给了你框架，但真正让你进步的是你自己的交易日志。6个月后，翻看你的日志会比读任何书都有价值——那里有你真实的模式、真实的错误、真实的进步轨迹。<strong>每笔交易都记录，哪怕只是一句话。</strong></p>
+  </div>
+</div>
+
+<div class="divider"></div>
+<div class="footer">
+  <p>美股期权完整学习计划 · 新加坡NRA定制终极版 · 2026</p>
+  <p>本文件为学习参考，不构成投资建议。期权交易存在重大风险，可能损失全部本金。</p>
+  <p>税务规则随时可能变化，具体税务义务请咨询持牌税务顾问。</p>
+</div>
+
+</div>
+</body>
+</html>

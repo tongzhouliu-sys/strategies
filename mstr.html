@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSTR 期权增强收益操作手册 · V3.0 综合版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#07101e;
+  --bg1:#0d1828;
+  --bg2:#132034;
+  --bg3:#192840;
+  --bg4:#1f3050;
+  --gold:#c8a44a;
+  --gold2:#e0bc68;
+  --gold3:rgba(200,164,74,.13);
+  --gold4:rgba(200,164,74,.22);
+  --cream:#dfd4b4;
+  --cream2:#a89a7a;
+  --cream3:#6a5e44;
+  --red:#e05555;
+  --red2:rgba(224,85,85,.12);
+  --orange:#e8883a;
+  --orange2:rgba(232,136,58,.12);
+  --green:#44b080;
+  --green2:rgba(68,176,128,.12);
+  --blue:#5090d8;
+  --blue2:rgba(80,144,216,.12);
+  --purple:#9480d8;
+  --border:rgba(200,164,74,.18);
+  --border2:rgba(200,164,74,.32);
+  --radius:6px;
+  --radius2:10px;
+  --shadow:0 4px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:15px}
+body{background:var(--bg0);color:var(--cream);font-family:Georgia,'Noto Serif SC','STSong','SimSun',serif;line-height:1.8;display:flex;min-height:100vh}
+
+/* ── Sidebar ── */
+#sidebar{
+  width:252px;min-width:252px;background:var(--bg1);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+  padding:24px 0 40px;z-index:100;
+  scrollbar-width:thin;scrollbar-color:var(--gold3) transparent;
+}
+#sidebar::-webkit-scrollbar{width:4px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--gold3)}
+.sb-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sb-logo .sb-title{font-family:'Playfair Display',Georgia,serif;font-size:13px;color:var(--gold2);letter-spacing:.06em;line-height:1.5}
+.sb-logo .sb-ver{font-size:11px;color:var(--cream3);font-family:'JetBrains Mono',monospace;margin-top:4px}
+.sb-nav a{
+  display:block;padding:5px 20px;font-size:12.5px;color:var(--cream2);text-decoration:none;
+  border-left:2px solid transparent;line-height:1.6;transition:all .2s;
+}
+.sb-nav a:hover{color:var(--cream);background:var(--bg2)}
+.sb-nav a.active{color:var(--gold2);border-left-color:var(--gold);background:var(--gold3)}
+.sb-nav .sb-sub{padding-left:32px;font-size:12px}
+.sb-nav .sb-group{padding:14px 20px 4px;font-size:10px;letter-spacing:.12em;color:var(--cream3);text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+
+/* ── Main ── */
+#main{margin-left:252px;flex:1;padding:0 0 80px}
+
+/* ── Page Header ── */
+#page-header{
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);
+  border-bottom:1px solid var(--border);
+  padding:48px 56px 40px;position:relative;overflow:hidden;
+}
+#page-header::before{
+  content:'';position:absolute;top:-40px;right:-40px;width:280px;height:280px;
+  border-radius:50%;border:1px solid var(--gold4);opacity:.4;
+}
+#page-header::after{
+  content:'';position:absolute;top:20px;right:60px;width:160px;height:160px;
+  border-radius:50%;border:1px solid var(--gold4);opacity:.3;
+}
+.ph-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.ph-title{font-family:'Playfair Display',Georgia,serif;font-size:30px;color:var(--gold2);line-height:1.3;font-weight:600}
+.ph-sub{font-size:13.5px;color:var(--cream2);margin-top:8px;letter-spacing:.03em}
+.ph-meta{
+  display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;
+}
+.ph-badge{
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;
+  border:1px solid var(--border);border-radius:3px;color:var(--cream2);background:var(--bg1);
+}
+.ph-badge span{color:var(--gold);margin-right:4px}
+
+/* ── Progress bar ── */
+#progress{position:fixed;top:0;left:252px;right:0;height:2px;background:var(--bg2);z-index:200}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0%;transition:width .1s}
+
+/* ── Content ── */
+.content{max-width:860px;padding:48px 56px}
+section{margin-bottom:56px}
+.sec-header{margin-bottom:28px}
+.sec-num{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;
+}
+.sec-title{
+  font-family:'Playfair Display',Georgia,serif;font-size:22px;color:var(--gold2);
+  font-weight:600;line-height:1.3;
+  padding-bottom:12px;border-bottom:1px solid var(--border);
+}
+.sec-title-plain{
+  font-family:'Playfair Display',Georgia,serif;font-size:18px;color:var(--cream);
+  font-weight:600;line-height:1.3;margin:28px 0 14px;
+}
+.sec-desc{font-size:14px;color:var(--cream2);margin-top:8px;line-height:1.7}
+
+h3.sub{font-size:15px;color:var(--cream);font-weight:600;margin:24px 0 10px;font-family:'Playfair Display',Georgia,serif}
+h4.subsub{font-size:13.5px;color:var(--gold);font-weight:400;margin:18px 0 8px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+
+p{margin-bottom:12px;font-size:14px;color:var(--cream2);line-height:1.8}
+p.lead{font-size:14.5px;color:var(--cream);line-height:1.9}
+
+/* ── Tables ── */
+.table-wrap{overflow-x:auto;margin:14px 0 20px;border-radius:var(--radius2);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg2);border-bottom:1px solid var(--border2)}
+thead th{padding:10px 14px;text-align:left;color:var(--gold);font-weight:400;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+td{padding:10px 14px;color:var(--cream2);vertical-align:top;line-height:1.7}
+td:first-child{color:var(--cream);font-weight:600}
+td .mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold)}
+td code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue);background:var(--blue2);padding:1px 5px;border-radius:3px}
+.tcenter{text-align:center}
+.tright{text-align:right}
+
+/* Row status colors */
+tr.row-green td:first-child{border-left:3px solid var(--green)}
+tr.row-yellow td:first-child{border-left:3px solid var(--orange)}
+tr.row-red td:first-child{border-left:3px solid var(--red)}
+tr.row-gold td:first-child{border-left:3px solid var(--gold)}
+tr.row-blue td:first-child{border-left:3px solid var(--blue)}
+
+/* ── Alert Boxes ── */
+.alert{
+  border-radius:var(--radius2);padding:14px 18px;margin:16px 0;
+  border:1px solid;font-size:13.5px;line-height:1.7;
+}
+.alert strong{display:block;margin-bottom:4px;font-size:13px;letter-spacing:.04em}
+.alert-danger{background:var(--red2);border-color:rgba(224,85,85,.35);color:#f0b0b0}
+.alert-danger strong{color:var(--red)}
+.alert-warn{background:var(--orange2);border-color:rgba(232,136,58,.35);color:#f0c890}
+.alert-warn strong{color:var(--orange)}
+.alert-info{background:var(--blue2);border-color:rgba(80,144,216,.3);color:#a0c8f0}
+.alert-info strong{color:var(--blue)}
+.alert-success{background:var(--green2);border-color:rgba(68,176,128,.3);color:#90d8b4}
+.alert-success strong{color:var(--green)}
+.alert-gold{background:var(--gold3);border-color:var(--border2);color:var(--cream)}
+.alert-gold strong{color:var(--gold2)}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px 24px;margin:14px 0}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:14px 0}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px 20px}
+.metric-label{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--cream3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.metric-val{font-size:22px;font-family:'JetBrains Mono',monospace;color:var(--gold2);font-weight:500}
+.metric-sub{font-size:11px;color:var(--cream3);margin-top:3px}
+
+/* ── Formula ── */
+.formula{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:16px 20px;margin:14px 0;font-family:'JetBrains Mono',monospace;
+  font-size:13px;color:var(--cream);line-height:1.9;
+}
+.formula .f-label{font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.formula .f-main{font-size:14px;color:var(--gold2)}
+.formula .f-note{font-size:12px;color:var(--cream2);margin-top:6px;font-family:Georgia,'Noto Serif SC',serif}
+
+/* ── Checklist ── */
+.checklist{list-style:none;margin:10px 0}
+.checklist li{
+  display:flex;align-items:flex-start;gap:10px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:13.5px;color:var(--cream2);line-height:1.7;
+}
+.checklist li:last-child{border-bottom:none}
+.checklist li .ck{
+  width:18px;height:18px;min-width:18px;border:1px solid var(--border2);border-radius:3px;
+  margin-top:2px;display:flex;align-items:center;justify-content:center;
+}
+.checklist li .ck.req::after{content:'✕';font-size:9px;color:var(--red)}
+.checklist li strong{color:var(--cream);font-size:13.5px}
+
+/* ── Step List ── */
+.steps{margin:10px 0;counter-reset:step}
+.steps li{
+  counter-increment:step;display:flex;gap:14px;align-items:flex-start;
+  margin-bottom:10px;font-size:13.5px;color:var(--cream2);line-height:1.7;
+}
+.steps li::before{
+  content:counter(step);min-width:24px;height:24px;border-radius:50%;
+  background:var(--gold3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold2);flex-shrink:0;margin-top:1px;
+}
+
+/* ── State Badges ── */
+.badge{
+  display:inline-block;font-size:11px;font-family:'JetBrains Mono',monospace;
+  padding:2px 8px;border-radius:3px;font-weight:500;letter-spacing:.05em;
+}
+.badge-a{background:rgba(224,85,85,.18);color:#f0a0a0;border:1px solid rgba(224,85,85,.3)}
+.badge-b{background:rgba(232,136,58,.18);color:#f0c890;border:1px solid rgba(232,136,58,.3)}
+.badge-c{background:rgba(68,176,128,.18);color:#90d8b4;border:1px solid rgba(68,176,128,.3)}
+.badge-d{background:rgba(80,80,80,.3);color:#909090;border:1px solid rgba(120,120,120,.3)}
+.badge-gold{background:var(--gold3);color:var(--gold2);border:1px solid var(--border)}
+.badge-red{background:var(--red2);color:#f0a0a0;border:1px solid rgba(224,85,85,.3)}
+.badge-green{background:var(--green2);color:#90d8b4;border:1px solid rgba(68,176,128,.3)}
+.badge-blue{background:var(--blue2);color:#a0c8f0;border:1px solid rgba(80,144,216,.3)}
+
+/* ── Circuit Breaker Visual ── */
+.cb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.cb-card{border-radius:var(--radius2);padding:16px;border:1px solid}
+.cb-l1{background:rgba(232,136,58,.1);border-color:rgba(232,136,58,.3)}
+.cb-l2{background:rgba(232,136,58,.15);border-color:rgba(232,136,58,.45)}
+.cb-l3{background:rgba(224,85,85,.15);border-color:rgba(224,85,85,.4)}
+.cb-num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;margin-bottom:4px}
+.cb-l1 .cb-num{color:#e8883a}
+.cb-l2 .cb-num{color:#f0a060}
+.cb-l3 .cb-num{color:var(--red)}
+.cb-label{font-size:12px;color:var(--cream2);margin-bottom:10px}
+.cb-item{font-size:12px;color:var(--cream2);line-height:1.6;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cb-item:last-child{border-bottom:none}
+.cb-item strong{display:block;font-size:11px;color:var(--cream3);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+
+/* ── Tooltip ── */
+.t{
+  border-bottom:1px dotted var(--gold);cursor:help;
+  color:var(--gold2);position:relative;
+  transition:color .15s;
+}
+.t:hover{color:var(--gold2)}
+#tooltip{
+  position:fixed;z-index:9999;max-width:280px;
+  background:var(--bg0);border:1px solid var(--border2);
+  border-radius:var(--radius2);padding:10px 14px;
+  font-size:12.5px;color:var(--cream2);line-height:1.65;
+  box-shadow:var(--shadow);pointer-events:none;opacity:0;
+  transition:opacity .15s;font-family:Georgia,'Noto Serif SC',serif;
+}
+#tooltip.show{opacity:1}
+#tooltip::after{
+  content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  width:10px;height:10px;background:var(--bg0);border-right:1px solid var(--border2);
+  border-bottom:1px solid var(--border2);transform:translateX(-50%) rotate(45deg);
+}
+#tooltip .tt-term{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.06em;margin-bottom:4px;display:block}
+
+/* ── Divider ── */
+.divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+hr.gold{border-top:1px solid var(--gold4);margin:32px 0}
+
+/* ── Section Separator ── */
+.sec-sep{
+  display:flex;align-items:center;gap:12px;margin:40px 0 32px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cream3);letter-spacing:.1em;
+}
+.sec-sep::before,.sec-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Pill ── */
+.pill{
+  display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;
+  font-family:'JetBrains Mono',monospace;background:var(--gold3);color:var(--gold2);
+  border:1px solid var(--border);margin:0 2px;
+}
+.pill-red{background:var(--red2);color:#f0a0a0;border-color:rgba(224,85,85,.3)}
+.pill-green{background:var(--green2);color:#90d8b4;border-color:rgba(68,176,128,.3)}
+.pill-blue{background:var(--blue2);color:#a0c8f0;border-color:rgba(80,144,216,.3)}
+
+/* ── Quick Ref Card ── */
+.qref{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius2);overflow:hidden}
+.qref-head{background:var(--gold3);padding:10px 20px;border-bottom:1px solid var(--border2)}
+.qref-head h3{font-size:14px;color:var(--gold2);font-family:'JetBrains Mono',monospace;letter-spacing:.08em}
+.qref-body{padding:16px 20px}
+
+/* ── Print ── */
+@media print{
+  #sidebar,#progress{display:none}
+  #main{margin-left:0}
+  .content{padding:20px;max-width:100%}
+  body{background:white;color:#000}
+  .alert-danger,.alert-warn,.alert-gold,.alert-info,.alert-success{background:none;border:1px solid #ccc;color:#000}
+  thead tr{background:#eee}
+  .card{border:1px solid #ccc;background:none}
+  .formula{border:1px solid #ccc;background:none;color:#000}
+  .cb-l1,.cb-l2,.cb-l3{background:none;border:1px solid #ccc}
+}
+
+/* ── Responsive ── */
+@media (max-width:900px){
+  #sidebar{transform:translateX(-100%);transition:transform .3s}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0}
+  #progress{left:0}
+  .content{padding:28px 20px}
+  .cb-grid{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+  #mob-toggle{
+    display:flex;position:fixed;top:12px;left:12px;z-index:300;
+    width:36px;height:36px;background:var(--bg2);border:1px solid var(--border);
+    border-radius:6px;align-items:center;justify-content:center;cursor:pointer;
+    color:var(--gold);font-size:18px;
+  }
+}
+@media (min-width:901px){#mob-toggle{display:none}}
+
+/* ── Section numbers decoration ── */
+.sn{
+  font-family:'Playfair Display',Georgia,serif;font-size:72px;
+  color:rgba(200,164,74,.06);position:absolute;right:0;top:-10px;line-height:1;
+  pointer-events:none;user-select:none;font-style:italic;
+}
+.sec-header{position:relative;overflow:hidden}
+
+/* ── Two-col layout ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold4)}
+</style>
+</head>
+<body>
+
+<div id="mob-toggle" onclick="toggleSidebar()">☰</div>
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="tooltip"><span class="tt-term" id="tt-term"></span><span id="tt-body"></span></div>
+
+<!-- ────────────────── SIDEBAR ────────────────── -->
+<nav id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-title">MSTR 期权增强收益<br>操作手册</div>
+    <div class="sb-ver">V3.0 · 2026-04-01 · 综合版</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-group">前置条件</div>
+    <a href="#s0">法律声明</a>
+    <a href="#s1">策略本质</a>
+    <a href="#s2">NRA 税务框架</a>
+    <a href="#s3">账户架构</a>
+    <div class="sb-group">决策引擎</div>
+    <a href="#s4">市场状态引擎</a>
+    <a href="#s5">NAV 溢价校准</a>
+    <a href="#s6">IVR 波动率校准</a>
+    <a href="#s7">流动性评分</a>
+    <div class="sb-group">策略执行</div>
+    <a href="#s8">策略武器库</a>
+    <a href="#s8a" class="sb-sub">8.1 备兑看涨期权</a>
+    <a href="#s8b" class="sb-sub">8.2 看涨熊市价差</a>
+    <a href="#s8c" class="sb-sub">8.3 裸卖看涨期权</a>
+    <a href="#s9">仓位管理</a>
+    <a href="#s10">跳空风险 OCA 方案</a>
+    <a href="#s11">三级熔断机制</a>
+    <a href="#s12">保护性 Put</a>
+    <div class="sb-group">运营管理</div>
+    <a href="#s13">月度操作清单</a>
+    <a href="#s14">台账系统</a>
+    <a href="#s15">心理纪律守则</a>
+    <a href="#s16">快速参考卡</a>
+  </div>
+</nav>
+
+<!-- ────────────────── MAIN ────────────────── -->
+<div id="main">
+
+<!-- Page Header -->
+<div id="page-header">
+  <div class="ph-eyebrow">Confidential · For Authorized Recipients Only</div>
+  <div class="ph-title">MSTR 期权增强收益操作手册</div>
+  <div class="ph-sub">NAV 溢价回归 × 系统性卖 Call 框架 × 动态风险管理 — 综合版</div>
+  <div class="ph-meta">
+    <div class="ph-badge"><span>版本</span>V3.0 综合版</div>
+    <div class="ph-badge"><span>日期</span>2026-04-01</div>
+    <div class="ph-badge"><span>对象</span>NRA 专业投资者</div>
+    <div class="ph-badge"><span>风险等级</span>中高风险</div>
+    <div class="ph-badge"><span>标的</span>MicroStrategy (MSTR)</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s0">
+  <div class="sec-header">
+    <div class="sec-num">Section 00</div>
+    <div class="sec-title">重要法律声明</div>
+    <div class="sn">00</div>
+  </div>
+  <div class="alert alert-danger">
+    <strong>⚠ 高风险操作 — 请在执行前完整阅读本声明</strong>
+    本手册为个性化策略操作框架，<strong>不构成投资建议、税务建议或买卖推荐</strong>。期权交易可能导致本金全部损失，<span class="t" data-t="裸卖Call|Naked Call，在不持有正股情况下卖出看涨期权，理论亏损无上限。当标的股票价格无限上涨时，亏损随之无限扩大。">裸卖看涨期权</span>风险理论上无上限，极端行情可能导致超出本金的亏损。所有 <span class="t" data-t="NRA|Non-Resident Alien，非美国居民外籍人士（非美国税务居民），在美国税务处理上享有特定豁免，但需定期申报身份证明文件。">NRA</span> 税务相关事项，<strong>必须在持牌 CPA 书面确认后方可据以执行</strong>。历史收益数据不代表未来表现。本手册所有内容均以执行时的实际市场条件为准，任何参数均可能因市场结构性变化而需调整。
+  </div>
+  <p>本手册综合多份专业交易框架的最优实践，涵盖策略逻辑、精确执行流程、动态仓位管理、机构级风控体系及 NRA 合规框架，为专业投资者提供完整可执行的操作依据。</p>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s1">
+  <div class="sec-header">
+    <div class="sec-num">Section 01</div>
+    <div class="sec-title">策略本质 — 您的角色定位</div>
+    <div class="sn">01</div>
+  </div>
+  <div class="alert alert-gold">
+    <strong>核心定位：您是一家"溢价回归基金"的经营者</strong>
+    本策略并非押注 MSTR 或比特币的价格方向。您的工作是：在市场最狂热、保险费（<span class="t" data-t="权利金|Premium，买卖期权时支付或收取的费用，即期权本身的价格。对于期权卖方，权利金是主要收益来源；对于买方，是最大亏损上限。">权利金</span>）最贵的时候，系统性地卖出保险，并在狂热退潮时收获利润。
+  </div>
+
+  <h3 class="sub">三层收益来源</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>收益来源</th><th>本质机制</th><th>可持续性</th><th>核心依赖</th></tr></thead>
+      <tbody>
+        <tr class="row-gold"><td>NAV 溢价回归</td><td><span class="t" data-t="NAV溢价|Net Asset Value Premium，MSTR 股价相对其比特币持仓每股价值的溢出倍数。NAV溢价 = MSTR股价 ÷ 每股BTC价值。历史正常区间为1.5x–3.0x，极端情绪下可达4x以上。">NAV 溢价</span>处于历史极端高位时，市场情绪退潮后溢价将向历史均值收敛；期权卖方在高溢价环境中提前锁定权利金</td><td>中等</td><td>NAV 溢价 ≥ 2.5x</td></tr>
+        <tr class="row-gold"><td>时间价值衰减</td><td><span class="t" data-t="Theta|时间价值衰减速率，表示期权价格每日因时间流逝而损失的金额。Theta 对期权卖方有利——每一天的流逝都使期权价值缩小，卖方收益积累。越接近到期日，Theta 衰减越快（Theta 加速）。">Theta</span> 衰减确定性极高，距到期日 30–45 天的期权时间价值衰减最快；卖方每日获取确定性收益</td><td>高</td><td>持有期权仓位</td></tr>
+        <tr class="row-gold"><td>IV 高估回归</td><td>市场情绪极度亢奋时，<span class="t" data-t="隐含波动率 IV|Implied Volatility，从期权市场价格反推得出的对未来标的资产价格波动幅度的市场预期。IV 偏高意味着市场对未来波动的定价溢出，期权权利金更贵，是卖方的有利时机。">隐含波动率</span>（IV）被过度高估；卖方实际上卖出了被高定价的 <span class="t" data-t="Vega|衡量期权价格对隐含波动率变化的敏感度。IV 每上升 1 个百分点，期权价格变化的幅度。期权卖方在 IV 高位卖出后，若 IV 回落则产生正收益（IV Crush）。">Vega</span> 敞口，IV 回落时产生额外收益</td><td>高</td><td>IVR &gt; 70%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">三大核心风险</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>风险来源</th><th>本质</th><th>主要缓解手段</th></tr></thead>
+      <tbody>
+        <tr class="row-red"><td>Gamma 风险</td><td><span class="t" data-t="Gamma|Delta 的变化速率。股价上涨 $1 时，Delta 随之变化的幅度。高 Gamma 意味着标的波动时 Delta 快速改变，空头期权仓位在价格快速上涨时亏损加速，是卖方最大的短期风险。">Gamma</span> 风险：标的单边暴涨导致亏损加速，越接近行权价亏损越快</td><td>保守行权价选择；熔断平仓；OCA 止损单</td></tr>
+        <tr class="row-red"><td>Vega 风险</td><td>市场恐慌或情绪持续升温，IV 继续扩张，已卖出的期权价值上涨导致浮亏扩大</td><td>仓位限制；熔断机制；避免在 IV 极端低位卖出</td></tr>
+        <tr class="row-red"><td>跳空风险</td><td>周末 BTC 暴涨→周一 MSTR 跳空开盘，所有<span class="t" data-t="限价止损单|Limit Stop，预设价格触发的止损指令，但只在该价格或更优价格成交。跳空缺口发生时，开盘价直接越过止损触发价，导致限价单无法成交，是裸卖Call最危险的场景。">限价止损单</span>全部失效</td><td>OCA 市价条件单（见第 10 章）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-info">
+    <strong>MSTR 的特殊性</strong>
+    MSTR 并非普通股票，其股价波动率历史上是比特币的 <strong>2–3 倍</strong>。这意味着所有参数设置（行权价偏移、仓位上限、止损距离）均必须比普通股票更为保守。在强势趋势行情中，<span class="t" data-t="NAV溢价|MSTR股价相对比特币持仓每股价值的溢出比率。NAV溢价可以在牛市中持续数月处于3x–4x以上，NAV高估不等于立即回归，卖Call的时机判断需要结合趋势状态。">NAV 溢价</span>可以持续数月处于 3x–4x 以上，切勿仅凭"高估"就激进裸卖。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s2">
+  <div class="sec-header">
+    <div class="sec-num">Section 02</div>
+    <div class="sec-title">NRA 税务框架 — 先决条件</div>
+    <div class="sn">02</div>
+  </div>
+  <div class="alert alert-danger">
+    <strong>强制前置：CPA 书面确认完成前，仅允许执行备兑 Call</strong>
+    以下五项税务确认是整个策略的边界条件，而非附录。未完成确认前，任何裸卖操作均被禁止。
+  </div>
+
+  <h3 class="sub">五项核心税务确认清单</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>确认事项</th><th>风险与要点</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono">01</td>
+          <td><strong>权利金预扣税</strong></td>
+          <td><span class="t" data-t="FDAP收入|Fixed, Determinable, Annual or Periodical income，美国税法中对 NRA 来源的被动收入的分类。期权权利金通常被认定为非 FDAP 收入，一般不预扣 30%，但需要账户实际记录确认。">NRA 期权权利金</span>通常按非 FDAP 处理，一般不预扣 30%。<br>务必要求 CPA 确认 IBKR/BBAE 账户历史记录中是否有实际预扣，并检查历史交割记录。</td>
+          <td><span class="badge badge-gold">待确认</span></td>
+        </tr>
+        <tr>
+          <td class="mono">02</td>
+          <td><strong>资本利得免税</strong></td>
+          <td>备兑被行权卖股、<span class="t" data-t="裸卖Put接货|卖出看跌期权（Put）后，期权买方行权导致卖方被强制以行权价买入标的股票。若同期有其他减仓操作，可能触发 Wash Sale 规则。">裸卖 Put 接货</span>后再卖股产生的资本利得是否免美国税？需 CPA 书面确认，并检查是否存在 <span class="t" data-t="ECI|Effectively Connected Income，与美国境内贸易或商业活动有效关联的收入。若期权交易被认定为 ECI，则适用常规美国企业税率而非 NRA 豁免税率，税务处理将大幅不同。">ECI</span>（有效关联收入）认定风险。</td>
+          <td><span class="badge badge-gold">待确认</span></td>
+        </tr>
+        <tr>
+          <td class="mono">03</td>
+          <td><strong>中国申报义务</strong></td>
+          <td>若在中国满足税务居民认定，中国税务机关可能要求申报全球收入（含期权权利金与股票收益）。需向中国税务专业人士确认，并在台账中同步记录人民币折算金额（每笔交易按交易日汇率）。</td>
+          <td><span class="badge badge-gold">待确认</span></td>
+        </tr>
+        <tr>
+          <td class="mono">04</td>
+          <td><strong>Wash Sale 规则</strong></td>
+          <td><span class="t" data-t="Wash Sale规则|美国税法规定：若投资者在亏损卖出证券的前后各 30 天内，购入相同或基本相同的证券，则该亏损不得在当年进行税务抵扣。此规则对 NRA 同样适用。">Wash Sale</span> 对 NRA 同样适用。<br><strong>MSTR 高风险场景</strong>：主动减仓 MSTR 的同时，因卖 Put 被行权接货——两个事件在 30 天内并发，极易触发。<br>操作规则：任何主动减仓前，必须检查台账中过去 30 天是否有接货记录。</td>
+          <td><span class="badge badge-gold">待确认</span></td>
+        </tr>
+        <tr>
+          <td class="mono">05</td>
+          <td><strong>遗产税规划</strong></td>
+          <td>NRA 持有美国境内资产的遗产税免税额仅为 <strong>$60,000</strong>，MSTR 持仓市值远超此限，面临高达 <strong>40%</strong> 的联邦遗产税风险。建议向税务律师评估通过离岸持股公司持有的可行性。</td>
+          <td><span class="badge badge-gold">待确认</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">W-8BEN 维护规则</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>每年 <strong>1 月 15 日前</strong>：确认所有账户（IBKR/BBAE）的 <span class="t" data-t="W-8BEN|IRS（美国国税局）表格，供非美国个人向支付方（如券商）证明外国人身份，并申请适用税收协定优惠税率。有效期为 3 年，过期后未更新将触发 30% 预扣税。">W-8BEN</span> 均在有效期内（有效期 3 年）。</div></li>
+    <li><span class="ck req"></span><div>地址、国籍等身份信息发生变更时，<strong>立即</strong>联系券商更新 W-8BEN，否则触发 30% 预扣。</div></li>
+    <li><span class="ck req"></span><div>每年年底整合所有账户税务文件（Form 1042-S、年度对账单），交同一 CPA 统一处理，避免跨账户信息遗漏。</div></li>
+    <li><span class="ck req"></span><div>每笔期权交易台账必须标记：<strong>税务事件类型</strong>（权利金收入 / 资本利得 / 资本亏损）、账户来源、是否被行权。</div></li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s3">
+  <div class="sec-header">
+    <div class="sec-num">Section 03</div>
+    <div class="sec-title">账户架构与权限确认</div>
+    <div class="sn">03</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>账户</th><th>角色</th><th>允许操作</th><th>关键约束</th></tr></thead>
+      <tbody>
+        <tr class="row-gold"><td>IBKR（主账户）</td><td>核心执行账户</td><td>备兑 Call（首选）、裸卖 Call（严格限制）、保护性 Put 买入</td><td>需保证金账户；<span class="t" data-t="组合保证金|Portfolio Margin，基于持仓整体风险而非逐笔计算的保证金体系，通常比标准保证金要求低，适合多策略组合账户。NRA 账户可能不适用，需单独确认。">组合保证金</span>优先；TWS Level 2 实时报价权限；裸卖需 Level 4 期权权限</td></tr>
+        <tr class="row-blue"><td>BBAE（辅账户）</td><td>现金账户 / 备兑专用</td><td>仅现金担保的备兑 Call</td><td>期权权限 Level 1 即可；<strong>禁止任何裸卖操作</strong>，彻底规避无限风险</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">开户前六项权限确认</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div><strong>期权权限级别</strong>：向券商客服明确确认当前账户的期权权限级别。备兑 Call 需 Level 2；裸卖 Call 需 Level 4（最高级），需提交申请并审批。</div></li>
+    <li><span class="ck req"></span><div><strong>NRA 账户保证金要求</strong>：部分券商对 NRA 账户有额外<span class="t" data-t="保证金|Margin，维持期权卖方仓位所需在账户中冻结的资金或证券担保。保证金比例决定了可执行的最大仓位规模，不足时券商会发出追加保证金通知（Margin Call）。">保证金</span>比例要求（组合保证金可能不适用于 NRA），需书面确认。</div></li>
+    <li><span class="ck req"></span><div><strong>实时报价权限</strong>：NAV 溢价计算需要 MSTR 实时股价，确认 IBKR TWS 已开通 Level 2 实时报价。</div></li>
+    <li><span class="ck req"></span><div><strong>期权行权处理规则</strong>：确认被行权时账户的自动处理逻辑（是否自动平仓、是否触发追加保证金通知）。</div></li>
+    <li><span class="ck req"></span><div><strong>股票借出协议</strong>：确认是否签署了股票借出协议（Stock Lending）。若已签署，被借出期间的股息处理方式可能影响税务。</div></li>
+    <li><span class="ck req"></span><div><strong>ACAT 转仓记录</strong>：若从其他账户转入 MSTR 持仓，确认成本基础（Cost Basis）是否已正确转移——这直接影响税务计算。</div></li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s4">
+  <div class="sec-header">
+    <div class="sec-num">Section 04</div>
+    <div class="sec-title">市场状态引擎 — 宏观过滤器</div>
+    <div class="sn">04</div>
+  </div>
+  <p class="lead">每周一开盘前（建议 09:00–09:15 ET），在 TradingView 查看 BTC/USD 日线图，记录 MA20、MA50 位置与斜率，判断唯一市场状态。<strong>本章的状态判断驱动后续所有操作决策，任何情况下不得跳过。</strong></p>
+
+  <h3 class="sub">四大市场状态定义</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>状态</th><th>技术定义（BTC/USD 日线）</th><th>MSTR 典型表现</th><th>策略权限</th></tr></thead>
+      <tbody>
+        <tr class="row-red">
+          <td><span class="badge badge-a">A 强势上涨</span></td>
+          <td>BTC &gt; MA20 &gt; MA50，且 MA20 斜率<strong>向上倾斜</strong></td>
+          <td>NAV 溢价可能持续扩大至 3x+，股价动能强劲，卖 Call 被行权风险极高</td>
+          <td><strong>仅备兑 Call</strong>，行权价偏移 +15%～+20%。<span class="badge badge-red">禁止裸卖</span></td>
+        </tr>
+        <tr class="row-yellow">
+          <td><span class="badge badge-b">B 震荡偏多</span></td>
+          <td>BTC &gt; MA20（MA20 走平），或价格在 MA20–MA50 之间</td>
+          <td>NAV 溢价相对稳定，波动区间收窄，权利金合理</td>
+          <td>正常备兑（偏移 +10%～+15%）。IVR &gt; 70% + NAV ≥ 2.5x 时，可小量裸卖（≤总资金 1%）</td>
+        </tr>
+        <tr class="row-green">
+          <td><span class="badge badge-c">C 震荡偏空</span></td>
+          <td>BTC &lt; MA20，但 &gt; MA50</td>
+          <td>NAV 溢价易回落，市场情绪趋于冷静，卖 Call 最有利环境</td>
+          <td>积极备兑 Call。IVR &gt; 70% 时谨慎裸卖（≤总资金 2%）</td>
+        </tr>
+        <tr class="row-blue">
+          <td><span class="badge badge-d">D 强势下跌</span></td>
+          <td>BTC &lt; MA20 &lt; MA50，且 MA20 斜率<strong>向下倾斜</strong></td>
+          <td>MSTR 下跌幅度通常为 BTC 的 2–3 倍，正股损失可能极大</td>
+          <td><span class="badge badge-red">暂停所有卖 Call（含备兑）</span>。方向性下跌风险主导，等待 BTC 企稳信号</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">两项增强过滤规则</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4 class="subsub">NAV 溢价趋势过滤器</h4>
+      <p>计算 <span class="t" data-t="NAV溢价|Net Asset Value Premium，MSTR 股价相对其持有比特币每股价值的溢出比率。">NAV 溢价</span>的 20 日简单移动平均（MA20）。仅当当前 NAV 溢价 <strong>&gt; MA20 且斜率向上</strong>时，才考虑新开卖 Call 仓位。NAV 溢价趋势向下时即使绝对值高，也应保守操作——溢价持续扩大期间卖 Call 风险极高。</p>
+    </div>
+    <div class="card">
+      <h4 class="subsub">BTC 周涨 &gt; 15% — 超级 A 状态</h4>
+      <p>若 BTC 单周涨幅超过 15%，直接进入<strong>「超级 A 状态」</strong>，所有新开仓位暂停 1 周。即使技术状态显示为 B 或 C，也必须执行此规则。强趋势行情下，任何方向性假设均可能迅速失效。</p>
+    </div>
+  </div>
+
+  <h3 class="sub">每周状态判断 SOP（开盘前 10 分钟）</h3>
+  <ol class="steps">
+    <li>打开 TradingView，搜索 BTCUSD，切换至日线图（1D）</li>
+    <li>添加指标：MA（周期 20，收盘价）和 MA（周期 50，收盘价）</li>
+    <li>记录三个数值：① 当前 BTC 价格；② MA20 数值；③ MA50 数值</li>
+    <li>计算 MA20 斜率：比较今日 MA20 与 5 日前 MA20，判断上升 / 走平 / 下降</li>
+    <li>计算 <span class="t" data-t="NAV溢价|MSTR股价除以每股BTC持仓价值，历史正常区间1.5x–3.0x。">NAV 溢价</span> MA20 趋势（参考 mstr-tracker.com 近 20 日数据）</li>
+    <li>对照上表判断唯一状态（A/B/C/D），写入当周台账第一行</li>
+    <li>根据状态确认本周可执行操作范围，进入第 05–07 章校准流程</li>
+  </ol>
+
+  <div class="alert alert-warn">
+    <strong>黑天鹅覆盖规则</strong>
+    若发生：比特币 ETF 重大监管事件、主权国家买入 / 禁止传闻、MSTR 重大公司公告（增发、转债）——<strong>无视当前技术状态，直接降至 D 状态，暂停所有卖 Call 操作至少 1 周</strong>，等待市场重新定价完成后再评估。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s5">
+  <div class="sec-header">
+    <div class="sec-num">Section 05</div>
+    <div class="sec-title">NAV 溢价校准 — 策略核心触发器</div>
+    <div class="sn">05</div>
+  </div>
+
+  <h3 class="sub">定义与计算方法</h3>
+  <div class="formula">
+    <div class="f-label">NAV 溢价公式</div>
+    <div class="f-main">NAV 溢价 = MSTR 股价 ÷ 每股比特币持仓价值</div>
+    <div class="f-main" style="margin-top:8px">每股 BTC 价值 = (MSTR 持有 BTC 总量 ÷ 流通股总数) × 当前 BTC 价格</div>
+    <div class="f-note" style="margin-top:10px">数据来源：① 快速参考：mstr-tracker.com（实时更新）<br>② 月度核验：MSTR 官网 IR 页面最新 8-K 公告中的 BTC 持仓量（精确到小数点后 3 位）</div>
+  </div>
+
+  <h3 class="sub">NAV 溢价操作指引表</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>NAV 溢价区间</th><th>市场解读</th><th>操作权限</th><th>裸卖上限</th></tr></thead>
+      <tbody>
+        <tr class="row-blue"><td>&lt; 1.5x</td><td>低估 / 折价</td><td>暂停卖 Call 策略，溢价回归逻辑不成立。可考虑增持 MSTR 正股或持有观望。</td><td><span class="badge badge-red">禁止</span></td></tr>
+        <tr class="row-blue"><td>1.5x – 2.0x</td><td>正常估值</td><td>仅执行备兑 Call，行权价保守（偏移 +15% 以上）。不执行裸卖 Call。</td><td><span class="badge badge-red">禁止</span></td></tr>
+        <tr class="row-yellow"><td>2.0x – 2.5x</td><td>偏高估值</td><td>积极执行备兑 Call（偏移 +10%～+15%）。IVR &gt; 70% 时可评估裸卖 Call（严格控仓）。</td><td>≤ 总资金 1%</td></tr>
+        <tr class="row-green"><td>≥ 2.5x</td><td><strong>最佳操作窗口</strong></td><td>备兑 Call 积极执行；裸卖 Call 在满足全部八项条件时可执行（详见第 08 章）。</td><td>动态公式（见第 9 章）</td></tr>
+        <tr class="row-red"><td>&gt; 3.5x</td><td>泡沫预警</td><td>触发 L1 熔断警告。市场处于极度狂热状态，GAP 风险极高。<strong>仅执行备兑 Call</strong>，禁止裸卖。</td><td><span class="badge badge-red">禁止</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>⚠ NAV 数据滞后性警告</strong>
+    MSTR 的比特币持仓通过 8-K 公告更新，并非实时数据。在快速行情中（BTC 单日 ±10%），第三方网站数据可能存在滞后。<strong>操作规则：日内快速行情期间，NAV 溢价仅作参考，不得作为单独触发依据；每月调仓前，必须使用最新 8-K 数据自行核算一次。</strong>
+  </div>
+
+  <h3 class="sub">MSTR 专属风险提示</h3>
+  <div class="card">
+    <ul style="list-style:none;padding:0">
+      <li style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--cream2)"><strong style="color:var(--orange)">杠杆效应</strong>：MSTR 波动率历史上是 BTC 的 2–3 倍，卖 Call 的被行权风险被显著放大，行权价偏移参数必须比普通股票更保守。</li>
+      <li style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--cream2)"><strong style="color:var(--orange)">NAV 溢价非线性</strong>：牛市中 NAV 溢价可以持续扩大（3x → 4x → 更高）。高估可能持续更长时间，切勿因溢价高就急于裸卖——趋势持续期间被轧空的风险极高。</li>
+      <li style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--cream2)"><strong style="color:var(--orange)">公司行为风险</strong>：MSTR 可能通过 <span class="t" data-t="ATM增发|At-The-Market Offering，上市公司授权经纪商在二级市场持续小批量出售新股融资，不设固定发行时间表。MSTR 频繁使用此方式筹资购买比特币，增发将改变每股 BTC 持仓数量，直接影响 NAV 溢价计算。">ATM 增发</span>或可转债购买更多比特币，重大公告（8-K）发布后，<strong>暂停新开仓 1 周</strong>，等待市场重新定价。</li>
+      <li style="padding:6px 0;font-size:13.5px;color:var(--cream2)"><strong style="color:var(--red)">跳空风险（Gap Risk）</strong>：美股盘后 BTC 大涨时，MSTR 次日开盘可能直接跳空 +15% 以上，<span class="t" data-t="限价止损单|在预设价格触发的止损指令，仅在该价格或更优价格成交。跳空缺口发生时，开盘价直接越过限价，导致止损单全部失效，裸卖方需使用 OCA 市价条件单应对。">限价止损单</span>完全失效。这是裸卖 Call 最大的实操风险（解决方案见第 10 章）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s6">
+  <div class="sec-header">
+    <div class="sec-num">Section 06</div>
+    <div class="sec-title">IVR 波动率校准 — 权利金定价引擎</div>
+    <div class="sn">06</div>
+  </div>
+
+  <div class="formula">
+    <div class="f-label">IVR 计算公式（推荐使用 26 周窗口）</div>
+    <div class="f-main">IVR = (当前 IV − 过去 26 周最低 IV) ÷ (过去 26 周最高 IV − 过去 26 周最低 IV) × 100%</div>
+    <div class="f-note">数据来源：OptionCharts.io（免费）或 IBKR TWS（实时）<br><strong>为何使用 26 周而非 52 周</strong>：MSTR 的 IV 结构随 BTC 牛熊切换快速变化，52 周窗口往往包含结构性不可比数据（如上一个熊市周期的极端低 IV），会严重扭曲当前 IVR 的排名解读。26 周窗口更贴近当前市场结构。</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>IVR 区间</th><th>市场特征</th><th>权利金水平</th><th>策略影响</th></tr></thead>
+      <tbody>
+        <tr class="row-blue"><td>&lt; 30%</td><td>IV 偏低，市场平静</td><td>权利金不丰厚，不划算</td><td><span class="badge badge-red">暂停裸卖</span>。仅对有正股的仓位执行备兑，且行权价偏移可稍小（+10%～12%）。</td></tr>
+        <tr class="row-blue"><td>30% – 55%</td><td>正常波动环境</td><td>权利金合理</td><td>正常执行备兑 Call。裸卖需结合 NAV 溢价决定，不建议激进操作。</td></tr>
+        <tr class="row-yellow"><td>55% – 70%</td><td>情绪活跃，IV 偏高</td><td>权利金丰厚</td><td>积极执行备兑 Call。若 NAV ≥ 2.0x，可开始评估裸卖（严格仓位控制）。</td></tr>
+        <tr class="row-green"><td>&gt; 70%</td><td>恐慌 / 狂热，IV 极高</td><td>权利金极丰厚，卖方最佳时机</td><td><strong>卖 Call 最佳窗口</strong>。配合严格熔断机制，备兑和符合条件的裸卖均可积极执行。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-info">
+    <strong>IV Crush 提示</strong>
+    财报发布日前后一周，MSTR 的 <span class="t" data-t="IV Crush|重大事件（如财报）发布后，隐含波动率因不确定性消除而骤降，导致期权价值快速缩水的现象。对期权买方是损失，对卖方是收益。MSTR 的财报 IV Crush 通常不如纯粹依赖自身业绩的公司显著，因为更大的驱动力来自BTC价格。">IV Crush</span> 效应存在，但由于 MSTR 股价主要受 BTC 驱动而非公司业绩，财报的 IV Crush 通常不如纯利润驱动公司显著。建议财报前后一周避免新开仓。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s7">
+  <div class="sec-header">
+    <div class="sec-num">Section 07</div>
+    <div class="sec-title">流动性评分体系 — 开仓前强制执行</div>
+    <div class="sn">07</div>
+  </div>
+  <p class="lead">每次开仓前必须对目标合约进行流动性评分。<strong>低于 7 分禁止执行，移至相邻活跃行权价重新评分</strong>。流动性不足时，止损单可能产生巨额滑点，在极端行情下尤为危险。</p>
+
+  <div class="formula">
+    <div class="f-label">加权评分公式</div>
+    <div class="f-main">综合评分 = 成交量得分 × 0.4 + 买卖价差得分 × 0.3 + 未平仓合约得分 × 0.2 + 做市商得分 × 0.1</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>权重</th><th>10 分（优秀）</th><th>7 分（合格）</th><th>3 分（较差）</th><th>0 分（禁止）</th></tr></thead>
+      <tbody>
+        <tr><td>日成交量</td><td>40%</td><td>&gt; 2,000 张</td><td>500 – 2,000 张</td><td>100 – 500 张</td><td>&lt; 100 张</td></tr>
+        <tr><td>买卖<span class="t" data-t="买卖价差|Bid-Ask Spread，期权买一价（Bid）与卖一价（Ask）之间的差值。价差越小，流动性越好，进出仓位的隐性成本越低。价差过大时，市价单成交价与中间价相差悬殊，实际执行成本大幅提高。">价差</span></td><td>30%</td><td>&lt; $0.30</td><td>$0.30 – $1.00</td><td>$1.00 – $2.00</td><td>&gt; $2.00</td></tr>
+        <tr><td><span class="t" data-t="未平仓合约|Open Interest，市场上所有尚未到期且尚未平仓的期权合约的总数量。未平仓合约量越高，说明市场参与者越多，流动性和价格发现功能越好，同时也反映了对该行权价的市场关注度。">未平仓合约</span></td><td>20%</td><td>&gt; 10,000 张</td><td>3,000 – 10,000 张</td><td>500 – 3,000 张</td><td>&lt; 500 张</td></tr>
+        <tr><td><span class="t" data-t="做市商|Market Maker，通过持续报出买卖双向价格为市场提供流动性的专业机构。做市商数量越多，竞争越激烈，买卖价差越小，流动性越好，执行成本越低。">做市商</span>数量</td><td>10%</td><td>≥ 5 家</td><td>3 – 4 家</td><td>1 – 2 家</td><td>0 家</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">分级执行规则</h3>
+  <div class="two-col">
+    <div class="card"><div class="metric-label">≥ 7 分</div><div style="color:var(--green);font-size:14px;margin-top:4px">正常执行</div><p style="margin-top:8px">限价单挂买卖中间价（Midpoint）。15 分钟未成交，降至 Bid+$0.10；再 10 分钟，降至 Bid+$0.05；再 5 分钟未成交，撤单重新评估。</p></div>
+    <div class="card"><div class="metric-label">4 – 6 分</div><div style="color:var(--orange);font-size:14px;margin-top:4px">降级执行</div><p style="margin-top:8px">行权价向整数位靠拢，权利金预期打 8 折。只挂限价单，不接受滑点成交。若同一到期日内找不到 ≥ 7 分合约，放弃本次操作。</p></div>
+    <div class="card"><div class="metric-label">≤ 3 分</div><div style="color:var(--red);font-size:14px;margin-top:4px">禁止开仓</div><p style="margin-top:8px">移至相邻活跃整数行权价重新评分后再决定。禁止强行开仓，流动性不足时止损单在极端行情中可能产生巨额滑点。</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s8">
+  <div class="sec-header">
+    <div class="sec-num">Section 08</div>
+    <div class="sec-title">策略武器库</div>
+    <div class="sn">08</div>
+  </div>
+  <p class="lead">本策略提供三种操作工具，按风险从低到高排列。<strong>推荐 90% 的客户仅使用备兑 Call 或看涨熊市价差</strong>；裸卖 Call 仅限极少数满足严苛条件的专业客户且仓位极小。</p>
+
+  <div class="card-grid" style="margin-bottom:28px">
+    <div class="metric-card"><div class="metric-label">工具 1</div><div class="metric-val" style="font-size:16px">备兑 Call</div><div class="metric-sub">首选策略 · 低风险</div></div>
+    <div class="metric-card"><div class="metric-label">工具 2</div><div class="metric-val" style="font-size:16px">看涨熊市价差</div><div class="metric-sub">保守替代 · 锁定最大亏损</div></div>
+    <div class="metric-card"><div class="metric-label">工具 3</div><div class="metric-val" style="font-size:16px">裸卖 Call</div><div class="metric-sub">极度受限 · 专业客户</div></div>
+  </div>
+
+  <!-- 8.1 Covered Call -->
+  <div id="s8a" class="sec-sep">8.1 — 备兑看涨期权（Covered Call）</div>
+
+  <div class="alert alert-success">
+    <strong>推荐操作：持有 MSTR 正股的客户，这是您的核心增强工具</strong>
+    最大风险为踏空风险（股票暴涨时以行权价被卖出），无无限亏损暴露。目标月化权利金收益率：持仓市值的 1%–3%。
+  </div>
+
+  <h3 class="sub">开仓前检查清单（每次必做）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>BTC 市场状态为 <strong>A、B 或 C</strong>（状态 D 禁止所有卖 Call）</div></li>
+    <li><span class="ck req"></span><div>记录 <span class="t" data-t="NAV溢价|MSTR股价 ÷ 每股BTC价值，历史正常区间1.5x–3.0x。操作门槛：≥1.5x时可备兑，≥2.5x时最佳。">NAV 溢价</span>倍数 ≥ 1.5x</div></li>
+    <li><span class="ck req"></span><div>记录 <span class="t" data-t="IVR|隐含波动率排名，当前IV在历史区间中的百分位。IVR越高，权利金越丰厚，卖方收益越好。推荐使用26周窗口。">IVR</span> 数值（建议 ≥ 40%，&gt; 70% 最佳）</div></li>
+    <li><span class="ck req"></span><div>目标行权价流动性评分 ≥ 7 分</div></li>
+    <li><span class="ck req"></span><div>行权价偏移距离 ≥ 12%（MSTR 高波动强制要求）</div></li>
+    <li><span class="ck req"></span><div><span class="t" data-t="Delta|衡量期权价格相对标的资产价格变动的敏感度系数。Delta=0.15 表示标的上涨$1，期权价格约上涨$0.15，同时也近似等于被行权的概率（约15%）。">Delta</span> ≤ +0.25（备兑上限，按下方矩阵选取最优值）</div></li>
+    <li><span class="ck req"></span><div>计算 EV（预期价值）> 0（参见下方公式）</div></li>
+    <li><span class="ck req"></span><div>账户总保证金占用 ≤ 30%（开仓后不超标）</div></li>
+  </ul>
+
+  <h3 class="sub">Delta 矩阵 — 行权价选择核心依据</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>市场状态</th><th>NAV 1.5–2.0x</th><th>NAV 2.0–2.5x</th><th>NAV ≥ 2.5x</th><th>Delta 目标</th><th>最小行权偏移</th></tr></thead>
+      <tbody>
+        <tr class="row-red"><td><span class="badge badge-a">A 强势上涨</span></td><td>+17%–+22%</td><td>+15%–+20%</td><td>+15%–+18%</td><td>+0.10–+0.14</td><td><strong>≥ 15%</strong></td></tr>
+        <tr class="row-yellow"><td><span class="badge badge-b">B 震荡偏多</span></td><td>+14%–+18%</td><td>+12%–+16%</td><td>+10%–+14%</td><td>+0.12–+0.20</td><td><strong>≥ 12%</strong></td></tr>
+        <tr class="row-green"><td><span class="badge badge-c">C 震荡偏空</span></td><td>+12%–+16%</td><td>+10%–+14%</td><td>+10%–+12%</td><td>+0.15–+0.25</td><td><strong>≥ 12%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">EV（预期价值）强制计算</h3>
+  <div class="formula">
+    <div class="f-label">EV 公式</div>
+    <div class="f-main">EV = 权利金收入 × (1 − 被行权概率) − 踏空损失 × 被行权概率</div>
+    <div class="f-main" style="margin-top:6px">被行权概率 ≈ |<span class="t" data-t="Delta|期权价格对标的价格变动的敏感系数，同时近似代表被行权的概率。例如 Delta=0.15 表示约 15% 的概率在到期时被行权。">Delta</span>| × 1.3（MSTR 胖尾修正，比普通股票更高）</div>
+    <div class="f-note" style="margin-top:10px"><strong>备兑 Call 说明</strong>：备兑 EV 若为负，并不意味着"亏损"——而是说明卖 Call 限制了上行收益。您放弃了部分上行空间，换取确定的权利金收入。是否执行，取决于您对正股短期上行收益的预期与权利金收入的价值权衡。</div>
+  </div>
+
+  <h3 class="sub">完整执行示例（MSTR $1,500 · 状态 B · IVR 65% · NAV 2.8x）</h3>
+  <ol class="steps">
+    <li>对照 Delta 矩阵（状态 B，NAV ≥ 2.5x），目标行权偏移 +10%–+14%，对应行权价区间 $1,650–$1,710</li>
+    <li>在 IBKR TWS 期权链中查找，选择 $1,700 Call（Delta ≈ +0.17）。验证跳空缓冲：($1,700−$1,500)/$1,500 = 13.3% ≥ 12% ✓</li>
+    <li>运行流动性评分，假设评分 8.2 分 ✓。选择距今 30–45 天到期的合约</li>
+    <li>执行下单：Sell to Open，限价单，挂买卖中间价（如 Bid $24.50 / Ask $25.50，挂 $25.00）</li>
+    <li>等待规则：15 分钟未成交 → 降至 Bid+$0.10；再 10 分钟 → 降至 Bid+$0.05；再 5 分钟 → 撤单重估</li>
+    <li>台账记录：日期、合约代码、张数、成交权利金、Delta、IVR、NAV 溢价、市场状态、税务标记</li>
+  </ol>
+
+  <h3 class="sub">向上滚仓规则（Credit Roll）</h3>
+  <div class="card">
+    <ul class="checklist">
+      <li><span class="ck"></span><div><strong>触发条件</strong>：MSTR 价格距行权价 &lt; 5%（如行权价 $1,700，股价涨至 $1,615 以上时触发评估）</div></li>
+      <li><span class="ck"></span><div><strong>操作</strong>：买入平仓当前 Call + 同时卖出更高行权价 / 更远到期日 Call，<strong>净权利金必须为正（Credit Roll）</strong></div></li>
+      <li><span class="ck"></span><div><strong>新行权价要求</strong>：较当前行权价至少高 5%，且重新满足 12% 跳空缓冲（相对当时股价）</div></li>
+      <li><span class="ck"></span><div><strong>禁止条件</strong>：若滚仓操作为净支出（Debit），则直接平仓接受被行权，<strong>不做亏损滚仓</strong></div></li>
+    </ul>
+  </div>
+
+  <h3 class="sub">被行权后处理流程</h3>
+  <div class="alert alert-success">
+    <strong>被行权 = 策略成功结果，不是失败</strong>
+    以行权价卖出股票，且行权价高于成本价，即为盈利。被行权当日，确认账户中股票已被卖出，权利金+股票溢价已入账，在台账中标记「税务事件：资本利得」。若仍看好 MSTR，被行权次日评估以当时市价买回正股，重建底仓，继续备兑循环。再入场时重新判断市场状态和 NAV 溢价。
+  </div>
+
+  <!-- 8.2 Bear Call Spread -->
+  <div id="s8b" class="sec-sep">8.2 — 看涨熊市价差（Bear Call Spread）</div>
+
+  <div class="alert alert-info">
+    <strong>推荐给不想持有正股、但希望参与增强收益的保守型客户</strong>
+    结构：卖出低行权价 Call + 买入高行权价 Call。<strong>最大亏损锁定 = 行权价差 − 净权利金收入</strong>，彻底消除无限风险暴露。
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h4 class="subsub">策略结构</h4>
+      <p><strong>卖出腿</strong>：1 张虚值 Call（行权价 = 当前价 × 1.20，Delta ≤ 0.15）</p>
+      <p><strong>买入腿</strong>：1 张更高行权价 Call（行权价 = 卖出腿 + $100～$200）</p>
+      <p><strong>净收权利金</strong>：卖腿权利金 − 买腿权利金</p>
+      <p><strong>最大亏损</strong>：(高行权价 − 低行权价) − 净权利金</p>
+    </div>
+    <div class="card">
+      <h4 class="subsub">优势</h4>
+      <p>✓ 最大亏损有上限，风险完全可知</p>
+      <p>✓ 保留 Theta 衰减收益</p>
+      <p>✓ 降低 Gamma 和 Vega 风险</p>
+      <p>✓ 对不持有正股的投资者友好</p>
+      <p>⚠ 买腿成本降低净权利金收入（约降低 15%–25%）</p>
+    </div>
+  </div>
+
+  <h3 class="sub">八项强制开仓条件（全部满足方可执行）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>NAV 溢价 ≥ 2.5x</div></li>
+    <li><span class="ck req"></span><div>IVR &gt; 70%</div></li>
+    <li><span class="ck req"></span><div>BTC 市场状态为 B 或 C（禁止在状态 A 执行）</div></li>
+    <li><span class="ck req"></span><div>卖出腿行权价偏移 ≥ 当前价 + 20%</div></li>
+    <li><span class="ck req"></span><div>卖出腿 Delta ≤ 0.15</div></li>
+    <li><span class="ck req"></span><div>两个合约流动性评分均 ≥ 7 分</div></li>
+    <li><span class="ck req"></span><div>账户保证金使用率 ≤ 20%</div></li>
+    <li><span class="ck req"></span><div>总价差敞口 ≤ 总资金 3%（单笔 ≤ 1.5%）</div></li>
+  </ul>
+
+  <div class="alert alert-warn">
+    <strong>执行注意事项</strong>
+    止损：股价接近卖出腿行权价 &lt; 5% 时，立即平仓整个价差头寸（两腿同时平）。<strong>禁止仅平仓卖腿而持有买腿</strong>——价差结构必须作为整体管理。禁止亏损后加仓或尝试滚仓，亏损直接止损离场。
+  </div>
+
+  <!-- 8.3 Naked Call -->
+  <div id="s8c" class="sec-sep">8.3 — 裸卖看涨期权（Naked Call）</div>
+
+  <div class="alert alert-danger">
+    <strong>⚠ 极高风险操作 — 请完整阅读本节后再决定是否执行</strong>
+    裸卖 Call 的亏损理论上无上限。MSTR 历史上曾出现单日 +40% 以上的行情，盘后 BTC 大涨导致次日开盘直接跳空，<strong>限价止损单完全失效</strong>。本节所有内容仅在同时满足以下全部八项条件时方可适用，<strong>建议大多数客户完全跳过本节</strong>，仅执行备兑 Call 或看涨熊市价差。
+  </div>
+
+  <h3 class="sub">八项强制条件（全部满足才可执行）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>条件</th><th>说明</th><th>检查</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">01</td><td>NAV 溢价 <strong>≥ 3.0x</strong></td><td>溢价回归逻辑的强力前提，低于此值禁止执行（保守版参数，高于基准的 2.5x）</td><td>□</td></tr>
+        <tr><td class="mono">02</td><td>IVR <strong>&gt; 75%</strong></td><td>确保权利金极度丰厚，低 IVR 时裸卖的风险收益比极差</td><td>□</td></tr>
+        <tr><td class="mono">03</td><td>市场状态 <strong>B 或 C</strong></td><td>状态 A 强势上涨禁止裸卖；状态 D 禁止所有操作</td><td>□</td></tr>
+        <tr><td class="mono">04</td><td>行权价偏移 <strong>≥ +20%</strong></td><td>比备兑 Call 更保守的安全垫，为跳空行情预留足够缓冲</td><td>□</td></tr>
+        <tr><td class="mono">05</td><td>Delta <strong>≤ +0.12</strong></td><td>深度虚值，在正常行情中被行权概率极低</td><td>□</td></tr>
+        <tr><td class="mono">06</td><td>流动性评分 <strong>≥ 7 分</strong></td><td>低流动性在止损时产生巨额滑点，裸卖仓位止损失败后果灾难性</td><td>□</td></tr>
+        <tr><td class="mono">07</td><td>账户保证金使用率 <strong>≤ 15%</strong></td><td>裸卖前必须预留充足缓冲，防止浮亏扩大时被强制平仓</td><td>□</td></tr>
+        <tr><td class="mono">08</td><td>总裸卖 Call 敞口 <strong>≤ 总资金 1%</strong></td><td>硬性仓位上限，单笔 ≤ 0.5%，不得以任何理由超越</td><td>□</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>强制止损铁律（违反即触发红线守则）</strong>
+    MSTR 价格突破行权价 → 立即市价平仓，不犹豫，不等待回调，不加仓。裸卖 Call 浮亏 &gt; 已收权利金的 100% → 触发强制止损，不得尝试「等回调」。BTC 单日涨幅 &gt; 8% → 所有裸卖仓位须在 24 小时内评估是否提前平仓。<strong>禁止向上滚仓（Roll Up）裸卖 Call</strong>——滚仓只会将风险递延，无法消除。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s9">
+  <div class="sec-header">
+    <div class="sec-num">Section 09</div>
+    <div class="sec-title">动态仓位管理</div>
+    <div class="sn">09</div>
+  </div>
+
+  <h3 class="sub">动态裸卖仓位公式（反脆弱机制）</h3>
+  <div class="formula">
+    <div class="f-label">动态最大仓位上限（Qwen 模型）</div>
+    <div class="f-main">裸卖最大仓位 = 2% × (3.0 ÷ 当前 NAV 溢价率)</div>
+    <div class="f-note" style="margin-top:10px">
+      示例：NAV = 2.5x → 上限 = 2.4%；NAV = 3.0x → 上限 = 2%；NAV = 4.0x → 上限 = 1.5%<br>
+      <strong>设计逻辑</strong>：NAV 溢价越高，理论 Alpha 越大，但跳空风险也越高，仓位随之下降，实现反脆弱。溢价极端时反而更保守。
+    </div>
+  </div>
+
+  <h3 class="sub">双层仓位架构</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>层级</th><th>定义</th><th>规模限制</th><th>功能</th></tr></thead>
+      <tbody>
+        <tr class="row-green"><td>核心层</td><td>正股 + 备兑 Call</td><td>备兑可覆盖 50%–100% 正股；正股总仓位不超过账户净值 50%</td><td>增强持股收益，降低持仓成本基础</td></tr>
+        <tr class="row-yellow"><td>增强层</td><td>看涨熊市价差 / 裸卖 Call</td><td>裸卖 ≤ 动态公式上限；价差 ≤ 总资金 3%</td><td>在极端 NAV 高估时捕获额外溢价回归收益</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">开仓前三情景压力测试（每笔裸卖必做）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>情景</th><th>假设涨幅</th><th>发生概率</th><th>预估亏损（每张）</th><th>账户承受力</th></tr></thead>
+      <tbody>
+        <tr class="row-green"><td>正常波动</td><td>+10%</td><td>较高</td><td>权利金回吐</td><td>通常可承受</td></tr>
+        <tr class="row-yellow"><td>极端跳空</td><td>+50%</td><td>中等</td><td>权利金 × 5–10 倍亏损</td><td>需保证金缓冲 ≥ 50%</td></tr>
+        <tr class="row-red"><td>黑天鹅</td><td>+100% 以上</td><td>低</td><td>理论无限亏损</td><td><strong>必须有 OCA 止损单保护</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>硬性约束（不可因任何理由突破）</strong>
+    总保证金占用 ≤ 25%（比标准 30% 更严） · 裸卖 Call 预留 100% 额外保证金准备金 · 备兑 Call 可覆盖全部正股，不受上限限制 · 总账户净值 &lt; $100,000 时，禁止任何裸卖操作
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s10">
+  <div class="sec-header">
+    <div class="sec-num">Section 10</div>
+    <div class="sec-title">跳空风险专项解决方案 — OCA 止损</div>
+    <div class="sn">10</div>
+  </div>
+
+  <div class="alert alert-danger">
+    <strong>裸卖 Call 最危险的场景：周末跳空缺口</strong>
+    假设：您在周五收盘前卖出 MSTR $1,800 Call（当时股价 $1,500）。周六晚 BTC 暴涨 20%，周一 MSTR 跳空开盘 $1,900，<strong>直接越过您设置的所有限价止损单（如 $1,700 止损）</strong>。结果：您的裸卖 Call 开盘即深度实值，亏损 = ($1,900 − $1,800) × 100 × 张数 = $10,000/张起步，且随价格继续上涨持续扩大，限价止损无法成交。
+  </div>
+
+  <h3 class="sub">解决方案：OCA 市价条件单</h3>
+  <div class="card">
+    <h4 class="subsub">什么是 OCA 止损单</h4>
+    <p><span class="t" data-t="OCA止损单|One-Cancels-All，一组关联条件单，当其中一个被触发成交后，其余订单自动取消。结合「条件触发 + 市价单」可以在跳空缺口发生时确保止损执行，因为市价单不要求特定价格，在任何价格均可成交。">OCA 条件单</span>的关键在于：使用<strong>市价单（Market Order）</strong>而非限价单。市价单在跳空缺口中无论开盘价多高，都能确保成交——代价是接受最差成交价，但这远好于放任亏损无限扩大。</p>
+  </div>
+
+  <h3 class="sub">设置步骤（IBKR TWS）</h3>
+  <ol class="steps">
+    <li><strong>开仓同步设置止损</strong>：在提交卖单的同时，设置 One-Cancels-All (OCA) 止损组合单</li>
+    <li><strong>触发条件</strong>：MSTR 股价 ≥ 行权价 × 93%（即距行权价 7% 以内时触发）。示例：行权价 $1,800，触发价设为 $1,674</li>
+    <li><strong>止损订单类型</strong>：选择 <strong>Market Order（市价单）</strong>——这是关键，只有市价单才能在跳空缺口中确保成交</li>
+    <li><strong>接受滑点</strong>：市价止损意味着接受开盘最差成交价，但这是防止灾难性亏损的唯一有效手段</li>
+  </ol>
+
+  <h3 class="sub">每日盘前人工补充检查</h3>
+  <ol class="steps">
+    <li>每个交易日盘前 30 分钟，检查 MSTR AH 盘（盘后）价格和 BTC 当前价格</li>
+    <li>若 BTC 单日涨幅 &gt; 7%，立即登录 IBKR，手动评估是否需要提前平仓裸卖 Call</li>
+    <li>若 MSTR 盘前价格距行权价 &lt; 8%，<strong>开盘后立即以市价平仓</strong>，不等待正式市场确认</li>
+  </ol>
+
+  <div class="alert alert-warn">
+    <strong>OCA 止损单的局限性</strong>
+    OCA 止损仅能减少损失，无法完全消除跳空风险。在极端情景下（BTC 单日 +30% 以上），即使市价单也可能在高度波动的开盘阶段出现延迟成交。这再次证明：<strong>裸卖 Call 的仓位必须极小（≤ 总资金 1%），使得即使在最坏情景下，账户也不会受到致命损伤。</strong>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s11">
+  <div class="sec-header">
+    <div class="sec-num">Section 11</div>
+    <div class="sec-title">三级熔断机制 — 强制执行</div>
+    <div class="sn">11</div>
+  </div>
+  <p class="lead">熔断机制是整个策略的最后防线。触发任何级别的熔断后，系统动作必须在规定时间内执行完毕，<strong>不得以"我认为会反弹"为由延迟执行</strong>。</p>
+
+  <div class="cb-grid">
+    <div class="cb-card cb-l1">
+      <div class="cb-num">L1</div>
+      <div class="cb-label">黄色预警 — 暂停开仓</div>
+      <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 单日波动 &gt; ±10%</div>
+      <div class="cb-item">BTC 单日波动 &gt; 7%</div>
+      <div class="cb-item">NAV 溢价 &gt; 3.5x</div>
+      <div class="cb-item">裸卖 Call 浮亏 &gt; 权利金 100%</div>
+      <div class="cb-item" style="margin-top:8px"><strong>执行动作</strong>暂停所有新开卖方仓位</div>
+      <div class="cb-item">检查所有裸卖头寸，评估是否触发止损</div>
+      <div class="cb-item">观察，做记录，24 小时后重新评估</div>
+    </div>
+    <div class="cb-card cb-l2">
+      <div class="cb-num">L2</div>
+      <div class="cb-label">橙色警报 — 强制减仓</div>
+      <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 3 日累计波动 &gt; 25%</div>
+      <div class="cb-item">账户保证金使用率 &gt; 40%</div>
+      <div class="cb-item">裸卖 Call 总敞口 &gt; 总资金 3%</div>
+      <div class="cb-item">NAV 溢价趋势快速逆转（MA20 向下穿越）</div>
+      <div class="cb-item" style="margin-top:8px"><strong>执行动作（24 小时内）</strong>无条件平仓全部裸卖 Call / 价差头寸</div>
+      <div class="cb-item">平仓 50% 备兑 Call 头寸</div>
+      <div class="cb-item">若未配置，买入保护性 Put</div>
+    </div>
+    <div class="cb-card cb-l3">
+      <div class="cb-num">L3</div>
+      <div class="cb-label">红色紧急 — 全面清仓</div>
+      <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 单日涨幅 &gt; 25%（跳空缺口）</div>
+      <div class="cb-item">MSTR 5 日累计跌幅 &gt; 40%</div>
+      <div class="cb-item">券商发出强制平仓警告</div>
+      <div class="cb-item">BTC 重大监管禁令或交易所崩溃</div>
+      <div class="cb-item" style="margin-top:8px"><strong>执行动作（立即）</strong>市价平仓所有期权仓位（无论盈亏）</div>
+      <div class="cb-item">卖出 50% 以上 MSTR 正股持仓</div>
+      <div class="cb-item">暂停交易至少 1 个月，全面复盘后重入</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s12">
+  <div class="sec-header">
+    <div class="sec-num">Section 12</div>
+    <div class="sec-title">保护性 Put — 尾部风险对冲</div>
+    <div class="sn">12</div>
+  </div>
+  <p>MSTR 历史最大回撤超过 80%，<span class="t" data-t="保护性Put|Protective Put，买入看跌期权（Put），为持有的正股提供下行保护。当股价跌破行权价时，Put 期权价值上升，对冲正股损失，类似于为持股购买保险。">保护性 Put</span> 是必要的风险管理工具，为极端下行情景提供最后保护。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>标准方案（日常配置）</th><th>激进保护（状态 D 时）</th></tr></thead>
+      <tbody>
+        <tr><td>行权价</td><td>当前价 × 65%–70%（深度虚值，保护极端下跌）</td><td>当前价 × 75%–80%（更接近现价，保护力度更强）</td></tr>
+        <tr><td>到期日</td><td>3–6 个月，季度滚动（避免短期时间价值损耗过快）</td><td>1–3 个月（状态 D 时不确定性高，避免长期锁定）</td></tr>
+        <tr><td>覆盖规模</td><td>覆盖 50% MSTR 正股市值（节省成本，保留上行弹性）</td><td>覆盖 100% 正股市值（全面保护）</td></tr>
+        <tr><td>年化预算</td><td>正股市值的 3%–5%（保险费用，计入策略总成本）</td><td>不超过正股市值的 8%</td></tr>
+        <tr><td>买入时机</td><td>IVR &lt; 40% 时提前布局（IV 低时期权便宜）；BTC MA20 开始向下倾斜时</td><td>状态 D 触发后立即买入，不论 IV 高低</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-danger">
+    <strong>严格禁止：风险逆转（Risk Reversal）</strong>
+    在 MSTR 策略中，<strong>严禁使用风险逆转（卖 Put + 买 Call）</strong>。卖 Put 腿承担接货风险，而 MSTR 下行波动极大（历史单月最大跌幅超 −50%），极易造成巨额亏损。若有 CSP（现金担保卖 Put）需求，须单独评估，并在接货后立即转为备兑 Call，且仅限状态 B/C、IVR &gt; 50%、行权价在支撑位下方 15% 的极端保守条件。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s13">
+  <div class="sec-header">
+    <div class="sec-num">Section 13</div>
+    <div class="sec-title">月度操作清单 — 标准化 SOP</div>
+    <div class="sn">13</div>
+  </div>
+  <p class="lead">每月第一个交易日（建议周二）执行，全程约 60 分钟。以下五个步骤按顺序执行，完成后在台账中记录「月度操作完成」。</p>
+
+  <h3 class="sub">Step 1 — 环境分析（20 分钟）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>TradingView 查看 BTC/USD 日线，记录 MA20、MA50，判断市场状态（A/B/C/D）</div></li>
+    <li><span class="ck req"></span><div>记录 MSTR 当前价格（正式盘开盘后 30 分钟取值，避免盘前价格失真）</div></li>
+    <li><span class="ck req"></span><div>查看 IVR：登录 OptionCharts.io，记录当前 IVR 数值</div></li>
+    <li><span class="ck req"></span><div>计算 NAV 溢价：参考 mstr-tracker.com，并用最新 8-K 数据核验（月度必做）</div></li>
+    <li><span class="ck req"></span><div>计算 NAV 溢价 20 日 MA，判断趋势方向</div></li>
+    <li><span class="ck req"></span><div>检查未来 30 天内是否有财报日、股息日、重大公司行为公告（IBKR 日历或 ir.strategy.com）</div></li>
+    <li><span class="ck req"></span><div>检查账户状态：保证金使用率、现有仓位、近期到期合约</div></li>
+  </ul>
+
+  <h3 class="sub">Step 2 — 方案制定（15 分钟）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div><strong>备兑 Call</strong>：若持有正股，对照 Delta 矩阵选择行权价，确认跳空缓冲 ≥ 12%、流动性 ≥ 7 分</div></li>
+    <li><span class="ck req"></span><div><strong>看涨熊市价差</strong>：仅当 NAV ≥ 2.5x + IVR &gt; 70% + 状态 B/C 时进入评估，运行八项条件检查</div></li>
+    <li><span class="ck req"></span><div><strong>裸卖 Call</strong>：仅当 NAV ≥ 3.0x + IVR &gt; 75% + 状态 B/C + 全部八项条件满足时评估，仓位 ≤ 动态公式上限</div></li>
+    <li><span class="ck req"></span><div>确定目标到期日：距当前 30–45 天，<strong>避开财报周</strong></div></li>
+    <li><span class="ck req"></span><div>在台账中写明本月计划，含每个仓位的行权价、张数、预期权利金</div></li>
+  </ul>
+
+  <h3 class="sub">Step 3 — 执行交易（15 分钟）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>先执行备兑 Call（风险最低，优先完成）</div></li>
+    <li><span class="ck req"></span><div>看涨熊市价差：两腿同时提交为一个合并订单（Combo Order），避免腿差风险</div></li>
+    <li><span class="ck req"></span><div>裸卖 Call（如执行）：先开 1 张，隔日再评估是否开第 2 张，不超过总上限</div></li>
+    <li><span class="ck req"></span><div>所有订单使用限价单（禁止市价单），按第 08 章挂单策略执行</div></li>
+    <li><span class="ck req"></span><div>裸卖 Call 开仓<strong>同步设置 OCA 市价止损条件单</strong>（触发价 = 行权价 × 93%）</div></li>
+  </ul>
+
+  <h3 class="sub">Step 4 — 风控检查（5 分钟）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>确认总保证金占用 ≤ 25%</div></li>
+    <li><span class="ck req"></span><div>确认裸卖 Call 总敞口 ≤ 动态公式上限</div></li>
+    <li><span class="ck req"></span><div>确认所有裸卖 Call 都有对应的 OCA 市价止损条件单</div></li>
+    <li><span class="ck req"></span><div>确认当前熔断状态：是否处于 L1/L2/L3？如是，本月暂停所有增强操作</div></li>
+  </ul>
+
+  <h3 class="sub">Step 5 — 台账更新（5 分钟）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>更新 Excel 台账，记录本月所有新开仓的完整字段（见第 14 章）</div></li>
+    <li><span class="ck req"></span><div>更新月度绩效汇总行：本月权利金收入、累计权利金、被行权次数、净资产变化</div></li>
+    <li><span class="ck req"></span><div>标记所有税务事件类型，记录人民币折算金额（中国申报备用）</div></li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s14">
+  <div class="sec-header">
+    <div class="sec-num">Section 14</div>
+    <div class="sec-title">台账系统 — 绩效追踪与税务合规</div>
+    <div class="sn">14</div>
+  </div>
+
+  <h3 class="sub">逐笔交易台账字段（每笔期权交易必填）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>字段名称</th><th>填写说明</th><th>税务用途</th></tr></thead>
+      <tbody>
+        <tr><td>开仓日期</td><td>格式：YYYY-MM-DD</td><td>—</td></tr>
+        <tr><td>策略类型</td><td>备兑 Call / 看涨熊市价差 / 裸卖 Call / 保护性 Put 买入</td><td>风险分类</td></tr>
+        <tr><td>合约标识</td><td>格式：MSTR C$1700 2026-05-16</td><td>合约追踪</td></tr>
+        <tr><td>张数</td><td>合约数量</td><td>—</td></tr>
+        <tr><td>开仓权利金 / 张（$）</td><td>实际成交价格，非报价</td><td>权利金收入记录</td></tr>
+        <tr><td>总权利金收入（$）</td><td>权利金 / 张 × 张数 × 100</td><td>权利金收入</td></tr>
+        <tr><td>开仓时 Delta</td><td>从期权链读取</td><td>—</td></tr>
+        <tr><td>开仓时 IVR（%）</td><td>从 OptionCharts.io 读取</td><td>策略有效性回测</td></tr>
+        <tr><td>开仓时 NAV 溢价（x）</td><td>自行计算或 mstr-tracker.com</td><td>策略有效性回测</td></tr>
+        <tr><td>市场状态</td><td>A / B / C / D</td><td>—</td></tr>
+        <tr><td>OCA 止损价（$）</td><td>条件单触发价（裸卖 Call 必填）</td><td>—</td></tr>
+        <tr><td>平仓日期</td><td>—</td><td>持有期计算</td></tr>
+        <tr><td>平仓价格 / 张（$）</td><td>实际平仓成交价</td><td>—</td></tr>
+        <tr><td>净盈亏（$）</td><td>(开仓权利金 − 平仓成本) × 张数 × 100</td><td>损益确认</td></tr>
+        <tr><td>是否被行权</td><td>是 / 否 / 主动平仓 / 熔断平仓</td><td>—</td></tr>
+        <tr><td>税务事件类型</td><td>权利金收入 / 资本利得 / 资本亏损</td><td><strong>CPA 必需</strong></td></tr>
+        <tr><td>CNY 折算金额</td><td>按交易日汇率折算（中国申报备用）</td><td>中国税务申报</td></tr>
+        <tr><td>备注</td><td>特殊情况说明（如滚仓、熔断平仓、Wash Sale 风险等）</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">月度绩效核心指标</h3>
+  <div class="card-grid">
+    <div class="metric-card"><div class="metric-label">月化权利金收益率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">当月净权利金 ÷ 月初总资金</div></div>
+    <div class="metric-card"><div class="metric-label">年化权利金收益率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">(1 + 月化) ^ 12 − 1</div></div>
+    <div class="metric-card"><div class="metric-label">备兑 Call 胜率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">到期未行权次数 ÷ 总次数（目标 &gt; 75%）</div></div>
+    <div class="metric-card"><div class="metric-label">NAV 溢价相关性</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">每季统计溢价与权利金收益的相关系数</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s15">
+  <div class="sec-header">
+    <div class="sec-num">Section 15</div>
+    <div class="sec-title">心理纪律与红线守则</div>
+    <div class="sn">15</div>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>策略长期成功：70% 取决于执行纪律，30% 取决于参数选择</strong>
+    「你不是在预测 MSTR 的顶部，你是在经营一家溢价回归基金，专门捕捉市场对比特币杠杆工具的过度追捧。大多数时间你在收取高额保费；当狂热退潮时，你收获利润。永远不要与狂热为敌，只需在狂热时卖出保险，等待理性回归。」
+  </div>
+
+  <h3 class="sub">四大常见心理陷阱</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>心理陷阱</th><th>触发场景</th><th>正确应对</th></tr></thead>
+      <tbody>
+        <tr class="row-yellow">
+          <td>踏空后悔</td>
+          <td>备兑被行权后，MSTR 继续大涨 30%，懊悔想追涨或放宽下次行权价距离</td>
+          <td>接受踏空。你放弃了尾部上行收益，换取了确定的权利金收入。这是策略的既定成本，而非失误。追涨会破坏执行纪律，长期来看是负期望值行为。</td>
+        </tr>
+        <tr class="row-red">
+          <td>浮亏加仓</td>
+          <td>裸卖 Call 浮亏时，认为「很快会回调」，想加仓摊低成本</td>
+          <td><strong>这是通往爆仓的捷径。</strong>严格遵守熔断规则，触发止损就止损，无条件执行。历史上绝大多数期权爆仓事件都始于这一念头。</td>
+        </tr>
+        <tr class="row-yellow">
+          <td>过度自信</td>
+          <td>连续几个月收益稳定后，开始放宽条件（如 IVR 只有 62% 就执行裸卖，行权价偏移只有 15%）</td>
+          <td>策略参数是基于历史风险数据设定的，不是心情的函数。好的时期正是最需要保持纪律的时期，因为风险往往在低波动时期悄悄积累。</td>
+        </tr>
+        <tr class="row-blue">
+          <td>分析瘫痪</td>
+          <td>市场信号混杂（NAV 2.6x 但 IVR 只有 62%），无法决策，错过最佳时机</td>
+          <td>使用检查清单，按框架执行。条件满足就执行，不满足就不执行，不需要寻找额外的「确认信号」。检查清单就是决策框架。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">红线守则（违反任意一条 — 强制停止操作 4 周）</h3>
+  <ul class="checklist">
+    <li><span class="ck req"></span><div>在 NAV 溢价 &lt; 2.0x 时执行裸卖 Call</div></li>
+    <li><span class="ck req"></span><div>裸卖 Call 亏损后加倍仓位或执行任何形式的加仓摊平</div></li>
+    <li><span class="ck req"></span><div>市场状态 A（强势上涨）时新开裸卖 Call</div></li>
+    <li><span class="ck req"></span><div>流动性评分 &lt; 7 分时强行开仓</div></li>
+    <li><span class="ck req"></span><div>裸卖 Call 开仓时未同步设置 OCA 市价止损条件单</div></li>
+    <li><span class="ck req"></span><div>触发 L2 熔断后 24 小时内未完成裸卖 Call 全部清仓</div></li>
+    <li><span class="ck req"></span><div>因看好 MSTR 后市而拒绝执行备兑 Call 的向上滚仓或被行权流程</div></li>
+  </ul>
+
+  <div class="alert alert-info">
+    <strong>关于 4 周强制停止操作</strong>
+    强制停止操作的目的不是惩罚，而是让情绪恢复理性，重新审视参数和当前市场环境。每次违反红线都意味着策略面临真实的资本损毁风险，停止操作是保护资金的必要措施。复出前，必须在台账中记录违规原因分析并制定改进措施。
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section id="s16">
+  <div class="sec-header">
+    <div class="sec-num">Section 16</div>
+    <div class="sec-title">快速参考卡</div>
+    <div class="sn">16</div>
+  </div>
+
+  <div class="two-col">
+    <div class="qref">
+      <div class="qref-head"><h3>每日 5 分钟快检</h3></div>
+      <div class="qref-body">
+        <div class="table-wrap" style="margin:0">
+          <table>
+            <thead><tr><th>检查项</th><th>来源</th><th>异动阈值</th><th>动作</th></tr></thead>
+            <tbody>
+              <tr><td>NAV 溢价</td><td>mstr-tracker.com</td><td>单日变化 &gt; ±0.3x</td><td>评估是否触发操作</td></tr>
+              <tr><td>IVR</td><td>OptionCharts.io</td><td>单日变化 &gt; 15 pct</td><td>进入开仓评估流程</td></tr>
+              <tr><td>BTC 涨跌幅</td><td>TradingView</td><td>&gt; ±7%</td><td>重新判断市场状态</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="qref">
+      <div class="qref-head"><h3>关键数据工具</h3></div>
+      <div class="qref-body" style="font-size:13px;color:var(--cream2);line-height:2">
+        <div>BTC 趋势图：<span class="pill">TradingView BTCUSD</span></div>
+        <div>NAV 溢价：<span class="pill">mstr-tracker.com</span></div>
+        <div>IVR 数据：<span class="pill">OptionCharts.io</span></div>
+        <div>期权执行（主）：<span class="pill">IBKR TWS</span></div>
+        <div>期权执行（辅）：<span class="pill">BBAE 备兑专用</span></div>
+        <div>MSTR IR 公告：<span class="pill">ir.strategy.com</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top:24px">决策流程摘要</h3>
+  <div class="card" style="font-size:13px;line-height:2.2">
+    <span class="pill">每周一</span> 判断 BTC 状态（A/B/C/D）+ NAV MA20 趋势
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">查 NAV</span> ≥ 2.5x？
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">查 IVR</span> &gt; 70%？
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">选策略</span> 备兑 / 价差 / 裸卖
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">检查清单</span> 8 项条件全满足？
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">流动性</span> ≥ 7 分？
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">执行 + 止损单</span>
+    <span style="color:var(--gold);padding:0 8px">→</span>
+    <span class="pill">台账记录</span>
+  </div>
+
+  <h3 class="sub">目标绩效参考（年化，无历史回测保证）</h3>
+  <div class="card-grid">
+    <div class="metric-card"><div class="metric-label">备兑 Call 年化</div><div class="metric-val">8–15%</div><div class="metric-sub">持仓市值，保守估计</div></div>
+    <div class="metric-card"><div class="metric-label">备兑 + 价差年化</div><div class="metric-val">12–20%</div><div class="metric-sub">NAV ≥ 2.5x 时</div></div>
+    <div class="metric-card"><div class="metric-label">最大回撤目标</div><div class="metric-val">&lt; 12%</div><div class="metric-sub">期权层；正股回撤另计</div></div>
+    <div class="metric-card"><div class="metric-label">备兑胜率目标</div><div class="metric-val">&gt; 75%</div><div class="metric-sub">到期未被行权比例</div></div>
+  </div>
+
+  <div class="alert alert-warn" style="margin-top:32px">
+    <strong>关于收益率预期的警示</strong>
+    上述收益率目标未经历史回测验证，仅为策略逻辑推导的参考范围。MSTR 与 BTC 的相关性可能断裂，历史 NAV 溢价区间不代表未来。在强势趋势行情（如 2024 Q4–2025 Q1）中，备兑 Call 连续被行权可能导致显著踏空损失，实际收益率可能大幅低于目标。本策略的核心价值在于系统化、可重复执行的风险管理，而非追求最大化收益。
+  </div>
+
+  <hr class="gold" style="margin-top:40px">
+  <div style="text-align:center;padding:24px 0;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cream3);letter-spacing:.12em">
+    MSTR VOL DESK · OPERATING PHILOSOPHY<br>
+    V3.0 综合版 · 2026-04-01 · 机密文件，仅供持有人参考<br>
+    本手册不构成投资建议或税务建议 · 期权交易高风险，裸卖 Call 可能导致无限损失
+  </div>
+</section>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── Tooltip system ──
+const TERMS = {
+  'NAV溢价': 'Net Asset Value Premium — MSTR 股价相对其比特币持仓每股价值的溢出倍数。计算公式：MSTR 股价 ÷ 每股 BTC 价值。历史正常区间 1.5x–3.0x，极端情绪下可达 4x+。',
+  'NAV 溢价': 'Net Asset Value Premium — MSTR 股价相对其比特币持仓每股价值的溢出倍数。历史正常区间 1.5x–3.0x，极端情绪下可达 4x+。',
+  'IVR': '隐含波动率排名（Implied Volatility Rank）— 当前 IV 在历史区间（推荐 26 周）内的百分位排名。IVR > 70% 表示期权权利金处于历史高位，是卖方的有利时机。',
+  'Delta': '衡量期权价格相对标的资产价格变动的敏感系数。Delta = 0.15 表示标的上涨 $1，期权价格约上涨 $0.15，同时近似代表被行权的概率（约 15%）。',
+  'Theta': '时间价值衰减速率 — 每日损耗的期权时间价值。Theta 对期权卖方有利：每一天的流逝都使期权价值缩小，卖方的盈利随时间积累。距到期日越近，Theta 衰减越快。',
+  'Gamma': 'Delta 的变化速率。标的价格上涨 $1 时，Delta 随之变化的幅度。高 Gamma 意味着股价快速波动时 Delta 急剧变化，空头期权仓位在价格快速上涨时亏损加速。',
+  'Vega': '期权价格对隐含波动率变化的敏感度。IV 每上升 1 个百分点，期权价格变化的幅度。期权卖方在 IV 高位卖出后，若 IV 回落（IV Crush），则产生额外正收益。',
+  '权利金': 'Premium — 买卖期权时支付或收取的费用，即期权本身的市场价格。对于期权卖方，权利金是主要收益来源；对于买方，是最大亏损上限。',
+  '行权价': 'Strike Price — 期权合约中规定的固定买入或卖出标的资产的价格，与到期日共同定义一份期权合约。',
+  '虚值期权': 'OTM — Out of the Money。看涨期权（Call）行权价高于当前股价，或看跌期权（Put）行权价低于当前股价时，该期权为虚值。',
+  '实值期权': 'ITM — In the Money。看涨期权行权价低于当前股价，具有内在价值，被行权的概率更高。',
+  '备兑Call': 'Covered Call — 在持有标的股票的同时，卖出等量的看涨期权。以持有的股票作为履约担保，规避无限亏损暴露。最大风险为踏空风险。',
+  '裸卖Call': 'Naked Call — 在不持有标的股票的情况下卖出看涨期权。理论亏损无上限，是风险最高的期权策略之一。',
+  '裸卖 Call': 'Naked Call — 不持有正股而卖出看涨期权，理论亏损无上限。MSTR 的高波动性使此操作的风险被进一步放大。',
+  '看涨熊市价差': 'Bear Call Spread — 卖出低行权价 Call + 买入高行权价 Call，锁定最大亏损上限 = 行权价差 − 净权利金。可完全消除无限亏损风险。',
+  '保护性Put': 'Protective Put — 买入看跌期权（Put）为正股持仓提供下行保护，类似为持股购买保险。当股价跌破行权价时，Put 价值上升，对冲正股损失。',
+  '保护性 Put': 'Protective Put — 买入看跌期权为正股持仓提供下行保护。当股价跌破行权价时，Put 价值上升，对冲正股损失。类似为持股购买保险。',
+  'FDAP收入': 'Fixed, Determinable, Annual or Periodical — 美国税法中对 NRA 来源的特定被动收入分类，通常须预扣 30% 税款。期权权利金一般被认定为非 FDAP 收入。',
+  'ECI': 'Effectively Connected Income — 与美国境内贸易或商业活动有效关联的收入。若期权交易被认定为 ECI，则适用常规美国税率而非 NRA 豁免。',
+  'Wash Sale规则': '美国税法规定：亏损卖出证券后的前后各 30 天内购入相同或基本相同证券，该亏损不得当年税务抵扣，只能递延至新仓位平仓时。',
+  'Wash Sale': '亏损卖出证券后前后各 30 天内购入相同证券，该亏损不得当年税务抵扣。对 NRA 同样适用。',
+  'W-8BEN': 'IRS 表格 W-8BEN — 供非美国个人向支付方（如券商）证明外国人身份，并申请适用税收协定优惠税率。有效期 3 年，过期未更新触发 30% 预扣。',
+  'EV': 'Expected Value（预期价值）— 基于各种可能结果发生概率加权计算的期望回报。EV > 0 是开仓的必要条件，不充分条件。',
+  '预期价值': 'Expected Value — 各可能结果的收益 × 发生概率的加权求和，代表操作的期望净收益。',
+  '胖尾修正': 'Fat-tail Adjustment — 金融资产价格出现极端行情的概率高于正态分布的假设。MSTR 的高波动性使胖尾效应尤为显著，被行权概率比 Delta 更高。',
+  'OCA止损单': 'One-Cancels-All — 一组关联条件单，其中一个被触发成交后，其余订单自动取消。结合市价单可在跳空缺口场景中确保止损执行。',
+  'OCA 市价止损': 'One-Cancels-All 市价条件单 — 预设触发条件，达到后以市价单平仓。跳空缺口发生时，限价止损单失效，只有市价单才能确保成交，代价是接受最差价格。',
+  '保证金': 'Margin — 维持期权卖方仓位所需在账户中冻结的资金或证券担保。保证金不足时，券商发出追加保证金通知（Margin Call），可能触发强制平仓。',
+  '做市商': 'Market Maker — 通过持续报出买卖双向价格为市场提供流动性的专业机构。做市商越多，竞争越激烈，买卖价差越小，执行成本越低。',
+  '未平仓合约': 'Open Interest — 市场上所有尚未到期且未平仓的期权合约总数量。反映市场参与程度，越高说明流动性和价格发现功能越好。',
+  'ATM增发': 'At-The-Market Offering — 上市公司授权经纪商在二级市场持续小批量出售新股融资，不设固定发行时间表。MSTR 频繁使用此方式购买比特币。',
+  '向上滚仓': 'Roll Up — 买回当前期权仓位并同时建立更高行权价和/或更远到期日的新仓位。对于备兑 Call，净权利金必须为正（Credit Roll），否则不做。',
+  'IV Crush': '重大事件（如财报）发布后，隐含波动率因不确定性消除而骤降，导致期权价值快速缩水的现象。对期权卖方是额外收益，对买方是损失。',
+  '跳空缺口': 'Gap — 因重大消息导致开盘价远高于前收盘价，在价格图上留下空白缺口。跳空缺口会越过所有限价止损单，使止损失效，是裸卖 Call 的极端风险场景。',
+  '组合保证金': 'Portfolio Margin — 基于持仓整体风险而非逐笔计算的保证金体系，通常比标准保证金要求低 40%–70%，适合复杂多策略账户。',
+  'NRA': 'Non-Resident Alien — 非美国居民外籍人士（非美国税务居民）。在美国税务处理上享有特定豁免，但需定期提交 W-8BEN 表格，并注意遗产税免税额仅为 $60,000。',
+  '隐含波动率': 'Implied Volatility（IV）— 从期权市场价格反推得出的对未来标的资产价格波动幅度的市场预期。IV 高时期权权利金贵，是卖方获利的有利时机。',
+  '买卖价差': 'Bid-Ask Spread — 期权买一价（Bid）与卖一价（Ask）之间的差值。价差越小，流动性越好，进出仓位的隐性成本越低。'
+};
+
+const tooltip = document.getElementById('tooltip');
+const ttTerm = document.getElementById('tt-term');
+const ttBody = document.getElementById('tt-body');
+
+document.querySelectorAll('.t').forEach(el => {
+  const raw = el.getAttribute('data-t') || '';
+  let termKey = '', def = '';
+  if (raw.includes('|')) {
+    const parts = raw.split('|');
+    termKey = parts[0];
+    def = parts[1];
+  } else {
+    termKey = el.textContent;
+    def = TERMS[termKey] || TERMS[raw] || raw;
+  }
+  el.addEventListener('mouseenter', function(e) {
+    ttTerm.textContent = termKey;
+    ttBody.textContent = def;
+    tooltip.classList.add('show');
+    positionTooltip(e);
+  });
+  el.addEventListener('mousemove', positionTooltip);
+  el.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+});
+
+function positionTooltip(e) {
+  const tw = 280, th = 120;
+  let x = e.clientX - tw / 2;
+  let y = e.clientY - th - 16;
+  if (x < 8) x = 8;
+  if (x + tw > window.innerWidth - 8) x = window.innerWidth - tw - 8;
+  if (y < 8) y = e.clientY + 20;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+// ── Scroll spy ──
+const sections = document.querySelectorAll('section[id], div[id^="s8"]');
+const links = document.querySelectorAll('#sidebar a');
+const progressBar = document.getElementById('progress-bar');
+
+function updateScroll() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+
+  let current = '';
+  sections.forEach(sec => {
+    if (sec.offsetTop - 100 <= scrollTop) current = sec.id;
+  });
+  links.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+}
+window.addEventListener('scroll', updateScroll, { passive: true });
+updateScroll();
+
+// ── Mobile toggle ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── Smooth scroll offset ──
+document.querySelectorAll('#sidebar a').forEach(a => {
+  a.addEventListener('click', function(e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      window.scrollTo({ top: target.offsetTop - 24, behavior: 'smooth' });
+      if (window.innerWidth <= 900) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

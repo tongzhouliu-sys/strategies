@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBIT 期权增强收益操作手册 · KAISHANG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --bg2: #161b26;
+    --bg3: #1e2535;
+    --bg4: #252d40;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --gold: #c9a84c;
+    --gold2: #e6c96e;
+    --gold-dim: rgba(201,168,76,0.12);
+    --text: #e8e4d8;
+    --text2: #9fa3ae;
+    --text3: #6b7280;
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.10);
+    --green-border: rgba(74,222,128,0.25);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.10);
+    --red-border: rgba(248,113,113,0.25);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.10);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.10);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.10);
+    --font-serif: 'Noto Serif SC', serif;
+    --font-sans: 'Noto Sans SC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: rgba(14,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    gap: 2rem;
+    z-index: 100;
+    overflow-x: auto;
+  }
+  .nav-logo {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    margin-right: 1rem;
+  }
+  .nav a {
+    font-size: 11px;
+    color: var(--text3);
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .nav a:hover { color: var(--gold); }
+
+  /* ── LAYOUT ── */
+  .wrapper {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 80px 2rem 6rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    border: 0.5px solid var(--border2);
+    border-radius: 12px;
+    background: var(--bg2);
+    padding: 2.5rem 3rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--gold);
+    border: 0.5px solid var(--gold);
+    border-radius: 4px;
+    padding: 2px 8px;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 1.8rem;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .stat-label { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 3px; }
+  .stat-value { font-family: var(--font-mono); font-size: 16px; color: var(--gold2); }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.4rem;
+    padding-bottom: 10px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 0.5px solid rgba(201,168,76,0.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── ZONE CARDS ── */
+  .zone {
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+  .zone-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .zone-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .zone-range {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .zone-name {
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .zone-current {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 0.5px solid;
+  }
+  .zone-body {
+    padding: 0 20px 18px;
+  }
+  .zone-body .sub-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    margin: 14px 0 6px;
+  }
+
+  /* Zone color themes */
+  .z-danger { background: linear-gradient(135deg, rgba(248,113,113,0.06), transparent); }
+  .z-danger .zone-label { background: var(--red-dim); color: var(--red); border: 0.5px solid var(--red-border); }
+  .z-danger .zone-range { color: var(--red); }
+
+  .z-caution { background: linear-gradient(135deg, rgba(251,191,36,0.06), transparent); }
+  .z-caution .zone-label { background: var(--amber-dim); color: var(--amber); border: 0.5px solid rgba(251,191,36,0.3); }
+  .z-caution .zone-range { color: var(--amber); }
+
+  .z-recover { background: linear-gradient(135deg, rgba(96,165,250,0.06), transparent); }
+  .z-recover .zone-label { background: var(--blue-dim); color: var(--blue); border: 0.5px solid rgba(96,165,250,0.3); }
+  .z-recover .zone-range { color: var(--blue); }
+
+  .z-profit { background: linear-gradient(135deg, rgba(74,222,128,0.06), transparent); }
+  .z-profit .zone-label { background: var(--green-dim); color: var(--green); border: 0.5px solid var(--green-border); }
+  .z-profit .zone-range { color: var(--green); }
+
+  .z-high { background: linear-gradient(135deg, rgba(167,139,250,0.06), transparent); }
+  .z-high .zone-label { background: var(--purple-dim); color: var(--purple); border: 0.5px solid rgba(167,139,250,0.3); }
+  .z-high .zone-range { color: var(--purple); }
+
+  /* ── TABLES ── */
+  .tbl-wrap { overflow-x: auto; margin: 10px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    border-bottom: 0.5px solid var(--border2);
+    background: var(--bg3);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 0.5px solid var(--border);
+    vertical-align: top;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── TAGS & BADGES ── */
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .tag-green { background: var(--green-dim); color: var(--green); border: 0.5px solid var(--green-border); }
+  .tag-red { background: var(--red-dim); color: var(--red); border: 0.5px solid var(--red-border); }
+  .tag-amber { background: var(--amber-dim); color: var(--amber); border: 0.5px solid rgba(251,191,36,0.3); }
+  .tag-blue { background: var(--blue-dim); color: var(--blue); border: 0.5px solid rgba(96,165,250,0.3); }
+  .tag-purple { background: var(--purple-dim); color: var(--purple); border: 0.5px solid rgba(167,139,250,0.3); }
+  .tag-gold { background: var(--gold-dim); color: var(--gold2); border: 0.5px solid rgba(201,168,76,0.3); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .callout-warn { background: rgba(251,191,36,0.07); border-left: 3px solid var(--amber); }
+  .callout-danger { background: var(--red-dim); border-left: 3px solid var(--red); }
+  .callout-info { background: var(--blue-dim); border-left: 3px solid var(--blue); }
+  .callout-success { background: var(--green-dim); border-left: 3px solid var(--green); }
+  .callout-gold { background: var(--gold-dim); border-left: 3px solid var(--gold); }
+  .callout strong { color: var(--text); font-weight: 500; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 16px; height: 16px;
+    border: 0.5px solid var(--border2);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .check-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── OP ROWS ── */
+  .op-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 0;
+    border-bottom: 0.5px solid var(--border);
+    padding: 8px 0;
+    align-items: start;
+  }
+  .op-row:last-child { border-bottom: none; }
+  .op-tool { font-size: 11px; font-weight: 500; color: var(--text3); padding-top: 2px; }
+  .op-detail { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .op-detail span.hl { color: var(--text); font-weight: 500; }
+  .op-detail span.num { font-family: var(--font-mono); color: var(--gold2); }
+
+  /* ── TREND STATES ── */
+  .trend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .trend-card {
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 0.5px solid var(--border);
+  }
+  .trend-letter {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .trend-def { font-size: 11px; color: var(--text3); margin-bottom: 8px; line-height: 1.6; }
+  .trend-action { font-size: 12px; color: var(--text2); line-height: 1.7; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 0.5px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── MONO TEXT ── */
+  .mono { font-family: var(--font-mono); }
+  .gold { color: var(--gold2); }
+  .muted { color: var(--text3); }
+
+  /* ── GRID LAYOUTS ── */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 640px) {
+    .g2, .g3, .trend-grid { grid-template-columns: 1fr; }
+    .hero { padding: 1.6rem; }
+    .wrapper { padding: 70px 1rem 4rem; }
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    .nav { display: none; }
+    .wrapper { padding: 2rem; }
+    body { background: white; color: black; }
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    counter-reset: step;
+  }
+  .step-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; padding-top: 3px; }
+  .step-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; color: var(--text2); line-height: 1.7; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.8;
+  }
+
+  /* animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeIn 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-logo">IBIT 操作手册 · KAISHANG</span>
+  <a href="#overview">概览</a>
+  <a href="#architecture">仓位架构</a>
+  <a href="#trend">趋势判断</a>
+  <a href="#zones">价格区间</a>
+  <a href="#iv">IV 策略</a>
+  <a href="#tax">NRA 税务</a>
+  <a href="#risk">风险纪律</a>
+  <a href="#checklist">月度清单</a>
+  <a href="#exit">减仓路径</a>
+</nav>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero" id="overview">
+    <div class="hero-tag">CONFIDENTIAL · 期权增强收益操作手册 V1.0</div>
+    <h1>IBIT 系统化期权收租方案</h1>
+    <p class="hero-sub">账户持有人：KAISHANG &nbsp;·&nbsp; 国籍：中国 &nbsp;·&nbsp; 税务身份：美国 NRA &nbsp;·&nbsp; 制定日期：2026年3月30日</p>
+    <div class="hero-stats">
+      <div class="stat-card">
+        <div class="stat-label">总持仓</div>
+        <div class="stat-value">8,888</div>
+        <div class="stat-sub">IBIT 股</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">综合成本</div>
+        <div class="stat-value">$47.20</div>
+        <div class="stat-sub">加权平均</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">当前价格</div>
+        <div class="stat-value">$37.40</div>
+        <div class="stat-sub">2026.03.30</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">当前浮亏</div>
+        <div class="stat-value" style="color:var(--red)">−20.8%</div>
+        <div class="stat-sub">−$63,910 (估)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">IBKR 持仓</div>
+        <div class="stat-value">6,308</div>
+        <div class="stat-sub">成本 $46.96</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">BBAE 持仓</div>
+        <div class="stat-value">204</div>
+        <div class="stat-sub">成本 $54.40</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">当前 IV</div>
+        <div class="stat-value">~54%</div>
+        <div class="stat-sub">正常区间</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">目标持仓</div>
+        <div class="stat-value">5k–10k</div>
+        <div class="stat-sub">长期持有</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE LOGIC -->
+  <div class="section">
+    <div class="callout callout-gold">
+      <strong>核心策略理念：</strong>以8,888股为长期底仓，通过系统化卖出期权持续赚取权利金，摊薄持仓成本至$47.2以下，最终实现解套并在5,000–10,000股规模内长期持有。策略的核心不是预测涨跌，而是<strong>让时间和波动率为你工作</strong>。
+    </div>
+    <div class="callout callout-warn" style="margin-top:10px;">
+      <strong>关键认知：</strong>当前处于浮亏状态，最大的错误是为了追求权利金收入而将行权价设置过低，导致在解套前股票被行权，随后在更高价格买回——这会把浮亏变成实亏。行权价的设置必须留出足够的安全边际。
+    </div>
+  </div>
+
+  <!-- 仓位架构 -->
+  <div class="section" id="architecture">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">三层仓位架构</span>
+    </div>
+
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.8;">将8,888股拆分为三个逻辑层级，分别承担不同职能。这避免了"全仓备兑"导致在主升浪中踏空的风险。</p>
+
+    <div class="g3" style="margin-bottom:1rem;">
+      <div class="card" style="border-color:rgba(74,222,128,0.2);">
+        <div class="card-title"><span class="tag tag-green">核心仓</span></div>
+        <div style="font-family:var(--font-mono);font-size:22px;color:var(--green);margin:6px 0;">~2,600股</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">约 40% · 不做备兑</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">完全参与IBIT上涨。这部分股票是"自由仓"，在解套过程中保留最大弹性。牛市行情中绝不卖出call压制。</div>
+      </div>
+      <div class="card" style="border-color:rgba(96,165,250,0.2);">
+        <div class="card-title"><span class="tag tag-blue">收益仓</span></div>
+        <div style="font-family:var(--font-mono);font-size:22px;color:var(--blue);margin:6px 0;">~2,600股</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">约 40% · 标准备兑</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">每月卖出虚值看涨期权，稳定产生现金流。这是策略的主力收租层，按5价格区间规则执行。</div>
+      </div>
+      <div class="card" style="border-color:rgba(201,168,76,0.2);">
+        <div class="card-title"><span class="tag tag-gold">增强仓</span></div>
+        <div style="font-family:var(--font-mono);font-size:22px;color:var(--gold2);margin:6px 0;">~1,300股</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">约 20% · 动态操作</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">根据市场状态灵活调整：高IV时积极备兑、强势上涨时暂停、用于卖Put接货或构建风险逆转组合。</div>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>实操映射：</strong>IBKR账户6,308股 → 收益仓26张 + 增强仓13张（合计39张call）。BBAE账户204股 → 备用卖Put保证金账户，不做备兑。每月实际卖出call总数约39–52张（收益仓必做，增强仓视市场状态决定）。<br>
+      <strong>注：</strong>如追求简化操作，也可不拆分，全部参照"收益仓"规则执行，但需接受在牛市中100%仓位被限制上涨空间的代价。
+    </div>
+
+    <div style="margin-top:1.2rem;">
+      <div class="card-title" style="margin-bottom:8px;">四大策略工具使用矩阵</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>工具</th>
+              <th>方向</th>
+              <th>目的</th>
+              <th>使用场景</th>
+              <th>账户</th>
+              <th>上限</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:var(--text);">备兑开仓</strong><br><span class="muted" style="font-size:11px;">Covered Call</span></td>
+              <td><span class="tag tag-blue">卖出虚值 Call</span></td>
+              <td>每月稳定收租，摊薄成本</td>
+              <td>除极端熊市（&lt;$32）外全程运行；趋势A（强势上涨）时仅用增强仓</td>
+              <td>IBKR 主力</td>
+              <td>100% 收益仓<br>可调增强仓</td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text);">裸卖看跌</strong><br><span class="muted" style="font-size:11px;">Cash-Secured Put</span></td>
+              <td><span class="tag tag-amber">卖出虚值 Put</span></td>
+              <td>支撑位赚权利金，或低位接货</td>
+              <td>价格在支撑区 + IV&gt;50% + 非强势下跌；必须愿意接货</td>
+              <td>BBAE 辅助</td>
+              <td>单次≤5张<br>总敞口≤650股</td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text);">保护性看跌</strong><br><span class="muted" style="font-size:11px;">Protective Put</span></td>
+              <td><span class="tag tag-red">买入虚值 Put</span></td>
+              <td>防范系统性暴跌，黑天鹅保险</td>
+              <td>出现明确风险信号；或强势下跌趋势；常态下持有深度虚值长期保险</td>
+              <td>IBKR</td>
+              <td>保费≤3月权利金收入30%</td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text);">风险逆转</strong><br><span class="muted" style="font-size:11px;">Risk Reversal</span></td>
+              <td><span class="tag tag-purple">卖Put + 买Call</span></td>
+              <td>零成本获得上行杠杆</td>
+              <td>IV&gt;76% + 价格在$47.2–$55 + 看涨判断；少量张数</td>
+              <td>BBAE</td>
+              <td>≤3张，零成本构建</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 趋势判断 -->
+  <div class="section" id="trend">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">趋势状态判断机制</span>
+    </div>
+
+    <div class="callout callout-gold">
+      <strong>为什么需要趋势判断？</strong>纯价格区间策略的致命缺陷：在强势上涨行情中继续卖call，会在主升浪中不断被行权，错失解套机会。趋势判断机制让策略从"静态价格锚定"升级为"动态市场适配"。
+    </div>
+
+    <p style="font-size:13px;color:var(--text2);margin:1rem 0 0.8rem;line-height:1.8;">每周一复盘，查看 BTC（非IBIT）的以下两个指标，判断当前趋势状态：</p>
+
+    <div class="g2" style="margin-bottom:1rem;">
+      <div class="card">
+        <div class="card-title">判断指标</div>
+        <div class="op-row">
+          <div class="op-tool">短期趋势</div>
+          <div class="op-detail">BTC 现价 vs <span class="num">20</span>日均线（在 TradingView 或 IBKR 图表中查看 MA20）</div>
+        </div>
+        <div class="op-row">
+          <div class="op-tool">中期趋势</div>
+          <div class="op-detail">BTC 现价 vs <span class="num">50</span>日均线（MA50）</div>
+        </div>
+        <div class="op-row">
+          <div class="op-tool">动量确认</div>
+          <div class="op-detail"><span class="num">20</span>日均线斜率方向（向上 / 走平 / 向下）</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">查看渠道</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2;">
+          · TradingView → 搜索 BTCUSD → 加 MA20 / MA50<br>
+          · IBKR → Chart → Add Indicator → Simple Moving Average<br>
+          · Yahoo Finance → BTC-USD → Full chart<br>
+          · 每周一操盘前完成判断，记录状态（A/B/C/D）
+        </div>
+      </div>
+    </div>
+
+    <div class="trend-grid">
+      <div class="trend-card" style="background:rgba(74,222,128,0.05);border-color:rgba(74,222,128,0.2);">
+        <div class="trend-letter" style="color:var(--green);">状态 A · 强势上涨</div>
+        <div class="trend-def">BTC &gt; MA20 &gt; MA50，且 MA20 向上倾斜</div>
+        <div class="trend-action">
+          <span class="tag tag-red" style="margin-bottom:6px;display:inline-block;">收益仓：暂停或 +25%~30% 行权价</span><br>
+          <span class="tag tag-green" style="margin-bottom:6px;display:inline-block;">核心仓：完全持有，不做任何操作</span><br>
+          <span class="tag tag-red">增强仓：禁止卖Put，可考虑买Call</span><br>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">优先享受上涨，权利金收入让位于资本增值。若必须卖call，选45–60天远期合约，大幅提高行权价。</div>
+        </div>
+      </div>
+      <div class="trend-card" style="background:rgba(96,165,250,0.05);border-color:rgba(96,165,250,0.2);">
+        <div class="trend-letter" style="color:var(--blue);">状态 B · 震荡偏多</div>
+        <div class="trend-def">BTC &gt; MA20，但MA20走平或略向下；或价格在MA20–MA50之间</div>
+        <div class="trend-action">
+          <span class="tag tag-blue" style="margin-bottom:6px;display:inline-block;">收益仓：正常备兑 +15%~20%</span><br>
+          <span class="tag tag-blue" style="margin-bottom:6px;display:inline-block;">核心仓：可考虑极保守备兑 +25%</span><br>
+          <span class="tag tag-amber">增强仓：回调时小量卖Put（≤2张）</span><br>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">当前（2026.03.30）最可能处于此状态。平衡收益与上行空间，30–45天合约，月化目标2%。</div>
+        </div>
+      </div>
+      <div class="trend-card" style="background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.2);">
+        <div class="trend-letter" style="color:var(--amber);">状态 C · 震荡偏空</div>
+        <div class="trend-def">BTC &lt; MA20，但 &gt; MA50；或价格在MA50附近震荡</div>
+        <div class="trend-action">
+          <span class="tag tag-amber" style="margin-bottom:6px;display:inline-block;">收益仓：积极备兑 +10%~15%</span><br>
+          <span class="tag tag-amber" style="margin-bottom:6px;display:inline-block;">增强仓：支撑位 + IV&gt;70% 时卖Put</span><br>
+          <span class="tag tag-blue">保护性看跌：可配置轻度虚值</span><br>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">最大化权利金收入，对冲下跌风险。30天以内短期合约，便于快速滚动。</div>
+        </div>
+      </div>
+      <div class="trend-card" style="background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.2);">
+        <div class="trend-letter" style="color:var(--red);">状态 D · 强势下跌</div>
+        <div class="trend-def">BTC &lt; MA20 &lt; MA50，且MA20向下倾斜</div>
+        <div class="trend-action">
+          <span class="tag tag-red" style="margin-bottom:6px;display:inline-block;">备兑开仓：完全暂停</span><br>
+          <span class="tag tag-red" style="margin-bottom:6px;display:inline-block;">裸卖看跌：完全禁止</span><br>
+          <span class="tag tag-red">保护性看跌：必须配置，中度虚值</span><br>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">保存本金，等待趋势反转。卖call的权利金无法弥补下跌损失，且限制反弹。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top:1rem;">
+      <strong>使用方法：</strong>先用趋势状态（A/B/C/D）确定策略基调，再用下一节的"价格区间"确定具体行权价。两个维度的交叉使用，才能在正确的方向上执行正确的参数。
+    </div>
+  </div>
+
+  <!-- 价格区间 -->
+  <div class="section" id="zones">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">五大价格区间操作框架</span>
+    </div>
+
+    <div class="callout callout-info" style="margin-bottom:1rem;">
+      <strong>IBIT 特殊注意事项：</strong>比特币24/7交易，IBIT周末休市。每逢周末，BTC价格可能大幅波动，导致周一开盘直接跳空越过行权价。因此所有行权价需在理论计算基础上额外上移<strong>3%–5%</strong>作为跳空缓冲。
+    </div>
+
+    <!-- Zone 1 -->
+    <div class="zone z-danger">
+      <div class="zone-header">
+        <div class="zone-label">极端熊市</div>
+        <div class="zone-range" style="color:var(--red);">价格 &lt; $32</div>
+        <div class="zone-name">极端防御区</div>
+      </div>
+      <div class="zone-body">
+        <div class="callout callout-danger" style="font-size:12px;">跌破长期支撑，市场恐慌主导。此时卖出任何期权均弊大于利：卖call限制反弹，卖put极易深套。</div>
+        <div class="sub-title">各工具操作</div>
+        <div class="op-row"><div class="op-tool"><span class="tag tag-red">备兑</span></div><div class="op-detail"><span class="hl">立即暂停</span>。低位权利金极低，且限制未来反弹空间，得不偿失。</div></div>
+        <div class="op-row"><div class="op-tool"><span class="tag tag-red">卖Put</span></div><div class="op-detail"><span class="hl">坚决禁止</span>。接货后可能继续下跌，风险不可控。</div></div>
+        <div class="op-row"><div class="op-tool"><span class="tag tag-amber">保护Put</span></div><div class="op-detail">若已持有，可用<span class="num">3个月</span>权利金收入的<span class="num">20%</span>以内，买入当前价下方<span class="num">5%–10%</span>的虚值Put，对冲进一步下跌。</div></div>
+        <div class="sub-title">风险评估框架</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>情景判断</th><th>操作建议</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag tag-red">不可逆利空</span>（监管禁止、ETF被撤）</td><td>止损30%–50%底仓，剩余等待企稳或政策反转</td></tr>
+              <tr><td><span class="tag tag-amber">情绪性恐慌</span>（无基本面变化）</td><td>持有不动，等待价格站上$32且成交量放大3天以上</td></tr>
+              <tr><td><span class="tag tag-blue">不确定</span></td><td>减仓20%降低心理压力，同时配置保护Put，等待更多信息</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-warn" style="margin-top:8px;font-size:12px;"><strong>目标：</strong>保存本金，等待右侧企稳信号。不抄底，不加仓。</div>
+      </div>
+    </div>
+
+    <!-- Zone 2 -->
+    <div class="zone z-caution">
+      <div class="zone-header">
+        <div class="zone-label">低位震荡</div>
+        <div class="zone-range">$32 – $38</div>
+        <div class="zone-name">成本摊薄起点</div>
+        <div class="zone-current" style="color:var(--amber);border-color:var(--amber);background:var(--amber-dim);">当前所在区间</div>
+      </div>
+      <div class="zone-body">
+        <div class="callout callout-warn" style="font-size:12px;">深度浮亏状态（成本$47.2 vs 现价~$37.4），下跌动能减弱。策略重心：保守备兑积累权利金，不追求过高收益以免被行权踏空。</div>
+        <div class="sub-title">备兑开仓（收益仓 + 增强仓视趋势）</div>
+        <div class="op-row"><div class="op-tool">行权价</div><div class="op-detail">当前价上方 <span class="num">15%–20%</span>（+跳空缓冲3%–5%），即实际选择约 <span class="num">+18%–25%</span> 的合约。<br>示例：现价 $37.4 → 目标行权价 <span class="num">$44–$47</span>（选流动性最好的整数价位）</div></div>
+        <div class="op-row"><div class="op-tool">Delta 目标</div><div class="op-detail"><span class="num">0.20–0.25</span>（对应约75–80%概率不被行权）</div></div>
+        <div class="op-row"><div class="op-tool">到期日</div><div class="op-detail"><span class="num">30–45</span> 天（每月第三周五标准月期权）</div></div>
+        <div class="op-row"><div class="op-tool">权利金目标</div><div class="op-detail">月化持仓市值 <span class="num">1%–2%</span>（总市值~$243,548，月目标 <span class="num">$2,400–$4,900</span>）</div></div>
+        <div class="op-row"><div class="op-tool">张数（收益仓）</div><div class="op-detail">IBKR：26张（对应2,600股）；增强仓视趋势B状态可加13张，合计约 <span class="num">39张</span></div></div>
+
+        <div class="sub-title">裸卖看跌（仅满足以下所有条件时操作）</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>准入条件</th><th>参数设置</th></tr></thead>
+            <tbody>
+              <tr><td>价格接近区间下沿 $32–$34</td><td rowspan="4">行权价：<span class="mono gold">$32–$34</span>（当前价下方8%–12%）<br>数量：<span class="mono gold">1–2张</span>（100–200股）<br>到期日：与备兑同月<br>账户：BBAE</td></tr>
+              <tr><td>IV &gt; 50%（当前54% ✓ 满足）</td></tr>
+              <tr><td>趋势状态为 B 或 C（非强势下跌）</td></tr>
+              <tr><td>账户现金足够覆盖行权（$32×100×张数）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-success" style="margin-top:8px;font-size:12px;"><strong>目标：</strong>每月积累$2,400–$4,900权利金，逐步将实际成本从$47.2向下推进。若价格横盘6个月，综合成本有望降至$43–$44。</div>
+      </div>
+    </div>
+
+    <!-- Zone 3 -->
+    <div class="zone z-recover">
+      <div class="zone-header">
+        <div class="zone-label">反弹途中</div>
+        <div class="zone-range">$38 – $47.2</div>
+        <div class="zone-name">成本下方冲击区</div>
+      </div>
+      <div class="zone-body">
+        <div class="callout callout-info" style="font-size:12px;">价格从低位反弹，浮亏缩小，但尚未解套。市场情绪逐步回暖，上涨动能增强。此时是策略效率最高的阶段。</div>
+        <div class="sub-title">备兑开仓</div>
+        <div class="op-row"><div class="op-tool">行权价</div><div class="op-detail">当前价上方 <span class="num">10%–15%</span>（+跳空缓冲），实际约 <span class="num">+13%–20%</span>。<br>示例：$42 → 卖 <span class="num">$47–$50</span> call；$45 → 卖 <span class="num">$51–$54</span> call</div></div>
+        <div class="op-row"><div class="op-tool">Delta 目标</div><div class="op-detail"><span class="num">0.25–0.30</span></div></div>
+        <div class="op-row"><div class="op-tool">权利金目标</div><div class="op-detail">月化持仓市值 <span class="num">2%–3%</span>，利用反弹提高收租效率</div></div>
+        <div class="op-row"><div class="op-tool">滚动触发</div><div class="op-detail">价格距离行权价 <span class="num">&lt;5%</span> 且仍有上涨动能时，向上滚动：<br>买入平仓当前call（可能亏损） → 卖出更高行权价、相同或更远到期日的call<br><span class="hl">目标：平仓亏损不超过新卖出权利金的50%</span></div></div>
+        <div class="sub-title">⚠ 关键纪律：保护解套机会</div>
+        <div class="callout callout-warn" style="font-size:12px;">若价格快速上涨至$46–$47（接近成本价），<strong>优先向上滚动或暂停收益仓备兑</strong>，让价格突破成本线。被行权后再买回的成本可能更高，得不偿失。解套优先于当月权利金最大化。</div>
+      </div>
+    </div>
+
+    <!-- Zone 4 -->
+    <div class="zone z-profit">
+      <div class="zone-header">
+        <div class="zone-label">解套盈利</div>
+        <div class="zone-range">$47.2 – $55</div>
+        <div class="zone-name">盈利保护区</div>
+      </div>
+      <div class="zone-body">
+        <div class="callout callout-success" style="font-size:12px;">持仓实现解套并开始盈利。策略重心转变：从"摊薄成本"转为"平衡收益与上行空间"，并引入利润保护机制。</div>
+        <div class="sub-title">备兑开仓</div>
+        <div class="op-row"><div class="op-tool">行权价</div><div class="op-detail">当前价上方 <span class="num">12%–18%</span>（+跳空缓冲）。<br>示例：$50 → 卖 <span class="num">$56–$60</span> call</div></div>
+        <div class="op-row"><div class="op-tool">合约期限</div><div class="op-detail">可延长至 <span class="num">45–60</span> 天，减少操作频率，同时降低NRA税务预扣频率</div></div>
+        <div class="op-row"><div class="op-tool">特殊规则</div><div class="op-detail">若价格强势突破$50且成交量放大，<span class="hl">临时暂停增强仓备兑</span>，让利润奔跑。核心仓始终不做备兑。</div></div>
+
+        <div class="sub-title">领口策略（Collar）— 核心仓利润保护</div>
+        <div class="op-row"><div class="op-tool">结构</div><div class="op-detail">卖出 Call（Delta 0.20，行权价 +15%） + 买入 Put（Delta 0.10，行权价 −10%）</div></div>
+        <div class="op-row"><div class="op-tool">净成本</div><div class="op-detail">接近零或小幅正收益（卖call权利金 ≥ 买put保费）</div></div>
+        <div class="op-row"><div class="op-tool">效果</div><div class="op-detail">下跌有$50以下的保护，上涨保留到$57以上的空间，近零成本</div></div>
+
+        <div class="sub-title">风险逆转（高IV时，增强仓）</div>
+        <div class="op-row"><div class="op-tool">触发条件</div><div class="op-detail">IV &gt; <span class="num">76%</span> + 价格在区间四 + 看涨判断</div></div>
+        <div class="op-row"><div class="op-tool">构建</div><div class="op-detail">卖 $45–$48 Put（<span class="num">3张</span>以内）+ 买相同数量 $58–$60 Call，保证权利金收支平衡，零成本博突破</div></div>
+        <div class="callout callout-success" style="margin-top:8px;font-size:12px;"><strong>目标：</strong>享受上涨的同时收取权利金，同时为利润设置保险，不因市场突然回调损失大部分已有盈利。</div>
+      </div>
+    </div>
+
+    <!-- Zone 5 -->
+    <div class="zone z-high">
+      <div class="zone-header">
+        <div class="zone-label">高位区域</div>
+        <div class="zone-range">价格 ≥ $55</div>
+        <div class="zone-name">止盈 & 减仓区</div>
+      </div>
+      <div class="zone-body">
+        <div class="callout callout-info" style="font-size:12px;">进入历史阻力区，盈利丰厚，市场情绪亢奋。策略重心：锁定利润，防止利润大幅回吐，同时启动减仓路径至目标仓位。</div>
+        <div class="sub-title">备兑开仓（偏保守）</div>
+        <div class="op-row"><div class="op-tool">行权价</div><div class="op-detail">当前价上方 <span class="num">15%–20%</span>，或考虑卖出轻度实值Call（行权价低于现价$2–3）锁定利润</div></div>
+        <div class="op-row"><div class="op-tool">权利金目标</div><div class="op-detail">月化 <span class="num">3%–4%</span>，高位权利金丰厚，但优先保护利润</div></div>
+        <div class="op-row"><div class="op-tool">裸卖Put</div><div class="op-detail"><span class="hl">暂停</span>。高位卖put风险过高，避免回调被套。</div></div>
+        <div class="sub-title">主动减仓至目标仓位（5,000–10,000股）</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>价格里程碑</th><th>建议操作</th><th>剩余仓位</th></tr></thead>
+            <tbody>
+              <tr><td><span class="mono gold">$55+</span>（进入区间五）</td><td>通过备兑被行权自然减仓，或主动卖出增强仓1,300股</td><td>~5,200股</td></tr>
+              <tr><td><span class="mono gold">$60+</span></td><td>主动减仓额外10%，利用高价锁定利润</td><td>~4,600–5,000股</td></tr>
+              <tr><td><span class="mono gold">$70+</span>（历史高位）</td><td>大幅减仓至目标区间下限，仅保留5,000股核心持仓</td><td>5,000股</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="op-row" style="margin-top:8px;"><div class="op-tool">保护Put</div><div class="op-detail">必须配置。买入轻度虚值Put（行权价 $50–$52），3个月期。保费≤过去3月权利金收入的30%。</div></div>
+        <div class="callout callout-gold" style="margin-top:8px;font-size:12px;"><strong>黑天鹅保险（长期持有）：</strong>建议持续持有1–2张深度虚值 Put（行权价 $20–$25，180–365天期限），年化费用约为持仓市值的0.5%–1%。比特币历史上曾单日暴跌30%+，这是必要的保险成本。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IV策略 -->
+  <div class="section" id="iv">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">隐含波动率（IV）决策矩阵</span>
+    </div>
+
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.8;">IBIT的IV通常在35%–90%之间波动，当前约54%（正常区间）。IV是决定何时卖出期权、选择什么行权价的关键变量，与价格区间配合使用。</p>
+
+    <div class="callout callout-gold" style="margin-bottom:1rem;">
+      <strong>IBIT IV的特殊性：</strong>与普通股票不同，IBIT价格上涨时IV可能<strong>下降</strong>（比特币牛市情绪平稳），价格下跌时IV大幅上升。这意味着在跌势中卖put反而能收到更高权利金，但风险也更大。
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>IV 水平</th>
+            <th>数值范围</th>
+            <th>市场特征</th>
+            <th>备兑行权价调整</th>
+            <th>卖Put决策</th>
+            <th>其他建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-blue">低 IV</span></td>
+            <td class="mono">&lt; 48%</td>
+            <td>市场平稳，期权价格偏便宜</td>
+            <td>行权价更近 <span class="mono gold">+10%–12%</span>，保证权利金合理；考虑缩短到期日</td>
+            <td>谨慎操作，收益有限</td>
+            <td>暂停风险逆转；减少卖期权张数</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">正常 IV</span></td>
+            <td class="mono">48%–76%</td>
+            <td>市场震荡，权利金合理</td>
+            <td>按价格区间标准百分比执行</td>
+            <td>正常操作，满足条件即可卖</td>
+            <td>常规月度操作，当前（54%）适用</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-amber">高 IV</span></td>
+            <td class="mono">&gt; 76%</td>
+            <td>市场亢奋或恐慌，权利金溢价</td>
+            <td>行权价上移至 <span class="mono gold">+15%–20%</span>，仍能获高收益</td>
+            <td>积极操作，这是黄金收割期</td>
+            <td>积极考虑风险逆转；满仓备兑</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-red">极高 IV</span></td>
+            <td class="mono">&gt; 90%</td>
+            <td>极端恐慌，市场可能反转</td>
+            <td>谨慎，市场方向不明</td>
+            <td>小量卖put，行权价选择更保守</td>
+            <td>同步买入保护Put对冲；评估是否为黑天鹅</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="g2" style="margin-top:1rem;">
+      <div class="card">
+        <div class="card-title">IV 查询方法</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2;">
+          · IBKR TWS → 期权链 → 查看 IV 列<br>
+          · <a href="https://finance.yahoo.com" style="color:var(--blue);">Yahoo Finance</a> → IBIT → 期权 → 隐含波动率<br>
+          · TradingView → IBIT → IV 指标<br>
+          · OptionCharts.com → 查看 IV Rank / IV Percentile<br>
+          · 每次开新仓前确认，不能依赖记忆中的旧数据
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">IV Rank vs IV Percentile</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;">
+          <strong style="color:var(--text);">IV Rank（IVR）</strong>：当前IV在过去一年区间内的位置。IVR &gt; 70 = 高IV（适合卖权利金）。<br><br>
+          <strong style="color:var(--text);">IV Percentile（IVP）</strong>：过去一年中有多少天的IV低于当前值。IVP &gt; 70% = 同样表示高IV。<br><br>
+          两者均可使用，优先看 IVR。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NRA税务 -->
+  <div class="section" id="tax">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">NRA 税务优化方案</span>
+    </div>
+
+    <div class="callout callout-danger">
+      <strong>重要警示：</strong>作为美国NRA（非居民外国人），期权权利金收入默认被视为FDAP（固定、可确定的年度或定期收入），券商将<strong>自动预扣30%</strong>。若不做优化，月化2%的策略实际仅剩1.4%。这是影响真实收益的最大单一因素。
+    </div>
+
+    <div class="g2" style="margin-top:1rem;margin-bottom:1rem;">
+      <div class="card">
+        <div class="card-title">基础税务结构</div>
+        <div class="op-row"><div class="op-tool">权利金收入</div><div class="op-detail">FDAP收入，默认预扣<span class="num" style="color:var(--red);">30%</span>。中美税收协定下可降至<span class="num" style="color:var(--amber);">10%</span>，需确认W-8BEN有效。</div></div>
+        <div class="op-row"><div class="op-tool">资本利得</div><div class="op-detail">IBIT股票买卖差价，NRA通常<span class="num" style="color:var(--green);">免征</span>美国资本利得税（非FIRPTA标的）。</div></div>
+        <div class="op-row"><div class="op-tool">被行权接货</div><div class="op-detail">仅调整成本基数，<span class="num" style="color:var(--green);">不立即征税</span>，待卖出时计算。</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">立即行动项</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2;">
+          1. 确认IBKR和BBAE账户的 <strong style="color:var(--text);">W-8BEN表格</strong> 已提交且在有效期内（3年一换）<br>
+          2. 确认"中国国籍"已在表格中正确填写，享受中美税收协定<br>
+          3. 每年1月前检查券商是否已收到最新W-8BEN<br>
+          4. 索取1042-S表格（NRA的税务报告单）用于核对
+        </div>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:8px;">六条税务优化操作规则</div>
+    <div class="steps">
+      <div class="step-item">
+        <div class="step-dot">T1</div>
+        <div class="step-content">
+          <div class="step-title">减少行权频率（最重要）</div>
+          <div class="step-desc">备兑开仓行权价选择区间上限（如区间二要求15%–20%，直接选20%而非15%）。被行权意味着股票以行权价卖出，会产生资本利得计算事件，虽然NRA资本利得通常免税，但频繁行权增加税务申报复杂性，且卖出后买回需要摩擦成本。<strong style="color:var(--text);">保持持仓不被行权是最简洁的税务优化。</strong></div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">T2</div>
+        <div class="step-content">
+          <div class="step-title">解套后延长合约期限</div>
+          <div class="step-desc">价格达到区间四（$47.2以上）后，将备兑合约从30天延长至45–60天。减少每月平仓/开仓次数，降低权利金收入的税务计提频率，同时减少交易手续费。</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">T3</div>
+        <div class="step-content">
+          <div class="step-title">同年度亏损对冲盈利</div>
+          <div class="step-desc">在同一纳税年度内，期权操作的亏损（如备兑向上滚动时的买入平仓亏损）可与权利金收入互抵，减少当年的FDAP应税金额。例如：当月备兑平仓亏损$1,000，当月卖出权利金$2,500，净FDAP收入仅为$1,500，而非$2,500。<strong style="color:var(--text);">年底前可主动实现部分亏损以降低税基。</strong></div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">T4</div>
+        <div class="step-content">
+          <div class="step-title">分账户隔离税务</div>
+          <div class="step-desc">IBKR负责主力备兑，BBAE负责小额卖Put。两账户税务分开核算，避免混乱。每月记录时按账户分别统计权利金收入/亏损，便于年末整理1042-S报告核对。</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">T5</div>
+        <div class="step-content">
+          <div class="step-title">保留完整交易流水</div>
+          <div class="step-desc">每月从IBKR和BBAE导出交易记录，记录日期、标的、策略类型、行权价、权利金金额、到期日、是否被行权。IBKR可导出Activity Statement，BBAE可导出Trade Confirmation。<strong style="color:var(--text);">年末整理税务时必须依赖这些原始记录。</strong></div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">T6</div>
+        <div class="step-content">
+          <div class="step-title">每年咨询NRA专业税务师</div>
+          <div class="step-desc">中美税收协定下的权利金处理存在灰色地带，券商的处理方式可能不一致。建议每年报税前咨询熟悉NRA业务的美国税务师（CPA），确认预扣税是否可申请退还，以及是否需要提交Form 1040-NR。这项投入通常能换回数倍的税务节省。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-gold" style="margin-top:1rem;">
+      <strong>优化效果预期：</strong>通过T1–T5规则，可将实际税率从30%降至10%–15%，相当于将月化2%的权利金收益提升至1.7%–1.8%。在年化维度上，这意味着额外保留约<strong>$3,000–$5,000</strong>（基于当前持仓市值估算）。
+    </div>
+  </div>
+
+  <!-- 风险管理 -->
+  <div class="section" id="risk">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">风险管理铁律</span>
+    </div>
+
+    <div class="callout callout-danger" style="margin-bottom:1rem;">
+      <strong>纪律是策略的核心。</strong>期权亏损的本质是纪律的崩溃：在不该卖的时候卖，在不该扛的时候扛。以下规则不可违背。
+    </div>
+
+    <div class="g2" style="margin-bottom:1rem;">
+      <div class="card">
+        <div class="card-title">仓位红线（不得突破）</div>
+        <div class="op-row"><div class="op-tool">备兑仓位</div><div class="op-detail">仅用<span class="hl">现有8,888股</span>操作，不额外加仓后做备兑</div></div>
+        <div class="op-row"><div class="op-tool">裸卖Put上限</div><div class="op-detail">单次 <span class="num">≤5张</span>，总敞口 <span class="num">≤650股</span>（约10%总持仓）</div></div>
+        <div class="op-row"><div class="op-tool">总接货上限</div><div class="op-detail">接货后总持仓 <span class="num">≤7,000股</span>，不超过客户目标上限</div></div>
+        <div class="op-row"><div class="op-tool">保险预算</div><div class="op-detail">保护Put保费 <span class="num">≤3个月权利金收入30%</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">止损纪律</div>
+        <div class="op-row"><div class="op-tool">备兑开仓</div><div class="op-detail">无止损。策略本身含下跌缓冲，但趋势D状态时暂停新开仓。</div></div>
+        <div class="op-row"><div class="op-tool">裸卖Put</div><div class="op-detail">价格跌破行权价 <span class="num">&gt;10%</span>，或出现不可逆利空，立即买入平仓止损</div></div>
+        <div class="op-row"><div class="op-tool">保护Put</div><div class="op-detail">权利金归零为正常消耗（保险费）。若股价下跌后期权盈利，可提前平仓锁定保险收益。</div></div>
+        <div class="op-row"><div class="op-tool">风险逆转</div><div class="op-detail">价格跌破卖Put行权价 <span class="num">&gt;10%</span>，平仓Put腿，保留Call腿</div></div>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:8px;">黑天鹅应对预案（BTC单日暴跌20%+）</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>时间节点</th><th>立即行动</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-red">当天</span></td>
+            <td>检查保护Put是否生效；评估裸卖Put是否需要追加保证金；不做任何新操作，观察为主</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-amber">24小时内</span></td>
+            <td>判断是短期恐慌（持有）还是趋势反转（考虑减仓20%–30%）；若已有保护Put可以锁定部分保险收益</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">72小时内</span></td>
+            <td>如判断为短期恐慌且价格企稳，可在支撑位小量卖Put（高IV时权利金丰厚）；如判断趋势破坏，停止所有期权卖出</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-purple">后续</span></td>
+            <td>反弹至成本区附近时重新评估趋势状态（A/B/C/D），调整策略参数；不追涨急于补仓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-title" style="margin-bottom:8px;margin-top:1rem;">被行权后处理流程</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title" style="color:var(--amber);">备兑被行权（股票被卖出）</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;">
+          1. 确认行权后到账现金<br>
+          2. 判断当前价格区间和趋势状态<br>
+          3. <strong style="color:var(--text);">区间一至三（未解套）：</strong>立即市价买回相同股数，维持底仓规模，继续备兑<br>
+          4. <strong style="color:var(--text);">区间四至五（已盈利）：</strong>50%资金转现金，50%买回继续备兑<br>
+          5. 记录税务事项（行权价格、买回价格、差价）
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--blue);">裸卖Put被行权（被迫接货）</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;">
+          1. 以行权价买入股票（若愿意接货则属正常）<br>
+          2. 新买入股票立即纳入收益仓做备兑<br>
+          3. 检查总持仓是否超过7,000股上限<br>
+          4. 如超过，择机卖出超出部分（可在反弹时主动减仓）<br>
+          5. 调整月度成本记录
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 月度清单 -->
+  <div class="section" id="checklist">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">月度操作检查清单</span>
+    </div>
+
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.8;">每月期权到期前 <strong style="color:var(--text);">3个交易日</strong> 开始执行，1个交易日内完成全部步骤。建议选择周三执行（避开周一情绪波动和周四/五期权到期前的Gamma风险）。</p>
+
+    <div class="card">
+      <ul class="checklist">
+        <li>
+          <div class="check-num">1</div>
+          <div>
+            <strong style="color:var(--text);">查看BTC趋势状态</strong><br>
+            打开TradingView，查看BTCUSD的MA20和MA50位置及斜率，判断当前状态（A/B/C/D）并记录
+          </div>
+        </li>
+        <li>
+          <div class="check-num">2</div>
+          <div>
+            <strong style="color:var(--text);">确认IBIT价格区间</strong><br>
+            记录IBIT最新收盘价，对照五区间（&lt;$32 / $32–38 / $38–47.2 / $47.2–55 / ≥$55）确定所在区间
+          </div>
+        </li>
+        <li>
+          <div class="check-num">3</div>
+          <div>
+            <strong style="color:var(--text);">查看IV水平</strong><br>
+            从IBKR或OptionCharts查看IBIT当前IV及IV Rank，判断是低IV（&lt;48%）/ 正常（48%–76%）/ 高IV（&gt;76%）
+          </div>
+        </li>
+        <li>
+          <div class="check-num">4</div>
+          <div>
+            <strong style="color:var(--text);">计算目标行权价</strong><br>
+            结合趋势状态 + 价格区间 + IV水平，从本手册对应表格中确定行权价百分比，加上3%–5%跳空缓冲，选择最近的整数行权价
+          </div>
+        </li>
+        <li>
+          <div class="check-num">5</div>
+          <div>
+            <strong style="color:var(--text);">IBKR：执行收益仓备兑（约26张）</strong><br>
+            卖出相应行权价、30–45天到期的Call期权26张。挂限价单，目标权利金≥区间要求的月化收益下限
+          </div>
+        </li>
+        <li>
+          <div class="check-num">6</div>
+          <div>
+            <strong style="color:var(--text);">IBKR：视趋势决定增强仓（0–13张）</strong><br>
+            趋势B/C：增加13张备兑。趋势A：减少或暂停。趋势D：全部暂停。
+          </div>
+        </li>
+        <li>
+          <div class="check-num">7</div>
+          <div>
+            <strong style="color:var(--text);">BBAE：评估是否卖Put</strong><br>
+            价格在支撑区附近 + IV&gt;50% + 趋势B/C + 有足额现金 → 卖出1–2张Put（行权价按区间规则）
+          </div>
+        </li>
+        <li>
+          <div class="check-num">8</div>
+          <div>
+            <strong style="color:var(--text);">高IV专项：考虑风险逆转（区间四时）</strong><br>
+            IV&gt;76% + 价格在$47.2–55 + 看涨 → 在BBAE构建零成本风险逆转（≤3张）
+          </div>
+        </li>
+        <li>
+          <div class="check-num">9</div>
+          <div>
+            <strong style="color:var(--text);">风险检查：是否需要保护Put</strong><br>
+            趋势D、或市场出现重大利空信号、或价格在高位区间五 → 在IBKR买入保护Put
+          </div>
+        </li>
+        <li>
+          <div class="check-num">10</div>
+          <div>
+            <strong style="color:var(--text);">更新台账</strong><br>
+            记录：当月权利金收入总额 / 平仓亏损（如有） / 净权利金 / 更新后综合成本（= 原成本 − 累计净权利金/总股数）
+          </div>
+        </li>
+        <li>
+          <div class="check-num">11</div>
+          <div>
+            <strong style="color:var(--text);">设置下月提醒</strong><br>
+            在手机日历设置下月期权到期前3个交易日的提醒，同时设置每周一"趋势复盘"提醒
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-title">成本摊薄跟踪公式</div>
+      <div style="background:var(--bg3);border-radius:6px;padding:12px 16px;font-family:var(--font-mono);font-size:13px;color:var(--gold2);margin:8px 0;line-height:2;">
+        实际成本 = 综合成本价 − (累计净权利金 ÷ 持仓股数)<br>
+        示例：月净权利金 $3,000 × 12月 = $36,000<br>
+        实际成本 = $47.20 − ($36,000 ÷ 8,888) = $47.20 − $5.53 = <strong style="color:var(--green);">$41.67</strong>
+      </div>
+      <div style="font-size:12px;color:var(--text3);">每月月末更新一次，直到实际成本降至$40以下（策略第一阶段目标达成）</div>
+    </div>
+  </div>
+
+  <!-- 减仓路径 -->
+  <div class="section" id="exit">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">长期减仓路径规划（至5,000–10,000股目标）</span>
+    </div>
+
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.8;">客户目标是长期维持5,000–10,000股IBIT持仓。当前8,888股已在目标区间内，无需主动减仓，但在高位时应通过系统性方式锁定利润并降低集中度风险。</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>价格里程碑</th>
+            <th>建议操作</th>
+            <th>预计剩余仓位</th>
+            <th>资金用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-amber">当前阶段</span></td>
+            <td class="mono">$32–$47.2</td>
+            <td>维持8,888股不变，专注收租摊薄成本。接货后可能小幅增至7,000股</td>
+            <td class="mono gold">8,888–7,000股</td>
+            <td>权利金用于降低成本基数</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">解套期</span></td>
+            <td class="mono">$47.2–$55</td>
+            <td>继续持有，通过备兑被行权自然减少约500–1,000股（若选择允许行权）</td>
+            <td class="mono gold">5,500–6,500股</td>
+            <td>行权收益部分转为现金备用</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">获利期</span></td>
+            <td class="mono">$55–$70</td>
+            <td>主动减仓增强仓全部（~1,300股），锁定丰厚利润；保留核心仓+收益仓</td>
+            <td class="mono gold">5,000–5,500股</td>
+            <td>锁定利润，等待回调再择机加回部分</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-purple">历史高位</span></td>
+            <td class="mono">&gt; $70</td>
+            <td>减至目标下限5,000股，大幅锁定利润；保留黑天鹅保险Put</td>
+            <td class="mono gold">5,000股（目标下限）</td>
+            <td>利润再投资其他资产或现金</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-gold" style="margin-top:1rem;">
+      <strong>减仓方式优先级：</strong>①通过备兑被行权自然减仓（无需主动操作，被行权即锁定利润）→ ②高IV时主动卖出部分实值Call（接受被行权）→ ③直接市价卖出（最后选择，用于快速锁定）。自然被行权方式最优雅，既收了权利金，又锁定了利润，是"送分题"。
+    </div>
+
+    <div class="g2" style="margin-top:1rem;">
+      <div class="card">
+        <div class="card-title">关键价格参照系</div>
+        <div class="tbl-wrap">
+          <table>
+            <tbody>
+              <tr><td class="muted" style="font-size:11px;">综合成本</td><td class="mono gold">$47.20</td><td style="font-size:11px;color:var(--text3);">解套目标</td></tr>
+              <tr><td class="muted" style="font-size:11px;">当前强支撑</td><td class="mono gold">$37–38</td><td style="font-size:11px;color:var(--text3);">2026年3月底部区</td></tr>
+              <tr><td class="muted" style="font-size:11px;">短期阻力</td><td class="mono">$45</td><td style="font-size:11px;color:var(--text3);">2026年多次反弹高点</td></tr>
+              <tr><td class="muted" style="font-size:11px;">中期阻力</td><td class="mono">$55</td><td style="font-size:11px;color:var(--text3);">上一轮牛市平台</td></tr>
+              <tr><td class="muted" style="font-size:11px;">长期阻力</td><td class="mono">$70+</td><td style="font-size:11px;color:var(--text3);">历史高点区域</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">年度目标追踪</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2;">
+          <strong style="color:var(--text);">6个月目标：</strong>实际成本降至 <span class="mono gold">$43–44</span><br>
+          <strong style="color:var(--text);">12个月目标：</strong>实际成本降至 <span class="mono gold">$40</span> 以下<br>
+          <strong style="color:var(--text);">解套目标：</strong>价格上穿实际成本（&lt;$47.2）<br>
+          <strong style="color:var(--text);">长期目标：</strong>维持 <span class="mono gold">5,000–10,000股</span>，持续收租
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 当月建议 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">当月（2026年4月）具体操作建议</span>
+    </div>
+
+    <div class="callout callout-warn">
+      基于当前数据：IBIT $37.40，IV约54%，处于价格区间二（低位震荡区），趋势状态待确认（需查看BTC MA20/MA50）。以下为基准情景（假设趋势状态B）：
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-title">4月期权操作方案（基准情景 · 趋势B）</div>
+      <div class="op-row">
+        <div class="op-tool"><span class="tag tag-blue">IBKR</span><br>收益仓</div>
+        <div class="op-detail">
+          <span class="hl">卖出约26–39张 IBIT Call</span><br>
+          到期日：4月第三周五（约30–45天）<br>
+          行权价：<span class="num">$44–$47</span>（当前价$37.4的+18%–+26%，含3%跳空缓冲）<br>
+          Delta目标：<span class="num">0.20–0.25</span><br>
+          挂限价单，目标权利金：每股 <span class="num">$0.6–$1.2</span>（视IV而定）
+        </div>
+      </div>
+      <div class="op-row">
+        <div class="op-tool"><span class="tag tag-amber">BBAE</span><br>卖Put</div>
+        <div class="op-detail">
+          若价格回调至 <span class="num">$35–$36.5</span>，卖出 <span class="num">1–2张</span> IBIT Put<br>
+          行权价：<span class="num">$33–$35</span>（当前价下方8%–12%）<br>
+          到期日：与备兑同月<br>
+          IV当前54%，满足卖Put条件（需确认趋势非D状态）
+        </div>
+      </div>
+      <div class="op-row">
+        <div class="op-tool">风险逆转</div>
+        <div class="op-detail">
+          当前IV约54%，<span class="hl">未达76%触发条件</span>，本月暂不操作风险逆转。若IV上升至76%+，可构建：卖 $36 Put + 买 $45 Call（零成本）
+        </div>
+      </div>
+      <div class="op-row">
+        <div class="op-tool">黑天鹅保险</div>
+        <div class="op-detail">
+          建议在IBKR买入1张深度虚值长期Put：行权价 <span class="num">$20–$25</span>，到期日2027年1月（约9个月），保费预计约 <span class="num">$50–$120</span>（约总市值0.2%–0.5%），一次性购买后全年持有
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info" style="margin-top:1rem;">
+      <strong>若趋势判断为A（强势上涨）：</strong>将收益仓行权价上移至 $47–$50（+25%–+34%），增强仓暂停备兑，让核心仓完整参与上涨。<br>
+      <strong>若趋势判断为D（强势下跌）：</strong>暂停所有备兑开仓，不卖Put，立即买入保护Put（行权价$34–$35，30–60天期），等待趋势转变信号。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p><strong style="color:var(--text);">风险提示：</strong>本手册仅为策略参考框架，不构成投资建议。期权交易具有高度风险，包括但不限于：标的资产价格剧烈波动、期权到期归零、被强制平仓等风险。比特币ETF（IBIT）具有加密货币特有的极端波动性，单日涨跌幅可能超过20%。请根据自身风险承受能力审慎操作。NRA税务处理存在复杂性，建议定期咨询专业税务顾问。</p>
+    <p style="margin-top:8px;">手册版本：V1.0 &nbsp;·&nbsp; 制定日期：2026年3月30日 &nbsp;·&nbsp; 适用账户：KAISHANG（IBKR + BBAE）&nbsp;·&nbsp; 下次复盘：2026年4月期权到期日</p>
+  </div>
+
+</div>
+</body>
+</html>

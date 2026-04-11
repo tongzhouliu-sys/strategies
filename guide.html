@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期权策略作战手册 · 机构级</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b12;
+  --bg2: #0d1117;
+  --surface: #111620;
+  --surface2: #161d2e;
+  --surface3: #1c2540;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --muted2: #8892a4;
+  --green: #22c55e;
+  --green2: #4ade80;
+  --red: #f87171;
+  --red2: #fca5a5;
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --blue3: #93c5fd;
+  --yellow: #fbbf24;
+  --yellow2: #fde68a;
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --acc: #1479FF;
+  
+  --g-bull: rgba(34,197,94,0.1);
+  --g-bear: rgba(248,113,113,0.1);
+  --g-blue: rgba(59,130,246,0.1);
+  --g-yel: rgba(251,191,36,0.1);
+  --g-pur: rgba(167,139,250,0.1);
+  --g-cyan: rgba(34,211,238,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: linear-gradient(180deg, #0d1420 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+.header-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue2);
+  letter-spacing: 1px;
+}
+.header-nav {
+  display: flex;
+  gap: 24px;
+}
+.header-nav a {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.header-nav a:hover { color: var(--text); }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 56px 28px 48px;
+  background: radial-gradient(ellipse 80% 300px at 50% 0%, rgba(20,121,255,0.08) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,121,255,0.12);
+  border: 1px solid rgba(20,121,255,0.3);
+  color: var(--blue2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #e2e8f0 40%, #60a5fa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  color: var(--muted2);
+  font-size: 13px;
+  max-width: 600px;
+  margin: 0 auto 28px;
+}
+.watchlist-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.pill-tech { background: var(--g-blue); color: var(--blue2); border: 1px solid rgba(96,165,250,0.2); }
+.pill-crypto { background: var(--g-yel); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.pill-finance { background: var(--g-bull); color: var(--green2); border: 1px solid rgba(74,222,128,0.2); }
+.pill-etf { background: var(--g-pur); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.pill-pharma { background: var(--g-cyan); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
+.pill-semi { background: rgba(251,146,60,0.1); color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+
+/* ─── LAYOUT ─── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ─── SECTION ─── */
+.section { margin-bottom: 60px; }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border2);
+}
+.section-title h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--acc);
+  background: rgba(20,121,255,0.1);
+  border: 1px solid rgba(20,121,255,0.25);
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+}
+.card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 700px) { .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; } }
+
+/* ─── VIX TABLE ─── */
+.vix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.vix-table th {
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+}
+.vix-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.65;
+}
+.vix-table tr:last-child td { border-bottom: none; }
+.vix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.vix-level {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vl-calm { color: var(--green); }
+.vl-normal { color: var(--blue2); }
+.vl-elevated { color: var(--yellow); }
+.vl-fear { color: var(--orange); }
+.vl-panic { color: var(--red); }
+
+.badge-sm {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin: 2px 2px 2px 0;
+  font-weight: 600;
+}
+.bs-green { background: var(--g-bull); color: var(--green2); }
+.bs-red { background: var(--g-bear); color: var(--red2); }
+.bs-blue { background: var(--g-blue); color: var(--blue3); }
+.bs-yellow { background: var(--g-yel); color: var(--yellow2); }
+.bs-purple { background: var(--g-pur); color: var(--purple); }
+.bs-orange { background: rgba(251,146,60,0.1); color: var(--orange); }
+
+/* ─── IV BANDS ─── */
+.iv-band {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.iv-band-label {
+  min-width: 120px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.iv-band-body {
+  flex: 1;
+  padding: 14px 16px;
+  border-left: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+.iv-band-body strong { color: var(--text); }
+.iv-low { background: rgba(34,197,94,0.06); }
+.iv-low .iv-band-label { color: var(--green); }
+.iv-med { background: rgba(59,130,246,0.06); }
+.iv-med .iv-band-label { color: var(--blue2); }
+.iv-high { background: rgba(251,191,36,0.06); }
+.iv-high .iv-band-label { color: var(--yellow); }
+.iv-extreme { background: rgba(248,113,113,0.06); }
+.iv-extreme .iv-band-label { color: var(--red); }
+.iv-range { font-size: 18px; font-weight: 700; }
+.iv-name { font-size: 9px; opacity: 0.7; letter-spacing: 1px; }
+
+/* ─── GREEK MATRIX ─── */
+.greek-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) { .greek-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.greek-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 14px;
+}
+.greek-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.greek-name { font-size: 11px; color: var(--muted); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+.greek-desc { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+.greek-thresholds { margin-top: 10px; }
+.thresh-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+}
+.thresh-label { color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.thresh-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.tv-green { color: var(--green); }
+.tv-red { color: var(--red); }
+.tv-yellow { color: var(--yellow); }
+.tv-blue { color: var(--blue2); }
+
+/* ─── STRATEGY DECISION MATRIX ─── */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.decision-table th {
+  background: var(--surface3);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--border2);
+  white-space: nowrap;
+}
+.decision-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--muted2);
+}
+.decision-table td strong { color: var(--text); display: block; margin-bottom: 3px; }
+.condition-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--blue2);
+  white-space: nowrap;
+}
+.strategy-name {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text) !important;
+}
+
+/* ─── TICKER PROFILES ─── */
+.ticker-section { margin-bottom: 32px; }
+.ticker-group-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+.ticker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.ticker-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.2s;
+}
+.ticker-card:hover { border-color: var(--border2); }
+.tc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tc-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.tc-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.tc-body { font-size: 11px; color: var(--muted2); line-height: 1.65; }
+.tc-body .label { color: var(--muted); font-size: 10px; margin-top: 7px; margin-bottom: 2px; font-family: 'JetBrains Mono', monospace; }
+.tc-body .val { color: var(--text); font-size: 11px; }
+
+/* ─── SIGNAL RULES ─── */
+.signal-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.signal-header {
+  background: var(--surface2);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.signal-title { font-size: 13px; font-weight: 700; }
+.signal-body { padding: 16px 18px; }
+.signal-conditions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) { .signal-conditions { grid-template-columns: 1fr; } }
+.condition-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.cbox-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.cbox-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cval-green { color: var(--green); }
+.cval-red { color: var(--red); }
+.cval-blue { color: var(--blue2); }
+.cval-yellow { color: var(--yellow); }
+
+.signal-action {
+  background: rgba(20,121,255,0.08);
+  border: 1px solid rgba(20,121,255,0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.signal-action .action-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue2);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+}
+.action-steps { list-style: none; }
+.action-steps li {
+  font-size: 12px;
+  color: var(--muted2);
+  padding: 4px 0;
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.6;
+}
+.action-steps li::before {
+  content: '›';
+  position: absolute;
+  left: 4px;
+  color: var(--acc);
+  font-weight: 700;
+}
+.action-steps li strong { color: var(--text); }
+
+/* ─── STOP LOSS ─── */
+.sl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 600px) { .sl-grid { grid-template-columns: 1fr; } }
+.sl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.sl-metric {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.sl-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.sl-desc { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+
+/* ─── MONITORING CHECKLIST ─── */
+.check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) { .check-grid { grid-template-columns: 1fr; } }
+
+.check-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.check-block h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-block ul { list-style: none; }
+.check-block li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+.check-block li:last-child { border-bottom: none; }
+.cb-num {
+  min-width: 18px; height: 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--acc);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ─── ALERT BOX ─── */
+.alert {
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 10px;
+}
+.alert-warn { background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.2); color: #fde68a; }
+.alert-info { background: var(--g-blue); border: 1px solid rgba(96,165,250,0.2); color: var(--blue3); }
+.alert-good { background: var(--g-bull); border: 1px solid rgba(34,197,94,0.2); color: #bbf7d0; }
+.alert-danger { background: var(--g-bear); border: 1px solid rgba(248,113,113,0.2); color: var(--red2); }
+
+/* ─── FOOTER ─── */
+.footer {
+  text-align: center;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 28px;
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+/* ─── TABS ─── */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 7px 14px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  background: var(--surface3);
+  color: var(--blue2);
+  border: 1px solid rgba(96,165,250,0.2);
+}
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">⬡ OPTIONS PLAYBOOK · PRO</div>
+  <nav class="header-nav">
+    <a href="#indicators">指标阈值</a>
+    <a href="#matrix">策略矩阵</a>
+    <a href="#signals">信号规则</a>
+    <a href="#tickers">股票档案</a>
+    <a href="#risk">风险管理</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="hero-tag">● LEVEL 4 · INSTITUTIONAL GRADE · 机构级作战手册</div>
+  <h1>期权策略监控<br>作战手册</h1>
+  <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系<br>覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
+  <div class="watchlist-pills">
+    <span class="pill pill-tech">AAPL</span>
+    <span class="pill pill-tech">META</span>
+    <span class="pill pill-semi">NVDA</span>
+    <span class="pill pill-tech">TSLA</span>
+    <span class="pill pill-crypto">MSTR</span>
+    <span class="pill pill-finance">HOOD</span>
+    <span class="pill pill-crypto">COIN</span>
+    <span class="pill pill-semi">TSM</span>
+    <span class="pill pill-semi">ASML</span>
+    <span class="pill pill-finance">MA</span>
+    <span class="pill pill-finance">V</span>
+    <span class="pill pill-pharma">NVO</span>
+    <span class="pill pill-crypto">CRCL</span>
+    <span class="pill pill-etf">QQQ</span>
+    <span class="pill pill-etf">SPX</span>
+    <span class="pill pill-etf">IBIT</span>
+    <span class="pill pill-etf">GLD</span>
+    <span class="pill pill-etf">XLU</span>
+    <span class="pill pill-etf">EWJ</span>
+    <span class="pill pill-etf">OESX</span>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════
+     SECTION 1: 指标体系
+═══════════════════════════════════════ -->
+<div class="section" id="indicators">
+  <div class="section-title">
+    <span class="section-badge">01</span>
+    <h2>六维指标体系 · 阈值定义与交易含义</h2>
+  </div>
+
+  <!-- VIX -->
+  <div style="margin-bottom:28px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">VIX — 市场恐惧温度计（全市场系统性指标）</div>
+    <table class="vix-table">
+      <thead>
+        <tr>
+          <th>VIX 水平</th>
+          <th>市场状态</th>
+          <th>IV 环境</th>
+          <th>推荐策略方向</th>
+          <th>禁止操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="vix-level vl-calm">＜ 12</span></td>
+          <td>极度平静，可能是顶部区域前夕</td>
+          <td>期权极便宜，IV低估</td>
+          <td>
+            <span class="badge-sm bs-green">买 Calls/Puts</span>
+            <span class="badge-sm bs-green">买跨式（提前布局）</span>
+            <span class="badge-sm bs-blue">日历价差（买远月）</span>
+          </td>
+          <td><span style="color:var(--red);font-size:11px;">不要做 Iron Condor（权利金太薄不划算）</span></td>
+        </tr>
+        <tr>
+          <td><span class="vix-level vl-normal">12 – 18</span></td>
+          <td>正常市场，温和波动</td>
+          <td>IV 合理定价</td>
+          <td>
+            <span class="badge-sm bs-green">Bull/Bear 价差</span>
+            <span class="badge-sm bs-green">Covered Call</span>
+            <span class="badge-sm bs-blue">方向性 Long Call/Put</span>
+          </td>
+          <td><span style="color:var(--muted2);font-size:11px;">无明确禁区，正常操作</span></td>
+        </tr>
+        <tr>
+          <td><span class="vix-level vl-elevated">18 – 25</span></td>
+          <td>市场有压力，方向不明</td>
+          <td>IV 偏高，卖方权利金丰厚</td>
+          <td>
+            <span class="badge-sm bs-yellow">Iron Condor</span>
+            <span class="badge-sm bs-yellow">Short Strangle（保证金够）</span>
+            <span class="badge-sm bs-purple">卖 Put 价差（收租）</span>
+          </td>
+          <td><span style="color:var(--red);font-size:11px;">慎买方向性 Long Call（IV贵，Vega不利）</span></td>
+        </tr>
+        <tr>
+          <td><span class="vix-level vl-fear">25 – 35</span></td>
+          <td>市场恐慌，单边下跌</td>
+          <td>Put 极贵，IV飙升</td>
+          <td>
+            <span class="badge-sm bs-red">Buy Put（已有仓位对冲）</span>
+            <span class="badge-sm bs-yellow">等待 VIX 回落后卖方策略</span>
+            <span class="badge-sm bs-blue">Bear Put Spread（控成本）</span>
+          </td>
+          <td><span style="color:var(--red);font-size:11px;">禁止裸卖 Put（接货风险极大）</span></td>
+        </tr>
+        <tr>
+          <td><span class="vix-level vl-panic">＞ 35</span></td>
+          <td>极度恐慌，历史级大跌</td>
+          <td>IV 极端高估，期权定价混乱</td>
+          <td>
+            <span class="badge-sm bs-green">极少量买 Call（博反弹）</span>
+            <span class="badge-sm bs-yellow">等待 VIX 见顶回落</span>
+            <span class="badge-sm bs-red">持有 Put 对冲</span>
+          </td>
+          <td><span style="color:var(--red);font-size:11px;">暂停所有新开仓；优先风险管控</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- IV Percentile -->
+  <div style="margin-bottom:28px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">IV PERCENTILE — 隐含波动率百分位（单股核心决策指标）</div>
+    <div class="alert alert-info" style="margin-bottom:12px;">💡 <strong>IV百分位 vs IV本身：</strong>IV百分位是过去252个交易日中，当前IV高于多少天的百分比。比 IV 绝对值更重要——高 IV 的股票百分位低意味着相对便宜。</div>
+    
+    <div class="iv-band iv-low">
+      <div class="iv-band-label"><div class="iv-range">0–30%</div><div class="iv-name">LOW IV · 便宜区</div></div>
+      <div class="iv-band-body">
+        <strong>买入期权最佳时机。</strong>权利金便宜，Vega 正向收益。优先：<span class="badge-sm bs-green">Long Call</span><span class="badge-sm bs-red">Long Put</span><span class="badge-sm bs-blue">Long Straddle</span>。<br>
+        避免卖出策略——权利金太薄，风险回报不划算。日历价差可考虑（买远月期权便宜）。
+      </div>
+    </div>
+    <div class="iv-band iv-med">
+      <div class="iv-band-label"><div class="iv-range">30–50%</div><div class="iv-name">MED IV · 正常区</div></div>
+      <div class="iv-band-body">
+        <strong>买卖均可，以方向判断为主。</strong>垂直价差（Bull Call Spread / Bear Put Spread）性价比最高——既有方向收益，又比单腿更省权利金。<span class="badge-sm bs-blue">Vertical Spread</span><span class="badge-sm bs-green">Covered Call</span>
+      </div>
+    </div>
+    <div class="iv-band iv-high">
+      <div class="iv-band-label"><div class="iv-range">50–80%</div><div class="iv-name">HIGH IV · 卖方区</div></div>
+      <div class="iv-band-body">
+        <strong>卖出期权回报丰厚。</strong><span class="badge-sm bs-yellow">Iron Condor</span><span class="badge-sm bs-yellow">Short Strangle</span><span class="badge-sm bs-purple">Calendar Spread（卖近月）</span><span class="badge-sm bs-green">Covered Call</span>。<br>
+        如必须买方向性期权，改用价差降低 Vega 风险敞口。
+      </div>
+    </div>
+    <div class="iv-band iv-extreme">
+      <div class="iv-band-label"><div class="iv-range">80–100%</div><div class="iv-name">EXTREME · 财报/危机</div></div>
+      <div class="iv-band-body">
+        <strong>IV Crush 风险极高。</strong>财报后 IV 暴跌，即使方向对也可能亏钱。如要卖方：<span class="badge-sm bs-yellow">Iron Condor（财报后当天开仓）</span>。如要买方：<span class="badge-sm bs-red">只在财报前低 IV 时布局，不要在 IV 顶部追买跨式。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Greeks -->
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">希腊字母 — 监控阈值与操作触发条件</div>
+    <div class="greek-grid">
+      <div class="greek-card">
+        <div class="greek-sym" style="color:var(--blue2)">Δ</div>
+        <div class="greek-name">DELTA · 方向敏感度</div>
+        <div class="greek-desc">股价每变动$1，期权价格变化量。买 Call: 0~+1；买 Put: 0~-1</div>
+        <div class="greek-thresholds">
+          <div class="thresh-row"><span class="thresh-label">保守入场</span><span class="thresh-val tv-green">0.25~0.35</span></div>
+          <div class="thresh-row"><span class="thresh-label">标准入场</span><span class="thresh-val tv-blue">0.40~0.55</span></div>
+          <div class="thresh-row"><span class="thresh-label">激进入场</span><span class="thresh-val tv-yellow">0.60~0.80</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方目标</span><span class="thresh-val tv-red">＜0.20</span></div>
+        </div>
+      </div>
+      <div class="greek-card">
+        <div class="greek-sym" style="color:var(--red)">Θ</div>
+        <div class="greek-name">THETA · 时间损耗/日</div>
+        <div class="greek-desc">每过一天期权损失的价值。买方为负（成本），卖方为正（收益）。</div>
+        <div class="greek-thresholds">
+          <div class="thresh-row"><span class="thresh-label">买方可接受</span><span class="thresh-val tv-green">|Θ| ≤ 0.03</span></div>
+          <div class="thresh-row"><span class="thresh-label">买方警戒</span><span class="thresh-val tv-yellow">|Θ| = 0.05~0.1</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方最优</span><span class="thresh-val tv-blue">30~45天到期</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方加速区</span><span class="thresh-val tv-green">≤21天到期</span></div>
+        </div>
+      </div>
+      <div class="greek-card">
+        <div class="greek-sym" style="color:var(--purple)">ν</div>
+        <div class="greek-name">VEGA · 波动率敏感度</div>
+        <div class="greek-desc">IV 每变动1%，期权价值变化量。买方 Vega 正，卖方 Vega 负。</div>
+        <div class="greek-thresholds">
+          <div class="thresh-row"><span class="thresh-label">IV低时买方</span><span class="thresh-val tv-green">+Vega 有利</span></div>
+          <div class="thresh-row"><span class="thresh-label">IV高时卖方</span><span class="thresh-val tv-green">-Vega 有利</span></div>
+          <div class="thresh-row"><span class="thresh-label">IV Crush</span><span class="thresh-val tv-red">买方警戒</span></div>
+          <div class="thresh-row"><span class="thresh-label">Vega中性</span><span class="thresh-val tv-blue">价差策略</span></div>
+        </div>
+      </div>
+      <div class="greek-card">
+        <div class="greek-sym" style="color:var(--yellow)">Γ</div>
+        <div class="greek-name">GAMMA · Delta加速度</div>
+        <div class="greek-desc">Delta 随股价变化的速度。平价期权 Gamma 最大，临近到期急剧增加。</div>
+        <div class="greek-thresholds">
+          <div class="thresh-row"><span class="thresh-label">远月安全区</span><span class="thresh-val tv-green">Γ ≈ 0.01~0.03</span></div>
+          <div class="thresh-row"><span class="thresh-label">近月警戒区</span><span class="thresh-val tv-yellow">Γ ≥ 0.05</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方风险</span><span class="thresh-val tv-red">高Γ + 近到期</span></div>
+          <div class="thresh-row"><span class="thresh-label">买方机会</span><span class="thresh-val tv-blue">低Γ远月布局</span></div>
+        </div>
+      </div>
+      <div class="greek-card">
+        <div class="greek-sym" style="color:var(--cyan)">IV%</div>
+        <div class="greek-name">IV PERCENTILE</div>
+        <div class="greek-desc">当前IV在过去252天中的相对位置。是判断买卖方的核心依据。</div>
+        <div class="greek-thresholds">
+          <div class="thresh-row"><span class="thresh-label">买方最佳</span><span class="thresh-val tv-green">0~30%</span></div>
+          <div class="thresh-row"><span class="thresh-label">均衡区间</span><span class="thresh-val tv-blue">30~50%</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方良好</span><span class="thresh-val tv-yellow">50~70%</span></div>
+          <div class="thresh-row"><span class="thresh-label">卖方最佳</span><span class="thresh-val tv-red">70%+</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 2: 策略决策矩阵
+═══════════════════════════════════════ -->
+<div class="section" id="matrix">
+  <div class="section-title">
+    <span class="section-badge">02</span>
+    <h2>策略决策矩阵 · 条件组合 → 策略映射</h2>
+  </div>
+
+  <div class="alert alert-info" style="margin-bottom:18px;">📊 以下矩阵按「市场方向 × IV百分位 × VIX」三维条件匹配最优策略。监控软件扫描出指标后，对应查表即可。</div>
+
+  <table class="decision-table">
+    <thead>
+      <tr>
+        <th>市场方向</th>
+        <th>IV百分位</th>
+        <th>VIX区间</th>
+        <th>首选策略</th>
+        <th>次选策略</th>
+        <th>入场 Delta 目标</th>
+        <th>到期日</th>
+        <th>止损条件</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--green)">强势上涨</strong><br><span class="condition-cell">RSI 50~70，ADX＞25</span></td>
+        <td><span class="condition-cell">＜30%</span></td>
+        <td><span class="condition-cell">12~18</span></td>
+        <td><strong class="strategy-name">Long Call</strong>买入价外一档Call</td>
+        <td>Bull Call Spread</td>
+        <td>Δ 0.40~0.55</td>
+        <td>21~35 天</td>
+        <td>权利金亏损 ≥40%</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--green)">温和上涨</strong><br><span class="condition-cell">箱体上沿突破，量能温和</span></td>
+        <td><span class="condition-cell">30~50%</span></td>
+        <td><span class="condition-cell">12~20</span></td>
+        <td><strong class="strategy-name">Bull Call Spread</strong></td>
+        <td>Covered Call（持股增强）</td>
+        <td>买腿 Δ 0.45，卖腿 Δ 0.25</td>
+        <td>28~45 天</td>
+        <td>净权利金亏 50%</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--green)">持股震荡偏涨</strong><br><span class="condition-cell">持有正股，短期无大行情</span></td>
+        <td><span class="condition-cell">40~80%</span></td>
+        <td><span class="condition-cell">15~25</span></td>
+        <td><strong class="strategy-name">Covered Call</strong>卖 Δ0.20~0.30 的虚值 Call</td>
+        <td>保证金卖 Put（回调接货）</td>
+        <td>卖腿 Δ 0.20~0.30</td>
+        <td>30~45 天</td>
+        <td>股价触及行权价时买回</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--red)">单边下跌</strong><br><span class="condition-cell">破位下行，ADX＞25，均线死叉</span></td>
+        <td><span class="condition-cell">＜40%</span></td>
+        <td><span class="condition-cell">18~28</span></td>
+        <td><strong class="strategy-name">Long Put</strong>买平价或价外一档 Put</td>
+        <td>Bear Put Spread（降成本）</td>
+        <td>Δ -0.40~-0.55</td>
+        <td>21~35 天</td>
+        <td>权利金亏损 ≥40%</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--red)">急跌恐慌</strong><br><span class="condition-cell">VIX急拉，Put/Call比＞1.2</span></td>
+        <td><span class="condition-cell">＞70%</span></td>
+        <td><span class="condition-cell">＞28</span></td>
+        <td><strong class="strategy-name">Bear Put Spread</strong>（Put太贵，用价差控成本）</td>
+        <td>持仓等待VIX回落再布局</td>
+        <td>买腿 Δ -0.45，卖腿 Δ -0.20</td>
+        <td>14~28 天</td>
+        <td>净权利金亏 40%</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--blue2)">窄幅震荡</strong><br><span class="condition-cell">ATR萎缩，箱体成型，布林带收口</span></td>
+        <td><span class="condition-cell">50~80%</span></td>
+        <td><span class="condition-cell">15~22</span></td>
+        <td><strong class="strategy-name">Iron Condor</strong>两侧行权价放在支撑/阻力外</td>
+        <td>Short Strangle（需足够保证金）</td>
+        <td>卖腿 Δ ≤ 0.20</td>
+        <td>30~45 天</td>
+        <td>任一卖腿 Δ 超过 0.40 立刻处理</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--blue2)">宽幅震荡</strong><br><span class="condition-cell">振幅＞5%但无明确方向</span></td>
+        <td><span class="condition-cell">30~60%</span></td>
+        <td><span class="condition-cell">18~25</span></td>
+        <td><strong class="strategy-name">日历价差</strong>卖近月，买远月，相同行权价</td>
+        <td>Diagonal Spread（对角线）</td>
+        <td>平价附近，Δ ≈ 0.50</td>
+        <td>近月 21~30 天</td>
+        <td>底层股票波动超行权价 8%</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--yellow)">财报前</strong><br><span class="condition-cell">财报前 5~10 天，IV 开始上升</span></td>
+        <td><span class="condition-cell">＜50%（提前）</span></td>
+        <td><span class="condition-cell">任意</span></td>
+        <td><strong class="strategy-name">Long Straddle</strong>在IV尚低时买平价 Call+Put</td>
+        <td>Long Strangle（成本更低，需更大波动）</td>
+        <td>平价，Δ Call ≈ +0.50，Put ≈ -0.50</td>
+        <td>财报后 1~2 天</td>
+        <td>财报后IV暴跌时立即评估平仓</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--yellow)">财报后</strong><br><span class="condition-cell">IV Crush，波动率回落</span></td>
+        <td><span class="condition-cell">开始下降</span></td>
+        <td><span class="condition-cell">任意</span></td>
+        <td><strong class="strategy-name">Iron Condor（当天开仓）</strong>趁 IV 还未完全回落收权利金</td>
+        <td>Covered Call（持股者）</td>
+        <td>卖腿 Δ ≤ 0.20</td>
+        <td>14~21 天</td>
+        <td>股价突破当日震荡范围</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 3: 具体信号触发规则
+═══════════════════════════════════════ -->
+<div class="section" id="signals">
+  <div class="section-title">
+    <span class="section-badge">03</span>
+    <h2>监控信号触发规则 · 看到什么数字做什么</h2>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('tab-buy-call')">买入 Call 信号</button>
+    <button class="tab-btn" onclick="showTab('tab-buy-put')">买入 Put 信号</button>
+    <button class="tab-btn" onclick="showTab('tab-sell-cc')">Covered Call 信号</button>
+    <button class="tab-btn" onclick="showTab('tab-ic')">Iron Condor 信号</button>
+    <button class="tab-btn" onclick="showTab('tab-straddle')">跨式信号</button>
+    <button class="tab-btn" onclick="showTab('tab-exit')">平仓信号</button>
+  </div>
+
+  <!-- BUY CALL -->
+  <div class="tab-content active" id="tab-buy-call">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--green)">📈 买入 Call (Long Call) — 触发条件</span>
+        <span class="badge-sm bs-green">看涨方向</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">VIX</div><div class="cbox-val cval-green">＜ 20</div></div>
+          <div class="condition-box"><div class="cbox-label">IV PERCENTILE</div><div class="cbox-val cval-green">＜ 35%</div></div>
+          <div class="condition-box"><div class="cbox-label">目标 DELTA</div><div class="cbox-val cval-blue">0.40 ~ 0.55</div></div>
+          <div class="condition-box"><div class="cbox-label">THETA / DAY</div><div class="cbox-val cval-yellow">|Θ| ≤ -0.05</div></div>
+          <div class="condition-box"><div class="cbox-label">技术面</div><div class="cbox-val cval-blue">RSI 45~70，均线多头</div></div>
+          <div class="condition-box"><div class="cbox-label">到期日</div><div class="cbox-val cval-blue">21 ~ 35 天</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 执行步骤</div>
+          <ul class="action-steps">
+            <li>确认 IV百分位 ＜ 35%（期权便宜，Vega 正向）</li>
+            <li>选行权价：<strong>当前股价 × 1.03~1.06</strong>（价外一档，约 Δ 0.40~0.50）</li>
+            <li>到期日选 21~35 天后；避免财报前 5 天内到期</li>
+            <li>单笔权利金成本 ≤ 账户净值 <strong>2%</strong></li>
+            <li>下单后立设提醒：权利金亏损达 40% 时触发止损</li>
+            <li>目标盈利：权利金翻倍（+100%）时可兑现 50% 仓位</li>
+          </ul>
+        </div>
+        <div class="alert alert-warn">⚠️ <strong>适合标的：</strong>AAPL、META、NVDA、TSM、ASML（低Beta，趋势清晰）。TSLA、MSTR、COIN 因波动极大，IV 基本长期偏高，买 Call 成本贵，需更严格的 IV 筛选。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUY PUT -->
+  <div class="tab-content" id="tab-buy-put">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--red)">📉 买入 Put (Long Put) — 触发条件</span>
+        <span class="badge-sm bs-red">看跌/对冲</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">VIX</div><div class="cbox-val cval-blue">任意，优先 ＜25</div></div>
+          <div class="condition-box"><div class="cbox-label">IV PERCENTILE</div><div class="cbox-val cval-green">＜ 40%（对冲用可放宽）</div></div>
+          <div class="condition-box"><div class="cbox-label">目标 DELTA</div><div class="cbox-val cval-red">-0.35 ~ -0.50</div></div>
+          <div class="condition-box"><div class="cbox-label">技术面</div><div class="cbox-val cval-red">跌破支撑，RSI＜45，MACD死叉</div></div>
+          <div class="condition-box"><div class="cbox-label">VIX 状态</div><div class="cbox-val cval-blue">上升趋势（对买 Put 有利）</div></div>
+          <div class="condition-box"><div class="cbox-label">到期日</div><div class="cbox-val cval-blue">21~35天（对冲可选60天）</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 两种用法</div>
+          <ul class="action-steps">
+            <li><strong>用法A（方向做空）：</strong>选价外一档 Put，Δ约-0.35~-0.45，到期21~35天</li>
+            <li><strong>用法B（Protective Put 对冲）：</strong>持有正股时，买平价 Put（Δ≈-0.50），作为"保险"；到期日选 60~90 天（保险期更长）</li>
+            <li>VIX＞25 时 Put 已贵，改用 Bear Put Spread 降低成本（同时卖出更虚值 Put）</li>
+            <li>止损：权利金亏损 40% 时离场；或股价反向穿越均线</li>
+          </ul>
+        </div>
+        <div class="alert alert-warn">⚠️ <strong>高风险标的的 Put 策略：</strong>TSLA、MSTR、COIN 下跌时 IV 飙升，Put 价格会快速上涨（对你有利），但反弹时 IV 暴跌导致 Put 损失惨重。这类标的的 Put 需要更快的兑现决策。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COVERED CALL -->
+  <div class="tab-content" id="tab-sell-cc">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--yellow)">💰 Covered Call — 触发条件</span>
+        <span class="badge-sm bs-yellow">持股收租</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">前提</div><div class="cbox-val cval-blue">持有 ≥100 股正股</div></div>
+          <div class="condition-box"><div class="cbox-label">IV PERCENTILE</div><div class="cbox-val cval-yellow">＞ 30%（越高越好）</div></div>
+          <div class="condition-box"><div class="cbox-label">卖出 DELTA</div><div class="cbox-val cval-yellow">0.20 ~ 0.30</div></div>
+          <div class="condition-box"><div class="cbox-label">THETA</div><div class="cbox-val cval-green">正 Θ（时间流逝对你有利）</div></div>
+          <div class="condition-box"><div class="cbox-label">行权价</div><div class="cbox-val cval-blue">高于当前价 5~10%，在阻力位上方</div></div>
+          <div class="condition-box"><div class="cbox-label">到期日</div><div class="cbox-val cval-blue">30~45 天（Theta 衰减最优）</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 月度 Covered Call 操作流程</div>
+          <ul class="action-steps">
+            <li>每月初检查持仓股的 IV百分位；优先在 IV ≥ 40% 时执行</li>
+            <li>行权价选技术阻力位上方 2~3%；不要选太近（被强制卖股）也不要选太远（权利金太少）</li>
+            <li>卖出 Δ 0.25 的 Call，收权利金作为月度现金流</li>
+            <li>到期前 5~7 天如未被行权：买回平仓（通常剩 15~20% 权利金），立即卖下月新 Call</li>
+            <li>若股价快速上涨逼近行权价：买回旧 Call（可能亏损），滚到更高行权价或更远到期日</li>
+          </ul>
+        </div>
+        <div class="alert alert-good">✅ <strong>最适合标的：</strong>AAPL、MA、V、QQQ、NVO（走势稳健，IV 适中，趋势明确）。这类股票 Covered Call 可以每月稳定贡献 1~2% 的额外收益。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IRON CONDOR -->
+  <div class="tab-content" id="tab-ic">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--purple)">🦅 Iron Condor — 触发条件</span>
+        <span class="badge-sm bs-purple">震荡收租</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">VIX</div><div class="cbox-val cval-yellow">15 ~ 25（稳定区间）</div></div>
+          <div class="condition-box"><div class="cbox-label">IV PERCENTILE</div><div class="cbox-val cval-yellow">＞ 50%</div></div>
+          <div class="condition-box"><div class="cbox-label">卖腿 DELTA</div><div class="cbox-val cval-blue">两腿各 Δ ≤ 0.20</div></div>
+          <div class="condition-box"><div class="cbox-label">价差宽度</div><div class="cbox-val cval-blue">每侧价差宽度 = 股价 5%</div></div>
+          <div class="condition-box"><div class="cbox-label">技术面</div><div class="cbox-val cval-blue">明确支撑/阻力，ATR 收缩</div></div>
+          <div class="condition-box"><div class="cbox-label">到期日</div><div class="cbox-val cval-blue">30~45 天</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 建仓步骤（以 QQQ/SPX 为例）</div>
+          <ul class="action-steps">
+            <li>确认 QQQ/SPX 过去 30 天在箱体内运行，无趋势</li>
+            <li>卖出价外 Call，Δ ≈ -0.15~-0.20（通常是阻力位上方 5~8%）</li>
+            <li>买入更虚值 Call 作为保护（比卖腿高 3~5%）</li>
+            <li>卖出价外 Put，Δ ≈ +0.15~+0.20（通常是支撑位下方 5~8%）</li>
+            <li>买入更虚值 Put 作为保护（比卖腿低 3~5%）</li>
+            <li>收取净权利金 = 4 腿合计收入；目标在 50% 盈利时平仓</li>
+          </ul>
+        </div>
+        <div class="alert alert-danger">🚨 <strong>突破警报规则：</strong>任意卖腿 Δ 超过 ±0.35（说明股价已逼近行权价），立即处理亏损侧：买回该侧两腿，或将卖腿 Roll 到更远价格/更晚日期。不要等待"回来"。</div>
+        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>QQQ、SPX（流动性最好，价差最小）、GLD、XLU（低波动 ETF）。单只股票（尤其 TSLA、MSTR）做 Iron Condor 风险较大，慎用。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STRADDLE -->
+  <div class="tab-content" id="tab-straddle">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--cyan)">⚡ Long Straddle/Strangle — 触发条件</span>
+        <span class="badge-sm bs-blue">博大波动</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">触发事件</div><div class="cbox-val cval-yellow">财报前 5~10 天</div></div>
+          <div class="condition-box"><div class="cbox-label">IV PERCENTILE</div><div class="cbox-val cval-green">＜ 50%（越低越好）</div></div>
+          <div class="condition-box"><div class="cbox-label">IV vs HV 差值</div><div class="cbox-val cval-blue">IV - HV ＜ 5%（期权未高估）</div></div>
+          <div class="condition-box"><div class="cbox-label">到期日</div><div class="cbox-val cval-blue">财报后 1~2 天到期</div></div>
+          <div class="condition-box"><div class="cbox-label">VEGA</div><div class="cbox-val cval-green">正 Vega（IV上升受益）</div></div>
+          <div class="condition-box"><div class="cbox-label">盈亏平衡</div><div class="cbox-val cval-yellow">需股价波动 ＞ 总权利金</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 执行要点</div>
+          <ul class="action-steps">
+            <li><strong>Straddle：</strong>买平价 Call（Δ≈+0.50）+ 买平价 Put（Δ≈-0.50）；盈亏平衡 = 行权价 ± 总权利金</li>
+            <li><strong>Strangle（成本低版）：</strong>买价外 5% 的 Call + 买价外 5% 的 Put；需更大波动才能盈利</li>
+            <li>财报后第一天开盘后 30 分钟内评估：若已大幅波动，立即平掉盈利腿的 50%</li>
+            <li>若财报后股价没有大幅波动（IV Crush）：立即全平，不要等待</li>
+            <li>计算公式：需要的最小波动 = 总权利金 ÷ 当前股价 × 100%</li>
+          </ul>
+        </div>
+        <div class="alert alert-warn">⚠️ <strong>IV Crush 陷阱：</strong>如果你在财报前 2 天才买跨式，IV 已经极高，财报后 IV 暴跌（即使方向对），两腿都会贬值。最佳布局时间是财报前 10~14 天，IV 还未完全上升时。</div>
+        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>NVDA、META、AAPL（大盘股财报往往有 5~10% 以上波动）、TSLA（波动更大，但权利金也更贵）。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXIT SIGNALS -->
+  <div class="tab-content" id="tab-exit">
+    <div class="signal-block">
+      <div class="signal-header">
+        <span class="signal-title" style="color:var(--orange)">🚪 平仓信号 — 买方止损/止盈规则</span>
+      </div>
+      <div class="signal-body">
+        <div class="signal-conditions">
+          <div class="condition-box"><div class="cbox-label">买方止损</div><div class="cbox-val cval-red">权利金亏损 ≥ 40~50%</div></div>
+          <div class="condition-box"><div class="cbox-label">买方止盈</div><div class="cbox-val cval-green">权利金盈利 ≥ 80~100%</div></div>
+          <div class="condition-box"><div class="cbox-label">时间止损</div><div class="cbox-val cval-yellow">到期前 7 天无方向立刻平</div></div>
+          <div class="condition-box"><div class="cbox-label">卖方止盈</div><div class="cbox-val cval-green">达到 50% 权利金收入时平仓</div></div>
+          <div class="condition-box"><div class="cbox-label">卖方止损</div><div class="cbox-val cval-red">亏损达权利金的 2~3 倍</div></div>
+          <div class="condition-box"><div class="cbox-label">Delta 警报</div><div class="cbox-val cval-orange">卖腿 Δ 超过 ±0.35</div></div>
+        </div>
+        <div class="signal-action">
+          <div class="action-title">▶ 分层退出策略（专业做法）</div>
+          <ul class="action-steps">
+            <li>盈利 <strong>50%</strong>：平仓 1/3 仓位锁定利润，剩余仓位移动止损至成本线</li>
+            <li>盈利 <strong>80~100%</strong>：平仓 1/3，剩余 1/3 持有博更大行情</li>
+            <li>盈利 <strong>150%+</strong>：清仓或只留极少量"彩票仓"</li>
+            <li>Iron Condor/卖方策略达到 <strong>50% 盈利</strong>：直接全平，不要贪最后一段 Theta</li>
+            <li>Vega 突然大幅波动（财报/消息）：评估是否需要提前平仓避免 IV 风险</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 4: 股票档案
+═══════════════════════════════════════ -->
+<div class="section" id="tickers">
+  <div class="section-title">
+    <span class="section-badge">04</span>
+    <h2>标的监控档案 · 特征 & 适用策略</h2>
+  </div>
+
+  <!-- 科技巨头 -->
+  <div class="ticker-section">
+    <div class="ticker-group-title">▸ 科技巨头 / 半导体（高流动性，财报行情显著）</div>
+    <div class="ticker-grid">
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">AAPL</span><span class="tc-type pill-tech">大盘科技</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">通常偏低（15~25%），财报前升至 30~40%</div>
+          <div class="label">波动特征</div><div class="val">Beta ≈ 1.2，趋势稳健，大幅跳空少</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Covered Call</span><span class="badge-sm bs-blue">Bull Call Spread</span></div>
+          <div class="label">财报策略</div><div class="val"><span class="badge-sm bs-blue">Straddle（财报前 10 天布局）</span></div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">META</span><span class="tc-type pill-tech">大盘科技</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">正常 25~35%，财报前 45~60%</div>
+          <div class="label">波动特征</div><div class="val">财报后经常 ±10~15%，适合跨式</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Long Call</span><span class="badge-sm bs-blue">Bull Call Spread</span></div>
+          <div class="label">财报策略</div><div class="val"><span class="badge-sm bs-blue">提前 Straddle，IV低时</span></div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">NVDA</span><span class="tc-type pill-semi">半导体</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">长期偏高 35~60%，财报前 70%+</div>
+          <div class="label">波动特征</div><div class="val">超级财报效应，单季 ±15~25% 常见</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Bull Call Spread</span>（直接买Call贵）</div>
+          <div class="label">财报策略</div><div class="val"><span class="badge-sm bs-blue">Straddle 需提前 14 天布局</span></div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">TSLA</span><span class="tc-type pill-tech">高波动</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">长期高 50~80%，波动极大</div>
+          <div class="label">波动特征</div><div class="val">Beta ≈ 2.0+，单日 ±5~8% 是常态</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-blue">Bull/Bear Spread</span>（单腿太贵）</div>
+          <div class="label">警告</div><div class="val" style="color:var(--red);">Iron Condor 极危险，方向性强</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">TSM</span><span class="tc-type pill-semi">半导体</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">20~35%，地缘风险时大幅上升</div>
+          <div class="label">波动特征</div><div class="val">受台海新闻影响大，趋势稳健</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Long Call</span><span class="badge-sm bs-yellow">Covered Call</span></div>
+          <div class="label">风险提示</div><div class="val">地缘事件 IV 暴涨需特别关注</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">ASML</span><span class="tc-type pill-semi">半导体</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">20~30%，欧洲时区流动性注意</div>
+          <div class="label">波动特征</div><div class="val">长周期趋势好，短期量能较低</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Long Call</span><span class="badge-sm bs-blue">Calendar Spread</span></div>
+          <div class="label">注意</div><div class="val">期权流动性较差，注意买卖价差</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加密相关 -->
+  <div class="ticker-section">
+    <div class="ticker-group-title">▸ 加密相关（极高波动，谨慎使用期权）</div>
+    <div class="ticker-grid">
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">MSTR</span><span class="tc-type pill-crypto">比特币代理</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">100~200%+，全市场最高之一</div>
+          <div class="label">波动特征</div><div class="val">比 BTC 波动更大（加杠杆持仓）</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-blue">Vertical Spread 仅</span></div>
+          <div class="label" style="color:var(--red)">严重警告</div><div class="val" style="color:var(--red);">单腿买卖均极危险，权利金巨大</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">COIN</span><span class="tc-type pill-crypto">加密交易所</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">60~120%，随 BTC 同步大幅波动</div>
+          <div class="label">波动特征</div><div class="val">与 BTC 高度相关，监管新闻敏感</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-blue">Bull/Bear Spread</span></div>
+          <div class="label">注意</div><div class="val">做 Iron Condor 需极宽价差区间</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">HOOD</span><span class="tc-type pill-crypto">零售券商</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">40~80%，随市场情绪大幅波动</div>
+          <div class="label">波动特征</div><div class="val">散户情绪指标，meme特征</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-blue">Vertical Spread</span></div>
+          <div class="label">注意</div><div class="val">流动性不如大盘股，注意滑点</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">CRCL</span><span class="tc-type pill-crypto">加密概念</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">极高，新上市/小盘需谨慎</div>
+          <div class="label">波动特征</div><div class="val">流动性存疑，期权市场可能偏小</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-yellow">优先观察，谨慎入场</span></div>
+          <div class="label" style="color:var(--red)">风险</div><div class="val" style="color:var(--red);">优先确认期权流动性再操作</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 金融 + 医药 -->
+  <div class="ticker-section">
+    <div class="ticker-group-title">▸ 金融支付 / 医药（稳健低波动）</div>
+    <div class="ticker-grid">
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">MA</span><span class="tc-type pill-finance">支付网络</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">15~22%，全市场最稳定之一</div>
+          <div class="label">波动特征</div><div class="val">趋势极稳，Beta ≈ 0.9</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-yellow">Covered Call</span><span class="badge-sm bs-green">Long Call（低IV买）</span></div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">V</span><span class="tc-type pill-finance">支付网络</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">15~22%，与 MA 相近</div>
+          <div class="label">波动特征</div><div class="val">趋势清晰，回撤少</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-yellow">Covered Call</span><span class="badge-sm bs-blue">Bull Call Spread</span></div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">NVO</span><span class="tc-type pill-pharma">医药</span></div>
+        <div class="tc-body">
+          <div class="label">IV 特征</div><div class="val">20~35%，GLP-1 新闻敏感</div>
+          <div class="label">波动特征</div><div class="val">政策/药品数据发布时跳空明显</div>
+          <div class="label">首选策略</div><div class="val"><span class="badge-sm bs-green">Long Call / Put</span><span class="badge-sm bs-blue">Spread</span></div>
+          <div class="label">注意</div><div class="val">注意FDA/EMA公告日期</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETF -->
+  <div class="ticker-section">
+    <div class="ticker-group-title">▸ ETF（指数/商品/主题，Iron Condor 首选标的）</div>
+    <div class="ticker-grid">
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">QQQ</span><span class="tc-type pill-etf">科技指数</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-purple">Iron Condor ★★★</span><span class="badge-sm bs-blue">Bull Spread</span></div>
+          <div class="label">优势</div><div class="val">流动性最佳，买卖价差极窄，适合所有策略</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">SPX</span><span class="tc-type pill-etf">大盘指数</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-purple">Iron Condor ★★★</span><span class="badge-sm bs-yellow">0DTE 交易</span></div>
+          <div class="label">优势</div><div class="val">欧式期权（无法提前行权），税务优惠（60/40规则）</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">IBIT</span><span class="tc-type pill-crypto">比特币ETF</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-blue">Long Call/Put</span><span class="badge-sm bs-blue">Vertical Spread</span></div>
+          <div class="label">特征</div><div class="val">比 MSTR 稳定，但仍是高波动资产</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">GLD</span><span class="tc-type pill-etf">黄金ETF</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-purple">Iron Condor</span><span class="badge-sm bs-yellow">Calendar Spread</span></div>
+          <div class="label">特征</div><div class="val">避险资产，美元走弱时涨。IV通常低，卖方回报一般</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">XLU</span><span class="tc-type pill-etf">公用事业</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-yellow">Covered Call</span><span class="badge-sm bs-purple">Iron Condor</span></div>
+          <div class="label">特征</div><div class="val">极低Beta，防御性板块，IV很低，适合收租策略</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">EWJ</span><span class="tc-type pill-etf">日本ETF</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-green">Long Call</span><span class="badge-sm bs-blue">Bull Spread</span></div>
+          <div class="label">特征</div><div class="val">受日元汇率影响，与美股低相关，分散对冲工具</div>
+        </div>
+      </div>
+      <div class="ticker-card">
+        <div class="tc-header"><span class="tc-sym">OESX</span><span class="tc-type pill-etf">欧洲指数</span></div>
+        <div class="tc-body">
+          <div class="label">适用策略</div><div class="val"><span class="badge-sm bs-purple">Iron Condor</span><span class="badge-sm bs-blue">Spread</span></div>
+          <div class="label">特征</div><div class="val">欧洲时区，与美股相关性中等，注意欧元汇率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 5: 风险管理
+═══════════════════════════════════════ -->
+<div class="section" id="risk">
+  <div class="section-title">
+    <span class="section-badge">05</span>
+    <h2>风险管理框架 · 仓位 · 止损 · 监控频率</h2>
+  </div>
+
+  <!-- Position sizing -->
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">仓位规则</div>
+    <div class="sl-grid">
+      <div class="sl-card">
+        <div class="sl-metric" style="color:var(--blue2)">2%</div>
+        <div class="sl-label">单笔买方期权最大成本</div>
+        <div class="sl-desc">任何 Long Call / Long Put 的权利金支出不超过账户净值 2%。即$100,000账户单笔权利金 ≤ $2,000。</div>
+      </div>
+      <div class="sl-card">
+        <div class="sl-metric" style="color:var(--yellow)">20%</div>
+        <div class="sl-label">单笔卖方最大保证金占用</div>
+        <div class="sl-desc">Iron Condor / 卖 Put 等卖方策略，单笔保证金占用 ≤ 账户净值 20%。避免被强制平仓。</div>
+      </div>
+      <div class="sl-card">
+        <div class="sl-metric" style="color:var(--green)">50%</div>
+        <div class="sl-label">卖方策略止盈目标</div>
+        <div class="sl-desc">Iron Condor / Covered Call 达到收取权利金 50% 时平仓。后 50% 的收益需要承担过多 Gamma 风险，不值得。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 监控频率 -->
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">监控频率与触发动作</div>
+    <div class="check-grid">
+      <div class="check-block">
+        <h4>📅 每日开盘前（必做）</h4>
+        <ul>
+          <li><span class="cb-num">1</span>查看当日 VIX 水平变化（相比昨日）</li>
+          <li><span class="cb-num">2</span>检查今日是否有持仓标的的财报/重大数据</li>
+          <li><span class="cb-num">3</span>扫描持仓 Delta：是否有卖腿超过 ±0.35</li>
+          <li><span class="cb-num">4</span>检查所有持仓的剩余到期天数（DTE）</li>
+          <li><span class="cb-num">5</span>确认当日总持仓的 Delta 方向敞口</li>
+        </ul>
+      </div>
+      <div class="check-block">
+        <h4>📊 每周一次（综合扫描）</h4>
+        <ul>
+          <li><span class="cb-num">1</span>更新所有标的的 IV 百分位排名</li>
+          <li><span class="cb-num">2</span>检查未来 2 周的财报日历（调整策略）</li>
+          <li><span class="cb-num">3</span>计算本周 Theta 收益（卖方）</li>
+          <li><span class="cb-num">4</span>评估需要滚仓（Roll）的仓位</li>
+          <li><span class="cb-num">5</span>寻找新的 IV 低于 30% 的买方机会</li>
+        </ul>
+      </div>
+      <div class="check-block">
+        <h4>🚨 即时触发警报（立刻处理）</h4>
+        <ul>
+          <li><span class="cb-num">!</span>VIX 单日涨幅 ＞ 20%（市场恐慌）</li>
+          <li><span class="cb-num">!</span>持仓卖腿 Delta 超过 ±0.40</li>
+          <li><span class="cb-num">!</span>任何买方仓位亏损达 40%</li>
+          <li><span class="cb-num">!</span>持仓标的出现意外消息/跳空缺口</li>
+          <li><span class="cb-num">!</span>保证金占用超过账户净值 35%</li>
+        </ul>
+      </div>
+      <div class="check-block">
+        <h4>📆 到期前管理（DTE检查）</h4>
+        <ul>
+          <li><span class="cb-num">21</span>DTE=21天：评估是否提前平仓卖方策略</li>
+          <li><span class="cb-num">14</span>DTE=14天：Gamma 加速，买方考虑兑现</li>
+          <li><span class="cb-num">7</span>DTE=7天：若买方无行情，立即平仓</li>
+          <li><span class="cb-num">3</span>DTE=3天：除非深度实值，否则全部平仓</li>
+          <li><span class="cb-num">0</span>DTE=0（当日到期）：SPX 0DTE专项管理</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 组合对冲 -->
+  <div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">投资组合级别对冲策略</div>
+    <div class="card">
+      <table class="vix-table">
+        <thead>
+          <tr><th>VIX 水平</th><th>组合 Delta 敞口</th><th>对冲工具</th><th>对冲比例</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="vix-level vl-calm">＜15（平静）</span></td>
+            <td>偏多（净 Delta 正）</td>
+            <td>买少量 QQQ/SPX 的 Put，或 Put Spread</td>
+            <td>对冲 20~30% 敞口</td>
+          </tr>
+          <tr>
+            <td><span class="vix-level vl-elevated">15~25（升温）</span></td>
+            <td>Delta 中性或轻多</td>
+            <td>Protective Put + 减仓部分方向性 Call</td>
+            <td>对冲 30~50% 敞口</td>
+          </tr>
+          <tr>
+            <td><span class="vix-level vl-fear">＞25（恐慌）</span></td>
+            <td>转为 Delta 中性或轻空</td>
+            <td>买入 GLD（黄金 ETF）+ 持有现金 + Put 对冲</td>
+            <td>对冲 50~70% 敞口，降低总持仓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">OPTIONS PLAYBOOK PRO · 机构级作战手册 · 仅供学习参考，不构成任何投资建议 · 期权交易存在亏损全部本金的风险</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

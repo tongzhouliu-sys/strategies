@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheel 卖 PUT 策略 · 机构级执行手册 v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0f12;
+    --bg2:      #13161c;
+    --bg3:      #1a1e27;
+    --border:   #252b38;
+    --border2:  #2e3545;
+    --gold:     #c9a84c;
+    --gold2:    #e8c96a;
+    --gold-dim: rgba(201,168,76,0.12);
+    --text:     #d4d8e2;
+    --text2:    #8a90a0;
+    --text3:    #5a5f6e;
+    --green:    #3dba8a;
+    --green-bg: rgba(61,186,138,0.10);
+    --red:      #e05c5c;
+    --red-bg:   rgba(224,92,92,0.10);
+    --blue:     #5b8dee;
+    --blue-bg:  rgba(91,141,238,0.10);
+    --amber:    #e8a93a;
+    --amber-bg: rgba(232,169,58,0.10);
+    --purple:   #9b72e8;
+    --r:        8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,15,18,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    display: inline-block;
+    padding: 14px 14px;
+    font-size: 12px; font-weight: 500;
+    color: var(--text2);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  nav a:hover { color: var(--gold); border-bottom-color: var(--gold); }
+  .nav-brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    padding: 14px 14px 14px 0;
+    margin-right: 8px;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 0 56px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -80px;
+    width: 480px; height: 480px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 1.5px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 52px; line-height: 1.1;
+    color: #eef0f5;
+    margin-bottom: 16px;
+    max-width: 680px;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero p {
+    font-size: 15px; color: var(--text2);
+    max-width: 560px; margin-bottom: 36px;
+  }
+  .hero-stats {
+    display: flex; flex-wrap: wrap; gap: 20px;
+  }
+  .stat-pill {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .stat-pill .sv { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--gold2); }
+  .stat-pill .sl { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── SECTION ── */
+  section { margin-bottom: 64px; }
+  .sec-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+  }
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+  }
+  .sec-head h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px; font-weight: 400;
+    color: #eef0f5;
+  }
+  .sec-desc { font-size: 13px; color: var(--text2); max-width: 640px; margin-bottom: 24px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px 24px;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text2); margin-bottom: 14px;
+  }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text3);
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  td {
+    padding: 11px 14px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tbl-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+
+  /* tags */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-red   { background: var(--red-bg);   color: var(--red); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); }
+  .tag-blue  { background: var(--blue-bg);  color: var(--blue); }
+  .tag-gold  { background: var(--gold-dim); color: var(--gold2); }
+
+  /* ── CAPITAL LAYOUT ── */
+  .capital-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr 1.5fr;
+    gap: 0;
+  }
+  .cg-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text3); font-weight: 600;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .cg-cell {
+    padding: 13px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center;
+  }
+  .cg-cell:last-child { border-right: none; }
+  .cg-row:last-child .cg-cell { border-bottom: none; }
+  .pillar-bar {
+    height: 4px; border-radius: 2px; margin-top: 4px;
+  }
+
+  /* ── CHECKLIST ── */
+  .check-group { margin-bottom: 20px; }
+  .check-group-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text3); font-weight: 600;
+    margin-bottom: 10px; padding-left: 4px;
+  }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+    border-radius: 0;
+  }
+  .check-item:first-of-type { border-top: 1px solid var(--border); }
+  .check-item:hover { background: rgba(255,255,255,0.02); }
+  .check-item.checked { background: var(--green-bg); }
+  .check-item.checked .ci-text { color: var(--text2); text-decoration: line-through; text-decoration-color: var(--text3); }
+  .ci-box {
+    width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;
+    border: 1.5px solid var(--border2);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .check-item.checked .ci-box {
+    background: var(--green); border-color: var(--green);
+  }
+  .ci-check { display: none; color: #fff; font-size: 10px; }
+  .check-item.checked .ci-check { display: block; }
+  .ci-text { font-size: 13px; flex: 1; }
+  .ci-badge {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text3); flex-shrink: 0; margin-top: 3px;
+  }
+  .check-progress {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .progress-bar {
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--green);
+    border-radius: 2px; transition: width .3s;
+  }
+  .progress-label { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; min-width: 50px; }
+  .reset-btn {
+    font-size: 11px; color: var(--text3);
+    background: none; border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 10px; cursor: pointer;
+    transition: color .15s;
+  }
+  .reset-btn:hover { color: var(--text); }
+
+  /* ── SCORING MODEL ── */
+  .score-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .score-dim {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 16px;
+  }
+  .sd-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .sd-name { font-size: 13px; font-weight: 500; }
+  .sd-pts { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); }
+  .sd-item { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: flex; gap: 6px; }
+  .sd-item::before { content: '›'; color: var(--gold); flex-shrink: 0; }
+
+  /* ── SCORE THRESHOLDS ── */
+  .thresholds { display: flex; gap: 12px; margin-top: 16px; }
+  .thresh {
+    flex: 1; border-radius: var(--r);
+    padding: 14px 16px; text-align: center;
+    border: 1px solid transparent;
+  }
+  .thresh-exec { background: var(--green-bg); border-color: rgba(61,186,138,0.3); }
+  .thresh-add  { background: var(--gold-dim);  border-color: rgba(201,168,76,0.3); }
+  .thresh-skip { background: var(--red-bg);    border-color: rgba(224,92,92,0.3); }
+  .thresh-val { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; }
+  .thresh-exec .thresh-val { color: var(--green); }
+  .thresh-add  .thresh-val { color: var(--gold2); }
+  .thresh-skip .thresh-val { color: var(--red); }
+  .thresh-label { font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* ── DECISION TREE ── */
+  .dtree {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    color: var(--text2);
+  }
+  .dt-trigger { color: var(--amber); font-weight: 500; }
+  .dt-yes { color: var(--green); }
+  .dt-no  { color: var(--red); }
+  .dt-action { color: var(--text); }
+  .dt-indent { padding-left: 24px; }
+  .dt-indent2 { padding-left: 48px; }
+  .dt-note { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── VIX MATRIX ── */
+  .vix-matrix { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr 1.5fr; gap: 0; }
+  .vm-header {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text3); font-weight: 600;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .vm-cell {
+    padding: 12px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .vm-cell:nth-child(4n) { border-right: none; }
+  .vm-row:last-child .vm-cell { border-bottom: none; }
+  .vix-bar {
+    display: inline-block;
+    height: 6px; border-radius: 3px;
+    margin-right: 8px; vertical-align: middle;
+  }
+
+  /* ── RISK RED LINES ── */
+  .risk-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .risk-tier {
+    border-radius: var(--r);
+    padding: 18px 20px;
+    border: 1px solid transparent;
+  }
+  .risk-tier.t1 { background: var(--amber-bg); border-color: rgba(232,169,58,0.3); }
+  .risk-tier.t2 { background: rgba(155,114,232,0.08); border-color: rgba(155,114,232,0.3); }
+  .risk-tier.t3 { background: var(--red-bg); border-color: rgba(224,92,92,0.3); }
+  .rt-level { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
+  .t1 .rt-level { color: var(--amber); }
+  .t2 .rt-level { color: var(--purple); }
+  .t3 .rt-level { color: var(--red); }
+  .rt-threshold { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+  .rt-action { font-size: 12px; color: var(--text2); }
+
+  /* ── SIGNAL FORMAT ── */
+  .signal-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .sf-key { color: var(--text3); }
+  .sf-val { color: var(--text); }
+  .sf-val.gold { color: var(--gold2); }
+  .sf-val.green { color: var(--green); }
+  .sf-val.amber { color: var(--amber); }
+
+  /* ── MISC ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .text-gold { color: var(--gold); }
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red); }
+  .text-amber { color: var(--amber); }
+  .text-dim { color: var(--text2); }
+  .text-dimmer { color: var(--text3); }
+  .fs11 { font-size: 11px; }
+  .fs12 { font-size: 12px; }
+  .fs13 { font-size: 13px; }
+  ul.dot-list { padding-left: 0; list-style: none; }
+  ul.dot-list li { padding: 4px 0; padding-left: 14px; position: relative; font-size: 13px; color: var(--text2); }
+  ul.dot-list li::before { content: '·'; position: absolute; left: 0; color: var(--gold); }
+  .inline-note {
+    background: var(--gold-dim);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--r) var(--r) 0;
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text2);
+    margin: 12px 0;
+  }
+  .inline-warn {
+    background: var(--red-bg);
+    border-left: 3px solid var(--red);
+    border-radius: 0 var(--r) var(--r) 0;
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text2);
+    margin: 12px 0;
+  }
+  .wheel-flow {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--r); overflow: hidden; flex-wrap: wrap;
+  }
+  .wf-step {
+    flex: 1; min-width: 140px; padding: 16px 14px; text-align: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .wf-step:last-child { border-right: none; }
+  .wf-num {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--gold); letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .wf-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .wf-sub { font-size: 11px; color: var(--text2); }
+  .wf-arrow {
+    position: absolute; right: -10px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: var(--gold);
+    z-index: 1;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    nav { display: none; }
+    body { background: #fff; color: #000; }
+    .card, .tbl-wrap { border: 1px solid #ccc; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">WHEEL / PUT</span>
+  <a href="#overview">概览</a>
+  <a href="#capital">资金结构</a>
+  <a href="#tickers">标的矩阵</a>
+  <a href="#entry">开仓系统</a>
+  <a href="#checklist">每日清单</a>
+  <a href="#exit">出场决策</a>
+  <a href="#vix">VIX矩阵</a>
+  <a href="#risk">风控红线</a>
+  <a href="#wheel2">Wheel闭环</a>
+  <a href="#signal">信号格式</a>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">
+      <span>▸</span> 机构级执行手册 v2.0 · 2026年4月
+    </div>
+    <h1>100万美元<br><em>Wheel 卖 PUT</em><br>策略执行手册</h1>
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <div class="sv">$1,000,000</div>
+        <div class="sl">总资金</div>
+      </div>
+      <div class="stat-pill">
+        <div class="sv">25–38%</div>
+        <div class="sl">年化基准目标</div>
+      </div>
+      <div class="stat-pill">
+        <div class="sv">≤15%</div>
+        <div class="sl">最大回撤控制</div>
+      </div>
+      <div class="stat-pill">
+        <div class="sv">75/25</div>
+        <div class="sl">部署/现金比</div>
+      </div>
+      <div class="stat-pill">
+        <div class="sv">7</div>
+        <div class="sl">核心标的池</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S1 OVERVIEW -->
+  <section id="overview">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2>策略定位与预期管理</h2>
+    </div>
+    <div class="sec-desc">铁律先行——在进入任何操作细节之前，先把收益预期、收益来源和资金结构定死。</div>
+
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr>
+          <th>维度</th><th>客户原始设定</th><th>本方案优化后</th><th>逻辑说明</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono text-gold" style="font-size:12px">年化目标</td>
+            <td><span class="tag tag-amber">≥50%</span></td>
+            <td><span class="tag tag-green">25–38%基准</span> &nbsp;<span class="tag tag-gold">45%上限</span></td>
+            <td class="text-dim">50%需逼近ATM或选高风险标的，与"安全接盘"初衷相悖。45%仅作为VIX&gt;30+IV Rank&gt;80的极端窗口冲刺目标。</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-size:12px">收益来源</td>
+            <td class="text-dim">方向押注</td>
+            <td><strong>80%卖波动率</strong>（Theta+IV Crush）<br>20%方向判断</td>
+            <td class="text-dim">卖方赚的是时间价值与恐慌溢价，而非赌涨跌。纪律执行 &gt; 主观预测。</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-size:12px">资金结构</td>
+            <td class="text-dim">未明确</td>
+            <td><strong>$75万部署 + $25万现金</strong>（永不挪用）</td>
+            <td class="text-dim">25万用于保证金缓冲、极端展期补差、接盘资金。100%满仓会在回撤中被迫砍仓，打断复利引擎。</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-size:12px">核心纪律</td>
+            <td class="text-dim">-</td>
+            <td><strong>单标的 ≤ 15%</strong>（$15万）&nbsp;同板块 ≤ 20%</td>
+            <td class="text-dim">任一标的爆雷不影响整体生存。分散是生存的基石，不是选项。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inline-note">
+      <strong style="color:var(--gold)">策略一句话定义：</strong>
+      只在市场为风险定价偏高（高IV）时入场；只为愿意以该价格接盘的标的卖PUT；只用深度分散对抗系统性风险。
+    </div>
+  </section>
+
+  <!-- S2 CAPITAL -->
+  <section id="capital">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2>资金结构</h2>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>支柱</th><th>仓位占比</th><th>资金量</th><th>核心标的</th><th>角色定位</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-green">核心基石</span></td>
+            <td class="mono">35%</td>
+            <td class="mono">$350,000</td>
+            <td>SPY · LMT · NOC</td>
+            <td class="text-dim">流动性王者，机构主战场。稳定现金流来源，极端行情接盘无压力。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-amber">高权利金</span></td>
+            <td class="mono">25%</td>
+            <td class="mono">$250,000</td>
+            <td>GDX · XOM</td>
+            <td class="text-dim">高IV驱动超额收益。GDX强制使用牛市看跌价差锁定尾部风险。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">防御配置</span></td>
+            <td class="mono">15%</td>
+            <td class="mono">$150,000</td>
+            <td>WMT · OXY</td>
+            <td class="text-dim">消费防御+能源对冲。财报窗口+油价高位时优先激活。</td>
+          </tr>
+          <tr style="background:rgba(201,168,76,0.04)">
+            <td><span class="tag tag-gold">现金储备</span></td>
+            <td class="mono text-gold">25%</td>
+            <td class="mono text-gold">$250,000</td>
+            <td>— 绝对底线 —</td>
+            <td class="text-dim">保证金缓冲 · 展期补差 · 极端抄底。<strong style="color:var(--red)">永不挪作他用。</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-dimmer fs12" style="margin-top:8px">* 各支柱单标的保证金占用上限 ≤ 总资金15%（$15万）。同板块合计上限 ≤ 20%（$20万）。</p>
+  </section>
+
+  <!-- S3 TICKERS -->
+  <section id="tickers">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2>标的池矩阵</h2>
+    </div>
+    <div class="sec-desc">7个核心标的，覆盖5个独立驱动板块，天然弱相关性是对抗系统性风险的第一道护城河。<strong style="color:var(--red)">UNG已全部剔除</strong>——期货升水（Contango）损耗破坏Wheel闭环完整性。</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>梯队</th><th>标的</th><th>板块</th><th>仓位上限</th><th>行权价区间</th><th>IV Rank门槛</th><th>特殊要求</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td rowspan="3"><span class="tag tag-green">核心基石</span></td>
+            <td class="mono text-gold" style="font-weight:600">SPY</td>
+            <td class="text-dim">大盘指数</td>
+            <td class="mono">20% / $20万</td>
+            <td class="mono">85–88%</td>
+            <td class="mono"><span class="tag tag-green">≥60%</span></td>
+            <td class="text-dim">流动性最优，机构主战场，裸卖PUT</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-weight:600">LMT</td>
+            <td class="text-dim">国防军工</td>
+            <td class="mono">10% / $10万</td>
+            <td class="mono">82–85%</td>
+            <td class="mono"><span class="tag tag-green">≥55%</span></td>
+            <td class="text-dim">地缘事件驱动，财报前IV冲高时优先开仓</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-weight:600">NOC</td>
+            <td class="text-dim">国防军工</td>
+            <td class="mono">5% / $5万</td>
+            <td class="mono">82–85%</td>
+            <td class="mono"><span class="tag tag-green">≥55%</span></td>
+            <td class="text-dim">与LMT形成同板块20%上限约束</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><span class="tag tag-amber">高权利金</span></td>
+            <td class="mono text-gold" style="font-weight:600">GDX</td>
+            <td class="text-dim">黄金矿业</td>
+            <td class="mono">10% / $10万</td>
+            <td class="mono">75–80%</td>
+            <td class="mono"><span class="tag tag-amber">≥65%</span></td>
+            <td class="text-dim"><strong style="color:var(--amber)">⚠ 强制牛市看跌价差，禁止裸卖</strong></td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-weight:600">XOM</td>
+            <td class="text-dim">综合石油</td>
+            <td class="mono">10% / $10万</td>
+            <td class="mono">82–85%</td>
+            <td class="mono"><span class="tag tag-green">≥60%</span></td>
+            <td class="text-dim">替代UNG，正股分红保障Wheel闭环完整</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><span class="tag tag-blue">防御配置</span></td>
+            <td class="mono text-gold" style="font-weight:600">WMT</td>
+            <td class="text-dim">消费防御</td>
+            <td class="mono">10% / $10万</td>
+            <td class="mono">88–90%</td>
+            <td class="mono"><span class="tag tag-green">≥50%</span></td>
+            <td class="text-dim">财报前1周IV冲高时优先开仓，财报后IV Crush提前止盈</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold" style="font-weight:600">OXY</td>
+            <td class="text-dim">独立石油</td>
+            <td class="mono">5% / $5万</td>
+            <td class="mono">82–85%</td>
+            <td class="mono"><span class="tag tag-green">≥60%</span></td>
+            <td class="text-dim">油价 &gt; $70/桶时优先激活；能源板块合计≤20%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inline-warn" style="margin-top:16px">
+      <strong style="color:var(--red)">已剔除标的说明 — UNG（天然气ETF）：</strong>
+      UNG是期货多头滚动ETF，长期面临期货升水（Contango）侵蚀。被行权接盘后持有UNG正股，卖Covered Call的收益将被升水损耗持续抵消，Wheel闭环经济性不成立。天然气敞口已通过XOM间接覆盖。
+    </div>
+  </section>
+
+  <!-- S4 ENTRY -->
+  <section id="entry">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2>开仓信号系统</h2>
+    </div>
+    <div class="sec-desc">双重验证机制：6项硬性门槛为过滤器（全部满足才进入打分），5维打分为排序器（≥70分才执行）。</div>
+
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">第一步：6项硬性门槛（全满足方进入打分）</h3>
+    <div class="tbl-wrap" style="margin-bottom:28px">
+      <table>
+        <thead><tr><th>#</th><th>条件</th><th>标准</th><th>核查方式</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono text-gold">01</td>
+            <td><strong>趋势位置</strong></td>
+            <td>股价 &lt; 20日均线，且未有效跌破60日线支撑</td>
+            <td class="text-dim">K线图，20MA/60MA</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold">02</td>
+            <td><strong>日内恐慌</strong></td>
+            <td>当日开盘价 较前收盘价下跌 ≥ 1.5%</td>
+            <td class="text-dim">盘前行情，涨跌幅栏</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold">03</td>
+            <td><strong>企稳信号</strong> <span class="tag tag-gold" style="font-size:10px">新增</span></td>
+            <td>开盘后30分钟未创新低，且成交量 &gt; 5日均量×1.2倍</td>
+            <td class="text-dim">分时图+成交量，避免跌途接飞刀</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold">04</td>
+            <td><strong>波动率</strong></td>
+            <td>IV Rank（非IV绝对值）≥ 60%</td>
+            <td class="text-dim">Thinkorswim / Barchart 期权统计</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold">05</td>
+            <td><strong>到期日</strong></td>
+            <td>DTE 严格 30–45 天（θ衰减最优区间）</td>
+            <td class="text-dim">期权链到期日筛选</td>
+          </tr>
+          <tr>
+            <td class="mono text-gold">06</td>
+            <td><strong>流动性</strong></td>
+            <td>期权日均成交量 &gt; 5,000张，买卖价差 &lt; $0.05</td>
+            <td class="text-dim">期权链OI/Volume列</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">第二步：5维打分模型（总分100分）</h3>
+    <div class="score-dims">
+      <div class="score-dim">
+        <div class="sd-header">
+          <span class="sd-name">① 趋势位置</span>
+          <span class="sd-pts">30分</span>
+        </div>
+        <div class="sd-item">价格在20日线下方 → +10</div>
+        <div class="sd-item">接近60日线支撑区 → +10</div>
+        <div class="sd-item">周线未跌破关键支撑 → +10</div>
+      </div>
+      <div class="score-dim">
+        <div class="sd-header">
+          <span class="sd-name">② 短期情绪</span>
+          <span class="sd-pts">25分</span>
+        </div>
+        <div class="sd-item">开盘跌幅 ≥ 1.5% → +10</div>
+        <div class="sd-item">跳空低开（Gap Down）→ +5</div>
+        <div class="sd-item">RSI(14) &lt; 40 → +10</div>
+      </div>
+      <div class="score-dim">
+        <div class="sd-header">
+          <span class="sd-name">③ 波动率溢价</span>
+          <span class="sd-pts">25分</span>
+        </div>
+        <div class="sd-item">IV Rank ≥ 60% → +15</div>
+        <div class="sd-item">IV已出现拐头向下 → +10</div>
+        <div class="sd-item text-red" style="font-size:12px;color:var(--red)">⚠ IV持续上升中 → 不开仓</div>
+      </div>
+      <div class="score-dim">
+        <div class="sd-header">
+          <span class="sd-name">④ 安全垫深度</span>
+          <span class="sd-pts">10分</span>
+        </div>
+        <div class="sd-item">行权价 ≤ 现价 × 85% → +10</div>
+        <div class="sd-item">行权价 ≤ 现价 × 80% → +10（加分项）</div>
+      </div>
+    </div>
+    <div class="score-dim" style="margin-top:12px">
+      <div class="sd-header">
+        <span class="sd-name">⑤ 合约流动性</span>
+        <span class="sd-pts">10分</span>
+      </div>
+      <div class="sd-item" style="display:inline">OI &gt; 10,000张 + 价差 &lt; $0.05 → +10</div>
+    </div>
+
+    <div class="thresholds">
+      <div class="thresh thresh-exec">
+        <div class="thresh-val">≥70</div>
+        <div class="thresh-label">✓ 执行开仓</div>
+      </div>
+      <div class="thresh thresh-add">
+        <div class="thresh-val">≥80</div>
+        <div class="thresh-label">✦ 可加仓</div>
+      </div>
+      <div class="thresh thresh-skip">
+        <div class="thresh-val">&lt;70</div>
+        <div class="thresh-label">✗ 放弃本次</div>
+      </div>
+    </div>
+
+    <div class="inline-warn" style="margin-top:16px">
+      <strong style="color:var(--red)">禁止开仓清单：</strong>
+      VIX &lt; 15 · 财报/FOMC当日 · 开盘前15分钟（价差过宽）· IV Rank &lt; 40% · 标的单日跌幅 &gt; 5%且无企稳信号 · 单标保证金已达15%上限
+    </div>
+
+    <h3 style="font-size:14px;font-weight:600;margin:24px 0 14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">合约参数速查</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>标的类型</th><th>行权价</th><th>DTE</th><th>年化收益验证</th><th>Delta参考</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>SPY / LMT / NOC / WMT / OXY / XOM</td>
+            <td class="mono">现价 × 82–88%</td>
+            <td class="mono">30–45天</td>
+            <td class="mono">≥ 25%年化</td>
+            <td class="mono">-0.10 ~ -0.20</td>
+          </tr>
+          <tr>
+            <td>GDX（高波）</td>
+            <td class="mono">现价 × 75–80%</td>
+            <td class="mono">30–45天</td>
+            <td class="mono">≥ 30%年化</td>
+            <td class="mono">-0.10 ~ -0.15</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-dimmer fs11" style="margin-top:6px">年化收益公式：（权利金 ÷ 行权价）× (365 ÷ DTE) × 100%</p>
+  </section>
+
+  <!-- S5 DAILY CHECKLIST -->
+  <section id="checklist">
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2>每日执行清单</h2>
+    </div>
+    <div class="sec-desc">三个时间节点，逐项打勾。全绿才执行当日开仓。</div>
+
+    <div class="check-progress">
+      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+      <span class="progress-label" id="progLabel">0 / 15</span>
+      <button class="reset-btn" onclick="resetAll()">重置</button>
+    </div>
+
+    <div class="card">
+      <div class="check-group">
+        <div class="check-group-title">🕘 盘前 9:00 AM ET — 市场扫描</div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">查看 VIX 当前水平，对照VIX矩阵确认今日整体仓位上限</div>
+          <div class="ci-badge">VIX</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">逐一检查7个标的的 IV Rank（Thinkorswim 期权统计 / Barchart），标记 ≥60% 的候选</div>
+          <div class="ci-badge">IV Rank</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">确认账户现金储备 ≥ $250,000，若低于此线暂停全部新开仓</div>
+          <div class="ci-badge">现金</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">查看今日重大宏观事件日历（财报、FOMC、CPI），有重大事件则该标的当日禁止开仓</div>
+          <div class="ci-badge">事件</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">各候选标的是否低于20日均线？标记符合条件者</div>
+          <div class="ci-badge">20MA</div>
+        </div>
+      </div>
+
+      <div class="check-group">
+        <div class="check-group-title">📈 开盘 9:30–10:00 AM ET — 开仓验证</div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">候选标的开盘跌幅 ≥ 1.5% 于昨日收盘？</div>
+          <div class="ci-badge">条件02</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">等待开盘后30分钟：未创新低 + 成交量放大确认企稳信号？</div>
+          <div class="ci-badge">企稳</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">计算拟选行权价的年化收益率 ≥ 25%？（权利金÷行权价）×（365÷DTE）</div>
+          <div class="ci-badge">年化</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">运行5维打分 ≥ 70分才下单，≥ 80分可考虑加仓</div>
+          <div class="ci-badge">打分</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">GDX开仓必须同步挂牛市看跌价差（买低行权价PUT），禁止裸卖</div>
+          <div class="ci-badge">GDX</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">下限价单，成交后<strong>立即</strong>挂50%止盈GTC限价单，不等不拖</div>
+          <div class="ci-badge">止盈单</div>
+        </div>
+      </div>
+
+      <div class="check-group">
+        <div class="check-group-title">🌇 盘后 4:00 PM ET — 持仓巡检</div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">检查全部持仓：有无股价进入行权价120%预警区间（撤销止盈单，标记黄色监控）</div>
+          <div class="ci-badge">120%预警</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">检查全部持仓：有无股价进入行权价110%决策区间（启动展期/接盘决策树）</div>
+          <div class="ci-badge">110%决策</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">更新保证金占用计算，确认总仓位 ≤ $750,000；单标 ≤ $150,000</div>
+          <div class="ci-badge">保证金</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="ci-box"><span class="ci-check">✓</span></div>
+          <div class="ci-text">记录当日交易日志：标的 | 行权价 | 权利金 | DTE | 打分 | 止盈价位</div>
+          <div class="ci-badge">日志</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S6 EXIT -->
+  <section id="exit">
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <h2>出场与持仓管理决策树</h2>
+    </div>
+
+    <div class="two-col" style="margin-bottom:20px">
+      <div>
+        <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px">止盈系统（开仓即刻设置）</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>规则</th><th>触发条件</th><th>动作</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="text-green">利润止盈</td>
+                <td class="mono">权利金回撤 ≥ 50%</td>
+                <td>GTC限价单自动平仓</td>
+              </tr>
+              <tr>
+                <td class="text-amber">时间止盈</td>
+                <td class="mono">持仓≥21天 且盈利≥30%</td>
+                <td>主动平仓50%，剩余移动止盈</td>
+              </tr>
+              <tr>
+                <td class="text-blue">IV Crush</td>
+                <td class="mono">24h内IV Rank暴跌≥20%</td>
+                <td>无论盈亏，立即平仓</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px">双预警线（核心风控创新）</h3>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+            <span class="tag tag-amber" style="font-size:12px;padding:4px 10px">🟡 120% 预警线</span>
+            <span class="text-dim fs13">股价跌至行权价×1.20时</span>
+          </div>
+          <ul class="dot-list">
+            <li>撤销50%止盈单，防止被扫单</li>
+            <li>停止该标的新开仓</li>
+            <li>标记为黄色监控，提前准备展期材料</li>
+          </ul>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span class="tag tag-amber" style="background:var(--red-bg);border-color:rgba(224,92,92,0.3);color:var(--red);font-size:12px;padding:4px 10px">🟠 110% 决策线</span>
+            <span class="text-dim fs13">股价跌至行权价×1.10时</span>
+          </div>
+          <ul class="dot-list">
+            <li>启动下方决策树，5分钟内完成判断</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:14px">触发110%时的决策树</h3>
+    <div class="dtree">
+      <div class="dt-trigger">触发条件：股价 ≤ 行权价 × 1.10</div>
+      <div class="dt-indent">
+        <div>距到期日(DTE) <span class="text-gold">&gt; 21天</span> ？</div>
+        <div class="dt-indent">
+          <div class="dt-yes">是 → 评估展期（Roll）</div>
+          <div class="dt-indent">
+            <div>新合约净权利金 &gt; 当前平仓亏损？</div>
+            <div class="dt-indent">
+              <div class="dt-yes">是 → <span class="dt-action">Roll Down &amp; Out（降行权价 + 延长DTE至45–60天）✓</span></div>
+              <div class="dt-no">否 → <span class="dt-action">直接平仓止损，展期≠逃避亏损 ✗</span></div>
+            </div>
+            <div class="dt-note">* Roll条件：新合约仍满足6项硬性门槛，且净收权利金（不贴钱）</div>
+            <div class="dt-note">* 同一标的连续Roll不超过2次，第3次必须评估是否清仓</div>
+          </div>
+          <br>
+          <div class="dt-no">否（DTE ≤ 21天）→ 评估是否接受行权</div>
+          <div class="dt-indent">
+            <div>愿意以行权价持有正股？</div>
+            <div class="dt-indent">
+              <div class="dt-yes">是 → <span class="dt-action">接受行权，48小时内卖Covered Call ✓</span></div>
+              <div class="dt-no">否 → <span class="dt-action">平仓离场，不强行接盘 ✗</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S7 VIX -->
+  <section id="vix">
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <h2>VIX 动态仓位矩阵</h2>
+    </div>
+    <div class="sec-desc">根据当前VIX水平动态调整整体暴露度，这是防止在错误时机过度布仓的关键机制。</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>VIX区间</th><th>市场状态</th><th>建议仓位上限</th><th>优先动作</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-green" style="font-family:var(--mono)">VIX &lt; 15</span></td>
+            <td>极度平静</td>
+            <td class="mono"><span class="tag tag-red">≤ 40%</span></td>
+            <td class="text-dim">仅保留SPY核心仓，主动降仓观望，波动率被压缩到地板，卖方回报率极低</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green" style="font-family:var(--mono)">15–20</span></td>
+            <td>正常偏低</td>
+            <td class="mono"><span class="tag tag-amber">40–60%</span></td>
+            <td class="text-dim">仅开仓IV Rank ≥ 70%的标的，精选而非广撒网</td>
+          </tr>
+          <tr style="background:rgba(201,168,76,0.03)">
+            <td><span class="tag tag-gold" style="font-family:var(--mono)">20–25</span></td>
+            <td>轻度恐慌</td>
+            <td class="mono"><span class="tag tag-gold">60–75%</span></td>
+            <td class="text-dim">标准配置，平衡开仓。当前（2026年4月）常态区间，按正常流程执行</td>
+          </tr>
+          <tr style="background:rgba(61,186,138,0.03)">
+            <td><span class="tag tag-green" style="font-family:var(--mono)">25–35</span></td>
+            <td>🏆 黄金窗口</td>
+            <td class="mono"><span class="tag tag-green">70–80%</span></td>
+            <td class="text-dim">积极加仓SPY、LMT等高流动性标的；权利金最丰厚，是卖方获取超额收益的最佳时机</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-red" style="font-family:var(--mono)">VIX &gt; 35</span></td>
+            <td>极度恐慌</td>
+            <td class="mono"><span class="tag tag-amber">60–70%</span></td>
+            <td class="text-dim">权利金极厚但安全垫加倍，保留10%备用应急；优先SPY/WMT等防御性标的，高波动标的暂停</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inline-note" style="margin-top:16px">
+      <strong style="color:var(--gold)">当前定位（2026年4月10日）：</strong>
+      VIX ≈ 19.5，处于"正常偏低"区间，建议整体仓位控制在 40–60%，不宜过激进。多数标的期权定价并不"贵"，应保持耐心等待IV Rank更高的窗口。
+    </div>
+  </section>
+
+  <!-- S8 RISK -->
+  <section id="risk">
+    <div class="sec-head">
+      <span class="sec-num">08</span>
+      <h2>三层硬性风控红线</h2>
+    </div>
+
+    <div class="risk-tiers">
+      <div class="risk-tier t1">
+        <div class="rt-level">层级1 · 单标的</div>
+        <div class="rt-threshold text-amber">浮亏 ≥ 30%</div>
+        <div class="rt-action">该标的保证金占用×30%时，强制平仓或Roll，禁止死扛。不等、不望、不祈祷。</div>
+      </div>
+      <div class="risk-tier t2">
+        <div class="rt-level">层级2 · 组合账户</div>
+        <div class="rt-threshold" style="color:var(--purple)">总浮亏 ≥ $10万</div>
+        <div class="rt-action">暂停全部新开仓，强制将仓位降至总部署的50%（$37.5万），等市场企稳再评估。</div>
+      </div>
+      <div class="risk-tier t3">
+        <div class="rt-level">层级3 · 现金底线</div>
+        <div class="rt-threshold text-red">可用现金 &lt; $15万</div>
+        <div class="rt-action">停止一切开仓，优先平仓浮盈合约补充现金，绝不追加杠杆。现金是最后的期权。</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:28px 0 14px">极端情景应急预案</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>情景</th><th>触发假设</th><th>账户影响</th><th>应对动作</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>温和回调</td>
+            <td class="text-dim">SPY −5%，其他 −3%</td>
+            <td class="text-amber mono">浮亏 ~$3–5万</td>
+            <td class="text-dim">正常监控，现金储备充足，不干预。120%预警线尚未触发。</td>
+          </tr>
+          <tr>
+            <td>黑天鹅</td>
+            <td class="text-dim">SPY −12%，GDX −20%</td>
+            <td class="text-red mono">浮亏 ~$10–14万</td>
+            <td class="text-dim">触发组合层级2，减仓至50%，GDX价差结构锁定最大亏损，用现金补差。</td>
+          </tr>
+          <tr>
+            <td>流动性枯竭</td>
+            <td class="text-dim">期权价差扩大3倍</td>
+            <td class="text-red mono">保证金告急</td>
+            <td class="text-dim">仅保留SPY/WMT高流动性仓位，其余优先平仓，不争执行价。</td>
+          </tr>
+          <tr>
+            <td>地缘突发</td>
+            <td class="text-dim">VIX瞬间破35</td>
+            <td class="text-amber mono">账面剧烈波动</td>
+            <td class="text-dim">不追踪盘中，等收盘后重新评估。IV暴升时先不动，让时间价值自然消耗。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:28px 0 14px">每周/月度检查清单</h3>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">每周日晚（周度巡检）</div>
+        <ul class="dot-list">
+          <li>更新全部标的IV Rank，&lt;60%的标的主动减仓/平仓</li>
+          <li>确认现金储备 ≥ $250,000</li>
+          <li>检查板块集中度，同板块合计 ≤ $200,000</li>
+          <li>单周盈利 ≥ 30%，主动降半仓落袋为安</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">每月末（月度复盘）</div>
+        <ul class="dot-list">
+          <li>计算月收益率、胜率（目标&gt;65%）、盈亏比（目标&gt;2.0）</li>
+          <li>最大单月回撤是否 ≤ 5%，开仓纪律遵守率是否 ≥ 90%</li>
+          <li>若连续2月IV均值下移，收紧IV门槛或降低行权价比例</li>
+          <li>更新标的池，剔除流动性下降/基本面恶化的标的</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- S9 WHEEL2 -->
+  <section id="wheel2">
+    <div class="sec-head">
+      <span class="sec-num">09</span>
+      <h2>Wheel 第二阶段：被行权后的 Covered Call</h2>
+    </div>
+    <div class="sec-desc">被行权不是失败，是Wheel策略的既定环节。坦然接盘，立即转为"收租模式"。</div>
+
+    <div class="wheel-flow" style="margin-bottom:24px">
+      <div class="wf-step">
+        <div class="wf-arrow">›</div>
+        <div class="wf-num">PHASE 1</div>
+        <div class="wf-title">卖 PUT</div>
+        <div class="wf-sub">收取权利金<br>等待θ衰减</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-arrow">›</div>
+        <div class="wf-num">TRIGGER</div>
+        <div class="wf-title">被行权</div>
+        <div class="wf-sub">成本 = 行权价<br>已减去权利金</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-arrow">›</div>
+        <div class="wf-num">PHASE 2</div>
+        <div class="wf-title">卖 CALL</div>
+        <div class="wf-sub">48h内开立<br>Covered Call</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-arrow">›</div>
+        <div class="wf-num">EXIT</div>
+        <div class="wf-title">CALL被行权</div>
+        <div class="wf-sub">回收现金+收益<br>完成一轮</div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">REPEAT</div>
+        <div class="wf-title">重新卖 PUT</div>
+        <div class="wf-sub">回到Phase 1<br>持续现金流</div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>参数</th><th>设置</th><th>逻辑</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>行权价</td>
+            <td class="mono">持仓成本 × 1.05–1.10</td>
+            <td class="text-dim">确保盈利出局，绝不低于成本价卖Call（否则接盘就亏）</td>
+          </tr>
+          <tr>
+            <td>DTE</td>
+            <td class="mono">21–30天</td>
+            <td class="text-dim">缩短周期加速资金周转，比PUT端略短以提高复利频率</td>
+          </tr>
+          <tr>
+            <td>止盈</td>
+            <td class="mono">同样50%权利金平仓</td>
+            <td class="text-dim">保持策略一致性，快进快出降低暴露时间</td>
+          </tr>
+          <tr>
+            <td>Delta 参考</td>
+            <td class="mono">+0.20–+0.30</td>
+            <td class="text-dim">略高于PUT端，股价需要一定上涨才能被行权回收现金</td>
+          </tr>
+          <tr>
+            <td class="text-amber">股息/除权风险</td>
+            <td class="text-amber mono">除息日前3天检查</td>
+            <td class="text-dim">深度实值Call在除息前易被提前行权，需提前平仓或移仓至除息后</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inline-note" style="margin-top:14px">
+      <strong style="color:var(--gold)">Wheel完整成本公式：</strong>
+      实际接盘成本 = 行权价 − PUT权利金 − CALL权利金（若已收取）。每轮Wheel完整跑通后，计算实际年化以验证是否符合预期。
+    </div>
+  </section>
+
+  <!-- S10 SIGNAL FORMAT -->
+  <section id="signal">
+    <div class="sec-head">
+      <span class="sec-num">10</span>
+      <h2>OpenClaw 信号输出格式</h2>
+    </div>
+    <div class="sec-desc">每日收盘后生成，最多推送3条（Top 3打分），无信号时不推送。可直接接入 OpenClaw 技能执行。</div>
+
+    <div class="two-col">
+      <div>
+        <div class="card-title" style="margin-bottom:12px">信号模板</div>
+        <div class="signal-box">
+          <div><span class="sf-key">标的：</span><span class="sf-val gold">SPY</span></div>
+          <div><span class="sf-key">打分：</span><span class="sf-val gold">82 / 100</span></div>
+          <div><span class="sf-key">IV Rank：</span><span class="sf-val green">74.3%</span></div>
+          <div><span class="sf-key">操作：</span><span class="sf-val">卖 PUT（裸卖）</span></div>
+          <div><span class="sf-key">行权价：</span><span class="sf-val amber">$579（现价×85%）</span></div>
+          <div><span class="sf-key">到期日：</span><span class="sf-val">35天（DTE）</span></div>
+          <div><span class="sf-key">仓位：</span><span class="sf-val">$200,000（保证金占用）</span></div>
+          <div><span class="sf-key">止盈目标：</span><span class="sf-val green">权利金×50%自动平仓</span></div>
+          <div><span class="sf-key">预警线：</span><span class="sf-val amber">$694.8（×120%）→ 撤单</span></div>
+          <div><span class="sf-key">决策线：</span><span class="sf-val" style="color:var(--red)">$636.9（×110%）→ 启动决策树</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="card-title" style="margin-bottom:12px">推送纪律</div>
+        <ul class="dot-list" style="margin-bottom:16px">
+          <li>每日最多推送 <strong>3条</strong>，按打分降序排列</li>
+          <li>当日无信号（全部标的未满足6项硬条件）→ 推送"今日无信号，按兵不动"</li>
+          <li>信号包含预警线和决策线绝对价格，便于设置券商警报</li>
+          <li>同一标的连续2日出现信号，第2日仓位不得超过首日的50%</li>
+        </ul>
+        <div class="card-title" style="margin-bottom:12px">GDX专用格式（价差）</div>
+        <div class="signal-box" style="font-size:12px">
+          <div><span class="sf-key">策略：</span><span class="sf-val amber">牛市看跌价差</span></div>
+          <div><span class="sf-key">卖出：</span><span class="sf-val">GDX $73 PUT（收取$2.10）</span></div>
+          <div><span class="sf-key">买入：</span><span class="sf-val">GDX $68 PUT（支付$0.80）</span></div>
+          <div><span class="sf-key">净权利金：</span><span class="sf-val green">$1.30 × 合约数</span></div>
+          <div><span class="sf-key">最大亏损：</span><span class="sf-val" style="color:var(--red)">$3.70（价差−净权利金）× 100</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAUNCH PATH -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">11</span>
+      <h2>落地启动路径</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>阶段</th><th>时间</th><th>任务</th><th>目标</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-blue">准备期</span></td>
+            <td class="mono">第1周</td>
+            <td>在券商平台建立7标的观察列表；导入每日Checklist；熟悉Thinkorswim IV Rank面板</td>
+            <td class="text-dim">不开实仓，感受信号频率</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-amber">试运行</span></td>
+            <td class="mono">第2–3周</td>
+            <td>用 $10–20万小资金实盘跑通"开仓→50%止盈/110%展期→接盘CC"全闭环；记录滑点与成交偏差</td>
+            <td class="text-dim">验证流程可执行性</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-gold">校准期</span></td>
+            <td class="mono">第4周</td>
+            <td>复盘打分阈值准确性，验证胜率与回撤控制，调整行权价Delta区间偏好</td>
+            <td class="text-dim">优化参数至舒适区</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">全量运行</span></td>
+            <td class="mono">第2月起</td>
+            <td>逐步放大至$75万部署仓位；严格执行三层风控红线；每月复盘调整</td>
+            <td class="text-dim">进入稳定现金流模式</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PERFORMANCE EXPECTATIONS -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">12</span>
+      <h2>收益预期与绩效基准</h2>
+    </div>
+
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-title">月度权利金目标</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--gold2);margin:8px 0">$18,000–$28,000</div>
+        <div class="text-dimmer fs12">基于75万部署，VIX 20–25正常区间</div>
+      </div>
+      <div class="card">
+        <div class="card-title">年化基准目标</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--gold2);margin:8px 0">25–38%</div>
+        <div class="text-dimmer fs12">以总资金$100万为分母。高波动月可达40–45%。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">绩效考核指标</div>
+        <div style="margin-top:8px">
+          <div class="text-dim fs13" style="margin-bottom:4px">月胜率目标 <span class="mono text-gold">≥ 65%</span></div>
+          <div class="text-dim fs13" style="margin-bottom:4px">盈亏比目标 <span class="mono text-gold">≥ 2.0</span></div>
+          <div class="text-dim fs13">最大单月回撤 <span class="mono text-red">≤ 5%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>市场环境</th><th>VIX区间</th><th>月权利金收入</th><th>年化折算</th><th>时间占比</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>高波动</td>
+            <td class="mono">VIX 25–35</td>
+            <td class="mono text-green">$25,000–35,000</td>
+            <td class="mono text-green">30–42%</td>
+            <td class="text-dim">约35%时间</td>
+          </tr>
+          <tr>
+            <td>中波动</td>
+            <td class="mono">VIX 15–25</td>
+            <td class="mono text-gold">$18,000–25,000</td>
+            <td class="mono text-gold">22–30%</td>
+            <td class="text-dim">约50%时间</td>
+          </tr>
+          <tr>
+            <td>低波动</td>
+            <td class="mono">VIX &lt;15</td>
+            <td class="mono text-dim">$6,000–12,000</td>
+            <td class="mono text-dim">7–14%</td>
+            <td class="text-dim">约15%时间</td>
+          </tr>
+          <tr style="background:var(--gold-dim)">
+            <td><strong>加权综合预期</strong></td>
+            <td class="mono">-</td>
+            <td class="mono text-gold"><strong>$20,000–28,000/月</strong></td>
+            <td class="mono text-gold"><strong>24–34%/年</strong></td>
+            <td class="text-dim">长期均值</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- DISCLAIMER -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:40px">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px">免责声明</div>
+    <p style="font-size:12px;color:var(--text3);line-height:1.8">
+      本文件为策略框架与执行指南，<strong style="color:var(--text2)">不构成任何投资建议</strong>。期权卖方策略存在接盘风险、保证金追缴风险、流动性风险与黑天鹅风险，极端行情下可能损失超过本金。所有收益预测均基于历史统计与当前市场假设，历史表现不代表未来收益。交易者应基于自身风险承受能力独立决策，必要时咨询持牌专业投资顾问。建议在模拟盘完整验证1–3个月后再投入实盘。本策略训练方法：http://exam.bizsn.com/free/options/start/00_options_v2.html
+    </p>
+  </div>
+
+  <div style="text-align:center;padding-bottom:20px">
+    <span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--text3)">
+      WHEEL / PUT STRATEGY · INSTITUTIONAL EXECUTION MANUAL v2.0 · APRIL 2026
+    </span>
+  </div>
+
+</div><!-- end .page -->
+
+<script>
+  let total = 0;
+  let checked = 0;
+  function countAll() {
+    total = document.querySelectorAll('.check-item').length;
+  }
+  function updateProgress() {
+    checked = document.querySelectorAll('.check-item.checked').length;
+    const pct = total > 0 ? Math.round(checked/total*100) : 0;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progLabel').textContent = checked + ' / ' + total;
+  }
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    updateProgress();
+  }
+  function resetAll() {
+    document.querySelectorAll('.check-item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+  countAll();
+  updateProgress();
+</script>
+</body>
+</html>

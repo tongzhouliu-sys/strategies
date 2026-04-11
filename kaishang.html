@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期权套利自动化系统操作手册 · KAISHANG · BBAE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c18;
+  --bg2: #0c1220;
+  --bg3: #101828;
+  --bg4: #141e2e;
+  --border: #1a2640;
+  --border2: #243352;
+  --gold: #d4a843;
+  --gold-dim: #a07c2a;
+  --gold-bg: rgba(212,168,67,0.08);
+  --blue: #4a8fe8;
+  --blue-dim: #2d5a9e;
+  --blue-bg: rgba(74,143,232,0.08);
+  --teal: #2cb8a0;
+  --teal-bg: rgba(44,184,160,0.08);
+  --green: #2ea87a;
+  --green-bg: rgba(46,168,122,0.08);
+  --red: #e05252;
+  --red-bg: rgba(224,82,82,0.08);
+  --amber: #d4884a;
+  --amber-bg: rgba(212,136,74,0.08);
+  --purple: #8b6fd4;
+  --purple-bg: rgba(139,111,212,0.08);
+  --text: #d8dde8;
+  --text2: #8896b0;
+  --text3: #4f607a;
+  --font-head: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Instrument Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --r: 6px;
+  --r2: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg2);
+  border-right: 0.5px solid var(--border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 18px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.logo-badge {
+  display: inline-block;
+  background: var(--gold-bg);
+  border: 0.5px solid var(--gold-dim);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.sidebar-logo h1 {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.sidebar-logo p {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+.nav-section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 16px 20px 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  text-decoration: none;
+  color: var(--text2);
+  font-size: 12.5px;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: var(--bg3);
+}
+
+.nav-link.active {
+  color: var(--gold);
+  border-left-color: var(--gold);
+  background: var(--gold-bg);
+}
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text3);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.nav-link:hover .nav-dot, .nav-link.active .nav-dot {
+  background: var(--gold);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 0.5px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.8;
+}
+
+.confidential {
+  display: inline-block;
+  background: var(--red-bg);
+  color: var(--red);
+  border: 0.5px solid rgba(224,82,82,0.3);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+/* ── Main content ── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
+  border-bottom: 0.5px solid var(--border);
+  padding: 48px 56px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.meta-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 0.5px solid;
+}
+
+.mb-version { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-dim); }
+.mb-nra { background: var(--teal-bg); color: var(--teal); border-color: rgba(44,184,160,0.3); }
+.mb-bbae { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-dim); }
+
+.hero h2 {
+  font-family: var(--font-head);
+  font-size: 36px;
+  font-weight: 400;
+  color: #edf0f6;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.hero h2 span { color: var(--gold); font-style: italic; }
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.hero-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.hero-card {
+  background: var(--bg);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 14px 16px;
+}
+
+.hc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.hc-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.hc-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* ── Sections ── */
+.section {
+  padding: 52px 56px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.section:last-child { border-bottom: none; }
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold-dim);
+  letter-spacing: 0.1em;
+}
+
+.section-header h3 {
+  font-family: var(--font-head);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.section-divider {
+  flex: 1;
+  height: 0.5px;
+  background: var(--border);
+}
+
+/* ── Cards & blocks ── */
+.card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r2);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+}
+
+.card.gold-accent { border-left: 3px solid var(--gold); }
+.card.red-accent { border-left: 3px solid var(--red); }
+.card.green-accent { border-left: 3px solid var(--green); }
+.card.blue-accent { border-left: 3px solid var(--blue); }
+.card.teal-accent { border-left: 3px solid var(--teal); }
+.card.purple-accent { border-left: 3px solid var(--purple); }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--bg3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 0.5px solid var(--border2);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg3); }
+
+.mono { font-family: var(--font-mono); }
+.gold { color: var(--gold); }
+.blue { color: var(--blue); }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.teal { color: var(--teal); }
+.amber { color: var(--amber); }
+.purple { color: var(--purple); }
+.muted { color: var(--text2); }
+.dim { color: var(--text3); }
+
+/* ── Tags ── */
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 0.5px solid;
+  letter-spacing: 0.05em;
+}
+.tag-gold { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-dim); }
+.tag-blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-dim); }
+.tag-red { background: var(--red-bg); color: var(--red); border-color: rgba(224,82,82,0.3); }
+.tag-green { background: var(--green-bg); color: var(--green); border-color: rgba(46,168,122,0.3); }
+.tag-teal { background: var(--teal-bg); color: var(--teal); border-color: rgba(44,184,160,0.3); }
+.tag-amber { background: var(--amber-bg); color: var(--amber); border-color: rgba(212,136,74,0.3); }
+.tag-purple { background: var(--purple-bg); color: var(--purple); border-color: rgba(139,111,212,0.3); }
+
+/* ── Alert boxes ── */
+.alert {
+  border: 0.5px solid;
+  border-radius: var(--r);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alert-icon {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.alert-warn {
+  background: var(--amber-bg);
+  border-color: rgba(212,136,74,0.25);
+  color: var(--text2);
+}
+.alert-warn .alert-icon { background: var(--amber-bg); color: var(--amber); }
+
+.alert-danger {
+  background: var(--red-bg);
+  border-color: rgba(224,82,82,0.25);
+  color: var(--text2);
+}
+.alert-danger .alert-icon { background: var(--red-bg); color: var(--red); }
+
+.alert-info {
+  background: var(--blue-bg);
+  border-color: rgba(74,143,232,0.25);
+  color: var(--text2);
+}
+.alert-info .alert-icon { background: var(--blue-bg); color: var(--blue); }
+
+.alert-success {
+  background: var(--green-bg);
+  border-color: rgba(46,168,122,0.25);
+  color: var(--text2);
+}
+.alert-success .alert-icon { background: var(--green-bg); color: var(--green); }
+
+/* ── Push notification template ── */
+.push-demo {
+  background: var(--bg);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--r2);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.push-header {
+  background: var(--gold-bg);
+  border-bottom: 0.5px solid var(--border2);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.push-header-title {
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.push-id { color: var(--text3); font-size: 10px; }
+
+.push-body { padding: 18px; }
+
+.push-row {
+  display: flex;
+  gap: 0;
+  padding: 4px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.push-row:last-child { border-bottom: none; }
+
+.push-key {
+  width: 200px;
+  min-width: 200px;
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.push-val { color: var(--text); font-size: 12px; }
+
+.push-val.highlight { color: var(--gold); font-weight: 500; }
+.push-val.new-field { color: var(--teal); }
+
+.new-field-marker {
+  display: inline-block;
+  background: var(--teal-bg);
+  color: var(--teal);
+  border: 0.5px solid rgba(44,184,160,0.3);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: 6px;
+  letter-spacing: 0.08em;
+}
+
+/* ── Target cards ── */
+.target-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.target-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+.target-header {
+  padding: 14px 18px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.target-ticker {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.target-name {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.target-strategy {
+  font-size: 11px;
+  color: var(--text2);
+  text-align: right;
+}
+
+.target-body { padding: 16px 18px; }
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 12.5px;
+}
+
+.param-row:last-child { border-bottom: none; }
+.param-key { color: var(--text3); }
+.param-val { font-family: var(--font-mono); color: var(--text); font-size: 12px; }
+.param-val.em { color: var(--gold); }
+
+.target-footer {
+  background: var(--bg3);
+  padding: 10px 18px;
+  font-size: 11.5px;
+  color: var(--text2);
+  border-top: 0.5px solid var(--border);
+  line-height: 1.5;
+}
+
+.target-card-full {
+  grid-column: 1 / -1;
+}
+
+/* ── IBIT state matrix ── */
+.state-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.state-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+
+.state-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.state-def {
+  font-size: 11.5px;
+  color: var(--text2);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.state-action {
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+/* ── Flow steps ── */
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.flow-step {
+  display: flex;
+  gap: 20px;
+  position: relative;
+}
+
+.flow-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 38px;
+  bottom: 0;
+  width: 0.5px;
+  background: var(--border2);
+}
+
+.flow-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.flow-content {
+  flex: 1;
+  padding-bottom: 24px;
+}
+
+.flow-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.flow-body {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+.checklist {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.checklist li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.checklist li::before {
+  content: '○';
+  font-family: var(--font-mono);
+  color: var(--text3);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ── Risk meters ── */
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.risk-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+}
+
+.risk-metric {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 8px 0 4px;
+}
+
+.risk-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.risk-desc { font-size: 12px; color: var(--text2); }
+
+.meter-bar {
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+/* ── Code block ── */
+.code-block {
+  background: var(--bg);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text2);
+}
+
+.code-block .kw { color: var(--blue); }
+.code-block .str { color: var(--green); }
+.code-block .num { color: var(--gold); }
+.code-block .key { color: var(--teal); }
+.code-block .cmt { color: var(--text3); }
+
+/* ── Two-col layout ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── Tax section ── */
+.tax-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 1fr;
+  gap: 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.tax-row:last-child { border-bottom: none; }
+
+.tax-cell {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-right: 0.5px solid var(--border);
+}
+
+.tax-cell:last-child { border-right: none; }
+
+.tax-header .tax-cell {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--bg3);
+}
+
+/* ── Appendix table ── */
+.appendix-wrap {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+/* ── Utils ── */
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-32 { margin-bottom: 32px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+
+p { margin-bottom: 10px; color: var(--text2); font-size: 13.5px; line-height: 1.7; }
+p:last-child { margin-bottom: 0; }
+
+h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 20px 0 10px;
+}
+
+ul, ol {
+  padding-left: 18px;
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+strong { color: var(--text); font-weight: 500; }
+
+@media print {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CONFIDENTIAL · SOP v2.0</div>
+    <h1>期权套利<br>操作手册</h1>
+    <p>KAISHANG · BBAE · NRA</p>
+  </div>
+
+  <div class="nav-section-label">核心流程</div>
+  <a href="#overview" class="nav-link active"><span class="nav-dot"></span>方案总览</a>
+  <a href="#filters" class="nav-link"><span class="nav-dot"></span>通用筛选器</a>
+  <a href="#push" class="nav-link"><span class="nav-dot"></span>商机推送模板</a>
+
+  <div class="nav-section-label">五大标的</div>
+  <a href="#crcl" class="nav-link"><span class="nav-dot"></span>CRCL · 事件驱动</a>
+  <a href="#hood" class="nav-link"><span class="nav-dot"></span>HOOD · 财报套利</a>
+  <a href="#coin" class="nav-link"><span class="nav-dot"></span>COIN · 跨市场</a>
+  <a href="#mstr" class="nav-link"><span class="nav-dot"></span>MSTR · 溢价回归</a>
+  <a href="#ibit" class="nav-link"><span class="nav-dot"></span>IBIT · 趋势备兑</a>
+
+  <div class="nav-section-label">运营管理</div>
+  <a href="#sop" class="nav-link"><span class="nav-dot"></span>决策执行 SOP</a>
+  <a href="#risk" class="nav-link"><span class="nav-dot"></span>风险控制 · 熔断</a>
+  <a href="#tax" class="nav-link"><span class="nav-dot"></span>NRA 税务合规</a>
+  <a href="#tech" class="nav-link"><span class="nav-dot"></span>系统技术规格</a>
+  <a href="#appendix" class="nav-link"><span class="nav-dot"></span>附录 · 参数配置表</a>
+
+  <div class="sidebar-footer">
+    <div class="confidential">CONFIDENTIAL</div><br>
+    仅供账户持有人使用<br>
+    2026-03-30 · v2.0
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MAIN
+══════════════════════════════════════ -->
+<main class="main">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-meta">
+    <span class="meta-badge mb-version">V 2.0 FINAL</span>
+    <span class="meta-badge mb-nra">NRA 身份</span>
+    <span class="meta-badge mb-bbae">BBAE 账户</span>
+  </div>
+  <h2>期权套利<br><span>自动化商机</span>操作手册</h2>
+  <p class="hero-sub">综合十大 AI 方案精华，整合最佳商机推送模板、执行 SOP、风控熔断机制及 NRA 税务合规要求。以自动化监控为引擎，赚取权利金为核心目标。</p>
+  <div class="hero-cards">
+    <div class="hero-card">
+      <div class="hc-label">账户持有人</div>
+      <div class="hc-value">KAISHANG</div>
+      <div class="hc-sub">中国国籍</div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-label">资金规模</div>
+      <div class="hc-value">$10万–$100万</div>
+      <div class="hc-sub">美元</div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-label">扫描频率</div>
+      <div class="hc-value">15 min</div>
+      <div class="hc-sub">09:30–16:00 ET</div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-label">监控标的</div>
+      <div class="hc-value">5 个</div>
+      <div class="hc-sub">CRCL HOOD COIN MSTR IBIT</div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-label">年化目标</div>
+      <div class="hc-value">12%–25%</div>
+      <div class="hc-sub">视波动率而定</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 1: OVERVIEW ── -->
+<section class="section" id="overview">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h3>方案概述与核心逻辑</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>本手册以自动化监控系统（每 15 分钟扫描）为基础，针对 CRCL、HOOD、COIN、MSTR、IBIT 五个标的，按照既定规则推送交易机会，最终由您评估决定是否执行。核心策略为<strong>期权卖方收权利金 + 波动率套利 + 事件驱动</strong>，三者结合实现持续稳定的现金流收益。</p>
+
+  <div class="three-col mt-16 mb-24">
+    <div class="card gold-accent">
+      <div class="card-title">策略核心</div>
+      <div style="font-size: 15px; font-weight: 500; color: var(--gold); margin-bottom: 8px;">卖出期权 · 收取权利金</div>
+      <p>利用期权时间价值（Theta）天然衰减，在高 IV 环境下以卖方身份入场，赚取权利金的系统性收益。</p>
+    </div>
+    <div class="card blue-accent">
+      <div class="card-title">波动率套利</div>
+      <div style="font-size: 15px; font-weight: 500; color: var(--blue); margin-bottom: 8px;">IV 高估 · 做空恐慌</div>
+      <p>当隐含波动率（IV）相对历史均值或相关资产出现高估时，卖出被高估的期权，等待 IV 坍缩获利。</p>
+    </div>
+    <div class="card teal-accent">
+      <div class="card-title">事件驱动</div>
+      <div style="font-size: 15px; font-weight: 500; color: var(--teal); margin-bottom: 8px;">财报 · 立法 · 监管</div>
+      <p>在重大事件前 IV 膨胀至高点时入场，利用事件后的 IV 坍缩和时间价值快速衰减实现收益。</p>
+    </div>
+  </div>
+
+  <div class="alert alert-info">
+    <div class="alert-icon">ℹ</div>
+    <div>本手册整合了十份 AI 方案的最优元素：Claude 的完整推送字段、Qwen 的 OI 流动性筛选与 CRCL 上市前置确认、ChatGPT 的 JSON 标准化输出结构、Grok 的操作 Checklist 与推送 ID 机制、Gemini 的顾问视角风险建议、Kimi 的 IBIT 趋势自适应框架，并修正了部分方案中 NRA 税务处理的严重错误。</div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: FILTERS ── -->
+<section class="section" id="filters">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h3>通用筛选器（系统强制执行）</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>以下筛选条件适用于全部五个标的，任意一条不满足即不推送该合约。此为系统硬性过滤逻辑，不可绕过。</p>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>筛选维度</th>
+            <th>参数设定</th>
+            <th>技术说明</th>
+            <th>来源优化</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>到期日（DTE）</strong></td>
+            <td><span class="mono gold">7 – 45 天</span></td>
+            <td class="muted">平衡时间价值衰减效率与防御空间；低于7天 Gamma 风险过大，高于45天 Theta 衰减过慢</td>
+            <td><span class="tag tag-gold">基础方案</span></td>
+          </tr>
+          <tr>
+            <td><strong>买卖价差（Spread）</strong></td>
+            <td><span class="mono gold">≤ 权利金中值的 20%</span></td>
+            <td class="muted">控制滑点；开仓即面临过大价差等同于隐性损耗</td>
+            <td><span class="tag tag-gold">基础方案</span></td>
+          </tr>
+          <tr>
+            <td><strong>未平仓量（OI）</strong></td>
+            <td><span class="mono gold">&gt; 1,000 张</span></td>
+            <td class="muted">确保合约有足够市场深度，防止持仓后无法按合理价格平仓</td>
+            <td><span class="tag tag-blue">Qwen 新增</span></td>
+          </tr>
+          <tr>
+            <td><strong>日成交量（Volume）</strong></td>
+            <td><span class="mono gold">≥ 100 张</span></td>
+            <td class="muted">辅助流动性验证；低成交量期权价格可能被操纵</td>
+            <td><span class="tag tag-teal">ChatGPT 新增</span></td>
+          </tr>
+          <tr>
+            <td><strong>Delta 范围</strong></td>
+            <td><span class="mono gold">卖Put: -0.10 ~ -0.25 | 卖Call: +0.10 ~ +0.25</span></td>
+            <td class="muted">确保在虚值区间，平衡权利金收入与被行权概率；Delta 越大越容易被行权</td>
+            <td><span class="tag tag-teal">ChatGPT 新增</span></td>
+          </tr>
+          <tr>
+            <td><strong>期权类型</strong></td>
+            <td><span class="mono gold">仅标准美式期权</span></td>
+            <td class="muted">排除奇异期权、结构性产品，避免复杂条款风险</td>
+            <td><span class="tag tag-gold">基础方案</span></td>
+          </tr>
+          <tr>
+            <td><strong>交易时段</strong></td>
+            <td><span class="mono gold">09:30 – 16:00 ET（仅正常交易时段）</span></td>
+            <td class="muted">盘前盘后流动性不足，价差放大，严禁在此时段推送或执行</td>
+            <td><span class="tag tag-gold">基础方案</span></td>
+          </tr>
+          <tr>
+            <td><strong>IV Rank 基准</strong></td>
+            <td><span class="mono gold">≥ 50%（全局底线）</span></td>
+            <td class="muted">IV 低于历史中位数时不应卖出期权；各标的另有更高阈值要求</td>
+            <td><span class="tag tag-teal">ChatGPT 新增</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-icon">!</div>
+    <div><strong>CRCL 上市前置确认（Qwen 提出）：</strong>由于 CRCL 为新上市公司，系统在推送前必须自动校验该标的期权链已正式在 BBAE 开通交易权限。若未确认，系统屏蔽所有 CRCL 推送，并将资金权重临时分配至 COIN 或 MSTR，直至确认可交易。</div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: PUSH TEMPLATE ── -->
+<section class="section" id="push">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h3>商机推送模板（完整版）</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>每条推送须包含以下 <strong>12 项核心字段</strong>，缺失任意一项视为无效信号，系统不得推送。标注 <span class="tag tag-teal" style="font-size:9px">新增</span> 的字段为对原始 DeepSeek 方案的关键补充。</p>
+
+  <div class="push-demo mb-24">
+    <div class="push-header">
+      <span class="push-header-title">▶ 期权套利商机推送 · 示例</span>
+      <span class="push-id">PUSH-ID: CRCL_20260330_1015_042</span>
+    </div>
+    <div class="push-body">
+      <div class="push-row">
+        <span class="push-key">推送时间戳</span>
+        <span class="push-val new-field">2026-03-30 10:15 ET<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">入场有效窗口</span>
+        <span class="push-val new-field">10:15 – 10:45 ET（30分钟内有效）<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">标的代码</span>
+        <span class="push-val">CRCL · Circle Internet Group</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">标的当前市价</span>
+        <span class="push-val new-field">$28.50<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">策略类型</span>
+        <span class="push-val">卖出虚值看跌期权（Short OTM Put）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">行权价</span>
+        <span class="push-val">$24.00（当前价下方 -15.8%）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">到期日</span>
+        <span class="push-val">2026-04-04（距今 3 个交易日）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">期权建议开仓价</span>
+        <span class="push-val new-field">$1.20 – $1.40，建议限价 $1.30（买卖中值）<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">权利金 / 保证金</span>
+        <span class="push-val">$1.30 / $2,400（BBAE 估算，以平台实时计算为准）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">持有期收益率</span>
+        <span class="push-val highlight">5.4%（$1.30 ÷ $2,400）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">年化收益率（参考）</span>
+        <span class="push-val new-field highlight">≈ 657%（5.4% ÷ 3天 × 365，供资金时间成本参考）<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">Delta / 盈利概率（POP）</span>
+        <span class="push-val new-field">Delta: -0.18 | POP: 约 78%<span class="new-field-marker">新增</span></span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">触发逻辑</span>
+        <span class="push-val">IV Rank = 85%（&gt;阈值80%）；立法投票日 = T+2（≤5个交易日）</span>
+      </div>
+      <div class="push-row">
+        <span class="push-key">风险提示</span>
+        <span class="push-val">若CRCL收盘跌幅 &gt;5%，该标的卖出开仓自动暂停；跌破行权价需评估平仓止损</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="alert alert-success">
+      <div class="alert-icon">✓</div>
+      <div><strong>推送有效性规则：</strong>若当前市场报价与推送时权利金偏离超过 <span class="mono gold">10%</span>，系统在推送中自动标注"价格已漂移"，客户应放弃本次机会，等待下一轮扫描。严禁追价市价下单。</div>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-icon">ℹ</div>
+      <div><strong>推送渠道优先级：</strong>Discord / Telegram 推送（推荐）→ 邮件备份 → App 弹窗。每条推送含唯一 Push-ID，系统自动记录，防止同一合约当日重复推送。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: TARGETS ── -->
+<section class="section" id="crcl">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h3>五大标的执行规则</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <!-- CRCL -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span class="tag tag-gold" style="font-size:14px;padding:4px 14px;letter-spacing:0.08em;">CRCL</span>
+    <span style="font-size:13px;color:var(--text2);">Circle Internet Group · 事件驱动高 IV 卖 Put</span>
+  </div>
+
+  <div class="alert alert-warn mb-16">
+    <div class="alert-icon">!</div>
+    <div><strong>前置确认（必做）：</strong>交易前系统必须自动校验 CRCL 已正式上市且 BBAE 期权链已开通。否则自动屏蔽该标的，不得手动绕过。</div>
+  </div>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead><tr><th>参数项</th><th>设定值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>监控指标 A</strong></td><td><span class="mono gold">IV Rank（20日百分位）</span></td><td class="muted">当前IV在过去20日区间中的相对位置</td></tr>
+          <tr><td><strong>触发条件 A</strong></td><td><span class="mono gold">IV Rank &gt; 80%</span></td><td class="muted">IV处于历史高位，期权被市场恐慌显著高估</td></tr>
+          <tr><td><strong>触发条件 B</strong></td><td><span class="mono gold">距下一重大事件 ≤ 5 个交易日</span></td><td class="muted">立法投票、财报、监管决议等</td></tr>
+          <tr><td><strong>策略</strong></td><td><span class="mono green">卖出虚值 Put（Short OTM Put）</span></td><td class="muted">做空市场恐慌情绪，赚取权利金快速衰减</td></tr>
+          <tr><td><strong>行权价</strong></td><td><span class="mono gold">当前价 × (1 − 15% ~ 20%)</span></td><td class="muted">Delta 目标 -0.15 ~ -0.25</td></tr>
+          <tr><td><strong>到期日</strong></td><td><span class="mono gold">事件后第一个到期日（≤ 7天）</span></td><td class="muted">事件后 IV 坍缩，权利金快速衰减至最大化</td></tr>
+          <tr><td><strong>单次最大敞口</strong></td><td><span class="mono gold">总资金 5%（保证金计）</span></td><td class="muted">裸卖期权需严格控制单标的集中度</td></tr>
+          <tr><td><strong>最低收益率</strong></td><td><span class="mono gold">权利金 / 保证金 ≥ 5%</span></td><td class="muted">持有至到期或事件后立即平仓</td></tr>
+          <tr><td><strong>入场时间建议</strong></td><td><span class="mono gold">09:30 – 11:00 ET（开盘后1.5小时）</span></td><td class="muted">避免午市流动性低谷（11:30–13:00）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-danger mb-32">
+    <div class="alert-icon">⚠</div>
+    <div><strong>操作要点：</strong>CRCL 对加密监管政策高度敏感，立法投票前后 IV 波动剧烈。事件结束后应尽快平仓锁利（不要等到到期），以规避事件结果超预期带来的 Gamma 风险。若 CRCL 单日跌幅 &gt;5%，系统自动暂停该标的所有推送。</div>
+  </div>
+</section>
+
+<!-- HOOD -->
+<section class="section" id="hood" style="padding-top:0;border-top:0.5px dashed var(--border);">
+  <div style="height:52px;"></div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span class="tag tag-blue" style="font-size:14px;padding:4px 14px;letter-spacing:0.08em;">HOOD</span>
+    <span style="font-size:13px;color:var(--text2);">Robinhood Markets · 财报前 IV 套利（铁鹰策略）</span>
+  </div>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead><tr><th>参数项</th><th>设定值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>触发条件 A</strong></td><td><span class="mono gold">IV / IV_20d_avg ≥ 1.5</span></td><td class="muted">当前IV显著高于20日均值，财报前恐慌溢价</td></tr>
+          <tr><td><strong>触发条件 B</strong></td><td><span class="mono gold">距财报日 10 – 21 天</span></td><td class="muted">过早IV尚未膨胀；财报前3天Gamma风险过大</td></tr>
+          <tr><td><strong>策略</strong></td><td><span class="mono green">铁鹰策略（Iron Condor）</span></td><td class="muted">同时卖出虚值Put价差+虚值Call价差，方向中性</td></tr>
+          <tr><td><strong>Put 行权价（空头）</strong></td><td><span class="mono gold">当前价下方 12% – 18%（支撑位）</span></td><td class="muted">Delta: -0.15</td></tr>
+          <tr><td><strong>Call 行权价（空头）</strong></td><td><span class="mono gold">当前价上方 12% – 18%（阻力位）</span></td><td class="muted">Delta: +0.15</td></tr>
+          <tr><td><strong>翼宽（Wing Width）</strong></td><td><span class="mono gold">5% – 10%（限制最大亏损）</span></td><td class="muted">最大亏损 = 翼宽 − 净权利金</td></tr>
+          <tr><td><strong>到期日</strong></td><td><span class="mono gold">财报后第一个周五（覆盖财报日）</span></td><td class="muted">财报公布后 IV 坍缩获利</td></tr>
+          <tr><td><strong>单次最大敞口</strong></td><td><span class="mono gold">总资金 10%（价差策略）</span></td><td class="muted">铁鹰有最大亏损上限，可适当放宽</td></tr>
+          <tr><td><strong>最低收益率</strong></td><td><span class="mono gold">最大收益 / 保证金 ≥ 8%</span></td><td class="muted">铁鹰的最大收益即为净权利金</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-warn mb-32">
+    <div class="alert-icon">!</div>
+    <div><strong>操作要点：</strong>铁鹰建立后，若 HOOD 单边突破行权价范围 70% 以上，应考虑提前平仓止损，而非持有到期。严禁财报前 3 天内新建仓位，此时 Gamma 风险极高，权利金的时间价值已无法弥补方向风险。最大亏损 = 翼宽 − 净权利金，需提前计算清楚再决策。</div>
+  </div>
+</section>
+
+<!-- COIN -->
+<section class="section" id="coin" style="padding-top:0;border-top:0.5px dashed var(--border);">
+  <div style="height:52px;"></div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span class="tag tag-teal" style="font-size:14px;padding:4px 14px;letter-spacing:0.08em;">COIN</span>
+    <span style="font-size:13px;color:var(--text2);">Coinbase Global · 跨市场波动率套利</span>
+  </div>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead><tr><th>参数项</th><th>设定值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>触发条件 A</strong></td><td><span class="mono gold">IV_COIN / IV_BTC ≥ 1.3</span></td><td class="muted">COIN波动率相对BTC显著高估，存在套利空间</td></tr>
+          <tr><td><strong>触发条件 B</strong></td><td><span class="mono gold">COIN 价格未破前期低点</span></td><td class="muted">确认多头基础，避免趋势性下跌</td></tr>
+          <tr><td><strong>策略</strong></td><td><span class="mono green">卖出 COIN Put + 买入 BTC Put（Delta 中性对冲）</span></td><td class="muted">卖出高估资产波动率，用低估资产对冲下行风险</td></tr>
+          <tr><td><strong>COIN Put 行权价</strong></td><td><span class="mono gold">当前价下方 10% – 15%</span></td><td class="muted">Delta: -0.20</td></tr>
+          <tr><td><strong>BTC Put 行权价</strong></td><td><span class="mono gold">按 Beta 折算等 Delta（组合 |Delta| &lt; 0.1）</span></td><td class="muted">BTC Put 规模 = COIN Put 规模 × Beta系数</td></tr>
+          <tr><td><strong>到期日</strong></td><td><span class="mono gold">两腿相同，约 30 天</span></td><td class="muted">对冲有效期需一致</td></tr>
+          <tr><td><strong>最低收益率</strong></td><td><span class="mono gold">权利金净收入 / 保证金 ≥ 3%（30天）</span></td><td class="muted">扣除对冲成本后的净收益率</td></tr>
+          <tr><td><strong>再平衡频率</strong></td><td><span class="mono gold">每 3 天最多一次</span></td><td class="muted">控制再平衡的交易成本，不要过度调仓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-warn mb-32">
+    <div class="alert-icon">!</div>
+    <div><strong>操作要点：</strong>此策略依赖 COIN/BTC 的 IV 差值稳定存在。若 BTC 发生重大利空事件（监管打压、鲸鱼砸盘），两者 IV 将同步飙升，对冲效果显著减弱。BTC 单日波动 &gt;5% 时，系统自动暂停 COIN 新仓位推送。组合 Delta 目标绝对值 &lt;0.1，若偏离超过 0.15 应及时调仓。</div>
+  </div>
+</section>
+
+<!-- MSTR -->
+<section class="section" id="mstr" style="padding-top:0;border-top:0.5px dashed var(--border);">
+  <div style="height:52px;"></div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span class="tag tag-amber" style="font-size:14px;padding:4px 14px;letter-spacing:0.08em;">MSTR</span>
+    <span style="font-size:13px;color:var(--text2);">Strategy Inc. · NAV 溢价回归卖 Call</span>
+  </div>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead><tr><th>参数项</th><th>设定值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>触发条件 A</strong></td><td><span class="mono gold">NAV Premium ≥ 2.5 倍</span></td><td class="muted">MSTR市值远超其BTC持仓净资产价值，极端高估</td></tr>
+          <tr><td><strong>触发条件 B</strong></td><td><span class="mono gold">IV Rank &gt; 70%</span></td><td class="muted">IV处于高位，权利金被高估，卖方有利</td></tr>
+          <tr><td><strong>策略（首选）</strong></td><td><span class="mono green">备兑 Call（Covered Call）</span></td><td class="muted">持有正股时优先使用，无方向性亏损风险</td></tr>
+          <tr><td><strong>策略（次选）</strong></td><td><span class="mono amber">裸卖 Call（Naked Call）</span></td><td class="muted">无正股时可用，但风险理论无上限，须严格控仓</td></tr>
+          <tr><td><strong>行权价</strong></td><td><span class="mono gold">当前价上方 10% – 15%</span></td><td class="muted">Delta: +0.15，博弈溢价率在上涨中回落</td></tr>
+          <tr><td><strong>到期日</strong></td><td><span class="mono gold">30 天</span></td><td class="muted">短期持有，快速收取时间价值</td></tr>
+          <tr><td><strong>裸卖单次敞口上限</strong></td><td><span class="mono gold">总资金 3%（须额外预留 30% 保证金准备金）</span></td><td class="muted">裸Call亏损无上限，仓位必须极度保守</td></tr>
+          <tr><td><strong>最低收益率（备兑）</strong></td><td><span class="mono gold">权利金 / 股价 ≥ 3%（30天）</span></td><td class="muted">年化约36%</td></tr>
+          <tr><td><strong>最低收益率（裸卖）</strong></td><td><span class="mono gold">权利金 / 保证金 ≥ 4%（30天）</span></td><td class="muted">补偿裸卖额外风险</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-danger mb-32">
+    <div class="alert-icon">⚠</div>
+    <div><strong>高风险提示：</strong>裸卖 Call 为本手册中风险最高的操作。若 BTC 突破历史新高，MSTR NAV 溢价可能持续扩大，裸 Call 亏损理论无上限。当 BTC 单日涨幅 &gt;8% 时，系统自动暂停 MSTR 新仓位推送。<strong>强烈建议持有正股后使用备兑 Call，而非裸卖。</strong></div>
+  </div>
+</section>
+
+<!-- IBIT -->
+<section class="section" id="ibit" style="padding-top:0;border-top:0.5px dashed var(--border);">
+  <div style="height:52px;"></div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span class="tag tag-purple" style="font-size:14px;padding:4px 14px;letter-spacing:0.08em;">IBIT</span>
+    <span style="font-size:13px;color:var(--text2);">iShares Bitcoin Trust · 趋势自适应备兑开仓（Kimi 框架）</span>
+  </div>
+
+  <p style="margin-bottom:20px;">IBIT 策略采用 <strong>趋势自适应</strong> 框架，而非固定参数机械执行。市场状态每周评估一次，根据 BTC 价格与双均线关系，切换至对应策略模式。</p>
+
+  <!-- State matrix -->
+  <div class="state-grid mb-24">
+    <div class="state-card" style="border-color:rgba(212,168,67,0.3);background:var(--gold-bg);">
+      <div class="state-label gold">状态 A · 强势上涨（牛市）</div>
+      <div class="state-def">BTC &gt; 20日均线 &gt; 50日均线<br>且20日均线斜率向上</div>
+      <div class="state-action">
+        <div style="font-size:12px;color:var(--text);">备兑开仓：<strong class="gold">暂停或极保守</strong></div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">如必须操作，行权价 +25%~+30%，选45–60天合约</div>
+        <div style="font-size:11.5px;color:var(--red);margin-top:4px;">裸卖Put：禁止</div>
+      </div>
+    </div>
+    <div class="state-card" style="border-color:rgba(74,143,232,0.3);background:var(--blue-bg);">
+      <div class="state-label blue">状态 B · 弱势上涨（震荡偏多）</div>
+      <div class="state-def">BTC &gt; 20日均线，但均线走平或略向下</div>
+      <div class="state-action">
+        <div style="font-size:12px;color:var(--text);">备兑开仓：<strong class="blue">正常操作</strong></div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">行权价 +15%~+20%，30–45天合约</div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">裸卖Put：仅限20日均线附近回调，行权价-8%~-10%</div>
+      </div>
+    </div>
+    <div class="state-card" style="border-color:rgba(44,184,160,0.3);background:var(--teal-bg);">
+      <div class="state-label teal">状态 C · 弱势下跌（震荡偏空）</div>
+      <div class="state-def">BTC &lt; 20日均线，但 &gt; 50日均线</div>
+      <div class="state-action">
+        <div style="font-size:12px;color:var(--text);">备兑开仓：<strong class="teal">积极操作</strong></div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">行权价 +10%~+15%，30天以内合约</div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">配置保护性Put（-5%~-10%），如跌破关键支撑</div>
+      </div>
+    </div>
+    <div class="state-card" style="border-color:rgba(224,82,82,0.3);background:var(--red-bg);">
+      <div class="state-label red">状态 D · 强势下跌（熊市）</div>
+      <div class="state-def">BTC &lt; 20日均线 &lt; 50日均线<br>且20日均线向下</div>
+      <div class="state-action">
+        <div style="font-size:12px;color:var(--text);">备兑开仓：<strong class="red">暂停</strong></div>
+        <div style="font-size:11.5px;color:var(--red);margin-top:4px;">裸卖Put：禁止（接飞刀）</div>
+        <div style="font-size:11.5px;color:var(--text2);margin-top:4px;">必须配置保护性Put（行权价-10%~-15%，60–90天）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IBIT detailed params -->
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead><tr><th>市场状态</th><th>备兑行权价偏移</th><th>合约期限</th><th>月化目标</th><th>裸卖 Put</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="gold">强势上涨 A</span></td>
+            <td><span class="mono">+25% ~ +30%（或暂停）</span></td>
+            <td><span class="mono">45 – 60 天</span></td>
+            <td><span class="mono">1% – 2%</span></td>
+            <td><span class="red">禁止</span></td>
+          </tr>
+          <tr>
+            <td><span class="blue">弱势上涨 B</span></td>
+            <td><span class="mono">+15% ~ +20%</span></td>
+            <td><span class="mono">30 – 45 天</span></td>
+            <td><span class="mono">2% – 3%</span></td>
+            <td class="muted">回调至20日均线附近 -8%~-10%，最多2张</td>
+          </tr>
+          <tr>
+            <td><span class="teal">弱势下跌 C</span></td>
+            <td><span class="mono">+10% ~ +15%</span></td>
+            <td><span class="mono">21 – 30 天</span></td>
+            <td><span class="mono">3% – 4%</span></td>
+            <td class="muted">仅在 $32–$38 强支撑区 + IV&gt;70%</td>
+          </tr>
+          <tr>
+            <td><span class="red">强势下跌 D</span></td>
+            <td><span class="mono red">暂停</span></td>
+            <td><span class="mono">—</span></td>
+            <td><span class="mono">—</span></td>
+            <td><span class="red">禁止</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="two-col mb-24">
+    <div class="card purple-accent">
+      <div class="card-title">备兑滚动触发条件</div>
+      <div class="param-row"><span class="param-key">持仓条件</span><span class="param-val em">当前持有 IBIT 正股</span></div>
+      <div class="param-row"><span class="param-key">剩余天数</span><span class="param-val em">≤ 7 天到期</span></div>
+      <div class="param-row"><span class="param-key">时间价值</span><span class="param-val em">&lt; 初始权利金 20%</span></div>
+      <div class="param-row"><span class="param-key">滚动行权价</span><span class="param-val">当前价上方 5% ~ 8%</span></div>
+      <div class="param-row"><span class="param-key">新到期日</span><span class="param-val">下月第三个周五</span></div>
+      <div class="param-row"><span class="param-key">最低月度收益率</span><span class="param-val em">月度权利金 / 正股市值 ≥ 2%</span></div>
+      <div class="param-row"><span class="param-key">最佳执行时段</span><span class="param-val">周四 15:00 或 周五 14:30 ET</span></div>
+    </div>
+    <div class="card red-accent">
+      <div class="card-title">黑天鹅对冲（Kimi 框架新增）</div>
+      <div class="param-row"><span class="param-key">对冲工具</span><span class="param-val em">买入深度虚值 Put</span></div>
+      <div class="param-row"><span class="param-key">行权价区间</span><span class="param-val">$20 – $25（极深虚值）</span></div>
+      <div class="param-row"><span class="param-key">期限</span><span class="param-val">180 – 365 天</span></div>
+      <div class="param-row"><span class="param-key">年度预算</span><span class="param-val em">年度权利金收入 10%</span></div>
+      <div class="param-row"><span class="param-key">触发场景</span><span class="param-val">BTC 单日暴跌 &gt;20%</span></div>
+      <div class="param-row"><span class="param-key">续期规则</span><span class="param-key">到期前不展期（避免持续消耗保费）</span></div>
+    </div>
+  </div>
+
+  <div class="alert alert-info mb-0">
+    <div class="alert-icon">ℹ</div>
+    <div><strong>实际成本管理公式：</strong>实际成本 = 原始成本 − 累计权利金收入 ÷ 总股数。12个月目标：将实际持仓成本降低 $5 以上。BTC 牛市时，优先保留正股上涨红利，减少备兑频率，不要为了收租而错失主升浪。</div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: SOP ── -->
+<section class="section" id="sop">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h3>决策执行标准流程（SOP）</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>每次接收推送后，严格按照以下四步执行，不得跳步。每条推送有效窗口为 <span class="mono gold">30 分钟</span>，超时自动失效，等待下一轮扫描。</p>
+
+  <div class="flow-steps mt-16">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">接收推送 · 即时校验</div>
+        <div class="flow-body">
+          <p>确认推送包含全部 12 项字段。如有缺失，视为无效信号，不执行。核对 Push-ID，确认非重复推送。</p>
+          <ul class="checklist">
+            <li>推送时间戳是否在当前交易时段（09:30–16:00 ET）</li>
+            <li>标的代码与策略类型是否匹配</li>
+            <li>标的当前市价与建议开仓价是否均已填写</li>
+            <li>持有期收益率与年化收益率是否均已列示</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">30 秒快速评估（三问确认法）</div>
+        <div class="flow-body">
+          <p>以下三个问题，任意一个答案为「否/超限」，放弃本次推送：</p>
+          <ul class="checklist">
+            <li><strong>资金问题：</strong>当前总保证金占用是否 ≤ 账户净资产 50%？</li>
+            <li><strong>逻辑问题：</strong>推送逻辑是否仍然成立？（过去1小时是否出现未计入规则的重大负面新闻？）</li>
+            <li><strong>冲突检查：</strong>是否与现有持仓方向冲突？（如已持有大量 COIN 正股，不宜继续卖 COIN Put）</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">执行下单</div>
+        <div class="flow-body">
+          <p>登录 BBAE 账户，核对实时报价与推送价格偏差。</p>
+          <ul class="checklist">
+            <li>价格偏差 &lt;10%：按推送参数以<strong>限价单（Limit Order）</strong>执行，挂单价格 = 买卖中值</li>
+            <li>价格偏差 ≥ 10%：放弃本次机会，等待下一轮扫描，<strong>严禁市价追单</strong></li>
+            <li>下单后3分钟未成交：撤单，不调价，等待下一轮推送</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">持仓管理 · 每日扫描</div>
+        <div class="flow-body">
+          <p>系统每日收盘后（16:30 ET）自动推送持仓扫描报告，包含权利金衰减比例和浮动盈亏。</p>
+          <ul class="checklist">
+            <li>权利金已衰减 <strong>70%–80%</strong>：系统推送「建议平仓」，锁利了结，释放保证金</li>
+            <li>剩余 DTE ≤ 3 天：建议平仓，不承担最后几天的 Gamma 爆炸风险</li>
+            <li>Delta 偏移至 &gt;0.35：推送警告，评估是否调整或对冲</li>
+            <li>标的单日波动 &gt;5%：推送风险预警，暂停该标的新开仓推送</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col mt-24">
+    <div class="card">
+      <div class="card-title">每日操作 Checklist（16:30 ET 收盘后）</div>
+      <ul class="checklist">
+        <li>查看持仓扫描报告，确认各仓位盈亏状态</li>
+        <li>权利金衰减 &gt;70% 的仓位，次日开盘前挂平仓单</li>
+        <li>检查是否有 DTE ≤ 3 天的仓位需要处理</li>
+        <li>记录当日已推送和已执行的商机编号</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">每周操作 Checklist（周五收盘前）</div>
+      <ul class="checklist">
+        <li>检查 IBIT 备兑期权是否需要本周滚动</li>
+        <li>评估当前 BTC 趋势状态（A/B/C/D），更新 IBIT 策略参数</li>
+        <li>复盘本周所有推送命中率与实际收益率</li>
+        <li>确认账户现金余额 &gt; 总保证金 ×130%（缓冲区）</li>
+        <li>确认 NRA 税务记录：期权权利金无预扣税记录</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 6: RISK ── -->
+<section class="section" id="risk">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h3>风险管理与熔断机制</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="alert alert-danger mb-24">
+    <div class="alert-icon">⚠</div>
+    <div><strong>核心警告：</strong>期权卖方具备收益有限、亏损不对称的内在特征。以下所有风险控制规则为<strong>强制执行</strong>，系统不得因"即将止损"而给出任何例外放宽。规则失效的那一刻，往往就是最大亏损发生的那一刻。</div>
+  </div>
+
+  <!-- Position limits -->
+  <h4>仓位上限（系统强制）</h4>
+  <div class="risk-grid mb-24">
+    <div class="risk-card" style="border-color:rgba(212,168,67,0.3);">
+      <div class="risk-label gold">总保证金占用上限</div>
+      <div class="risk-metric gold">50%</div>
+      <div class="risk-desc">超过则系统停止所有新开仓推送，必须先平仓释放保证金</div>
+      <div class="meter-bar"><div class="meter-fill" style="width:50%;background:var(--gold);"></div></div>
+      <div style="font-size:11px;color:var(--text3);">建议日常保持 ≤ 30%</div>
+    </div>
+    <div class="risk-card" style="border-color:rgba(224,82,82,0.3);">
+      <div class="risk-label red">单一标的裸卖敞口</div>
+      <div class="risk-metric red">5%</div>
+      <div class="risk-desc">CRCL / COIN / MSTR 裸卖适用，超过则禁止该标的新开仓</div>
+      <div class="meter-bar"><div class="meter-fill" style="width:5%;background:var(--red);"></div></div>
+      <div style="font-size:11px;color:var(--text3);">MSTR 裸 Call 另有 3% 限制</div>
+    </div>
+    <div class="risk-card" style="border-color:rgba(74,143,232,0.3);">
+      <div class="risk-label blue">价差策略总敞口</div>
+      <div class="risk-metric blue">10%</div>
+      <div class="risk-desc">HOOD 铁鹰适用，价差策略有最大亏损上限，可适当放宽</div>
+      <div class="meter-bar"><div class="meter-fill" style="width:10%;background:var(--blue);"></div></div>
+      <div style="font-size:11px;color:var(--text3);">最大亏损 = 翼宽 − 净权利金</div>
+    </div>
+  </div>
+
+  <!-- Circuit breakers -->
+  <h4>三级熔断机制</h4>
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>熔断级别</th>
+            <th>触发条件</th>
+            <th>系统动作</th>
+            <th>恢复条件</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-amber">一级 · 标的预警</span></td>
+            <td>标的单日波动 <span class="mono gold">&gt; 5%</span></td>
+            <td>自动暂停该标的所有卖出开仓推送</td>
+            <td>波动率回落 + 价格企稳，由系统下次扫描自动恢复</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-amber">一级 · 单策略止损</span></td>
+            <td>单笔头寸亏损 <span class="mono gold">≥ 权利金收入 2 倍</span></td>
+            <td>推送「建议止损」警报，客户需 24 小时内决策</td>
+            <td>平仓后自动解除，记录亏损原因</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-red">二级 · 全面暂停</span></td>
+            <td>账户总回撤（含浮亏）<span class="mono gold">≥ 8%</span></td>
+            <td>系统进入全锁死，停止所有新开仓推送</td>
+            <td>客户人工确认，总回撤收窄至 4% 以内方可恢复</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-red">二级 · 裸卖紧急止损</span></td>
+            <td>MSTR裸Call / CRCL裸Put 亏损达初始保证金 <span class="mono gold">150%</span></td>
+            <td>推送强制平仓警报，无论客户意见如何</td>
+            <td>平仓后人工复盘，重新评估策略适用性</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-red">三级 · 黑天鹅应急</span></td>
+            <td>市场大盘单日跌幅 <span class="mono gold">&gt; 5%</span>（VIX &gt; 30）</td>
+            <td>关闭所有新推送，已持仓优先评估平仓或对冲</td>
+            <td>市场稳定2个交易日后，由客户决定是否恢复</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Margin management -->
+  <h4>保证金管理</h4>
+  <div class="card mb-0">
+    <div class="two-col">
+      <div>
+        <p>每笔交易前，确认 BBAE 实时可用保证金 &gt; 本次保证金需求 × <strong class="mono gold">1.30</strong>（预留 30% 缓冲区），以应对日内浮亏或平台实时计算偏差。</p>
+        <p>系统推送中的保证金估算仅供参考，实际以 BBAE 平台实时计算为准。</p>
+      </div>
+      <div>
+        <p>裸卖期权（CRCL / MSTR）须额外预留 <strong>30% 风险准备金</strong>，不得将保证金用至满仓。NRA 客户还需注意汇率波动对美元保证金的影响，建议预留额外 <strong>3%–5% 汇率缓冲</strong>。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 7: TAX ── -->
+<section class="section" id="tax">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h3>NRA 税务合规要点</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="alert alert-danger mb-24">
+    <div class="alert-icon">⚠</div>
+    <div><strong>重要警告：</strong>某些 AI 方案中存在「期权权利金收入需按美国个人所得税率（最高37%）缴税」的严重错误说法。该描述对 NRA 身份完全不适用，照此操作将导致不必要的巨额税务损失。以下为正确的 NRA 税务处理。</div>
+  </div>
+
+  <div class="appendix-wrap mb-24">
+    <div class="tax-row tax-header">
+      <div class="tax-cell">收入类型</div>
+      <div class="tax-cell">NRA 税务处理（正确）</div>
+      <div class="tax-cell">注意事项</div>
+    </div>
+    <div class="tax-row">
+      <div class="tax-cell"><strong>期权权利金收入</strong></div>
+      <div class="tax-cell green">通常<strong>免征美国联邦税</strong>，不触发30%预扣税，BBAE 不发 1099 表</div>
+      <div class="tax-cell muted">这是 NRA 身份进行期权交易的核心优势，但具体以 IRS 最新规定为准</div>
+    </div>
+    <div class="tax-row">
+      <div class="tax-cell"><strong>资本利得（正股买卖）</strong></div>
+      <div class="tax-cell green">NRA 通常<strong>免征美国资本利得税</strong>（短期/长期均适用）</div>
+      <div class="tax-cell muted">前提：不构成美国贸易/业务的实际关联收入</div>
+    </div>
+    <div class="tax-row">
+      <div class="tax-cell"><strong>IBIT 信托分配（分红）</strong></td>
+      <div class="tax-cell amber">可能被视为<strong>股息性质</strong>，适用 30% 预扣税（或中美税收协定优惠税率）</div>
+      <div class="tax-cell muted">IBIT 为信托结构，需关注每年分配的具体性质认定；建议咨询税务顾问</div>
+    </div>
+    <div class="tax-row">
+      <div class="tax-cell"><strong>股息替代支付</strong></td>
+      <div class="tax-cell amber">备兑策略中若涉及被行权期间的股息，可能产生<strong>股息替代款预扣税</strong></div>
+      <div class="tax-cell muted">概率较低，但需关注；期权权利金本身一般不适用预扣税</div>
+    </div>
+    <div class="tax-row">
+      <div class="tax-cell"><strong>申报表格</strong></td>
+      <div class="tax-cell muted">BBAE 不为 NRA 账户发 1099，但若存在预扣税情形可能发 <strong>1042-S 表格</strong></div>
+      <div class="tax-cell muted">建议每年留存所有交易记录，备查</div>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-icon">!</div>
+    <div><strong>免责声明：</strong>本节税务信息仅供参考，不构成专业税务建议</div>
+  </div>
+</section>
+
+<!-- ── SECTION 8: TECH ── -->
+<section class="section" id="tech">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h3>系统技术规格（供开发团队）</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>以下为自动化监控系统的功能需求和推送数据结构规格，可直接交付技术团队进行开发配置。</p>
+
+  <h4>系统扫描逻辑（伪代码）</h4>
+  <div class="code-block mb-24">
+<span class="cmt"># 每15分钟执行一次（仅在美股交易时段 09:30–16:00 ET）</span>
+<span class="kw">for</span> symbol <span class="kw">in</span> [<span class="str">"CRCL"</span>, <span class="str">"HOOD"</span>, <span class="str">"COIN"</span>, <span class="str">"MSTR"</span>, <span class="str">"IBIT"</span>]:
+    <span class="kw">if not</span> is_trading_hours(): <span class="kw">continue</span>
+    <span class="kw">if</span> symbol == <span class="str">"CRCL"</span> <span class="kw">and not</span> verify_options_chain_active(symbol):
+        <span class="cmt"># CRCL 期权链未开通 → 屏蔽推送，资金权重转移</span>
+        redirect_weight_to([<span class="str">"COIN"</span>, <span class="str">"MSTR"</span>]); <span class="kw">continue</span>
+
+    chain = fetch_option_chain(symbol, dte_min=<span class="num">7</span>, dte_max=<span class="num">45</span>)
+    chain = filter_liquidity(chain, spread_pct=<span class="num">0.20</span>, oi_min=<span class="num">1000</span>, volume_min=<span class="num">100</span>)
+    chain = filter_delta(chain, put_range=(<span class="num">-0.25</span>, <span class="num">-0.10</span>), call_range=(<span class="num">0.10</span>, <span class="num">0.25</span>))
+
+    iv_rank = calculate_iv_rank(symbol, lookback=<span class="num">20</span>)  <span class="cmt"># 20日百分位</span>
+    indicators = calculate_indicators(symbol)  <span class="cmt"># NAV_Premium, IV比值, 事件日历等</span>
+
+    <span class="kw">if</span> match_strategy_rules(symbol, chain, iv_rank, indicators):
+        signal = build_signal(symbol, chain)     <span class="cmt"># 构建完整12字段推送</span>
+        <span class="kw">if not</span> is_duplicate(signal.contract_id):  <span class="cmt"># 去重检查</span>
+            push_notification(signal)
+            log_signal(signal)                   <span class="cmt"># 记录推送ID</span>
+  </div>
+
+  <h4>标准化商机 JSON 输出格式（供 API / Discord 推送）</h4>
+  <div class="code-block mb-24">
+{
+  <span class="key">"push_id"</span>: <span class="str">"CRCL_20260330_1015_042"</span>,
+  <span class="key">"timestamp"</span>: <span class="str">"2026-03-30 10:15:00 ET"</span>,
+  <span class="key">"entry_window"</span>: <span class="str">"10:15 – 10:45 ET"</span>,
+  <span class="key">"symbol"</span>: <span class="str">"CRCL"</span>,
+  <span class="key">"underlying_price"</span>: <span class="num">28.50</span>,
+  <span class="key">"strategy"</span>: <span class="str">"SELL_PUT"</span>,
+  <span class="key">"expiry"</span>: <span class="str">"2026-04-04"</span>,
+  <span class="key">"strike"</span>: <span class="num">24.00</span>,
+  <span class="key">"option_bid"</span>: <span class="num">1.20</span>,
+  <span class="key">"option_ask"</span>: <span class="num">1.40</span>,
+  <span class="key">"execution_price"</span>: <span class="num">1.30</span>,       <span class="cmt">// 建议限价 = 买卖中值</span>
+  <span class="key">"contracts"</span>: <span class="num">1</span>,
+  <span class="key">"premium"</span>: <span class="num">130</span>,
+  <span class="key">"margin_estimate"</span>: <span class="num">2400</span>,
+  <span class="key">"return_on_margin"</span>: <span class="num">0.054</span>,       <span class="cmt">// 持有期收益率 5.4%</span>
+  <span class="key">"annualized_return"</span>: <span class="num">6.57</span>,       <span class="cmt">// 年化 657%（仅供资金时间成本参考）</span>
+  <span class="key">"delta"</span>: <span class="num">-0.18</span>,
+  <span class="key">"probability_of_profit"</span>: <span class="num">0.78</span>,    <span class="cmt">// POP 78%</span>
+  <span class="key">"oi"</span>: <span class="num">1842</span>,
+  <span class="key">"volume"</span>: <span class="num">356</span>,
+  <span class="key">"iv_rank"</span>: <span class="num">85</span>,
+  <span class="key">"trigger_logic"</span>: <span class="str">"IV Rank 85% > 80%; 立法投票日 T+2 ≤ 5天"</span>,
+  <span class="key">"risk_note"</span>: <span class="str">"CRCL单日跌>5%自动暂停推送"</span>
+}
+  </div>
+
+  <h4>数据源接入要求</h4>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">必须接入的数据源</div>
+      <ul style="list-style:none;padding:0;">
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 实时期权链（含 IV、Greeks、Bid/Ask）</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 标的实时价格 + 历史波动率（HV）</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ BTC 实时 IV（用于 COIN 跨市场比值）</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 事件日历（财报、立法投票、美联储决议）</li>
+        <li style="padding:5px 0;font-size:13px;color:var(--text2);">✓ MSTR 比特币持仓净资产（NAV Premium 计算）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">系统必须实现的功能</div>
+      <ul style="list-style:none;padding:0;">
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 每15分钟自动扫描，计算所有触发条件</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 标准 JSON 推送（支持 Discord / Telegram / Email）</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 推送去重（同一合约当日不重复推送）</li>
+        <li style="padding:5px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text2);">✓ 每日收盘持仓扫描（衰减70%+推送平仓建议）</li>
+        <li style="padding:5px 0;font-size:13px;color:var(--text2);">✓ 历史回测模块（验证规则过去12个月表现）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 9: APPENDIX ── -->
+<section class="section" id="appendix">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h3>附录 · 参数配置速查表</h3>
+    <div class="section-divider"></div>
+  </div>
+
+  <p>以下配置表为系统录入标准，可直接交付技术团队。</p>
+
+  <div class="table-wrap mb-24">
+    <div class="appendix-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>标的</th>
+            <th>指标 A</th>
+            <th>阈值 A</th>
+            <th>指标 B</th>
+            <th>阈值 B</th>
+            <th>策略</th>
+            <th>行权价偏移</th>
+            <th>到期日</th>
+            <th>最小收益率</th>
+            <th>OI 要求</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="mono gold" style="font-size:14px;">CRCL</span></td>
+            <td><span class="mono">IV Rank</span></td>
+            <td><span class="mono gold">&gt; 80%</span></td>
+            <td><span class="mono">事件天数</span></td>
+            <td><span class="mono gold">≤ 5天</span></td>
+            <td><span class="green">卖Put</span></td>
+            <td><span class="mono">−15% ~ −20%</span></td>
+            <td class="muted">事件后到期</td>
+            <td><span class="mono gold">5%</span></td>
+            <td><span class="mono">&gt; 1,000</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono blue" style="font-size:14px;">HOOD</span></td>
+            <td><span class="mono">IV / 20d均值</span></td>
+            <td><span class="mono gold">≥ 1.5</span></td>
+            <td><span class="mono">距财报日</span></td>
+            <td><span class="mono gold">10–21天</span></td>
+            <td><span class="green">铁鹰策略</span></td>
+            <td><span class="mono">±12% ~ ±18%</span></td>
+            <td class="muted">财报后周五</td>
+            <td><span class="mono gold">8%</span></td>
+            <td><span class="mono">&gt; 1,000</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono teal" style="font-size:14px;">COIN</span></td>
+            <td><span class="mono">IV_COIN / IV_BTC</span></td>
+            <td><span class="mono gold">≥ 1.3</span></td>
+            <td><span class="mono">价格未破前低</span></td>
+            <td><span class="mono gold">确认</span></td>
+            <td><span class="green">卖Put + 对冲</span></td>
+            <td><span class="mono">−10% ~ −15%</span></td>
+            <td class="muted">30天</td>
+            <td><span class="mono gold">3%（净）</span></td>
+            <td><span class="mono">&gt; 1,000</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono amber" style="font-size:14px;">MSTR</span></td>
+            <td><span class="mono">NAV 溢价</span></td>
+            <td><span class="mono gold">≥ 2.5倍</span></td>
+            <td><span class="mono">IV Rank</span></td>
+            <td><span class="mono gold">&gt; 70%</span></td>
+            <td><span class="amber">卖Call（备兑优先）</span></td>
+            <td><span class="mono">+10% ~ +15%</span></td>
+            <td class="muted">30天</td>
+            <td><span class="mono gold">3% / 4%</span></td>
+            <td><span class="mono">&gt; 1,000</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono purple" style="font-size:14px;">IBIT</span></td>
+            <td><span class="mono">持仓正股</span></td>
+            <td><span class="mono gold">持有中</span></td>
+            <td><span class="mono">剩余 DTE</span></td>
+            <td><span class="mono gold">≤ 7天</span></td>
+            <td><span class="purple">备兑滚动（趋势自适应）</span></td>
+            <td><span class="mono">+5% ~ +30%（按状态）</span></td>
+            <td class="muted">下月第三周五</td>
+            <td><span class="mono gold">2%（月）</span></td>
+            <td><span class="mono">&gt; 1,000</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card gold-accent">
+      <div class="card-title">多元化建议（Gemini 顾问视角）</div>
+      <p>当前五标的均有较高加密货币板块集中度（COIN / MSTR / IBIT）。账户规模扩大至 $50万以上时，建议引入非加密标的监控（如 NVDA 或 SPY）作为组合缓冲，降低板块系统性风险。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">应急预案</div>
+      <table style="font-size:12px;margin-top:4px;">
+        <tr>
+          <td style="padding:4px 0;color:var(--text3);border-bottom:0.5px solid var(--border);">系统扫描失败</td>
+          <td style="padding:4px 0 4px 10px;border-bottom:0.5px solid var(--border);">手动登录数据源，检查波动机会</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;color:var(--text3);border-bottom:0.5px solid var(--border);">BBAE 平台中断</td>
+          <td style="padding:4px 0 4px 10px;border-bottom:0.5px solid var(--border);">优先通过电话客服平仓风险仓位</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;color:var(--text3);">CRCL 期权未开通</td>
+          <td style="padding:4px 0 4px 10px;">自动分配权重至 COIN / MSTR</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div style="margin-top:52px;padding-top:32px;border-top:0.5px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+    <div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:8px;letter-spacing:0.1em;">客户确认</div>
+      <div style="height:1px;background:var(--border2);margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:var(--text3);">签字：__________________ &nbsp;&nbsp; 日期：__________________</div>
+    </div>
+    <div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:8px;letter-spacing:0.1em;">顾问确认</div>
+      <div style="height:1px;background:var(--border2);margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:var(--text3);">签字：__________________ &nbsp;&nbsp; 日期：__________________</div>
+    </div>
+  </div>
+
+  <div style="margin-top:32px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--text3);">
+    期权套利自动化系统操作手册 v2.0 &nbsp;·&nbsp; KAISHANG · BBAE &nbsp;·&nbsp; 2026-03-30 &nbsp;·&nbsp; CONFIDENTIAL
+  </div>
+</section>
+
+</main>
+
+<script>
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+
+function updateNav() {
+  let current = '';
+  sections.forEach(s => {
+    const top = s.getBoundingClientRect().top;
+    if (top <= 120) current = s.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+}
+
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+</script>
+</body>
+</html>

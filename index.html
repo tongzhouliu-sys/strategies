@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>期权学习交流中心</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f2eb;
+      --card: #ffffff;
+      --border: #d8d3c5;
+      --border-dark: #b8b2a0;
+      --accent: #1a1a2e;
+      --gold: #c8922a;
+      --green: #1a6b3a;
+      --red: #8b1a1a;
+      --blue: #1a3a6b;
+      --purple: #4a1a6b;
+      --teal: #1a5a5a;
+      --text: #1a1a1a;
+      --muted: #7a7060;
+      --tag-bg: #f0ece0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans SC', sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, #c8b89055 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: var(--accent);
+      padding: 48px 64px 44px;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: 'OPTIONS';
+      position: absolute;
+      right: -20px; top: -20px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 180px;
+      color: rgba(255,255,255,0.03);
+      letter-spacing: 8px;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .header-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.1s;
+    }
+
+    .header-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 6vw, 80px);
+      color: #fff;
+      letter-spacing: 3px;
+      line-height: 1;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.2s;
+    }
+
+    .header-title em { color: var(--gold); font-style: normal; }
+
+    .header-meta {
+      margin-top: 16px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 1px;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.3s;
+    }
+
+    .dot-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--gold); opacity: 0.5; flex-shrink: 0; }
+
+    /* ── MAIN ── */
+    main {
+      position: relative;
+      z-index: 10;
+      padding: 52px 64px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+
+    /* ── SECTION HEAD ── */
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .section-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .section-rule { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── TICKER CARD ── */
+    .ticker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+      gap: 10px;
+    }
+
+    .ticker-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px 18px 16px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .ticker-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--c, var(--gold));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.22s ease;
+    }
+
+    .ticker-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+      border-color: var(--border-dark);
+    }
+
+    .ticker-card:hover::before { transform: scaleX(1); }
+
+    .t-ticker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--c, var(--accent));
+      letter-spacing: 0.5px;
+    }
+
+    .t-name {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.4;
+    }
+
+    .t-badge {
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--c, var(--gold));
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      padding: 3px 7px;
+      border-radius: 2px;
+      width: fit-content;
+    }
+
+    /* ETF card variant — slightly different bg to distinguish */
+    .ticker-card.etf-card {
+      background: #fafaf6;
+      border-style: dashed;
+    }
+
+    /* stagger */
+    .ticker-card:nth-child(1)  { animation-delay: 0.04s; }
+    .ticker-card:nth-child(2)  { animation-delay: 0.08s; }
+    .ticker-card:nth-child(3)  { animation-delay: 0.11s; }
+    .ticker-card:nth-child(4)  { animation-delay: 0.14s; }
+    .ticker-card:nth-child(5)  { animation-delay: 0.17s; }
+    .ticker-card:nth-child(6)  { animation-delay: 0.20s; }
+    .ticker-card:nth-child(7)  { animation-delay: 0.23s; }
+    .ticker-card:nth-child(8)  { animation-delay: 0.26s; }
+    .ticker-card:nth-child(9)  { animation-delay: 0.29s; }
+    .ticker-card:nth-child(10) { animation-delay: 0.32s; }
+    .ticker-card:nth-child(11) { animation-delay: 0.35s; }
+    .ticker-card:nth-child(12) { animation-delay: 0.38s; }
+    .ticker-card:nth-child(13) { animation-delay: 0.41s; }
+    .ticker-card:nth-child(14) { animation-delay: 0.44s; }
+    .ticker-card:nth-child(15) { animation-delay: 0.47s; }
+
+    /* ── STRATEGY GRID ── */
+    .strategy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .strategy-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 28px 26px 26px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.18s, transform 0.18s;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .strategy-card::after {
+      content: attr(data-glyph);
+      position: absolute;
+      right: -8px; bottom: -18px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 88px;
+      color: rgba(0,0,0,0.04);
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .strategy-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    .s-icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid var(--c, var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: var(--tag-bg);
+    }
+
+    .s-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: var(--c, var(--accent));
+    }
+
+    .s-sub { font-size: 11.5px; color: var(--muted); }
+
+    .s-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-weight: 300;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+
+    .strategy-card:nth-child(1) { animation-delay: 0.08s; }
+    .strategy-card:nth-child(2) { animation-delay: 0.16s; }
+    .strategy-card:nth-child(3) { animation-delay: 0.24s; }
+
+    /* ── LEARN GRID ── */
+    .learn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .learn-card {
+      background: var(--accent);
+      border-radius: 4px;
+      padding: 30px 30px 28px;
+      text-decoration: none;
+      color: #fff;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.18s, transform 0.18s;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .learn-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,146,42,0.15), transparent 60%);
+      pointer-events: none;
+    }
+
+    .learn-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(26,26,46,0.25);
+    }
+
+    .learn-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--gold);
+      line-height: 1;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .learn-info { flex: 1; padding-top: 4px; }
+    .learn-title { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 6px; }
+    .learn-sub { font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 300; line-height: 1.7; }
+
+    .learn-tag {
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(200,146,42,0.12);
+      border: 1px solid rgba(200,146,42,0.25);
+      padding: 4px 9px;
+      border-radius: 2px;
+      width: fit-content;
+    }
+
+    .learn-card:nth-child(1) { animation-delay: 0.08s; }
+    .learn-card:nth-child(2) { animation-delay: 0.16s; }
+
+    /* ── CASE GRID ── */
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .case-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 24px 22px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: box-shadow 0.18s, transform 0.18s;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .case-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+    }
+
+    .case-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .case-title { font-size: 15px; font-weight: 500; color: var(--accent); }
+
+    .case-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .case-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: #fdf6e3;
+      border: 1px solid #e8d9a0;
+      padding: 3px 7px;
+      border-radius: 2px;
+      width: fit-content;
+      margin-top: 6px;
+    }
+
+    .case-card:nth-child(1) { animation-delay: 0.08s; }
+    .case-card:nth-child(2) { animation-delay: 0.16s; }
+    .case-card:nth-child(3) { animation-delay: 0.24s; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      header, main { padding-left: 36px; padding-right: 36px; }
+      .strategy-grid, .case-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      header { padding: 36px 20px 32px; }
+      main { padding: 36px 20px 60px; gap: 44px; }
+      .ticker-grid { grid-template-columns: repeat(3, 1fr); }
+      .strategy-grid, .case-grid, .learn-grid { grid-template-columns: 1fr; }
+      .header-meta { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">// Options Learning Hub · 期权学习交流</div>
+  <h1 class="header-title">期权<em>策略</em>学习中心</h1>
+  <div class="header-meta">
+    <span>📊 个股策略 · 16支</span>
+    <div class="dot-sep"></div>
+    <span>📦 ETF / 指数 · 6个</span>
+    <div class="dot-sep"></div>
+    <span>♻️ 多标的策略 · 3个</span>
+    <div class="dot-sep"></div>
+    <span>📖 学习方法 · 2篇</span>
+    <div class="dot-sep"></div>
+    <span>💼 客户案例 · 3个</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① 个股策略 -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">个股期权策略</span>
+      <span class="section-count">16 stocks</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="ticker-grid">
+
+      <a href="aapl.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="t-ticker">AAPL</span>
+        <span class="t-name">苹果公司<br>Apple Inc.</span>
+        <span class="t-badge">科技</span>
+      </a>
+
+      <a href="meta.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="t-ticker">META</span>
+        <span class="t-name">Meta Platforms</span>
+        <span class="t-badge">科技</span>
+      </a>
+
+      <a href="nvda.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="t-ticker">NVDA</span>
+        <span class="t-name">英伟达<br>NVIDIA</span>
+        <span class="t-badge">科技 · AI</span>
+      </a>
+
+      <a href="tsla.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="t-ticker">TSLA</span>
+        <span class="t-name">特斯拉<br>Tesla</span>
+        <span class="t-badge">新能源</span>
+      </a>
+
+      <a href="mstr.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="t-ticker">MSTR</span>
+        <span class="t-name">MicroStrategy</span>
+        <span class="t-badge">比特币代理</span>
+      </a>
+
+      <a href="hood.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="t-ticker">HOOD</span>
+        <span class="t-name">Robinhood</span>
+        <span class="t-badge">金融科技</span>
+      </a>
+
+      <a href="coin.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="t-ticker">COIN</span>
+        <span class="t-name">Coinbase</span>
+        <span class="t-badge">加密交易所</span>
+      </a>
+
+      <a href="tsm.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="t-ticker">TSM</span>
+        <span class="t-name">台积电<br>TSMC</span>
+        <span class="t-badge">半导体</span>
+      </a>
+
+      <a href="asml.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="t-ticker">ASML</span>
+        <span class="t-name">阿斯麦<br>ASML Holding</span>
+        <span class="t-badge">半导体设备</span>
+      </a>
+
+      <a href="ma.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="t-ticker">MA</span>
+        <span class="t-name">万事达卡<br>Mastercard</span>
+        <span class="t-badge">支付</span>
+      </a>
+
+      <a href="v.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="t-ticker">V</span>
+        <span class="t-name">Visa Inc.</span>
+        <span class="t-badge">支付</span>
+      </a>
+
+      <a href="nvo.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="t-ticker">NVO</span>
+        <span class="t-name">诺和诺德<br>Novo Nordisk</span>
+        <span class="t-badge">制药 · GLP-1</span>
+      </a>
+
+      <a href="crcl.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="t-ticker">CRCL</span>
+        <span class="t-name">Circle Internet<br>基础版</span>
+        <span class="t-badge">加密支付</span>
+      </a>
+
+      <a href="crcl_v.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="t-ticker">CRCL_V</span>
+        <span class="t-name">Circle Internet<br>进阶版</span>
+        <span class="t-badge">加密支付 · 进阶</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ② ETF / 指数期权 -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">ETF · 指数期权</span>
+      <span class="section-count">6 instruments</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="ticker-grid">
+
+      <a href="qqq.html" class="ticker-card etf-card" style="--c:#1a6b3a">
+        <span class="t-ticker">QQQ</span>
+        <span class="t-name">纳斯达克100 ETF<br>Invesco QQQ</span>
+        <span class="t-badge">美国 · 科技指数</span>
+      </a>
+
+      <a href="ibit.html" class="ticker-card etf-card" style="--c:#c8922a">
+        <span class="t-ticker">IBIT</span>
+        <span class="t-name">贝莱德比特币ETF<br>iShares Bitcoin</span>
+        <span class="t-badge">加密 ETF</span>
+      </a>
+
+      <a href="ibit_v.html" class="ticker-card etf-card" style="--c:#c8922a">
+        <span class="t-ticker">IBIT_V</span>
+        <span class="t-name">贝莱德比特币ETF<br>进阶版</span>
+        <span class="t-badge">加密 ETF · 进阶</span>
+      </a>
+
+      <a href="gld.html" class="ticker-card etf-card" style="--c:#c8922a">
+        <span class="t-ticker">GLD</span>
+        <span class="t-name">黄金ETF<br>SPDR Gold Shares</span>
+        <span class="t-badge">大宗 · 黄金</span>
+      </a>
+
+      <a href="xlu.html" class="ticker-card etf-card" style="--c:#1a5a5a">
+        <span class="t-ticker">XLU</span>
+        <span class="t-name">公用事业ETF<br>Utilities Select SPDR</span>
+        <span class="t-badge">防御 · 公用事业</span>
+      </a>
+
+      <a href="ewj.html" class="ticker-card etf-card" style="--c:#8b1a1a">
+        <span class="t-ticker">EWJ</span>
+        <span class="t-name">日本股市ETF<br>iShares MSCI Japan</span>
+        <span class="t-badge">亚洲 · 日本</span>
+      </a>
+
+      <a href="oesx.html" class="ticker-card etf-card" style="--c:#1a3a6b">
+        <span class="t-ticker">OESX</span>
+        <span class="t-name">欧元区宽基指数期权<br>EURO STOXX 50® · Eurex</span>
+        <span class="t-badge">欧洲 · 宽基指数</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ③ 多标的策略 -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">多标的策略</span>
+      <span class="section-count">3 strategies</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="strategy-grid">
+
+      <a href="call.html" class="strategy-card" data-glyph="CALL" style="--c:#1a6b3a">
+        <div class="s-icon">📈</div>
+        <div class="s-name">CALL</div>
+        <div class="s-sub">买入看涨期权</div>
+        <div class="s-desc">通过买入看涨期权参与多个标的的上涨行情，以有限权利金博取较大涨幅，最大亏损锁定于权利金本身。</div>
+      </a>
+
+      <a href="put.html" class="strategy-card" data-glyph="PUT" style="--c:#8b1a1a">
+        <div class="s-icon">📉</div>
+        <div class="s-name">PUT</div>
+        <div class="s-sub">保护性看跌期权</div>
+        <div class="s-desc">多标的 Put 策略，用于对冲持仓下行风险，或在看空时以期权结构替代直接做空，降低成本与风险敞口。</div>
+      </a>
+
+      <a href="wheel.html" class="strategy-card" data-glyph="WHEEL" style="--c:#c8922a">
+        <div class="s-icon">♻️</div>
+        <div class="s-name">WHEEL</div>
+        <div class="s-sub">滚轮策略</div>
+        <div class="s-desc">卖出现金担保看跌期权（CSP），若被行权则持股并卖出备兑看涨（Covered Call），循环收取权利金。</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ④ 学习方法 -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">学习方法</span>
+      <span class="section-count">2 guides</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="learn-grid">
+
+      <a href="study.html" class="learn-card">
+        <div class="learn-num">01</div>
+        <div class="learn-info">
+          <div class="learn-title">期权学习方法 · 基础版</div>
+          <div class="learn-sub">系统入门期权的方法论与学习路径，涵盖基本概念与思维框架，适合刚接触期权的新手。</div>
+          <div class="learn-tag">入门 · Beginner</div>
+        </div>
+      </a>
+
+      <a href="study_v.html" class="learn-card">
+        <div class="learn-num">02</div>
+        <div class="learn-info">
+          <div class="learn-title">期权学习方法 · 进阶版</div>
+          <div class="learn-sub">深化理解希腊字母、隐含波动率与复合策略结构的进阶方法，适合有一定基础的学习者。</div>
+          <div class="learn-tag">进阶 · Advanced</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ⑤ 客户真实案例 -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">实战案例分享</span>
+      <span class="section-count">3 cases</span>
+      <div class="section-rule"></div>
+    </div>
+    <div class="case-grid">
+
+      <a href="kaishang.html" class="case-card">
+        <div class="case-num">Case · 01</div>
+        <div class="case-title">MR.GENG案例</div>
+        <div class="case-desc">真实客户开仓决策的完整记录，从市场分析、标的选择到执行细节的全流程复盘。</div>
+        <div class="case-badge">专注虚拟资产 · 实战</div>
+      </a>
+
+      <a href="weige.html" class="case-card">
+        <div class="case-num">Case · 02</div>
+        <div class="case-title">MR.WU策略案例</div>
+        <div class="case-desc">客户使用伟哥的策略保护持仓的真实操作，展示如何在持股的同时有效控制下行风险。</div>
+        <div class="case-badge">对冲 · 实战</div>
+      </a>
+
+      <a href="xuelei.html" class="case-card">
+        <div class="case-num">Case · 03</div>
+        <div class="case-title">MR.XUE策略案例</div>
+        <div class="case-desc">基于XX策略结构的客户实操案例，涵盖建仓逻辑、盈亏分析与完整复盘总结。</div>
+        <div class="case-badge">复合策略 · 实战</div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期权策略小白完全指南</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161b27;
+    --surface2: #1c2333;
+    --border: rgba(255,255,255,0.07);
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.12);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.12);
+    --yellow: #fbbf24;
+    --yellow-dim: rgba(251,191,36,0.12);
+    --purple: #a78bfa;
+    --accent: #3b82f6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f35 50%, #0f1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--blue-dim);
+    border: 1px solid rgba(96,165,250,0.3);
+    color: var(--blue);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #e2e8f0 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+  .toc-title {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .toc a {
+    display: block;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 0;
+    border-bottom: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: #93c5fd; }
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 8px;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--blue-dim);
+    border: 1px solid rgba(59,130,246,0.25);
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Strategy Card */
+  .strategy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .strategy-card:hover {
+    border-color: rgba(255,255,255,0.14);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 22px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .card-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .icon-green { background: var(--green-dim); }
+  .icon-red { background: var(--red-dim); }
+  .icon-blue { background: var(--blue-dim); }
+  .icon-yellow { background: var(--yellow-dim); }
+  .icon-purple { background: rgba(167,139,250,0.12); }
+
+  .card-meta { flex: 1; }
+  .card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .card-en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .tag-bull { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .tag-bear { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .tag-neutral { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .tag-income { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .tag-hedge { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .tag-beginner { background: rgba(34,197,94,0.08); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+  .tag-advanced { background: rgba(248,113,113,0.08); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
+
+  .card-chevron {
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+    margin-top: 12px;
+  }
+  .strategy-card.open .card-chevron { transform: rotate(180deg); }
+
+  .card-body {
+    display: none;
+    padding: 0 22px 22px;
+    border-top: 1px solid var(--border);
+  }
+  .strategy-card.open .card-body { display: block; }
+
+  .card-body h4 {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 18px 0 10px;
+  }
+
+  .card-body p {
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 8px;
+  }
+
+  .pnl-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .pnl-box {
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .pnl-box .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pnl-box .value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .pnl-profit { background: var(--green-dim); }
+  .pnl-profit .value { color: var(--green); }
+  .pnl-loss { background: var(--red-dim); }
+  .pnl-loss .value { color: var(--red); }
+  .pnl-break { background: var(--surface2); }
+  .pnl-break .value { color: var(--yellow); }
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #cbd5e1;
+    line-height: 1.7;
+  }
+  .steps li::before {
+    content: counter(step);
+    min-width: 24px; height: 24px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .warn-box {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fde68a;
+    margin-top: 8px;
+    line-height: 1.7;
+  }
+  .warn-box strong { color: var(--yellow); }
+
+  .tip-box {
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #bbf7d0;
+    margin-top: 8px;
+    line-height: 1.7;
+  }
+
+  /* Market state table */
+  .market-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 600px) { .market-grid { grid-template-columns: 1fr; } }
+
+  .market-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .market-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .market-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .market-strategies li {
+    font-size: 13px;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.6;
+  }
+  .market-strategies li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--accent);
+    font-size: 12px;
+  }
+  .market-avoid {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--red);
+    padding: 8px 12px;
+    background: var(--red-dim);
+    border-radius: 6px;
+  }
+
+  /* Greeks table */
+  .greek-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .greek-table th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .greek-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: #cbd5e1;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .greek-table tr:last-child td { border-bottom: none; }
+  .greek-sym {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: #cbd5e1;
+    line-height: 1.7;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-num {
+    min-width: 28px; height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  .footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 32px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* PNLBAR visual */
+  .pnl-visual {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0 4px;
+  }
+  .pnl-segment-loss { background: var(--red); opacity: 0.6; }
+  .pnl-segment-profit { background: var(--green); opacity: 0.7; }
+  .pnl-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  a { color: inherit; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">LEVEL 4 · 期权交易</div>
+  <h1>期权策略小白完全指南</h1>
+  <p>从零理解8种策略 · 什么市场用什么 · 如何控制风险</p>
+</div>
+
+<div class="container">
+
+  <div class="toc">
+    <div class="toc-title">目录</div>
+    <a href="#basics"><span class="toc-num">01</span>先搞懂3个基本概念</a>
+    <a href="#strategies"><span class="toc-num">02</span>8种策略逐一详解（可展开）</a>
+    <a href="#market"><span class="toc-num">03</span>不同行情用什么策略</a>
+    <a href="#greeks"><span class="toc-num">04</span>希腊字母白话解释</a>
+    <a href="#checklist"><span class="toc-num">05</span>每次下单前的7步检查</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="basics">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">先搞懂3个基本概念</h2>
+    </div>
+
+    <div class="strategy-card open">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-blue">📖</div>
+        <div class="card-meta">
+          <div class="card-name">什么是期权？</div>
+          <div class="card-en">What is an Option?</div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <p>期权是一种「权利合约」。你花一笔钱（叫做<strong>权利金/Premium</strong>），买到一个「在未来某天，以固定价格买或卖某只股票」的权利。</p>
+        <p>关键词：<br>
+        · <strong>行权价（Strike Price）</strong>：合约里约定的固定买卖价格<br>
+        · <strong>到期日（Expiration Date）</strong>：这个权利的有效期<br>
+        · <strong>权利金（Premium）</strong>：你付的"购买这个权利"的费用，也是你买方的最大亏损</p>
+        <div class="tip-box">💡 类比：你花500元买了一张"房子预购权"，约定3个月内可以用100万买某套房。如果3个月内房价涨到120万，你行使这个权利赚了20万；如果房价跌了，你只损失500元权利金，不强制买房。</div>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-green">📈</div>
+        <div class="card-meta">
+          <div class="card-name">Call vs Put — 一句话区别</div>
+          <div class="card-en">Call vs Put</div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <p><strong>Call（认购期权）</strong>：赋予你「以行权价买入」股票的权利。<br>→ 你看涨才买 Call。股票涨，Call 涨价，你赚钱。</p>
+        <p><strong>Put（认沽期权）</strong>：赋予你「以行权价卖出」股票的权利。<br>→ 你看跌才买 Put。股票跌，Put 涨价，你赚钱。</p>
+        <div class="pnl-grid" style="margin-top:14px;">
+          <div class="pnl-box pnl-profit">
+            <div class="label">买 Call 赚钱条件</div>
+            <div class="value">股价 大幅上涨</div>
+          </div>
+          <div class="pnl-box pnl-profit">
+            <div class="label">买 Put 赚钱条件</div>
+            <div class="value">股价 大幅下跌</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">买方最大亏损</div>
+            <div class="value">只损失权利金</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-yellow">⚖️</div>
+        <div class="card-meta">
+          <div class="card-name">买方 vs 卖方 — 谁风险更大？</div>
+          <div class="card-en">Buyer vs Seller</div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <p><strong>买方（Long）</strong>：付权利金，获得权利但没有义务。最大亏损 = 权利金，潜在收益可以很大。</p>
+        <p><strong>卖方（Short/卖出）</strong>：收权利金，但有义务履约。最大收益 = 权利金，潜在亏损可能很大甚至无限（裸卖Call）。</p>
+        <div class="warn-box"><strong>⚠️ 小白重点：</strong>先从「买 Call」「买 Put」开始练手。卖方策略（尤其裸卖）亏损可能远超预期，需要充分理解后再操作。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="strategies">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">8种策略逐一详解</h2>
+    </div>
+
+    <!-- 1. 买入 Call -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-green">📈</div>
+        <div class="card-meta">
+          <div class="card-name">① 买入 Calls（Long Call）</div>
+          <div class="card-en">Long Call</div>
+          <div class="card-tags">
+            <span class="tag tag-bull">看涨</span>
+            <span class="tag tag-beginner">✓ 新手友好</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>我觉得这只股票要涨，花一笔小钱，买到一个「以固定低价买入」的权利，大涨时赚大钱。</p>
+
+        <h4>盈亏结构</h4>
+        <div class="pnl-grid">
+          <div class="pnl-box pnl-profit">
+            <div class="label">最大收益</div>
+            <div class="value">理论无限</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">最大亏损</div>
+            <div class="value">权利金（全亏）</div>
+          </div>
+          <div class="pnl-box pnl-break">
+            <div class="label">盈亏平衡点</div>
+            <div class="value">行权价 + 权利金</div>
+          </div>
+        </div>
+
+        <h4>具体操作步骤</h4>
+        <ol class="steps">
+          <li>确认自己看涨该股票，且有明确的涨幅预期（如未来4周涨10%以上）</li>
+          <li>查看当前股价，选一个「价外一档」的行权价（比股价高5%左右）</li>
+          <li>选择到期日：短期交易选2~4周后，长期持仓选2~3个月后</li>
+          <li>查看 IV（隐含波动率）百分位，最好 &lt; 40%，说明期权便宜</li>
+          <li>买入，权利金就是你的最大亏损</li>
+          <li>设止损：当权利金亏损 40~50% 时平仓离场</li>
+        </ol>
+
+        <h4>实例</h4>
+        <p>苹果股价$180，你买一张行权价$185、4周后到期的Call，权利金$3。<br>
+        · 到期时苹果 $200：你盈利 $200-$185-$3 = <strong style="color:var(--green)">$12</strong>（每股）<br>
+        · 到期时苹果 $180：Call 归零，亏损 $3 权利金</p>
+
+        <div class="warn-box"><strong>时间是你的敌人：</strong>买入 Call 后，每过一天都会因为时间衰减（Theta）损失一点价值。不要持仓太久不管。</div>
+      </div>
+    </div>
+
+    <!-- 2. 买入 Put -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-red">📉</div>
+        <div class="card-meta">
+          <div class="card-name">② 买入 Puts（Long Put）</div>
+          <div class="card-en">Long Put</div>
+          <div class="card-tags">
+            <span class="tag tag-bear">看跌</span>
+            <span class="tag tag-hedge">对冲持仓</span>
+            <span class="tag tag-beginner">✓ 新手友好</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>我觉得股票要跌，或者我已经持有正股想保险，买 Put 来做对冲。股票越跌，Put 越值钱。</p>
+
+        <h4>两种用法</h4>
+        <p><strong>用法A - 方向做空：</strong>不持有股票，纯粹做空押注。<br>
+        <strong>用法B - Protective Put（保护型）：</strong>已经持有正股 + 同时买入 Put。相当于给股票买了「保险」，股票跌了 Put 赚钱抵消损失。</p>
+
+        <h4>盈亏结构</h4>
+        <div class="pnl-grid">
+          <div class="pnl-box pnl-profit">
+            <div class="label">最大收益</div>
+            <div class="value">行权价 - 权利金（股票跌到0）</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">最大亏损</div>
+            <div class="value">权利金（全亏）</div>
+          </div>
+          <div class="pnl-box pnl-break">
+            <div class="label">盈亏平衡点</div>
+            <div class="value">行权价 - 权利金</div>
+          </div>
+        </div>
+
+        <h4>注意</h4>
+        <div class="warn-box"><strong>⚠️ 市场大跌时 IV 暴涨，Put 会变贵：</strong>在大跌时追买 Put（比如 VIX 已经飙升到 30+ 时），往往买在最贵的时候。建议在市场平静、IV 低时预先买入保护性 Put。</div>
+      </div>
+    </div>
+
+    <!-- 3. Covered Call -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-yellow">💰</div>
+        <div class="card-meta">
+          <div class="card-name">③ 正股担保卖 Calls（Covered Call）</div>
+          <div class="card-en">Covered Call</div>
+          <div class="card-tags">
+            <span class="tag tag-income">收租金</span>
+            <span class="tag tag-neutral">温和看涨/横盘</span>
+            <span class="tag tag-beginner">✓ 新手友好</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>你已经持有100股，在此基础上<strong>卖出一张 Call</strong>，收取权利金当「租金」。如果股票没涨过行权价，权利金就是净赚；如果大涨超过行权价，股票被强制卖出，你赚了股票涨幅+权利金但错过更大的涨幅。</p>
+
+        <h4>盈亏结构</h4>
+        <div class="pnl-grid">
+          <div class="pnl-box pnl-profit">
+            <div class="label">最大收益</div>
+            <div class="value">(行权价-成本价) + 权利金</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">最大亏损</div>
+            <div class="value">股票跌到0（和持股一样）</div>
+          </div>
+          <div class="pnl-box pnl-break">
+            <div class="label">盈亏平衡点</div>
+            <div class="value">持股成本 - 权利金</div>
+          </div>
+        </div>
+
+        <h4>操作步骤</h4>
+        <ol class="steps">
+          <li>已持有至少100股某只股票</li>
+          <li>选一个比当前股价高 5~10% 的行权价（你接受在这个价格卖股票）</li>
+          <li>选择 30~45 天到期（时间价值衰减最快）</li>
+          <li>卖出1张对应的 Call，收到权利金</li>
+          <li>到期前如果没被行权：再次卖出新的 Call，继续收租</li>
+          <li>如果股价逼近行权价：可以买回 Call 平仓（buyback），防止被强制卖股</li>
+        </ol>
+
+        <div class="tip-box">💡 适合场景：你长期持有某只股票，短期内判断不会大涨，希望每月多一点现金流收入。</div>
+      </div>
+    </div>
+
+    <!-- 4. Cash-Secured Put -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-red">❌</div>
+        <div class="card-meta">
+          <div class="card-name">④ 现金担保卖 Puts（Cash-Secured Put）</div>
+          <div class="card-en">Cash-Secured Put — 当前被锁定</div>
+          <div class="card-tags">
+            <span class="tag tag-income">收租金</span>
+            <span class="tag tag-bull">温和看涨</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>提前在账户备好购买股票所需的全额现金，然后卖出 Put。相当于：「我愿意在某个更低的价格买入这只股票，等待期间先收权利金」。</p>
+        <p>· 股票没跌到行权价 → 权利金全赚，不需要买股票<br>
+        · 股票跌破行权价 → 被迫以行权价买入股票（用之前准备好的现金）</p>
+
+        <h4>为何当前被锁定？</h4>
+        <div class="warn-box"><strong>通常是账户资金量未达到要求。</strong>现金担保卖 Put 需要账户里有足够的现金（等于行权价×100×合约数）。例如行权价$50，需要备好$5,000现金。建议联系券商确认解锁条件。</div>
+
+        <h4>和保证金担保卖Put的区别</h4>
+        <p>现金担保 = 全额备好现金，没有杠杆，风险低<br>
+        保证金担保 = 只需一部分保证金，有杠杆，风险更高</p>
+      </div>
+    </div>
+
+    <!-- 5. Margin-Secured Put -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-yellow">⚡</div>
+        <div class="card-meta">
+          <div class="card-name">⑤ 空仓/保证金担保卖 Puts</div>
+          <div class="card-en">Margin-Secured / Naked Put</div>
+          <div class="card-tags">
+            <span class="tag tag-income">收租金</span>
+            <span class="tag tag-bull">温和看涨</span>
+            <span class="tag tag-advanced">⚠ 需经验</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>和现金担保卖 Put 逻辑相同，但不需要备足全额现金，只需要一部分保证金。杠杆更高，收益放大，但如果股票大跌，亏损也会更大。</p>
+
+        <h4>盈亏结构</h4>
+        <div class="pnl-grid">
+          <div class="pnl-box pnl-profit">
+            <div class="label">最大收益</div>
+            <div class="value">收取的权利金</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">最大亏损</div>
+            <div class="value">行权价 × 100 - 权利金（股票归零）</div>
+          </div>
+          <div class="pnl-box pnl-break">
+            <div class="label">盈亏平衡点</div>
+            <div class="value">行权价 - 权利金</div>
+          </div>
+        </div>
+
+        <div class="warn-box"><strong>⚠️ 小白警告：</strong>卖 Put 方向判断错误时亏损可能很大。例如行权价$50卖出Put，股票跌到$30，每股亏$20，100股就是$2000，远超收到的权利金。必须设好止损。</div>
+
+        <h4>风险控制要点</h4>
+        <ol class="steps">
+          <li>只在你真正愿意持有的股票上卖 Put（即使被迫接货也不亏心）</li>
+          <li>行权价选在重要支撑位下方（技术面支撑）</li>
+          <li>亏损超过权利金 2倍时坚决平仓</li>
+          <li>单笔保证金占用 ≤ 账户净值 20%</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 6. Vertical Spread -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-blue">↕️</div>
+        <div class="card-meta">
+          <div class="card-name">⑥ 垂直价差策略（Vertical Spread）</div>
+          <div class="card-en">Bull Call Spread / Bear Put Spread</div>
+          <div class="card-tags">
+            <span class="tag tag-bull">看涨版</span>
+            <span class="tag tag-bear">看跌版</span>
+            <span class="tag tag-beginner">✓ 新手友好</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>同时买一张期权 + 卖一张相同到期日但不同行权价的期权。两腿对冲后，成本更低、风险有限、收益也有限。适合有方向判断但不想花太多权利金的情况。</p>
+
+        <h4>看涨版：Bull Call Spread（牛市Call价差）</h4>
+        <ol class="steps">
+          <li>买入较低行权价的 Call（比如行权价 $180）</li>
+          <li>同时卖出较高行权价的 Call（比如行权价 $190），收回部分权利金</li>
+          <li>净成本 = 买入的权利金 - 卖出的权利金</li>
+          <li>最大收益 = 行权价之差 - 净成本；最大亏损 = 净成本</li>
+        </ol>
+
+        <h4>看跌版：Bear Put Spread（熊市Put价差）</h4>
+        <ol class="steps">
+          <li>买入较高行权价的 Put（比如行权价 $180）</li>
+          <li>同时卖出较低行权价的 Put（比如行权价 $170）</li>
+          <li>净成本更低，但收益也封顶</li>
+        </ol>
+
+        <div class="tip-box">💡 <strong>为什么用价差而不是直接买Call/Put？</strong><br>
+        直接买Call成本$5，全错了亏$5；Bull Call Spread净成本$2，错了最多亏$2，同时也降低了对IV高低的依赖。适合IV偏高时。</div>
+
+        <h4>实例（Bull Call Spread）</h4>
+        <p>苹果股价 $180：<br>
+        买 $185 Call，花 $4；卖 $195 Call，收 $1.5。净成本 $2.5。<br>
+        苹果到期涨到 $200：最大收益 $(195-185) - $2.5 = <strong style="color:var(--green)">$7.5</strong><br>
+        苹果到期跌到 $178：最大亏损 <strong style="color:var(--red)">$2.5</strong>（净权利金）</p>
+      </div>
+    </div>
+
+    <!-- 7. Calendar / Diagonal Spread -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-purple">🗓️</div>
+        <div class="card-meta">
+          <div class="card-name">⑦ 日历 / 对角线价差策略</div>
+          <div class="card-en">Calendar Spread / Diagonal Spread</div>
+          <div class="card-tags">
+            <span class="tag tag-neutral">横盘/低波动</span>
+            <span class="tag tag-income">赚时间价值</span>
+            <span class="tag tag-advanced">⚠ 需理解Theta</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>日历价差：一句话理解</h4>
+        <p>卖出近月期权（快速衰减）+ 买入远月相同行权价期权（衰减慢）。赚的是两者时间价值衰减速度的差异。</p>
+
+        <h4>为什么近月衰减比远月快？</h4>
+        <p>期权的时间价值在到期前的最后几周衰减最快（就像冰淇淋在气温最高时化得最快）。近月 Theta 大，卖出后收益更高；远月 Theta 小，持有成本低。</p>
+
+        <h4>对角线价差</h4>
+        <p>在日历价差基础上，买卖的行权价也不同。更灵活，但理解成本更高，建议先掌握日历价差再进阶。</p>
+
+        <div class="warn-box"><strong>⚠️ 关键风险：</strong>适合横盘低波动市场。如果股票大涨大跌，两腿都可能亏损。<br>另外：在财报前后 IV 变化剧烈，日历价差会受到 Vega 影响较大，要注意。</div>
+      </div>
+    </div>
+
+    <!-- 8. Iron Condor hint -->
+    <div class="strategy-card">
+      <div class="card-header" onclick="toggle(this)">
+        <div class="card-icon icon-purple">🦅</div>
+        <div class="card-meta">
+          <div class="card-name">⑧ 铁鹰 / 宽跨式（Iron Condor / Strangle）</div>
+          <div class="card-en">Iron Condor / Short Strangle</div>
+          <div class="card-tags">
+            <span class="tag tag-neutral">区间震荡</span>
+            <span class="tag tag-income">收权利金</span>
+            <span class="tag tag-advanced">⚠ 进阶策略</span>
+          </div>
+        </div>
+        <div class="card-chevron">⌄</div>
+      </div>
+      <div class="card-body">
+        <h4>一句话理解</h4>
+        <p>同时卖出一个价外 Call 和一个价外 Put，赌股票在到期前「不会大涨也不会大跌」，收取两边的权利金。</p>
+        <p><strong>Iron Condor</strong> = 宽跨式 + 在两侧各买一个更价外的期权作为保护，变成风险有限版本。</p>
+
+        <h4>适合什么时候用？</h4>
+        <p>· 股票长期在一个箱体震荡<br>
+        · IV 较高（权利金丰厚），但你判断不会有大行情<br>
+        · 典型使用场景：标普500 ETF（SPY）的月度日历</p>
+
+        <h4>盈亏结构（Iron Condor）</h4>
+        <div class="pnl-grid">
+          <div class="pnl-box pnl-profit">
+            <div class="label">最大收益</div>
+            <div class="value">收到的净权利金</div>
+          </div>
+          <div class="pnl-box pnl-loss">
+            <div class="label">最大亏损</div>
+            <div class="value">价差宽度 - 净权利金</div>
+          </div>
+          <div class="pnl-box pnl-break">
+            <div class="label">安全区间</div>
+            <div class="value">两个行权价之间</div>
+          </div>
+        </div>
+
+        <div class="warn-box"><strong>⚠️ 突破风险：</strong>一旦股票向任意方向突破行权价，亏损迅速放大。必须设好止损，价格接近边界时果断平仓一侧。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="market">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">不同行情 → 用什么策略</h2>
+    </div>
+
+    <div class="market-grid">
+      <div class="market-card">
+        <div class="market-card-title"><span style="color:var(--green)">📈</span> 单边上涨</div>
+        <p>连续阳线，均线多头排列，ADX > 25</p>
+        <ul class="market-strategies">
+          <li>首选：买入 Call（杠杆做多）</li>
+          <li>温和上涨：Bull Call Spread（降低成本）</li>
+          <li>持股增强：Covered Call（收租）</li>
+          <li>回调接货：保证金卖 Put</li>
+        </ul>
+        <div class="market-avoid">❌ 不要：买 Put 做空，大概率全亏</div>
+      </div>
+
+      <div class="market-card">
+        <div class="market-card-title"><span style="color:var(--red)">📉</span> 单边下跌</div>
+        <p>均线空头排列，MACD 死叉，VIX 上升</p>
+        <ul class="market-strategies">
+          <li>首选：买入 Put（做空）</li>
+          <li>持股保险：Protective Put（正股+买Put）</li>
+          <li>降低成本：Bear Put Spread</li>
+        </ul>
+        <div class="market-avoid">❌ 不要：裸卖 Put（大跌中接货亏死）</div>
+      </div>
+
+      <div class="market-card">
+        <div class="market-card-title"><span style="color:var(--blue)">↔️</span> 区间震荡</div>
+        <p>价格在支撑/阻力之间来回，ATR 低</p>
+        <ul class="market-strategies">
+          <li>首选：Iron Condor（两边收权利金）</li>
+          <li>简单版：日历价差（赚时间衰减）</li>
+          <li>Covered Call（持股收租）</li>
+        </ul>
+        <div class="market-avoid">❌ 不要：直接买 Call 或 Put（时间价值每天损耗）</div>
+      </div>
+
+      <div class="market-card">
+        <div class="market-card-title"><span style="color:var(--yellow)">⚡</span> 财报/重大消息前</div>
+        <p>IV 极高，方向不明，短期波动巨大</p>
+        <ul class="market-strategies">
+          <li>首选：Long Straddle（买跨式，两头押）</li>
+          <li>成本高时：Long Strangle（买宽跨式）</li>
+          <li>提前低IV时布局最优</li>
+        </ul>
+        <div class="market-avoid">❌ 不要：任何卖方策略（消息落地前风险极大）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="greeks">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">希腊字母白话解释</h2>
+    </div>
+
+    <table class="greek-table">
+      <thead>
+        <tr>
+          <th>字母</th>
+          <th>叫什么</th>
+          <th>白话解释</th>
+          <th>实战怎么用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="greek-sym">Δ</span><br>Delta</td>
+          <td>Delta<br>德尔塔</td>
+          <td>股价每涨$1，期权价格变化多少。<br>买 Call: +0~1；买 Put: -1~0</td>
+          <td>Delta=0.5意味着股价涨$1，你的Call涨$0.5。看涨选Delta 0.4~0.6 的Call。</td>
+        </tr>
+        <tr>
+          <td><span class="greek-sym">Θ</span><br>Theta</td>
+          <td>Theta<br>时间损耗</td>
+          <td>每过一天，期权价值减少多少（对买方是成本，对卖方是收益）。</td>
+          <td>买期权Theta是负的（每天亏一点）。不能持有太久。卖期权Theta是正的（每天赚一点）。</td>
+        </tr>
+        <tr>
+          <td><span class="greek-sym">ν</span><br>Vega</td>
+          <td>Vega<br>波动率敏感度</td>
+          <td>隐含波动率(IV)每涨1%，期权价值变化多少。</td>
+          <td>财报前IV飙升，买期权Vega正收益；财报后IV暴跌（IV Crush），期权价值大跌——即使方向对了也可能亏。</td>
+        </tr>
+        <tr>
+          <td><span class="greek-sym">Γ</span><br>Gamma</td>
+          <td>Gamma<br>德尔塔加速度</td>
+          <td>Delta 变化的速度。平价期权 Gamma 最大。</td>
+          <td>近到期的平价期权Gamma巨大，价格可能快速剧烈变化。临近到期时要格外小心。</td>
+        </tr>
+        <tr>
+          <td><span class="greek-sym">ρ</span><br>Rho</td>
+          <td>Rho<br>利率敏感度</td>
+          <td>利率变化对期权价格的影响。</td>
+          <td>日常交易通常可忽略，只有长期LEAPS期权需要关注。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip-box" style="margin-top:16px;">💡 <strong>小白只需记住3个：</strong>Delta（方向）、Theta（时间损耗）、Vega（波动率影响）。这三个就能覆盖90%的期权分析需求。</div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="checklist">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">每次下单前的7步检查</h2>
+    </div>
+
+    <ul class="checklist">
+      <li>
+        <span class="check-num">01</span>
+        <div><strong>判断当前市场状态</strong><br>上涨？下跌？震荡？高波动？均线方向、ADX 是否 > 25、最近K线形态。</div>
+      </li>
+      <li>
+        <span class="check-num">02</span>
+        <div><strong>查看 IV 百分位</strong><br>IV 百分位 &lt; 30%：期权便宜 → 偏向买入期权。<br>IV 百分位 > 70%：期权贵 → 偏向卖出期权（价差）或买跨式。</div>
+      </li>
+      <li>
+        <span class="check-num">03</span>
+        <div><strong>确认近期是否有财报/重大消息</strong><br>财报前后 IV 会剧烈变化。不了解 IV Crush 效应前不要在财报前卖期权。</div>
+      </li>
+      <li>
+        <span class="check-num">04</span>
+        <div><strong>选择合适的到期日</strong><br>方向交易：2~4 周后。时间价值策略（Covered Call 等）：30~45 天。事件驱动：事件后 1~2 天。</div>
+      </li>
+      <li>
+        <span class="check-num">05</span>
+        <div><strong>计算最大亏损 / 最大收益 / 盈亏平衡点</strong><br>在下单前就知道最坏情况是多少钱。买方：最大亏损 = 权利金；卖方：根据保证金计算。</div>
+      </li>
+      <li>
+        <span class="check-num">06</span>
+        <div><strong>单笔风险控制</strong><br>买期权：单笔权利金 ≤ 账户总值 2%。卖期权：保证金占用 ≤ 账户净值 20%。</div>
+      </li>
+      <li>
+        <span class="check-num">07</span>
+        <div><strong>设置退出条件（提前想好）</strong><br>止损：权利金亏损 40~50% 就平仓。止盈：盈利 50~100% 可考虑先兑现部分。时间止损：距到期不足 1 周且无行情，平仓不赌。</div>
+      </li>
+    </ul>
+
+    <div class="warn-box" style="margin-top:24px;"><strong>🔑 最终原则：</strong>任何策略在你不能用一句话清晰解释「我的最大亏损是多少、什么情况下会发生」之前，不要动用真实资金。可以先用纸上交易（Paper Trade）练手。</div>
+  </div>
+
+</div>
+
+<div class="footer">期权策略指南 · Level 4 · 仅供学习参考，不构成投资建议</div>
+
+<script>
+function toggle(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

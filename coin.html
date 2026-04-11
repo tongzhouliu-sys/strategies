@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRCL 期权增强收益操作手册 V1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0d1b2a;
+  --navy-2: #1a2d42;
+  --navy-3: #243b55;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dim: rgba(201,168,76,0.15);
+  --text: #e8e4da;
+  --text-dim: #9ba8b5;
+  --text-muted: #6b7a89;
+  --border: rgba(201,168,76,0.25);
+  --border-dim: rgba(255,255,255,0.08);
+  --green: #4caf82;
+  --green-bg: rgba(76,175,130,0.12);
+  --red: #e05c5c;
+  --red-bg: rgba(224,92,92,0.12);
+  --amber: #e8a838;
+  --amber-bg: rgba(232,168,56,0.12);
+  --blue: #5b9bd5;
+  --blue-bg: rgba(91,155,213,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.8;
+  min-height: 100vh;
+}
+
+/* Background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 20%, rgba(201,168,76,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(91,155,213,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 60px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.doc-header {
+  border-bottom: 0.5px solid var(--border);
+  padding-bottom: 40px;
+  margin-bottom: 48px;
+}
+
+.header-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.header-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badge-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.badge-version {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.header-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  line-height: 1.6;
+}
+
+.doc-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.doc-title span {
+  color: var(--gold);
+}
+
+.doc-subtitle {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+
+.header-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border-dim);
+  border: 0.5px solid var(--border-dim);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 28px;
+}
+
+.stat-cell {
+  background: var(--navy-2);
+  padding: 14px 16px;
+}
+
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.stat-value.gold { color: var(--gold); }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.amber { color: var(--amber); }
+
+/* Tooltip */
+.tt {
+  position: relative;
+  border-bottom: 1px dashed var(--gold);
+  cursor: help;
+  color: var(--gold-light);
+  white-space: nowrap;
+}
+
+.tt::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e3352;
+  border: 0.5px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.6;
+  padding: 10px 14px;
+  border-radius: 4px;
+  width: 260px;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 100;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.tt::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--border);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 100;
+}
+
+.tt:hover::after,
+.tt:hover::before { opacity: 1; }
+
+/* Sections */
+.section {
+  margin-bottom: 52px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--border-dim);
+}
+
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+  font-style: italic;
+}
+
+/* Cards and blocks */
+.card {
+  background: var(--navy-2);
+  border: 0.5px solid var(--border-dim);
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.alert {
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  border-left: 3px solid;
+}
+
+.alert-red { background: var(--red-bg); border-color: var(--red); color: #f0a0a0; }
+.alert-amber { background: var(--amber-bg); border-color: var(--amber); color: #f0c870; }
+.alert-green { background: var(--green-bg); border-color: var(--green); color: #90d4b0; }
+.alert-blue { background: var(--blue-bg); border-color: var(--blue); color: #a0c8f0; }
+.alert-gold { background: var(--gold-dim); border-color: var(--gold); color: var(--gold-light); }
+
+.alert strong { color: inherit; font-weight: 500; }
+
+/* Tables */
+.tbl-wrap {
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--navy-3);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 0.5px solid var(--border-dim);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border-dim);
+  color: var(--text);
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+td.green { color: var(--green); }
+td.red { color: var(--red); }
+td.gold { color: var(--gold); }
+td.amber { color: var(--amber); }
+td.dim { color: var(--text-muted); font-size: 12px; }
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* Layer indicator */
+.layer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.layer-1 { background: rgba(76,175,130,0.15); color: var(--green); border: 0.5px solid rgba(76,175,130,0.3); }
+.layer-2 { background: rgba(91,155,213,0.15); color: var(--blue); border: 0.5px solid rgba(91,155,213,0.3); }
+.layer-3 { background: rgba(201,168,76,0.15); color: var(--gold); border: 0.5px solid rgba(201,168,76,0.3); }
+
+/* Formula block */
+.formula {
+  background: var(--navy-3);
+  border: 0.5px solid var(--border-dim);
+  border-radius: 4px;
+  padding: 14px 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--gold-light);
+  margin: 12px 0;
+  line-height: 2;
+}
+
+/* Steps */
+.steps { counter-reset: step; list-style: none; }
+
+.steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.steps li::before {
+  content: counter(step);
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  background: var(--gold-dim);
+  border: 0.5px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--gold);
+  margin-top: 2px;
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 0.5px solid var(--border-dim);
+  margin: 28px 0;
+}
+
+/* Fuse levels */
+.fuse-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.fuse-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 0;
+  border: 0.5px solid var(--border-dim);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fuse-level {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.fuse-trigger, .fuse-action {
+  padding: 12px 16px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  border-left: 0.5px solid var(--border-dim);
+}
+
+.fuse-trigger { background: var(--navy-2); }
+.fuse-action { background: var(--navy-3); }
+
+.lv-l1 { background: rgba(76,175,130,0.12); color: var(--green); }
+.lv-l2 { background: rgba(232,168,56,0.12); color: var(--amber); }
+.lv-l3 { background: rgba(224,92,92,0.12); color: var(--red); }
+.lv-l4 { background: rgba(150,100,200,0.12); color: #c080f0; }
+
+/* Inline highlight */
+mark {
+  background: var(--gold-dim);
+  color: var(--gold-light);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-style: normal;
+}
+
+.param-key {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.param-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Footer */
+.doc-footer {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 0.5px solid var(--border-dim);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.inline-tag {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.tag-red { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(224,92,92,0.3); }
+.tag-green { background: var(--green-bg); color: var(--green); border: 0.5px solid rgba(76,175,130,0.3); }
+.tag-gold { background: var(--gold-dim); color: var(--gold); border: 0.5px solid var(--border); }
+.tag-blue { background: var(--blue-bg); color: var(--blue); border: 0.5px solid rgba(91,155,213,0.3); }
+
+p { margin-bottom: 10px; }
+p:last-child { margin-bottom: 0; }
+
+ul, ol { padding-left: 20px; }
+li { margin-bottom: 6px; }
+li:last-child { margin-bottom: 0; }
+
+strong { font-weight: 500; color: var(--text); }
+
+h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  margin: 16px 0 8px;
+}
+
+@media (max-width: 768px) {
+  .page { padding: 32px 20px; }
+  .header-stats { grid-template-columns: repeat(3, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .fuse-row { grid-template-columns: 60px 1fr; }
+  .fuse-action { display: none; }
+  .doc-title { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════════════ HEADER ═══════════════════════════════════════ -->
+<header class="doc-header">
+  <div class="header-meta">
+    <div class="header-badge">
+      <span class="badge-tag">Circle Internet Group · NYSE: CRCL</span>
+      <span class="badge-version">期权增强收益操作手册 · V1.0 · 机密</span>
+    </div>
+    <div class="header-date">
+      制定日期：2026-04-01<br>
+      适用账户：$50,000 – $5,000,000<br>
+      适用对象：NRA 专业期权投资者
+    </div>
+  </div>
+
+  <h1 class="doc-title"><span>CRCL</span> 波动率套利操作手册</h1>
+  <p class="doc-subtitle">基于稳定币监管二元事件对冲框架 · 三层资金分级 · Delta中性执行体系</p>
+
+  <div class="header-stats">
+    <div class="stat-cell">
+      <span class="stat-label">参考价格</span>
+      <span class="stat-value gold">$90.28</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">52周区间</span>
+      <span class="stat-value">$31 – $299</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">估算 IV 水平</span>
+      <span class="stat-value amber">120 – 180%</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">市值</span>
+      <span class="stat-value">$22.2B</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">核心风险事件</span>
+      <span class="stat-value red">CLARITY Act</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════ SECTION 0: CRCL 特性分析 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <h2 class="section-title">CRCL 特性分析与策略定位</h2>
+    <span class="section-note">先读懂标的，再设计策略</span>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>CRCL ≠ COIN。</strong>两者均为加密概念股，但盈利模式截然不同：Coinbase 靠交易手续费，Circle 靠 USDC 储备资产的<span class="tt" data-tip="利率敞口：CRCL 约 80% 的收入来自 USDC 储备资产（主要为美国短期国债）产生的利息收入。当美联储降息时，这部分收入直接压缩，形成利率下行压力。">利率敞口</span>。这意味着 CRCL 的期权定价同时包含三种风险溢价：加密市场情绪溢价、监管二元事件溢价、利率变动溢价。卖波动率时，你同时收割这三种市场恐慌。
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">CRCL 与 COIN 关键差异</div>
+      <table>
+        <thead><tr><th>维度</th><th>CRCL</th><th>COIN</th></tr></thead>
+        <tbody>
+          <tr><td>核心收入</td><td class="gold">储备利息</td><td>交易手续费</td></tr>
+          <tr><td>利率敏感性</td><td class="red">极高（↓利率→↓收入）</td><td>低</td></tr>
+          <tr><td>最优对冲代理</td><td class="green">COIN 期权</td><td>BTC Put</td></tr>
+          <tr><td>历史IV水平</td><td class="amber">120–200%+</td><td>60–120%</td></tr>
+          <tr><td>盈利状态</td><td class="red">亏损（P/E -165×）</td><td>盈利</td></tr>
+          <tr><td>IPO 成熟度</td><td class="amber">较新，流动性仍成长</td><td>成熟</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Alpha 来源（三重溢价叠加）</div>
+      <table>
+        <thead><tr><th>#</th><th>来源</th><th>可持续性</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono">①</td>
+            <td><span class="tt" data-tip="波动率风险溢价（VRP）：期权隐含波动率长期系统性高于事后实际波动率，差值即为卖方的统计正期望。CRCL 因市场参与者普遍高估极端风险，溢价尤为显著。">波动率风险溢价 VRP</span></td>
+            <td class="green">结构性</td>
+          </tr>
+          <tr>
+            <td class="mono">②</td>
+            <td><span class="tt" data-tip="二元事件溢价衰减：在重大监管事件（如 CLARITY Act 投票）前，市场将尾部风险反映在 Put 偏斜中。事件落地后，无论结果好坏，这部分不确定性溢价都会快速坍缩（IV 崩溃），卖方在时间上先于市场获利。">监管事件溢价衰减</span></td>
+            <td class="amber">阶段性（事件驱动）</td>
+          </tr>
+          <tr>
+            <td class="mono">③</td>
+            <td><span class="tt" data-tip="时间价值衰减（Theta）：期权每日自然损耗的时间价值，对卖方每天产生正收益。DTE=35-50 天时每日 Theta 衰减最优（Gamma 风险仍可控）。">Theta 时间价值收割</span></td>
+            <td class="green">每日确定性正收益</td>
+          </tr>
+          <tr>
+            <td class="mono">④</td>
+            <td><span class="tt" data-tip="Put偏斜套利：CRCL 因监管不确定性，虚值Put隐含波动率显著高于同等虚值Call（Put Skew 陡峭）。通过卖出 ATM 附近 Put、买入深度虚值 Put 作保护，捕捉偏斜压缩。">Put 偏斜套利</span></td>
+            <td class="blue">高 IV 环境尤为显著</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-red">
+    <strong>CRCL 核心尾部风险：CLARITY Act 监管二元事件。</strong>2026年3月24日，新版草案提出限制稳定币收益权限，CRCL 单日崩跌逾 20%（史上最大单日跌幅）。该法案参议院投票预计在 2026 年 4–5 月进行。<strong>任何投票窗口前后 10 个交易日，禁止新开仓。</strong>此要求严格于普通股的3天窗口期。
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 1: NRA 税务框架 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">NRA 税务框架</h2>
+    <span class="section-note">先决条件 · CPA 书面确认前禁止执行</span>
+  </div>
+
+  <div class="alert alert-red">
+    税务框架是整个策略的边界条件，不是附录。以下五项必须获得<span class="tt" data-tip="CPA（Certified Public Accountant，注册会计师）：持牌美国注册会计师。NRA 税务问题需要同时熟悉美国 IRS 规定和中国个人所得税全球申报规则的跨境税务专家，不可委托普通税务代理办理。">CPA</span> 书面确认后，才能进入全量执行阶段。确认前，仅允许执行备兑 Call（Covered Call）。
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>确认事项</th>
+          <th>风险要点</th>
+          <th>操作要求</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono gold">①</td>
+          <td><span class="tt" data-tip="FDAP 收入（Fixed, Determinable, Annual or Periodical）：IRS 对 NRA 的预扣税适用于固定性、可确定的来源收入。期权权利金通常被视为非 FDAP，不触发 30% 预扣，但需账户层面逐一确认。">权利金预扣税</span></td>
+          <td>期权权利金通常按非 FDAP 处理，一般不预扣 30%。需检查 IBKR 账户历史是否有意外预扣记录。</td>
+          <td>CPA 书面确认 + 保留过去 12 个月权利金流水台账</td>
+        </tr>
+        <tr>
+          <td class="mono gold">②</td>
+          <td><span class="tt" data-tip="ECI 风险（Effectively Connected Income）：若期权交易被 IRS 认定为与在美"贸易或业务"有效关联，则丧失 NRA 豁免地位，须缴纳美国所得税。在美发出交易指令、使用美国注册投资顾问可能触发 ECI。">资本利得免税 / ECI</span></td>
+          <td>Put 被行权接货后卖股产生的资本利得是否免美国税？ECI 认定边界需 CPA 明确。</td>
+          <td>CPA 书面意见，说明 ECI 风险敞口及规避措施</td>
+        </tr>
+        <tr>
+          <td class="mono gold">③</td>
+          <td>中国税务居民申报义务</td>
+          <td>若满足中国税务居民认定，全球收入（含期权权利金、资本利得）需在中国申报。台账须同步记录人民币折算金额。</td>
+          <td>中国税务专业人士书面确认 + 台账自动折算 CNY（按交易日人民币银行中间价）</td>
+        </tr>
+        <tr>
+          <td class="mono gold">④</td>
+          <td><span class="tt" data-tip="Wash Sale Rule（冲洗交易规则）：30 天内卖出亏损资产并买入实质相同资产，税务亏损将被递延，无法当期抵税。NRA 同样适用。高危场景：主动减仓 CRCL 正股的同时，因卖 Put 被行权接货同一标的。">Wash Sale 规则</span></td>
+          <td>主动减仓 CRCL 同时被行权接货为高风险场景。任何主动减仓前必须检查过去 30 天是否有接货记录。</td>
+          <td>台账强制标记"接货日期"，减仓前系统检查 30 天窗口</td>
+        </tr>
+        <tr>
+          <td class="mono gold">⑤</td>
+          <td><span class="tt" data-tip="NRA 遗产税：NRA 持有美国境内资产（含美股）的联邦遗产税免税额仅为 $60,000，超出部分最高适用 40% 税率。CRCL 作为美股，全额计入应税遗产。建议通过离岸持股公司持有，使资产持有主体非 NRA 个人，从而规避此风险。">遗产税风险</span></td>
+          <td>NRA 持有美股遗产税免税额仅 $60,000，超额部分最高 40%。持仓市值较大时必须评估架构。</td>
+          <td>税务律师评估离岸持股公司（Cayman/新加坡 SPC）可行性，$200,000+ 持仓时强制执行</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">W-8BEN 维护规则</div>
+    <ul>
+      <li>每年 1 月 15 日前：确认 IBKR/BBAE 全部账户 <span class="tt" data-tip="W-8BEN：IRS 表格，NRA 用于证明其非美国税务居民身份，以申请资本利得免税和权利金非预扣豁免。有效期 3 年（或信息变更时立即失效）。过期将导致 IBKR 自动对所有收入预扣 30%，且补救流程繁琐。">W-8BEN</span> 均在有效期内（有效期 3 年）</li>
+      <li>身份信息或税务居民状态变更时立即更新，过期将触发 30% 预扣税</li>
+      <li>每笔期权交易台账必须标记：税务事件类型 / 账户来源 / 是否被行权 / CNY 折算金额</li>
+      <li>每年整合全账户税务文件，交同一 CPA 统一处理，避免多套申报</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 2: 账户架构 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">账户架构与权限配置</h2>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>账户</th><th>角色</th><th>允许操作</th><th>权限要求</th><th>资金占比</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="gold mono">IBKR 主账户</td>
+          <td>核心执行</td>
+          <td>Bull Put Spread、Iron Condor、COIN Put 对冲腿、Covered Call</td>
+          <td><span class="tt" data-tip="期权 Level 3：允许执行价差策略（Spreads），包括 Bull/Bear Put/Call Spread 和 Iron Condor。Level 4 允许裸卖，通常不推荐 NRA 申请，保证金要求也更高。">期权 Level 3+</span>，Margin Account，开通 CRCL 期权权限</td>
+          <td>80%</td>
+        </tr>
+        <tr>
+          <td class="mono">BBAE 辅账户</td>
+          <td>正股备兑</td>
+          <td>仅 Covered Call（持有 CRCL 正股时）</td>
+          <td>期权 Level 1，现金账户，确认 NRA 期权权限</td>
+          <td>20%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">IBKR 开通清单</div>
+      <ul class="steps">
+        <li>申请 Margin Account（保证金账户），$110K+ 可申请 <span class="tt" data-tip="Portfolio Margin（组合保证金）：相较 Reg T 保证金，基于整个投资组合净风险敞口计算所需保证金，可显著降低对冲组合的资金占用（通常节省 50–70%）。需账户净值 ≥ $110,000 且通过 IBKR 资质评估。">Portfolio Margin</span></li>
+        <li>申请期权权限 Level 3（价差策略），填写选项交易经验表</li>
+        <li>订阅 CRCL 实时行情（NYSE Level 2，约 $4/月）</li>
+        <li>确认 TWS 可实时显示 <span class="tt" data-tip="Greeks（希腊字母）：描述期权价格对各因素敏感性的指标集合。Delta（价格敏感性）、Gamma（Delta 变化率）、Theta（时间衰减）、Vega（波动率敏感性）是期权风控的四大核心指标。">Greeks</span>（Delta / Theta / Vega / Gamma）</li>
+        <li>开通 OptionCharts.io 免费账户（查询 IVR 历史数据）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">资金分层（以 $700K 账户为例）</div>
+      <table>
+        <thead><tr><th>层级</th><th>金额</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>流动性缓冲</td><td class="mono">≥ $420K (60%)</td><td>任何情况下不用于期权保证金</td></tr>
+          <tr><td>策略执行资金</td><td class="mono">≤ $105K (15%)</td><td>Bull Put Spread 保证金</td></tr>
+          <tr><td>正股仓位</td><td class="mono">≤ $175K (25%)</td><td>Covered Call 底仓（可选）</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px; font-size:12px; color:var(--text-muted);">注：CRCL 极端波动史（单日 -20%），流动性缓冲比例高于普通股票策略的 50% 标准，最低不得低于 55%。</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 3: 市场状态引擎 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">市场状态引擎</h2>
+    <span class="section-note">每周一 09:30 执行 · 驱动全部后续决策</span>
+  </div>
+
+  <p style="margin-bottom:16px;">CRCL 与 Coinbase（COIN）的30日滚动相关系数通常 >0.80，两者同受加密监管政策驱动。本策略以 <strong>BTC 趋势状态（宏观过滤）+ CRCL 个股 IVR（微观触发）</strong> 双因子驱动策略决策，缺一不可。</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>状态</th>
+          <th>BTC 宏观条件（MA20/MA50）</th>
+          <th>CRCL IVR 条件</th>
+          <th>策略指令</th>
+          <th>仓位上限</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="inline-tag tag-green">A 强势多头</span></td>
+          <td>BTC &gt; MA20 &gt; MA50，MA20 斜率向上</td>
+          <td>IVR 30%–60%</td>
+          <td>暂停新开 Put 仓位。正股 Covered Call 照常维护。</td>
+          <td class="mono">0%</td>
+        </tr>
+        <tr style="background: rgba(201,168,76,0.04);">
+          <td><span class="inline-tag tag-gold">B 震荡最优</span></td>
+          <td>BTC 在 MA20–MA50 之间，MA20 走平</td>
+          <td>IVR 45%–80%</td>
+          <td><strong>全量执行主策略。</strong>使用标准 Delta 矩阵，优先开仓。</td>
+          <td class="mono green">≤ 15%</td>
+        </tr>
+        <tr>
+          <td><span class="inline-tag tag-blue">C 震荡偏空</span></td>
+          <td>BTC &lt; MA20，但 &gt; MA50</td>
+          <td>IVR ≥ 55%</td>
+          <td>保守执行。Delta 目标绝对值降低 0.03，OTM 距离要求提高至 ≥ 18%，合约数减半。</td>
+          <td class="mono">≤ 8%</td>
+        </tr>
+        <tr>
+          <td><span class="inline-tag tag-red">D 强势下跌</span></td>
+          <td>BTC &lt; MA20 &lt; MA50，MA20 向下</td>
+          <td>任意</td>
+          <td>全面禁止新开仓。已持仓按熔断机制处理。</td>
+          <td class="mono red">0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-amber">
+    <strong>CRCL 专属事件日历（独立于 BTC 状态，单独执行）：</strong>
+    以下任一事件窗口期内，无论 BTC 市场状态如何，均<strong>禁止新开仓</strong>：
+    <ul style="margin-top:8px;">
+      <li><strong>CLARITY Act 或稳定币相关立法投票前后各 10 个交易日</strong>（核心高危窗口，不可压缩）</li>
+      <li>CRCL 季度财报发布前 5 个交易日至发布后 1 个交易日</li>
+      <li>SEC / CFTC 针对 CRCL 或稳定币行业的重大监管公告日</li>
+      <li>美联储 FOMC 议息会议前后 2 个交易日（利率敏感性高）</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 4: 波动率校准 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">CRCL 波动率校准体系</h2>
+    <span class="section-note">IVR + IV/HRV 双触发 · 缺一不可</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">IVR 计算方法</div>
+      <div class="formula">
+IVR = (当前 IV − 52周最低 IV)<br>
+      ÷ (52周最高 IV − 52周最低 IV) × 100%<br><br>
+数据来源：OptionCharts.io → 搜索 CRCL<br>
+更新频率：每周一，记录入台账
+      </div>
+      <p style="font-size:12px; color:var(--text-muted);">CRCL 因 IPO 较新，52周历史数据可能不完整。若数据不足一年，使用全部可用历史区间计算，并在台账中注明。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IV/HRV 比值（核心触发器）</div>
+      <div class="formula">
+IV/HRV = CRCL 30日<span class="tt" data-tip="隐含波动率（IV）：从当前期权市场价格反推出的未来波动率预期。IV 高意味着市场预期大幅波动，Put 期权更贵，卖方收益更高。">隐含波动率</span><br>
+           ÷ CRCL 30日<span class="tt" data-tip="历史实现波动率（HRV）：标的资产过去 30 个交易日实际价格变动的年化标准差。代表真实发生的波动，与 IV 的差值反映市场「过度定价」的程度。">历史实现波动率</span><br><br>
+开仓必要条件：IV/HRV ≥ 1.25<br>
+数据来源：OptionCharts.io「Historical Vol」栏
+      </div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>IVR 区间</th>
+          <th>市场特征</th>
+          <th>IV/HRV 要求</th>
+          <th>Delta 调整</th>
+          <th>操作指令</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">&lt; 35%</td>
+          <td>CRCL 异常平静</td>
+          <td>–</td>
+          <td>–</td>
+          <td class="red">暂停所有新开仓，等待 IVR 回升</td>
+        </tr>
+        <tr>
+          <td class="mono">35% – 65%</td>
+          <td>正常波动，主执行区</td>
+          <td class="mono">≥ 1.25</td>
+          <td>标准矩阵</td>
+          <td class="green">正常执行，完整流程</td>
+        </tr>
+        <tr style="background: rgba(201,168,76,0.04);">
+          <td class="mono">65% – 85%</td>
+          <td>情绪活跃，溢价丰厚</td>
+          <td class="mono">≥ 1.20</td>
+          <td>Delta 绝对值可 +0.02</td>
+          <td class="gold">积极执行，严格 EV 计算</td>
+        </tr>
+        <tr>
+          <td class="mono">&gt; 85%</td>
+          <td>极端恐慌（CLARITY 危机）</td>
+          <td>–</td>
+          <td>–</td>
+          <td class="red">禁止新开仓，持仓浮盈 50% 可提前平</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-blue">
+    <strong>IV 绝对值硬约束（CRCL 专属）：</strong>当 CRCL 30日 IV 绝对值超过 160%（无论 IVR 处于何区间），必须将合约数减半。极高绝对 IV 通常预示近期存在未定价的重大事件，即使统计上有优势，Gamma 风险也会显著放大。
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 5: 流动性评分 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">流动性评分体系</h2>
+    <span class="section-note">主腿 + 保护腿独立评分 · 均 ≥ 7 分才执行</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>权重</th>
+          <th>10 分（优)</th>
+          <th>7 分（及格）</th>
+          <th>3 分（差）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tt" data-tip="日成交量：该行权价期权合约当日成交的合约张数。低成交量意味着流动性稀薄，买卖价差宽，大单进出容易造成价格冲击。">日成交量</span></td>
+          <td class="mono">40%</td>
+          <td class="mono green">&gt; 800 张</td>
+          <td class="mono">200–800 张</td>
+          <td class="mono red">&lt; 200 张</td>
+        </tr>
+        <tr>
+          <td><span class="tt" data-tip="买卖价差（Bid-Ask Spread）：期权买价与卖价之间的差额，代表立即成交的隐性交易成本。CRCL 作为较新 IPO，期权流动性弱于 COIN，价差可能较宽。使用限价单挂中间价（Midpoint）可避免支付全部价差。">买卖价差</span></td>
+          <td class="mono">30%</td>
+          <td class="mono green">&lt; $0.15</td>
+          <td class="mono">$0.15–$0.40</td>
+          <td class="mono red">&gt; $0.40</td>
+        </tr>
+        <tr>
+          <td><span class="tt" data-tip="未平仓合约量（Open Interest，OI）：市场上尚未结清的该合约总持仓数。高 OI 代表该合约有足够深度，在需要平仓时不会无人接盘。">未平仓合约量</span></td>
+          <td class="mono">20%</td>
+          <td class="mono green">&gt; 3,000 张</td>
+          <td class="mono">800–3,000 张</td>
+          <td class="mono red">&lt; 800 张</td>
+        </tr>
+        <tr>
+          <td><span class="tt" data-tip="做市商数量：为该期权合约提供双边报价的专业机构数量。多个做市商相互竞争可压缩买卖价差，提高执行质量。CRCL 较新，做市商可能少于 COIN。">做市商数量</span></td>
+          <td class="mono">10%</td>
+          <td class="mono green">≥ 4 家</td>
+          <td class="mono">2–3 家</td>
+          <td class="mono red">1 家</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula">
+加权评分 = 成交量得分 × 0.40 + 价差得分 × 0.30 + OI 得分 × 0.20 + 做市商得分 × 0.10
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">≥ 7 分</div>
+      <p style="color:var(--green);">正常执行，限价单挂<span class="tt" data-tip="中间价（Midpoint）= (Bid + Ask) / 2。挂中间价是流动性较好时获得良好执行的标准做法，避免使用市价单被「敲钱」。">买卖价差中间价</span>，等待 3 分钟</p>
+    </div>
+    <div class="card">
+      <div class="card-title">4 – 6 分</div>
+      <p style="color:var(--amber);">权利金预期打 8 折，行权价优先选整数价位，等待 5 分钟，不挂市价单</p>
+    </div>
+    <div class="card">
+      <div class="card-title">≤ 3 分</div>
+      <p style="color:var(--red);">禁止在该行权价开仓，移至相邻流动性更好的整数行权价重新评分；相邻两个行权价均不达标则放弃该方向</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 6: 三层策略架构 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">三层策略架构</h2>
+    <span class="section-note">按账户规模选择层级，不越级执行</span>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>关于 CRCL 跨市场对冲的可执行性：</strong>CRCL 不存在天然的"CRCL/COIN IV 比值套利"逻辑（两者都是个股），也无法用 BTC 期权合约进行精确对冲（最小单位约 $450,000 敞口，且 BTC 波动与 CRCL 相关性弱于 COIN）。<strong>第一层和第二层的对冲逻辑基于价差结构本身；第三层才引入 COIN Put 作为系统性加密监管风险的代理对冲。</strong>
+  </div>
+
+  <!-- LAYER 1 -->
+  <div class="card" style="border-color: rgba(76,175,130,0.3);">
+    <div class="layer-badge layer-1">第一层 · $50K – $300K</div>
+    <h4>Bull Put Spread（垂直价差）</h4>
+    <p>核心逻辑：通过买腿设定固定最大亏损上限，替代跨市场对冲。牺牲部分权利金换取执行简单、风险明确。</p>
+
+    <div class="tbl-wrap" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>参数</th><th>状态 B（标准）</th><th>状态 C（保守）</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tt" data-tip="Short Put Delta：卖出的看跌期权对标的价格变动的敏感性。Delta -0.18 意味着标的下跌 $1，期权价格上涨约 $0.18。绝对值越大，行权价越接近市价，权利金越高但风险越大。">卖腿 Delta 目标</span></td>
+            <td class="mono">-0.18 至 -0.22</td>
+            <td class="mono">-0.15 至 -0.18</td>
+          </tr>
+          <tr>
+            <td><span class="tt" data-tip="OTM 距离：行权价距当前股价的百分比。CRCL 单日波动可达 20%，因此要求比普通股更宽的安全缓冲（≥15% vs. 普通股 ≥10%）。">最小 OTM 距离</span></td>
+            <td class="mono">≥ 15%（$90 时行权价 ≤ $76）</td>
+            <td class="mono">≥ 18%（$90 时行权价 ≤ $74）</td>
+          </tr>
+          <tr>
+            <td>价差宽度</td>
+            <td class="mono">$10–$12</td>
+            <td class="mono">$10</td>
+          </tr>
+          <tr>
+            <td><span class="tt" data-tip="DTE（Days to Expiration）：距期权到期的日历天数。DTE 35-50 天时，Theta 衰减较快而 Gamma 风险相对可控，是卖方策略的黄金区间。CRCL 波动剧烈，不选近月（<21天）以避免 Gamma 爆炸风险。">到期日 DTE</span></td>
+            <td class="mono">35–50 天</td>
+            <td class="mono">40–50 天（更长保护）</td>
+          </tr>
+          <tr>
+            <td>净权利金效率</td>
+            <td class="mono">≥ 25%（净权利金 ÷ 价差宽度 × 100%）</td>
+            <td class="mono">≥ 28%</td>
+          </tr>
+          <tr>
+            <td>单笔最大风险</td>
+            <td colspan="2" class="mono">≤ 账户总值 3%（$50K 账户：最大亏损 ≤ $1,500）</td>
+          </tr>
+          <tr>
+            <td>总保证金占用</td>
+            <td colspan="2" class="mono">≤ 账户总值 15%，同时持仓最多 2 组</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Delta 矩阵（行权价选择指引）</h4>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>CRCL 当前价格区间</th><th>状态 B 卖腿行权价参考</th><th>状态 C 卖腿行权价参考</th><th>买腿行权价</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono">$60 – $90</td>
+            <td class="mono">$50–$55（≈ Delta -0.18 ~ -0.22）</td>
+            <td class="mono">$48–$52（更虚值）</td>
+            <td>卖腿 − $10</td>
+          </tr>
+          <tr>
+            <td class="mono">$90 – $140</td>
+            <td class="mono">$75–$80（≈ Delta -0.18 ~ -0.22）</td>
+            <td class="mono">$72–$76</td>
+            <td>卖腿 − $10</td>
+          </tr>
+          <tr>
+            <td class="mono">$140 – $220</td>
+            <td class="mono">$118–$125（≈ Delta -0.18 ~ -0.22）</td>
+            <td class="mono">$113–$120</td>
+            <td>卖腿 − $12</td>
+          </tr>
+          <tr>
+            <td class="mono">&gt; $220</td>
+            <td class="mono">$182–$192（≈ Delta -0.18 ~ -0.22）</td>
+            <td class="mono">$175–$185</td>
+            <td>卖腿 − $15</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">注：以上均为参考区间，以实际期权链 Delta 读数为准。行权价与参考价格距离必须满足 OTM 距离要求才可执行。</p>
+  </div>
+
+  <!-- LAYER 2 -->
+  <div class="card" style="border-color: rgba(91,155,213,0.3); margin-top:20px;">
+    <div class="layer-badge layer-2">第二层 · $300K – $2M</div>
+    <h4>Bull Put Spread + COIN Put 代理对冲</h4>
+
+    <p>COIN（Coinbase）是 CRCL 最佳代理对冲工具：两者均受加密监管政策（CLARITY Act 等）同向影响，30日滚动相关系数通常 >0.80，且 COIN 期权流动性成熟，无最小单位障碍。对冲逻辑：当监管黑天鹅打压 CRCL 时，COIN 通常同步下跌，COIN Put 的增值可部分抵消 CRCL Put 被行权损失。</p>
+
+    <div class="alert alert-blue" style="margin: 14px 0;">
+      <strong>对冲局限性声明：</strong>COIN Put 对冲的是<em>系统性加密监管风险</em>，无法对冲 CRCL 独立风险（如 USDC 储备审计问题、CRCL 特定财务危机）。第二层对冲有效性估计约 60–75%，非 100%。
+    </div>
+
+    <h4>COIN Put 对冲比率计算</h4>
+    <div class="formula">
+N<sub>COIN Put</sub> = N<sub>CRCL Put</sub> × (|δ<sub>CRCL</sub>| × P<sub>CRCL</sub>)<br>
+                           ÷ (|δ<sub>COIN</sub>| × P<sub>COIN</sub>)<br>
+                           ÷ <span class="tt" data-tip="Beta（β）：衡量 CRCL 相对 COIN 的价格敏感性。Beta = 1.3 意味着 COIN 下跌 1%，CRCL 历史上平均下跌 1.3%。Beta 每 2 周基于 30 日滚动收益率重新计算，使用 TradingView 相关性工具。">β<sub>CRCL/COIN</sub></span>（30日滚动，通常 1.0–1.5）<br><br>
+示例：CRCL $90 / COIN $175，各 Delta -0.20，β = 1.3：<br>
+N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>参数</th><th>要求</th></tr></thead>
+        <tbody>
+          <tr><td>COIN Put 行权价</td><td>Delta ≈ -0.15（比 CRCL 卖腿更虚值，降低对冲成本）</td></tr>
+          <tr><td>COIN Put 到期日</td><td>与 CRCL 价差同月，或早 7–14 天（节省时间价值成本）</td></tr>
+          <tr><td>对冲成本上限</td><td>COIN Put 权利金总成本 ≤ CRCL 净权利金的 35%（保留 65% 净收益）</td></tr>
+          <tr><td>相关性硬约束</td><td>若 CRCL/COIN 30日相关系数 &lt; 0.65，立即停止对冲，切换为纯 Bull Put Spread</td></tr>
+          <tr><td>Beta 更新频率</td><td>每 2 周重新计算，偏差超过 0.25 时立即调整对冲比率</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LAYER 3 -->
+  <div class="card" style="border-color: rgba(201,168,76,0.3); margin-top:20px;">
+    <div class="layer-badge layer-3">第三层 · $2M – $5M</div>
+    <h4>Iron Condor（高 IVR 环境）+ 完整 Delta-Vega 中性对冲</h4>
+
+    <div class="grid-2">
+      <div>
+        <h4>Iron Condor 触发条件与参数</h4>
+        <table>
+          <thead><tr><th>参数</th><th>设置</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>触发条件</td>
+              <td>IVR &gt; 65%，状态 B，CLARITY Act 无近期投票</td>
+            </tr>
+            <tr>
+              <td>Put 侧（下方）</td>
+              <td>同第一层 Bull Put Spread 结构</td>
+            </tr>
+            <tr>
+              <td>Call 侧（上方）</td>
+              <td>卖 Call Delta +0.15–+0.20，买 Call 高 $10–$12</td>
+            </tr>
+            <tr>
+              <td><span class="tt" data-tip="Iron Condor 的净权利金效率 = 两侧合计净权利金 ÷ 单侧价差宽度 × 100%。要求高于单腿价差的 25%，因为同时承担两侧风险。">EV 效率要求</span></td>
+              <td>两侧合计 ≥ 30%（比 Bull Put Spread 要求更高）</td>
+            </tr>
+            <tr>
+              <td>平仓规则</td>
+              <td>总盈利达净权利金 50% 主动平；任一侧亏损达该侧价差 75% 时单独止损</td>
+            </tr>
+            <tr>
+              <td>禁用条件</td>
+              <td>财报或 CLARITY Act 投票前 10 天，禁止开新 Iron Condor</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4>三维中性目标（第三层专属）</h4>
+        <table>
+          <thead><tr><th>Greek</th><th>目标约束</th><th>再平衡触发</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="tt" data-tip="Delta 中性：组合总 Delta 接近零，意味着标的价格的小幅变动对组合盈亏影响极小。通过调整 COIN Put 张数实现。">Delta</span></td>
+              <td class="mono">|Δ<sub>total</sub>| &lt; 0.15</td>
+              <td>偏离 &gt; 0.25 时</td>
+            </tr>
+            <tr>
+              <td><span class="tt" data-tip="Vega 中性：组合对隐含波动率变化不敏感。在 IV 极度波动的 CRCL 中，Vega 管理至关重要——纯卖方组合有净负 Vega，IV 上升会造成浮亏。">Vega</span></td>
+              <td class="mono">总 Vega ≤ 账户净值 4%</td>
+              <td>偏离阈值时</td>
+            </tr>
+            <tr>
+              <td><span class="tt" data-tip="Gamma 管理：Gamma 是 Delta 的变化率。负 Gamma（卖方策略）意味着标的大幅波动时亏损会加速，需通过买入近期虚值期权对冲。CRCL 极端波动史要求特别关注 Gamma 暴露。">Gamma</span></td>
+              <td class="mono">净负 Gamma 不超限</td>
+              <td>接近到期日时</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="alert alert-blue" style="margin-top:12px;">
+          第三层可选配 <strong>Diagonal Spread（日历斜式价差）</strong>：买远月 Call（DTE 90天，Delta +0.40）+ 滚动卖近月 Call（DTE 25天），以近月权利金逐步摊薄远月 Call 成本。适用于看多 CRCL 长期前景（稳定币立法最终通过）但短期持谨慎态度的场景。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 7: EV 计算 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">预期价值（EV）计算</h2>
+    <span class="section-note">每笔开仓前强制执行 · EV &lt; 净权利金 15% 不执行</span>
+  </div>
+
+  <p style="margin-bottom:14px;">EV 计算的核心是利用<span class="tt" data-tip="波动率风险溢价（VRP）：隐含波动率（IV）系统性高于事后实际波动率（HRV）的部分，代表期权市场对极端风险的过度定价。VRP 修正后，被行权的真实概率低于期权 Delta 所暗示的概率，是卖方策略统计优势的来源。">波动率风险溢价（VRP）</span>修正行权概率，使期望值计算反映真实而非市场恐慌下的过高概率。</p>
+
+  <div class="formula">
+<strong>第一步</strong>：P<sub>conservative</sub> = |Delta<sub>卖腿</sub>| × <span class="tt" data-tip="胖尾修正系数（1.35）：加密相关股票的价格分布比正态分布有更厚的尾部，极端跌幅概率更高。CRCL 因其监管二元风险，胖尾系数设为 1.35（高于普通股的 1.25，与 COIN 相同）。">1.35</span>（胖尾修正）<br><br>
+<strong>第二步</strong>：P<sub>adj</sub> = P<sub>conservative</sub> × (<span class="tt" data-tip="HRV（Historical Realized Volatility）：过去 30 天实际发生的波动率，代表「真实」波动。IV/HRV 比值越高，说明市场越「恐慌性高估」，VRP 越丰厚，修正后真实行权概率越低于 Delta 所示。">HRV</span> ÷ IV)　　　← VRP 修正核心步骤<br><br>
+<strong>第三步</strong>：EV = 净权利金 × (1 − P<sub>adj</sub>) − 最大亏损 × P<sub>adj</sub><br><br>
+<strong>执行门槛</strong>：EV &gt; 0 且 EV ÷ 净权利金 ≥ 15%
+  </div>
+
+  <div class="card">
+    <div class="card-title">完整计算案例（当前市场：CRCL $90，状态 B，IVR 62%）</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>步骤</th><th>计算过程</th><th>结果</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>市场参数</td>
+            <td>CRCL $90，30日 IV = 140%，HRV = 100%，IV/HRV = 1.40</td>
+            <td>–</td>
+            <td class="green">✓ IV/HRV ≥ 1.25</td>
+          </tr>
+          <tr>
+            <td>行权价选择</td>
+            <td>$90 × (1 − 15%) = $76.5 → 选 $75 Put（Delta ≈ −0.20）</td>
+            <td>卖腿 $75 Put，买腿 $65 Put</td>
+            <td class="green">✓ OTM ≥ 15%</td>
+          </tr>
+          <tr>
+            <td>权利金（估算）</td>
+            <td>$75 Put 中间价 $5.20，$65 Put 中间价 $2.30</td>
+            <td>净权利金 = $2.90/股 = $290/组合</td>
+            <td>效率 = $2.90 ÷ $10 = 29% ✓</td>
+          </tr>
+          <tr>
+            <td>最大亏损</td>
+            <td>($75 − $65) × 100 − $290 = $710 / 张</td>
+            <td>$710</td>
+            <td>–</td>
+          </tr>
+          <tr>
+            <td>P 计算</td>
+            <td>P<sub>conservative</sub> = 0.20 × 1.35 = 0.270<br>P<sub>adj</sub> = 0.270 × (100 ÷ 140) = 0.193</td>
+            <td>P<sub>adj</sub> = 19.3%</td>
+            <td>–</td>
+          </tr>
+          <tr>
+            <td>EV 计算</td>
+            <td>$290 × (1 − 0.193) − $710 × 0.193</td>
+            <td class="green">= $234 − $137 = <strong>+$97 / 张</strong></td>
+            <td class="green">✓ EV/权利金 = 33% ≥ 15%</td>
+          </tr>
+          <tr>
+            <td>仓位规模（$700K 账户）</td>
+            <td>单笔上限 = $700K × 3% = $21,000<br>每张最大亏损 $710 → 最多 29 张 → 取 25 张（留缓冲）</td>
+            <td>25 张</td>
+            <td class="green">✓ 可执行</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 8: 执行流程 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">标准执行流程</h2>
+    <span class="section-note">五步完整 SOP · 缺任一步不执行</span>
+  </div>
+
+  <div class="alert alert-red" style="margin-bottom:20px;">
+    <strong>开仓五项先决条件（任一不满足则中止）：</strong>
+    ① 市场状态 B 或 C　
+    ② IVR 35%–85% 且 IV/HRV ≥ 1.25　
+    ③ 距最近重大事件 ≥ 规定窗口期（CLARITY Act ≥ 10天，财报 ≥ 5天，FOMC ≥ 2天）　
+    ④ 账户执行资金层剩余保证金 ≥ 本笔最大亏损 × 1.5　
+    ⑤ W-8BEN 有效期内
+  </div>
+
+  <ul class="steps">
+    <li>
+      <div>
+        <strong>环境核查（约 10 分钟）</strong>
+        <p>TradingView → BTC/USD 日线 → 确认 MA20/MA50 位置与斜率 → 记录市场状态 A/B/C/D。<br>
+        OptionCharts.io → 搜索 CRCL → 记录 IVR（百分位）、30日 IV 绝对值、HRV 数值 → 计算 IV/HRV 比值。<br>
+        检查事件日历：确认未来 10 个交易日无 CLARITY Act 投票、无财报、无 FOMC 会议。</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>行权价筛选（约 10 分钟）</strong>
+        <p>查阅第六节 Delta 矩阵，根据 CRCL 当前价格区间和市场状态，确定卖腿 Delta 目标区间。<br>
+        IBKR TWS 期权链 → 找到目标 Delta 区间内的具体行权价 → 验证 OTM 距离满足要求。<br>
+        选定买腿行权价（低于卖腿 $10–$15）→ 对两腿分别执行<strong>流动性评分</strong>，均须 ≥ 7 分。</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>EV 计算（约 10 分钟）</strong>
+        <p>读取两腿中间价，计算净权利金和净权利金效率（≥ 25%）。<br>
+        执行第七节 EV 公式，计算 P<sub>adj</sub> 和 EV。确认 EV &gt; 0 且 EV ÷ 净权利金 ≥ 15%。<br>
+        计算合约数（不超过账户 3% 单笔上限），确认总保证金占用不超账户规定比例。</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>执行下单（约 10 分钟）</strong>
+        <p>IBKR TWS → 使用 <span class="tt" data-tip="Combo Order（组合订单）：IBKR 提供的功能，允许同时提交两腿或多腿订单，确保两腿同时成交，避免「腿差」风险（一腿成交另一腿未成交导致的意外单向敞口）。">Combo Order</span> 功能，同时提交两腿，设定净权利金限价。<br>
+        限价设为中间价。等待 3 分钟未成交 → 调整 $0.05 步长，最多调整 3 次。<br>
+        若第 3 次调整后仍未成交 → 取消订单，记录为「本次机会未成交」，下周重新评估。<br>
+        成交后立即截图，同步更新台账（见第十节格式）。</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>风控复核（约 5 分钟）</strong>
+        <p>计算所有持仓组合总 Delta，确认在限额内（第三层 |Δ| &lt; 0.15）。<br>
+        确认总保证金占用不超账户执行资金层上限（15%）。<br>
+        记录本次开仓时 IVR、IV/HRV、市场状态、Beta 数值于台账。</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 9: 持仓管理 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2 class="section-title">持仓管理规则</h2>
+    <span class="section-note">滚仓 · 止损 · 提前平仓 · 接货处理</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">主动平仓信号（锁利离场）</div>
+      <table>
+        <tbody>
+          <tr>
+            <td>盈利 ≥ 净权利金 <strong>50%</strong></td>
+            <td class="green">立即提前平仓</td>
+          </tr>
+          <tr>
+            <td>CRCL 上涨 &gt; 20%，卖腿更加虚值</td>
+            <td class="green">可提前平仓，释放保证金</td>
+          </tr>
+          <tr>
+            <td>距到期日 ≤ 12 天且仍有盈利</td>
+            <td class="amber">强制平仓（避免 Gamma 风险）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">强制止损信号</div>
+      <table>
+        <tbody>
+          <tr>
+            <td>组合亏损 ≥ 净权利金 <strong>200%</strong></td>
+            <td class="red">当日收盘前强制平仓</td>
+          </tr>
+          <tr>
+            <td>CRCL 单日跌幅 &gt; 15%</td>
+            <td class="red">暂停操作，评估是否触发 L2 熔断</td>
+          </tr>
+          <tr>
+            <td>L2 熔断触发</td>
+            <td class="red">24 小时内平仓 50% 头寸</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h4>向外滚仓（Roll Out）操作规范</h4>
+  <p>当 CRCL 价格跌至卖腿行权价 8% 以内（危险区），评估滚仓：</p>
+  <ul class="steps" style="margin-top:12px;">
+    <li>平仓当前价差（同时买回卖腿 + 卖出买腿），锁定已产生的亏损</li>
+    <li>同日开立新价差：到期日延后 30 天，卖腿行权价向下调整 8%–12%，买腿同步调整</li>
+    <li>滚仓后净权利金（新收 − 旧亏）<strong>必须为正</strong>。若无法实现净正权利金，放弃滚仓，直接止损。</li>
+    <li>同一仓位滚仓操作<strong>最多 1 次</strong>，不得连续滚仓拖延亏损</li>
+  </ul>
+
+  <hr class="divider">
+
+  <h4>被行权接货处理流程</h4>
+  <div class="alert alert-amber">
+    <strong>被行权是策略的正常情形之一，不是失败。</strong>接货代表以行权价购入了 CRCL 正股，实际成本 = 行权价 − 已收净权利金。接货后立即转入 Covered Call 摊薄模式。
+  </div>
+  <ul class="steps">
+    <li>T+0：确认接货股票入账，核实接货均价 = 卖腿行权价。计算实际成本 = 行权价 − 净权利金</li>
+    <li>Long Put 买腿处理：若买腿实值，卖出（通常比行权更合算，可回收时间价值）</li>
+    <li>T+1：对接货正股卖出 Covered Call，行权价选实际成本 +10%–15%，Delta ≤ +0.25，DTE 25–35 天</li>
+    <li>Wash Sale 检查：接货后 <strong>30 日内禁止主动卖出</strong> 同一 CRCL 正股，否则触发 Wash Sale 规则</li>
+    <li>每月持续滚动卖 Covered Call，逐步摊薄成本，直至股价回到成本线以上或决策退出</li>
+  </ul>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 10: 尾部风险 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2 class="section-title">尾部风险管理</h2>
+    <span class="section-note">CLARITY Act 专项预案 + 季度灾难保险</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">季度灾难保险（保护性 Put）</div>
+      <table>
+        <tbody>
+          <tr><td>行权价</td><td class="mono">当前价格 × 50%–60%（深度虚值）<br>$90 时参考 $45–$54</td></tr>
+          <tr><td>到期日</td><td class="mono">90–180 天，季度滚动</td></tr>
+          <tr><td>覆盖规模</td><td class="mono">30%–50% 的总 CRCL 敞口名义价值</td></tr>
+          <tr><td>年化预算</td><td class="mono">总加密资产敞口市值的 <strong>5%–8%</strong><br>（高于普通股 3–5%，因 CRCL 极端跌幅史）</td></tr>
+          <tr>
+            <td>最优买入时机</td>
+            <td class="green">IVR &lt; 35% 时买入（保险便宜）<br>CLARITY Act 投票前 15 天以上提前布局</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CLARITY Act 专项预案（二元事件管理）</div>
+      <p style="font-size:12.5px; margin-bottom:10px;">这是 CRCL 与其他加密股票的最大区别。立法进程的每一步均可能造成 CRCL 单日 20%+ 的跳空，需专项预案。</p>
+      <table>
+        <thead><tr><th>情景</th><th>影响</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>法案通过（友好版）</td>
+            <td class="green">CRCL 大涨，IV 崩溃</td>
+            <td>提前平仓期权，锁定收益</td>
+          </tr>
+          <tr>
+            <td>法案通过（限制稳定币收益）</td>
+            <td class="red">CRCL 大跌，IV 飙升</td>
+            <td>保护性 Put 启动，L3 熔断执行</td>
+          </tr>
+          <tr>
+            <td>法案推迟/搁置</td>
+            <td class="amber">不确定性延续，IV 高位维持</td>
+            <td>维持较小仓位，等待新窗口期</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h4 style="margin-top: 20px;">黑天鹅应急预案（CRCL 单日跌幅 &gt; 20%）</h4>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>时间节点</th><th>行动清单</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono gold">T+0<br>开盘 30 分钟</td>
+          <td>
+            ① 不操作，观察初始价格稳定<br>
+            ② 检查保护性 Put 是否已升值，确认账户无强平风险（可用保证金 &gt; 0）<br>
+            ③ 确认 Bull Put Spread 买腿已起到保护作用<br>
+            ④ 若账户保证金 Cushion &lt; 10%，立即平仓风险最大仓位
+          </td>
+        </tr>
+        <tr>
+          <td class="mono amber">T+1<br>事件评估</td>
+          <td>
+            判断事件性质：若为 CLARITY Act 立法（系统性） → 执行 L3 熔断；若为 CRCL 个股问题（如 USDC 储备审计问题）→ 独立评估，考虑平仓全部 CRCL 相关仓位
+          </td>
+        </tr>
+        <tr>
+          <td class="mono">T+3–T+10<br>稳定期</td>
+          <td>
+            市场企稳后重新评估 IVR（通常极高）和市场状态。若状态回升至 B 且距下次事件 &gt; 10 天，可考虑小仓位（正常仓位 30%）试探性重启
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 11: 熔断机制 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2 class="section-title">四级熔断机制</h2>
+    <span class="section-note">强制执行 · 无例外 · 违反即停止交易 2 周</span>
+  </div>
+
+  <div class="fuse-grid">
+    <div class="fuse-row">
+      <div class="fuse-level lv-l1">
+        <span>L1</span>
+        <span style="font-size:9px; margin-top:2px;">预警</span>
+      </div>
+      <div class="fuse-trigger">
+        <strong style="color:var(--green);">触发条件（任一满足）</strong><br>
+        · CRCL 单日波动 &gt; 12%<br>
+        · 任一组合浮亏 &gt; 净权利金 120%<br>
+        · IV/HRV 突然超过 2.5 或低于 0.9<br>
+        · CRCL/COIN 相关性 &lt; 0.65（第二层专属）
+      </div>
+      <div class="fuse-action">
+        <strong style="color:var(--green);">响应动作</strong><br>
+        暂停所有新开仓位。检查全部持仓 Delta 敞口。观察，不操作，做台账记录。<br>
+        <em style="color:var(--text-muted);">次日触发条件消除后自动解除</em>
+      </div>
+    </div>
+
+    <div class="fuse-row">
+      <div class="fuse-level lv-l2">
+        <span>L2</span>
+        <span style="font-size:9px; margin-top:2px;">警告</span>
+      </div>
+      <div class="fuse-trigger">
+        <strong style="color:var(--amber);">触发条件（任一满足）</strong><br>
+        · CRCL 3日累计跌幅 &gt; 25%<br>
+        · 总保证金占用 &gt; 账户 18%<br>
+        · 任一组合 Delta 绝对值 &gt; 0.30<br>
+        · L1 触发后 24 小时内未恢复
+      </div>
+      <div class="fuse-action">
+        <strong style="color:var(--amber);">24 小时内执行</strong><br>
+        · 平仓 50% 套利头寸（优先平亏损最大的组合）<br>
+        · 调整剩余组合 Delta 至 &lt; 0.20<br>
+        · 购买保护性 Put（若未配置）<br>
+        · 暂停新开仓至少 2 周
+      </div>
+    </div>
+
+    <div class="fuse-row">
+      <div class="fuse-level lv-l3">
+        <span>L3</span>
+        <span style="font-size:9px; margin-top:2px;">熔断</span>
+      </div>
+      <div class="fuse-trigger">
+        <strong style="color:var(--red);">触发条件（任一满足）</strong><br>
+        · CRCL 5日累计跌幅 &gt; 40%<br>
+        · 券商发出强制平仓警告<br>
+        · CLARITY Act 立法明确限制稳定币收益<br>
+        · 账户净值亏损 &gt; 总值 15%
+      </div>
+      <div class="fuse-action">
+        <strong style="color:var(--red);">立即执行</strong><br>
+        · 市价平仓所有期权仓位<br>
+        · 评估正股仓位是否需减仓<br>
+        · 暂停所有交易至少 1 个月<br>
+        · 全面复盘，CPA 确认税务处理
+      </div>
+    </div>
+
+    <div class="fuse-row">
+      <div class="fuse-level lv-l4">
+        <span>L4</span>
+        <span style="font-size:9px; margin-top:2px;">黑天鹅</span>
+      </div>
+      <div class="fuse-trigger">
+        <strong style="color:#c080f0;">触发条件（任一满足）</strong><br>
+        · USDC 与美元脱钩或储备危机<br>
+        · 美国全面禁止稳定币发行<br>
+        · CRCL 被监管机构强制暂停运营<br>
+        · IBKR 技术故障无法正常交易
+      </div>
+      <div class="fuse-action">
+        <strong style="color:#c080f0;">立即执行</strong><br>
+        · 市价平仓一切 CRCL 相关头寸<br>
+        · 联系 IBKR 确认账户安全<br>
+        · 启动离岸架构法律评估<br>
+        · 策略终止，等待合规重启确认
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-red" style="margin-top:16px;">
+    <strong>绝对禁止操作清单（违反即强制停止交易 2 周）：</strong>
+    任何主动减仓 CRCL 前未检查 30 天 Wash Sale 窗口 / 在事件窗口期内开新仓 / EV 不达标强行开仓 / 流动性评分 &lt; 7 分强行开仓 / 同一仓位滚仓超过 1 次 / L2 触发后 24 小时内未减仓 / 单月亏损超 5% 后继续开新仓
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 12: 月度操作清单 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2 class="section-title">月度操作清单</h2>
+    <span class="section-note">每月第一个周二 · 全程约 90 分钟 · 不跳步骤</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>阶段</th><th>时间</th><th>具体操作</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="gold">环境分析</td>
+          <td class="mono">30 分钟</td>
+          <td>
+            ① TradingView → BTC 日线 → 确认市场状态 A/B/C/D，记录 MA20/MA50 数值<br>
+            ② OptionCharts.io → CRCL → 记录 IVR、30日 IV、HRV，计算 IV/HRV 比值<br>
+            ③ 查询 CLARITY Act 最新进展（Google News「CLARITY Act stablecoin」）<br>
+            ④ 查询本月及下月 CRCL 财报日、FOMC 会议日，记入台账事件日历<br>
+            ⑤ 检查全部现有持仓：价格、Delta、到期日，确认无触发主动平仓条件<br>
+            ⑥ 第二/三层：计算 CRCL/COIN 30日滚动 Beta，更新对冲比率
+          </td>
+        </tr>
+        <tr>
+          <td class="blue">制定方案</td>
+          <td class="mono">25 分钟</td>
+          <td>
+            ① 根据市场状态和 IVR，判断本月是否执行新组合（状态 D 或 IVR&lt;35% → 不执行，记录原因）<br>
+            ② 若执行：用 Delta 矩阵选卖腿行权价 → 流动性评分 → EV 计算（全部达标方可开仓）<br>
+            ③ 第二/三层：计算 COIN Put 对冲张数，确认对冲成本 ≤ 净权利金 35%<br>
+            ④ 计算执行后总保证金占用，确认不超上限<br>
+            ⑤ 写下具体执行计划：行权价、到期日、合约数、预期权利金、EV 数值
+          </td>
+        </tr>
+        <tr>
+          <td class="green">执行交易</td>
+          <td class="mono">20 分钟</td>
+          <td>
+            ① IBKR TWS → Combo Order → 同时提交两腿，挂净权利金限价单<br>
+            ② 等待 3 分钟 → 未成交则降 $0.05，最多 3 次调整<br>
+            ③ 第三次仍未成交 → 取消，本月机会未成交，下周重新评估<br>
+            ④ 成交后截图，立即更新台账
+          </td>
+        </tr>
+        <tr>
+          <td class="amber">风控复核</td>
+          <td class="mono">10 分钟</td>
+          <td>
+            ① 计算所有持仓总 Delta，确认在限额内<br>
+            ② 确认总保证金占用 ≤ 15%（账户执行资金层）<br>
+            ③ 确认保护性 Put 仍在有效期内且覆盖规模足够<br>
+            ④ 确认 W-8BEN 有效（每年 1 月专项检查）
+          </td>
+        </tr>
+        <tr>
+          <td>台账更新</td>
+          <td class="mono">5 分钟</td>
+          <td>
+            ① 更新 Excel 台账（见第十三节格式）<br>
+            ② 记录本月净权利金收入、已实现盈亏、月化收益率<br>
+            ③ 标记税务事件（权利金收入 / 接货 / 资本利得），折算 CNY 金额<br>
+            ④ 若有被行权，红色标记，提醒 CPA 下季度审阅
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 13: 绩效追踪 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2 class="section-title">绩效追踪与台账</h2>
+    <span class="section-note">每笔交易必填 · 为 CPA 申报提供完整依据</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">核心绩效指标</div>
+      <table>
+        <tbody>
+          <tr>
+            <td><span class="tt" data-tip="月化权利金收益率 = 当月净权利金收入（扣对冲成本）÷ 月初套利头寸保证金占用。注意分母是占用保证金而非总账户，能更准确反映资金利用效率。">月化权利金收益率</span></td>
+            <td class="mono">净权利金 ÷ 月初保证金占用</td>
+            <td class="green">目标 1.5%–4.0%</td>
+          </tr>
+          <tr>
+            <td>年化收益率</td>
+            <td class="mono">(1 + 月化率)^12 − 1</td>
+            <td class="green">目标 20%–60%</td>
+          </tr>
+          <tr>
+            <td>策略胜率</td>
+            <td class="mono">盈利组合数 ÷ 总完结数</td>
+            <td class="green">目标 &gt; 65%</td>
+          </tr>
+          <tr>
+            <td><span class="tt" data-tip="夏普比率 = 年化超额收益 ÷ 年化波动率。反映每单位风险获得的超额回报，>1.5 被认为优秀，>2.0 达到对冲基金标准。">夏普比率</span></td>
+            <td class="mono">年化超额收益 ÷ 年化波动率</td>
+            <td class="green">目标 &gt; 1.5</td>
+          </tr>
+          <tr>
+            <td>最大回撤</td>
+            <td class="mono">峰值净值 → 谷值净值</td>
+            <td class="amber">目标 &lt; 15%</td>
+          </tr>
+          <tr>
+            <td>对冲有效性</td>
+            <td class="mono">亏损单 COIN Put 收益 ÷ CRCL 亏损额</td>
+            <td class="blue">目标 &gt; 60%（第二层）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">台账必填字段（每笔一行）</div>
+      <table>
+        <thead><tr><th>字段</th><th>示例 / 格式</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>组合 ID</td><td class="mono">CRCL_BPS_20260401_001</td><td>唯一标识</td></tr>
+          <tr><td>卖腿（CRCL Put）</td><td class="mono">$75 Put，25张，$5.20，Δ -0.20</td><td>权利金收入</td></tr>
+          <tr><td>买腿（CRCL Put）</td><td class="mono">$65 Put，25张，$2.30，Δ -0.10</td><td>对冲成本</td></tr>
+          <tr><td>对冲腿（COIN Put）</td><td class="mono">$150 Put，4张，$3.80，Δ -0.15</td><td>对冲成本（第二/三层）</td></tr>
+          <tr><td>净权利金</td><td class="mono">$2.90/股，$7,250 总</td><td>净收益基础</td></tr>
+          <tr><td>市场状态 / IVR / IV/HRV</td><td class="mono">B / 62% / 1.40</td><td>策略合规存档</td></tr>
+          <tr><td>最大亏损（总）</td><td class="mono">$710 × 25 = $17,750</td><td>风险敞口确认</td></tr>
+          <tr><td>平仓原因 / 最终盈亏</td><td class="mono">盈利50%平 / +$3,625</td><td>损益确认（CPA）</td></tr>
+          <tr><td>CNY 折算</td><td class="mono">按交易日 USD/CNY 汇率</td><td>中国税务申报</td></tr>
+          <tr><td>税务事件标记</td><td class="mono">权利金 / 接货 / 资本利得</td><td>CPA 分类申报</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title">真实收益预期（全账户口径）</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>情景</th><th>年化净回报（全账户）</th><th>关键假设</th></tr></thead>
+        <tbody>
+          <tr><td class="green">乐观</td><td class="mono green">25%–50%</td><td>IVR 持续 60%+，IV/HRV ≥ 1.35，无 L3 熔断，CLARITY Act 出现有利结果</td></tr>
+          <tr><td class="gold">基准</td><td class="mono gold">12%–22%</td><td>IVR 利用率 60%，IV/HRV 均值 1.30，偶发 L1/L2，部分接货转 Covered Call</td></tr>
+          <tr><td class="amber">压力</td><td class="mono amber">-5%–+5%</td><td>CLARITY Act 负面进展造成 L2 熔断，接货后股价持续低迷</td></tr>
+          <tr><td class="red">极端</td><td class="mono red">-20%–-35%</td><td>USDC 脱钩或监管禁令导致 L3/L4 熔断，多头寸在保护 Put 触发前被行权</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:10px;">注：全账户口径假设执行资金层占 15%，其余 85% 持流动性缓冲。若提高执行资金比例，收益与亏损将同比放大。CRCL 历史最大跌幅超 90%（$299 → $31），极端情景不可忽视。</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════ SECTION 14: 心理纪律 ═══════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2 class="section-title">心理纪律与策略哲学</h2>
+  </div>
+
+  <div class="card" style="border-color: var(--border);">
+    <div class="card-title">常见心理陷阱与正确应对</div>
+    <table>
+      <thead><tr><th>心理陷阱</th><th>典型表现</th><th>正确应对</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>追逐权利金</td>
+          <td>IVR &lt; 35% 或状态 D 时仍想找机会开仓</td>
+          <td class="green">接受「不操作」本身就是操作。无统计优势时，最佳仓位是零。</td>
+        </tr>
+        <tr>
+          <td>监管新闻焦虑</td>
+          <td>CLARITY Act 讨论期间频繁调仓</td>
+          <td class="amber">遵守事件窗口期禁令。已布局保护 Put 就是最好的应对，不临时加减仓。</td>
+        </tr>
+        <tr>
+          <td>接货恐慌</td>
+          <td>被行权后立即以市价抛售接货的 CRCL</td>
+          <td class="green">接货是预期内结果。立即切换 Covered Call 模式，摊薄成本。</td>
+        </tr>
+        <tr>
+          <td>扩大仓位冲动</td>
+          <td>连续盈利后突破仓位上限「多赚一点」</td>
+          <td class="amber">仓位上限保护的是尾部风险时不被摧毁。盈利应放大账户，而非放大比例风险。</td>
+        </tr>
+        <tr>
+          <td>止损犹豫</td>
+          <td>亏损达 200% 净权利金时仍等待「可能回来」</td>
+          <td class="red">止损规则保护总账户，不针对单笔。执行止损后复盘原因，不复盘是否该扛。</td>
+        </tr>
+        <tr>
+          <td>信息过载</td>
+          <td>每天追踪 CLARITY Act 最新消息频繁调整判断</td>
+          <td class="green">策略决策频率：每周一判断一次市场状态，每月一次开仓评估。高频关注新闻 ≠ 高频调整仓位。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top: 36px; padding: 28px; border: 0.5px solid var(--border); text-align: center;">
+    <p style="font-family: 'IBM Plex Serif', serif; font-size: 17px; font-weight: 300; font-style: italic; color: var(--text-dim); line-height: 2; letter-spacing: 0.2px;">
+      你经营的是一家波动率溢价公司——专门在市场高估 CRCL 监管不确定性时，<br>
+      系统性收取这份恐慌溢价。大部分时间你什么都不做；<br>
+      当三重条件同时满足时，你用纪律赚钱，而不是靠运气。
+    </p>
+  </div>
+</section>
+
+
+<!-- Footer -->
+<div class="doc-footer">
+  <p><strong>法律声明：</strong>本手册为个人化策略参考框架，不构成投资建议、税务建议或法律建议。期权交易可导致本金全部损失。所有 NRA 税务相关内容须经持牌 CPA 书面确认方可执行。历史收益不代表未来表现。CLARITY Act 立法进程具有不确定性，任何监管变化均可能使本策略的假设前提发生根本性改变，使用者须自行评估并承担全部风险。</p>
+  <p style="margin-top: 8px;">CRCL 期权增强收益操作手册 V1.0 · 制定日期：2026-04-01 · 机密文件，仅供持有人参考</p>
+</div>
+
+</div>
+</body>
+</html>
