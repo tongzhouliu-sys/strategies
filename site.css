@@ -693,3 +693,39 @@ html.site-doc body:has(> .shell > nav + main) .shell > main {
     display: none !important;
   }
 }
+
+/* ─── 首页（hub）：全宽展示，不展示侧边导航栏 ─── */
+html.site-doc nav.site-chrome.site-chrome--hub {
+  display: none !important;
+}
+
+html.site-doc body:has(> nav.site-chrome.site-chrome--hub) {
+  display: block !important;
+}
+
+/* ─── 全站统一排版 ─── */
+html.site-doc h1,
+html.site-doc h2,
+html.site-doc h3,
+html.site-doc h4,
+html.site-doc h5,
+html.site-doc h6 {
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+html.site-doc p {
+  line-height: 1.7;
+}
+
+html.site-doc a {
+  transition: color 0.15s, opacity 0.15s;
+}
+
+/* ─── 导航链接悬停：高亮激活态 ─── */
+html.site-doc nav a:focus-visible {
+  outline: 2px solid var(--site-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
