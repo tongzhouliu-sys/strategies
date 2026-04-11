@@ -71,6 +71,18 @@ pre {
   background: rgba(200, 151, 58, 0.58);
 }
 
+/* ─── 导航栏内分组标签统一样式 ─── */
+html.site-doc .nav-section-label,
+html.site-doc .nav-label,
+html.site-doc .sb-group,
+html.site-doc .sidebar-section-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
 /* ─── 全站左侧导航栏（站点链接 / 首页目录）─── */
 nav.site-chrome {
   box-sizing: border-box;
@@ -598,6 +610,150 @@ html.site-doc body:has(> header.hdr + nav.sidebar + main.main) > main.main {
   max-width: none !important;
 }
 
+/* ─── aapl / meta：.layout > nav.sidebar + main ─── */
+html.site-doc .layout:has(> nav.sidebar + main) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  min-height: 100vh;
+}
+
+html.site-doc .layout:has(> nav.sidebar + main) > nav.sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  left: auto !important;
+}
+
+html.site-doc .layout:has(> nav.sidebar + main) > main {
+  grid-column: 2 !important;
+  margin-left: 0 !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
+/* ─── kaishang：body > nav.sidebar（首位）+ main.main ─── */
+html.site-doc body:has(> nav.sidebar:first-child + main.main) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav.sidebar:first-child + main.main) > nav.sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  left: auto !important;
+}
+
+html.site-doc body:has(> nav.sidebar:first-child + main.main) > main.main {
+  grid-column: 2 !important;
+  margin-left: 0 !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
+/* ─── mstr：body > nav#sidebar + div#main ─── */
+html.site-doc body:has(> nav#sidebar + div#main) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav#sidebar + div#main) > nav#sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  left: auto !important;
+}
+
+html.site-doc body:has(> nav#sidebar + div#main) > div#main {
+  grid-column: 2 !important;
+  margin-left: 0 !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
+/* ─── nvda：.page-wrap > nav.sidebar + main.main ─── */
+html.site-doc .page-wrap:has(> nav.sidebar + main.main) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  max-width: none !important;
+  min-height: 100vh;
+}
+
+html.site-doc .page-wrap:has(> nav.sidebar + main.main) > nav.sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  left: auto !important;
+}
+
+html.site-doc .page-wrap:has(> nav.sidebar + main.main) > main.main {
+  grid-column: 2 !important;
+  margin-left: 0 !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
+/* ─── qqq：body > nav#sidebar + main#main ─── */
+html.site-doc body:has(> nav#sidebar + main#main) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav#sidebar + main#main) > nav#sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  left: auto !important;
+}
+
+html.site-doc body:has(> nav#sidebar + main#main) > main#main {
+  grid-column: 2 !important;
+  margin-left: 0 !important;
+  min-width: 0;
+  max-width: none !important;
+}
+
 /* ─── ibit_v .shell：nav + main ─── */
 html.site-doc body:has(> .shell > nav + main) .shell {
   display: grid !important;
@@ -631,7 +787,15 @@ html.site-doc body:has(> .shell > nav + main) .shell > main {
   html.site-doc body:has(> nav .nav-links):has(> section.hero),
   html.site-doc body:has(> header.hero + nav.nav),
   html.site-doc body:has(> header.header + aside.sidebar + main.main),
-  html.site-doc body:has(> header.hdr + nav.sidebar + main.main) {
+  html.site-doc body:has(> header.hdr + nav.sidebar + main.main),
+  html.site-doc body:has(> nav.sidebar:first-child + main.main),
+  html.site-doc body:has(> nav#sidebar + div#main),
+  html.site-doc body:has(> nav#sidebar + main#main) {
+    display: block !important;
+  }
+
+  html.site-doc .layout:has(> nav.sidebar + main),
+  html.site-doc .page-wrap:has(> nav.sidebar + main.main) {
     display: block !important;
   }
 
@@ -685,7 +849,15 @@ html.site-doc body:has(> .shell > nav + main) .shell > main {
   }
 
   html.site-doc body:has(> header.header + aside.sidebar + main.main),
-  html.site-doc body:has(> header.hdr + nav.sidebar + main.main) {
+  html.site-doc body:has(> header.hdr + nav.sidebar + main.main),
+  html.site-doc body:has(> nav.sidebar:first-child + main.main),
+  html.site-doc body:has(> nav#sidebar + div#main),
+  html.site-doc body:has(> nav#sidebar + main#main) {
+    display: block !important;
+  }
+
+  html.site-doc .layout:has(> nav.sidebar + main),
+  html.site-doc .page-wrap:has(> nav.sidebar + main.main) {
     display: block !important;
   }
 
