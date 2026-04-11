@@ -1,0 +1,695 @@
+/**
+ * 全站视觉与布局：左栏导航 + 右侧主内容（在保留各页文案与 DOM 语义的前提下，通过 CSS 与最小结构补充统一体验）。
+ * 请在各页 <style> 之后引入。
+ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+:root {
+  --site-gold: #c8922a;
+  --site-gold-soft: #e8c066;
+  --site-accent: #1a1a2e;
+}
+
+html.site-doc {
+  --site-nav-w: 260px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--site-gold), var(--site-gold-soft), var(--site-gold));
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+body {
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif !important;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', Consolas, monospace !important;
+}
+
+::selection {
+  background-color: rgba(200, 151, 58, 0.32);
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--site-gold);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 151, 58, 0.38);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 151, 58, 0.58);
+}
+
+/* ─── 全站左侧导航栏（站点链接 / 首页目录）─── */
+nav.site-chrome {
+  box-sizing: border-box;
+  width: var(--site-nav-w);
+  min-width: var(--site-nav-w);
+  background: linear-gradient(180deg, #141824 0%, #0e1118 100%);
+  border-right: 1px solid rgba(200, 151, 58, 0.22);
+  padding: 20px 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 50;
+}
+
+nav.site-chrome .site-chrome-brand {
+  padding: 0 18px 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+nav.site-chrome .site-chrome-brand a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--site-gold-soft);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+nav.site-chrome .site-chrome-brand a:hover {
+  color: #fff;
+}
+
+nav.site-chrome > a {
+  display: block;
+  padding: 8px 18px;
+  font-size: 13px;
+  color: rgba(232, 232, 240, 0.72);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+nav.site-chrome > a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: rgba(200, 151, 58, 0.55);
+}
+
+/* 首页：栏目锚点 */
+nav.site-chrome--hub > a {
+  font-size: 12.5px;
+}
+
+/* 首页 + 带 site-chrome 的页面：body 两栏 */
+html.site-doc body:has(> nav.site-chrome + header),
+html.site-doc body:has(> nav.site-chrome + .tip),
+html.site-doc body:has(> nav.site-chrome + div.page) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav.site-chrome + header) > nav.site-chrome,
+html.site-doc body:has(> nav.site-chrome + .tip) > nav.site-chrome,
+html.site-doc body:has(> nav.site-chrome + div.page) > nav.site-chrome {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+html.site-doc body:has(> nav.site-chrome + header) > header,
+html.site-doc body:has(> nav.site-chrome + header) > main {
+  grid-column: 2;
+  min-width: 0;
+}
+
+html.site-doc body:has(> nav.site-chrome + .tip) > .tip {
+  grid-column: 2;
+  min-width: 0;
+  justify-self: center;
+  align-self: center;
+}
+
+html.site-doc body:has(> nav.site-chrome + div.page) > div.page {
+  grid-column: 2;
+  min-width: 0;
+  max-width: none;
+}
+
+/* ─── guide.html：顶栏改为左侧纵向导航 ─── */
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) > div.header {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  width: var(--site-nav-w) !important;
+  min-width: var(--site-nav-w);
+  max-width: var(--site-nav-w);
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 20px 0 24px !important;
+  gap: 0 !important;
+  border-bottom: none !important;
+  border-right: 1px solid var(--border2, rgba(255, 255, 255, 0.1));
+  background: linear-gradient(180deg, #0d1420 0%, var(--bg, #080b12) 100%) !important;
+}
+
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) > div.header .header-logo {
+  padding: 0 18px 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border2, rgba(255, 255, 255, 0.1));
+  width: 100%;
+}
+
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) .header-nav {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+  width: 100%;
+  padding: 0 8px;
+}
+
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) .header-nav a {
+  display: block;
+  padding: 9px 12px !important;
+  border-radius: 4px;
+}
+
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) > div.hero,
+html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main) > div.main {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── IBIT：顶栏 nav.nav → 左侧 ─── */
+html.site-doc body:has(> nav.nav + div.wrapper) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav.nav + div.wrapper) > nav.nav {
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  grid-column: 1;
+  grid-row: 1 / -1;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: var(--site-nav-w);
+  height: 100vh !important;
+  max-height: 100vh;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  padding: 16px 0 24px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border-bottom: none !important;
+  border-right: 1px solid var(--border2, rgba(255, 255, 255, 0.12));
+}
+
+html.site-doc body:has(> nav.nav + div.wrapper) > nav.nav .nav-logo {
+  width: 100%;
+  padding: 0 16px 14px !important;
+  margin: 0 0 8px 0 !important;
+  margin-right: 0 !important;
+  border-bottom: 1px solid var(--border2, rgba(255, 255, 255, 0.08));
+  white-space: normal !important;
+}
+
+html.site-doc body:has(> nav.nav + div.wrapper) > nav.nav a {
+  display: block !important;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 16px !important;
+}
+
+html.site-doc body:has(> nav.nav + div.wrapper) > div.wrapper {
+  grid-column: 2;
+  min-width: 0;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 48px 40px 5rem !important;
+}
+
+/* ─── open.html：顶栏 nav + .page ─── */
+html.site-doc body:has(> nav .nav-brand + a):has(> .page) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav .nav-brand + a):has(> .page) > nav {
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  grid-column: 1;
+  grid-row: 1 / -1;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 16px 12px !important;
+  border-bottom: none !important;
+  border-right: 1px solid var(--border, #252b38);
+}
+
+html.site-doc body:has(> nav .nav-brand + a):has(> .page) > nav .nav-brand {
+  border-right: none !important;
+  margin-right: 0 !important;
+  padding: 8px 8px 14px !important;
+  border-bottom: 1px solid var(--border, #252b38);
+}
+
+html.site-doc body:has(> nav .nav-brand + a):has(> .page) > nav a {
+  border-bottom: 2px solid transparent !important;
+}
+
+html.site-doc body:has(> nav .nav-brand + a):has(> .page) > .page {
+  grid-column: 2;
+  min-width: 0;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+}
+
+/* ─── skill.html：nav + hero + main ─── */
+html.site-doc body:has(> nav .nav-links):has(> section.hero) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) > nav {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 20px 14px !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) > nav .version-pill {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) .nav-links {
+  flex-direction: column !important;
+  width: 100%;
+  gap: 2px !important;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) .nav-links li {
+  width: 100%;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) .nav-links a {
+  display: block;
+  padding: 8px 10px;
+}
+
+html.site-doc body:has(> nav .nav-links):has(> section.hero) > section.hero,
+html.site-doc body:has(> nav .nav-links):has(> section.hero) > main.main {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── crcl_v.html：hero + nav.nav + sections ─── */
+html.site-doc body:has(> header.hero + nav.nav) {
+  display: grid;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> header.hero + nav.nav) > nav.nav {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky !important;
+  top: 0;
+  align-self: start;
+  height: 100vh !important;
+  max-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 16px 12px !important;
+  border-bottom: none !important;
+  border-right: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+html.site-doc body:has(> header.hero + nav.nav) > nav.nav a {
+  display: block !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  white-space: normal !important;
+  padding: 10px 8px !important;
+}
+
+html.site-doc body:has(> header.hero + nav.nav) > header.hero,
+html.site-doc body:has(> header.hero + nav.nav) > section.sec {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── study.html：.page 内目录靠左 ─── */
+html.site-doc body:has(> .page > .toc) > .page {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  max-width: min(1200px, 100%) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+  align-items: start;
+  gap: 0 28px;
+}
+
+html.site-doc body:has(> .page > .toc) > .page > .masthead {
+  grid-column: 1 / -1;
+}
+
+html.site-doc body:has(> .page > .toc) > .page > .toc {
+  grid-column: 1;
+  grid-row: 2 / -1;
+  position: sticky !important;
+  top: 12px;
+  align-self: start;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto !important;
+  margin-bottom: 0 !important;
+}
+
+html.site-doc body:has(> .page > .toc) > .page > .sec {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── guide_v：.container 内 .toc 靠左 ─── */
+html.site-doc body:has(> .hero + .container > .toc) > .container {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  max-width: min(1200px, 100%) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  gap: 0 28px;
+  align-items: start;
+}
+
+html.site-doc body:has(> .hero + .container > .toc) > .container > .toc {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky !important;
+  top: 12px;
+  align-self: start;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto !important;
+  margin-bottom: 0 !important;
+}
+
+html.site-doc body:has(> .hero + .container > .toc) > .container > .section {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── TSLA：.page-wrap 内 .toc 固定在左栏 ─── */
+html.site-doc .page-wrap:has(> .toc) {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  max-width: min(1320px, 100%) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-items: start;
+}
+
+html.site-doc .page-wrap:has(> .toc) > .toc {
+  grid-column: 1 !important;
+  grid-row: 1 / -1 !important;
+  position: sticky !important;
+  top: 12px;
+  align-self: start !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow-y: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+html.site-doc .page-wrap:has(> .toc) > *:not(.toc) {
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* ─── put.html：header + sidebar 同左栏，主内容右栏 ─── */
+html.site-doc body:has(> header.header + aside.sidebar + main.main) {
+  display: grid !important;
+  grid-template-columns: var(--sidebar-w, 280px) minmax(0, 1fr) !important;
+  grid-template-rows: auto 1fr !important;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> header.header + aside.sidebar + main.main) > header.header {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  height: auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  padding: 16px 12px !important;
+}
+
+html.site-doc body:has(> header.header + aside.sidebar + main.main) .header-nav {
+  flex-direction: column !important;
+  width: 100%;
+  gap: 6px !important;
+}
+
+html.site-doc body:has(> header.header + aside.sidebar + main.main) .header-nav button {
+  width: 100%;
+  text-align: left;
+}
+
+html.site-doc body:has(> header.header + aside.sidebar + main.main) > aside.sidebar {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  max-height: none !important;
+}
+
+html.site-doc body:has(> header.header + aside.sidebar + main.main) > main.main {
+  grid-column: 2 !important;
+  grid-row: 1 / -1 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  max-width: none !important;
+}
+
+/* ─── wheel.html：hdr + .sidebar + .main ─── */
+html.site-doc body:has(> header.hdr + nav.sidebar + main.main) {
+  display: grid !important;
+  grid-template-columns: var(--sidebar-w, 268px) minmax(0, 1fr) !important;
+  grid-template-rows: auto 1fr !important;
+  min-height: 100vh;
+  margin: 0;
+}
+
+html.site-doc body:has(> header.hdr + nav.sidebar + main.main) > header.hdr {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  height: auto !important;
+  flex-wrap: wrap !important;
+}
+
+html.site-doc body:has(> header.hdr + nav.sidebar + main.main) > nav.sidebar {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+}
+
+html.site-doc body:has(> header.hdr + nav.sidebar + main.main) > main.main {
+  grid-column: 2 !important;
+  grid-row: 1 / -1 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  max-width: none !important;
+}
+
+/* ─── ibit_v .shell：nav + main ─── */
+html.site-doc body:has(> .shell > nav + main) .shell {
+  display: grid !important;
+  grid-template-columns: var(--site-nav-w) minmax(0, 1fr) !important;
+  min-height: 100vh;
+}
+
+html.site-doc body:has(> .shell > nav + main) .shell > nav {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-height: 100vh;
+  height: auto !important;
+}
+
+html.site-doc body:has(> .shell > nav + main) .shell > main {
+  margin-left: 0 !important;
+  min-width: 0;
+}
+
+@media (max-width: 820px) {
+  html.site-doc body:has(> nav.site-chrome + header),
+  html.site-doc body:has(> nav.site-chrome + .tip),
+  html.site-doc body:has(> nav.site-chrome + div.page),
+  html.site-doc body:has(> div.header .header-nav):has(> div.hero):has(> div.main),
+  html.site-doc body:has(> nav.nav + div.wrapper),
+  html.site-doc body:has(> nav .nav-brand + a):has(> .page),
+  html.site-doc body:has(> nav .nav-links):has(> section.hero),
+  html.site-doc body:has(> header.hero + nav.nav),
+  html.site-doc body:has(> header.header + aside.sidebar + main.main),
+  html.site-doc body:has(> header.hdr + nav.sidebar + main.main) {
+    display: block !important;
+  }
+
+  html.site-doc nav.site-chrome {
+    position: relative !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px 14px !important;
+  }
+
+  html.site-doc nav.site-chrome .site-chrome-brand {
+    width: 100%;
+    border-bottom: none;
+    padding-bottom: 8px;
+    margin-bottom: 0;
+  }
+
+  html.site-doc nav.site-chrome > a {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  html.site-doc .page-wrap:has(> .toc) {
+    display: block !important;
+  }
+
+  html.site-doc .page-wrap:has(> .toc) > .toc {
+    position: relative !important;
+    max-height: none !important;
+  }
+
+  html.site-doc body:has(> .page > .toc) > .page {
+    display: block !important;
+  }
+
+  html.site-doc body:has(> .hero + .container > .toc) > .container {
+    display: block !important;
+  }
+}
+
+@media print {
+  html.site-doc body {
+    display: block !important;
+  }
+
+  html.site-doc body:has(> header.header + aside.sidebar + main.main),
+  html.site-doc body:has(> header.hdr + nav.sidebar + main.main) {
+    display: block !important;
+  }
+
+  html.site-doc nav.site-chrome {
+    display: none !important;
+  }
+}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="site-doc">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,6 +102,10 @@
     }
 
     .dot-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--gold); opacity: 0.5; flex-shrink: 0; }
+
+    main section {
+      scroll-margin-top: 24px;
+    }
 
     /* ── MAIN ── */
     main {
@@ -454,8 +458,21 @@
       .header-meta { gap: 12px; }
     }
   </style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
+
+<nav class="site-chrome site-chrome--hub" aria-label="栏目导航">
+  <div class="site-chrome-brand"><a href="index.html">期权学习中心</a></div>
+  <a href="#sec-stocks">个股期权策略</a>
+  <a href="#sec-etf">ETF / 指数</a>
+  <a href="#sec-multi">多标的策略</a>
+  <a href="#sec-learn">学习方法</a>
+  <a href="#sec-cases">实战案例</a>
+  <a href="study.html">学习计划</a>
+  <a href="guide.html">作战手册</a>
+  <a href="guide_v.html">新手指南</a>
+</nav>
 
 <header>
   <div class="header-eyebrow">// Options Learning Hub · 期权学习交流</div>
@@ -476,7 +493,7 @@
 <main>
 
   <!-- ① 个股策略 -->
-  <section>
+  <section id="sec-stocks">
     <div class="section-head">
       <span class="section-title">个股期权策略</span>
       <span class="section-count">16 stocks</span>
@@ -572,7 +589,7 @@
   </section>
 
   <!-- ② ETF / 指数期权 -->
-  <section>
+  <section id="sec-etf">
     <div class="section-head">
       <span class="section-title">ETF · 指数期权</span>
       <span class="section-count">6 instruments</span>
@@ -626,7 +643,7 @@
   </section>
 
   <!-- ③ 多标的策略 -->
-  <section>
+  <section id="sec-multi">
     <div class="section-head">
       <span class="section-title">多标的策略</span>
       <span class="section-count">3 strategies</span>
@@ -659,7 +676,7 @@
   </section>
 
   <!-- ④ 学习方法 -->
-  <section>
+  <section id="sec-learn">
     <div class="section-head">
       <span class="section-title">学习方法</span>
       <span class="section-count">2 guides</span>
@@ -689,7 +706,7 @@
   </section>
 
   <!-- ⑤ 客户真实案例 -->
-  <section>
+  <section id="sec-cases">
     <div class="section-head">
       <span class="section-title">实战案例分享</span>
       <span class="section-count">3 cases</span>
