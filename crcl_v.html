@@ -4,372 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRCL · 机构级期权套利策略手册 · </title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:       #070b0f;
-  --surface:  #0c1218;
-  --panel:    #101820;
-  --panel2:   #141f28;
-  --border:   #1c2d3a;
-  --border2:  #243547;
-  --gold:     #c8a04a;
-  --gold2:    #e6c97a;
-  --gold3:    #f5e0a8;
-  --cyan:     #3ab8f0;
-  --cyan2:    #7ed4f8;
-  --green:    #3dd68c;
-  --green2:   #85efbb;
-  --red:      #f06060;
-  --orange:   #f09040;
-  --purple:   #a888f8;
-  --teal:     #2dd4bf;
-  --text:     #e4ecf4;
-  --text2:    #94aabb;
-  --text3:    #5a7080;
-  --mono:     'IBM Plex Mono', monospace;
-  --serif:    'Cormorant Garamond', 'Noto Serif SC', serif;
-  --body:     'IBM Plex Mono', 'Noto Serif SC', monospace;
-}
-
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--body);
-  font-size:13px;
-  line-height:1.85;
-  overflow-x:hidden;
-}
-
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);
-  pointer-events:none;z-index:9999;
-}
-
-/* ─── HERO ─── */
-.hero{
-  position:relative;
-  padding:80px 64px 60px;
-  border-bottom:1px solid var(--border);
-  overflow:hidden;
-  background:
-    radial-gradient(ellipse at 20% 60%,rgba(58,184,240,.05) 0%,transparent 55%),
-    radial-gradient(ellipse at 80% 20%,rgba(200,160,74,.07) 0%,transparent 50%);
-}
-.hero-grid{
-  position:absolute;inset:0;
-  background-image:
-    linear-gradient(rgba(28,45,58,.45) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(28,45,58,.45) 1px,transparent 1px);
-  background-size:56px 56px;
-  mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.5) 30%,rgba(0,0,0,.5) 80%,transparent 100%);
-}
-.hero-corner{
-  position:absolute;top:0;right:0;
-  width:220px;height:220px;
-  border-bottom:1px solid var(--border);
-  border-left:1px solid var(--border);
-  pointer-events:none;
-}
-.hero-tag{
-  font-family:var(--mono);
-  font-size:9px;letter-spacing:.35em;
-  color:var(--cyan);text-transform:uppercase;
-  margin-bottom:22px;
-  display:flex;align-items:center;gap:14px;position:relative;
-}
-.hero-tag::before{content:'';display:block;width:36px;height:1px;background:var(--cyan);}
-.hero-title{
-  font-family:var(--serif);
-  font-size:clamp(24px,2.5vw,32px);
-  line-height:0.94;
-  font-weight:400;
-  color:var(--text);
-  position:relative;
-}
-.hero-title .accent{color:var(--gold);font-style:italic;}
-.hero-sub{
-  margin-top:14px;font-size:12px;color:var(--text2);
-  letter-spacing:.04em;max-width:580px;line-height:1.9;position:relative;
-}
-.hero-metrics{
-  margin-top:44px;
-  display:flex;gap:0;
-  flex-wrap:wrap;
-  position:relative;
-}
-.hm{
-  padding:16px 32px 16px 0;
-  margin-right:32px;
-  border-right:1px solid var(--border);
-}
-.hm:last-child{border-right:none;}
-.hm-label{font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
-.hm-val{font-size:15px;color:var(--gold2);font-weight:500;font-family:var(--mono);}
-.hm-val.good{color:var(--green);}
-.hm-val.info{color:var(--cyan);}
-.ver-badge{
-  position:absolute;top:38px;right:64px;
-  border:1px solid rgba(200,160,74,.4);
-  color:var(--gold);font-size:9px;
-  letter-spacing:.18em;padding:7px 18px;text-transform:uppercase;
-}
-
-/* ─── NAV ─── */
-.nav{
-  background:rgba(12,18,24,.92);
-  border-bottom:1px solid var(--border);
-  padding:0 64px;
-  display:flex;gap:0;
-  flex-wrap:wrap;
-  position:sticky;top:0;z-index:100;
-  backdrop-filter:blur(14px);
-}
-.nav a{
-  color:var(--text3);text-decoration:none;
-  font-size:9px;letter-spacing:.12em;
-  padding:14px 18px;text-transform:uppercase;
-  border-right:1px solid var(--border);
-  transition:color .2s;white-space:nowrap;
-}
-.nav a:last-child{border-right:none;}
-.nav a:hover{color:var(--cyan);}
-
-/* ─── SECTION ─── */
-.sec{
-  padding:68px 64px;
-  border-bottom:1px solid var(--border);
-}
-.sec:last-child{border-bottom:none;}
-.sec-hd{
-  display:flex;align-items:baseline;gap:18px;margin-bottom:36px;
-}
-.sec-n{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.12em;min-width:28px;}
-.sec-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--text);}
-.sec-title .en{
-  display:block;font-size:9px;font-family:var(--mono);
-  color:var(--text3);letter-spacing:.22em;text-transform:uppercase;margin-bottom:3px;
-}
-
-/* ─── TOOLTIPS ─── */
-.tt{
-  position:relative;
-  border-bottom:1px dashed rgba(58,184,240,.5);
-  cursor:help;color:var(--cyan2);
-}
-.tt::after{
-  content:attr(data-tip);
-  position:absolute;
-  bottom:calc(100% + 8px);
-  left:50%;transform:translateX(-50%);
-  background:#0c2030;
-  color:var(--text);
-  font-size:11px;font-family:var(--body);
-  line-height:1.7;
-  padding:10px 14px;
-  border:1px solid var(--border2);
-  white-space:normal;
-  min-width:220px;max-width:320px;
-  pointer-events:none;
-  opacity:0;transition:opacity .2s;
-  z-index:1000;
-  border-radius:2px;
-}
-.tt:hover::after{opacity:1;}
-
-/* ─── CALLOUT ─── */
-.callout{
-  border-left:3px solid var(--gold);
-  background:rgba(200,160,74,.05);
-  padding:16px 20px;margin:24px 0;
-  font-size:12px;color:var(--text2);line-height:1.9;
-}
-.callout.info{border-color:var(--cyan);background:rgba(58,184,240,.05);}
-.callout.danger{border-color:var(--red);background:rgba(240,96,96,.05);}
-.callout.green{border-color:var(--green);background:rgba(61,214,140,.05);}
-.callout-lbl{
-  font-size:9px;letter-spacing:.22em;text-transform:uppercase;
-  font-weight:600;margin-bottom:6px;color:var(--gold);
-}
-.callout.info .callout-lbl{color:var(--cyan);}
-.callout.danger .callout-lbl{color:var(--red);}
-.callout.green .callout-lbl{color:var(--green);}
-
-/* ─── TABLES ─── */
-.tbl-wrap{overflow-x:auto;margin:22px 0;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-thead tr{background:var(--panel2);border-bottom:1px solid var(--border2);}
-th{
-  padding:11px 14px;text-align:left;
-  font-size:9px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--text3);font-weight:500;white-space:nowrap;
-}
-td{
-  padding:10px 14px;border-bottom:1px solid rgba(28,45,58,.7);
-  color:var(--text);vertical-align:top;line-height:1.75;
-}
-tbody tr:hover{background:rgba(58,184,240,.025);}
-
-/* ─── CHIPS ─── */
-.chip{
-  display:inline-block;padding:2px 9px;
-  font-size:9px;letter-spacing:.05em;
-  border-radius:2px;font-family:var(--mono);
-}
-.chip-gold{background:rgba(200,160,74,.14);color:var(--gold2);border:1px solid rgba(200,160,74,.3);}
-.chip-cyan{background:rgba(58,184,240,.12);color:var(--cyan);border:1px solid rgba(58,184,240,.25);}
-.chip-green{background:rgba(61,214,140,.12);color:var(--green);border:1px solid rgba(61,214,140,.25);}
-.chip-red{background:rgba(240,96,96,.12);color:var(--red);border:1px solid rgba(240,96,96,.25);}
-.chip-orange{background:rgba(240,144,64,.12);color:var(--orange);border:1px solid rgba(240,144,64,.25);}
-.chip-purple{background:rgba(168,136,248,.12);color:var(--purple);border:1px solid rgba(168,136,248,.25);}
-
-/* ─── FORMULA BOX ─── */
-.formula{
-  background:#060d12;
-  border:1px solid var(--border);
-  padding:18px 22px;
-  font-family:var(--mono);
-  font-size:11.5px;color:var(--cyan2);
-  line-height:2.1;margin:20px 0;overflow-x:auto;
-}
-.formula .cm{color:var(--text3);}
-.formula .k{color:var(--gold);}
-.formula .v{color:var(--green);}
-.formula .op{color:var(--purple);}
-.formula .hl{color:var(--orange);}
-
-/* ─── STRATEGY CARDS ─── */
-.strat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:22px 0;}
-.strat-card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:22px;position:relative;
-}
-.strat-card::before{
-  content:'';position:absolute;top:0;left:0;
-  width:100%;height:2px;
-}
-.strat-card.t1::before{background:var(--gold);}
-.strat-card.t2::before{background:var(--cyan);}
-.strat-card.t3::before{background:var(--purple);}
-.strat-card.t4::before{background:var(--orange);}
-.strat-card.t5::before{background:var(--teal);}
-.strat-card.t6::before{background:var(--red);}
-.strat-tier{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
-.strat-name{font-family:var(--serif);font-size:18px;color:var(--text);margin-bottom:4px;}
-.strat-en{font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:12px;}
-.strat-desc{font-size:11.5px;color:var(--text2);line-height:1.9;margin-bottom:14px;}
-.strat-params{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.sp{display:flex;flex-direction:column;gap:2px;}
-.sp-l{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);}
-.sp-v{font-size:11px;color:var(--text);font-family:var(--mono);}
-
-/* ─── GREEKS TABLE ─── */
-.greek-row{
-  display:flex;align-items:center;gap:12px;
-  padding:8px 0;border-bottom:1px solid rgba(28,45,58,.5);
-}
-.greek-sym{width:70px;color:var(--text2);font-family:var(--mono);font-style:italic;font-size:14px;}
-.greek-bar-wrap{flex:1;height:4px;background:var(--panel2);border-radius:2px;}
-.greek-bar{height:100%;border-radius:2px;}
-.greek-val{width:90px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text);}
-.greek-action{font-size:10px;color:var(--text3);margin-top:2px;}
-
-/* ─── FLOW ─── */
-.flow{display:flex;align-items:stretch;flex-wrap:wrap;margin:22px 0;}
-.flow-step{
-  background:var(--panel);border:1px solid var(--border);
-  padding:12px 16px;text-align:center;min-width:100px;
-  display:flex;flex-direction:column;justify-content:center;gap:4px;
-}
-.flow-step-n{font-size:9px;color:var(--text3);letter-spacing:.1em;}
-.flow-step-t{font-size:11px;color:var(--text);line-height:1.5;}
-.flow-arr{display:flex;align-items:center;padding:0 4px;color:var(--border2);font-size:16px;}
-
-/* ─── FUSE TABLE ─── */
-.fuse-L1 td:first-child{color:var(--gold2);font-weight:500;}
-.fuse-L2 td:first-child{color:var(--orange);font-weight:500;}
-.fuse-L3 td:first-child{color:var(--red);font-weight:500;}
-.fuse-L4 td:first-child{color:#cc4444;font-weight:500;}
-
-/* ─── RISK MATRIX ─── */
-.risk-matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:18px 0;}
-.rm-cell{padding:11px 12px;font-size:10px;font-family:var(--mono);}
-.rm-hd{background:var(--panel2);color:var(--text3);font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
-.rm-lo{background:rgba(61,214,140,.07);color:var(--green2);}
-.rm-md{background:rgba(240,144,64,.07);color:var(--orange);}
-.rm-hi{background:rgba(240,96,96,.07);color:var(--red);}
-
-/* ─── CHECKLIST ─── */
-.checklist{list-style:none;}
-.checklist li{
-  padding:9px 0;border-bottom:1px solid rgba(28,45,58,.5);
-  display:flex;align-items:flex-start;gap:12px;
-  font-size:12px;color:var(--text2);line-height:1.7;
-}
-.checklist li:last-child{border-bottom:none;}
-.cl-num{
-  width:20px;height:20px;border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:9px;color:var(--text3);flex-shrink:0;margin-top:2px;
-}
-
-/* ─── KPI CARDS ─── */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:20px 0;}
-.kpi{background:var(--panel);border:1px solid var(--border);padding:14px 16px;}
-.kpi-l{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
-.kpi-v{font-size:22px;font-family:var(--mono);font-weight:500;color:var(--gold2);}
-.kpi-v.good{color:var(--green);}
-.kpi-v.info{color:var(--cyan);}
-.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;}
-
-/* ─── DIVIDER ─── */
-.divider{
-  display:flex;align-items:center;gap:14px;
-  margin:30px 0;color:var(--text3);
-  font-size:9px;letter-spacing:.2em;text-transform:uppercase;
-}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-
-/* ─── FOOTER ─── */
-footer{
-  padding:36px 64px;
-  border-top:1px solid var(--border);
-  display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:18px;
-}
-.foot-l{font-size:10px;color:var(--text3);line-height:1.9;}
-.foot-r{font-family:var(--serif);font-size:18px;color:var(--gold);font-style:italic;}
-
-/* ─── PROSE ─── */
-p{color:var(--text2);font-size:12.5px;line-height:1.95;margin-bottom:10px;}
-strong{color:var(--text);font-weight:500;}
-h3{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--text);margin:26px 0 12px;}
-h4{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin:20px 0 8px;}
-ul{padding-left:18px;color:var(--text2);font-size:12px;}
-ul li{margin-bottom:5px;line-height:1.75;}
-
-@media(max-width:720px){
-  .hero,.sec{padding-left:24px;padding-right:24px;}
-  .nav{padding:0 24px;}
-  footer{padding:28px 24px;}
-  .ver-badge{display:none;}
-  .nav{overflow-x:auto;flex-wrap:nowrap;}
-  .strat-grid{grid-template-columns:1fr;}
-  .chart-row{grid-template-columns:1fr;}
-  .risk-matrix{grid-template-columns:1fr 1fr;}
-}
-</style>
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="assets/css/strategy.css">
 </head>
 <body>
-
+<div class="layout-wrapper">
+<nav class="sidebar">
+  <div class="sidebar-brand"><a href="index.html">CRCL 策略手册</a></div>
+  <a href="#s1">CRCL解构</a>
+  <a href="#s2">波动率框架</a>
+  <a href="#s3">策略矩阵</a>
+  <a href="#s4">事件引擎</a>
+  <a href="#s5">Greeks管理</a>
+  <a href="#s6">执行手册</a>
+  <a href="#s7">风险熔断</a>
+  <a href="#s8">跨资产对冲</a>
+  <a href="#s9">税务合规</a>
+  <a href="#s10">绩效追踪</a>
+</nav>
+<main class="main-content">
 <!-- ══════════════ HERO ══════════════ -->
 <header class="hero">
   <div class="hero-grid"></div>
@@ -413,18 +65,7 @@ ul li{margin-bottom:5px;line-height:1.75;}
 </header>
 
 <!-- ══════════════ NAV ══════════════ -->
-<nav class="nav">
-  <a href="#s1">CRCL解构</a>
-  <a href="#s2">波动率框架</a>
-  <a href="#s3">策略矩阵</a>
-  <a href="#s4">事件引擎</a>
-  <a href="#s5">Greeks管理</a>
-  <a href="#s6">执行手册</a>
-  <a href="#s7">风险熔断</a>
-  <a href="#s8">跨资产对冲</a>
-  <a href="#s9">税务合规</a>
-  <a href="#s10">绩效追踪</a>
-</nav>
+
 
 <!-- ══════════════ S1: CRCL解构 ══════════════ -->
 <section class="sec" id="s1">
@@ -1738,6 +1379,8 @@ ul li{margin-bottom:5px;line-height:1.75;}
     <em>Discipline is not.</em>
   </div>
 </footer>
-
+</main>
+</div>
+<script src="assets/js/disclaimer.js" defer></script>
 </body>
 </html>

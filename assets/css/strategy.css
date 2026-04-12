@@ -1,0 +1,209 @@
+/* ─────────────────────────────────────────────────────────────────
+   strategy.css · 全站唯一样式表 · 约15KB
+   统一排版 · 左深侧栏 · 右浅内容 · 响应式 · 打印优化
+   ───────────────────────────────────────────────────────────────── */
+
+/* 📐 1. 设计变量（统一复用源） */
+:root {
+  --bg-sidebar: #0f172a; --text-sidebar: #94a3b8;
+  --bg-content: #f8fafc; --text-main: #0f172a; --text-sec: #475569;
+  --c-danger: #dc2626; --c-info: #2563eb; --c-border: #e2e8f0;
+  --font-sans: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nav-w: 260px; --content-max: 840px;
+}
+
+/* 🌍 2. 基础重置与排版 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  color: var(--text-main);
+  background: var(--bg-content);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 2.5rem 0 1rem;
+  line-height: 1.35;
+  font-weight: 600;
+  scroll-margin-top: 1.5rem;
+  color: var(--text-main);
+}
+h1 { font-size: 1.9rem; border-bottom: 2px solid var(--c-border); padding-bottom: 0.5rem; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.15rem; color: var(--text-sec); }
+p { margin-bottom: 1rem; }
+ul, ol { margin: 0 0 1rem 1.5rem; padding-left: 0.5rem; }
+code, pre, .formula {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+pre { padding: 1rem; overflow-x: auto; }
+
+/* 📐 3. 布局架构（左深侧栏 + 右浅内容） */
+.layout-wrapper { display: flex; min-height: 100vh; }
+
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: var(--nav-w);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  color: var(--text-sidebar);
+  overflow-y: auto;
+  padding: 1.5rem;
+  z-index: 100;
+  border-right: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+.sidebar-brand {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #1e293b;
+}
+.sidebar-brand a {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e2e8f0 !important;
+  text-decoration: none;
+}
+
+.sidebar-section {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #475569;
+  margin: 1.25rem 0 0.4rem;
+  padding: 0 0.25rem;
+}
+
+.sidebar a {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  color: var(--text-sidebar);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  transition: all .2s;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.sidebar a:hover,
+.sidebar a.active {
+  color: #fff;
+  border-left-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.main-content {
+  margin-left: var(--nav-w);
+  flex: 1;
+  min-width: 0;
+  max-width: calc(var(--content-max) + var(--nav-w));
+  padding: 2.5rem 3rem;
+}
+
+/* Homepage: no sidebar, full width */
+body.no-sidebar .main-content {
+  margin-left: 0;
+  max-width: 100%;
+}
+
+/* 🔗 4. 语义组件（纯CSS） */
+a:not(.sidebar a) { color: var(--c-info); text-decoration: none; border-bottom: 1px dashed transparent; transition: all .2s; }
+a:not(.sidebar a):hover { border-bottom-color: currentColor; }
+
+.alert, blockquote {
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--c-info);
+  background: #eff6ff;
+  border-radius: 0 6px 6px 0;
+  color: #1e3a8a;
+}
+.alert.danger, blockquote.danger {
+  border-left-color: var(--c-danger);
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+/* 📊 5. 表格响应式 */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--c-border);
+  background: #fff;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f8fafc; font-weight: 600; white-space: nowrap; }
+tr:nth-child(even) { background: #fafafa; }
+td.numeric, th.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 💡 6. 术语提示（Hover） */
+.term {
+  border-bottom: 1px dotted var(--c-info);
+  cursor: help;
+  position: relative;
+}
+.term:hover::after,
+.term:focus::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 125%; left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b; color: #fff;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 📱 7. 移动端断点 */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0 !important; padding: 1.5rem 1rem; max-width: 100%; }
+  .term:hover::after,
+  .term:focus::after {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw; max-width: 90vw;
+  }
+}
+
+/* 🖨️ 8. 打印适配 */
+@media print {
+  .sidebar, .no-print { display: none !important; }
+  .main-content { margin: 0 !important; max-width: 100% !important; padding: 0 !important; }
+  body { background: #fff !important; color: #000 !important; font-size: 11pt; }
+  a { text-decoration: none; color: #000; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #555; }
+  table, tr, td, th, .alert { page-break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; }
+}

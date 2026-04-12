@@ -4,524 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRCL 期权增强收益操作手册 V1.0</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --navy: #0d1b2a;
-  --navy-2: #1a2d42;
-  --navy-3: #243b55;
-  --gold: #c9a84c;
-  --gold-light: #e8c97a;
-  --gold-dim: rgba(201,168,76,0.15);
-  --text: #e8e4da;
-  --text-dim: #9ba8b5;
-  --text-muted: #6b7a89;
-  --border: rgba(201,168,76,0.25);
-  --border-dim: rgba(255,255,255,0.08);
-  --green: #4caf82;
-  --green-bg: rgba(76,175,130,0.12);
-  --red: #e05c5c;
-  --red-bg: rgba(224,92,92,0.12);
-  --amber: #e8a838;
-  --amber-bg: rgba(232,168,56,0.12);
-  --blue: #5b9bd5;
-  --blue-bg: rgba(91,155,213,0.12);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: var(--navy);
-  color: var(--text);
-  font-family: 'Noto Sans SC', sans-serif;
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 1.8;
-  min-height: 100vh;
-}
-
-/* Background texture */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 15% 20%, rgba(201,168,76,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 85% 80%, rgba(91,155,213,0.04) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.page {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 60px 40px;
-  position: relative;
-  z-index: 1;
-}
-
-/* Header */
-.doc-header {
-  border-bottom: 0.5px solid var(--border);
-  padding-bottom: 40px;
-  margin-bottom: 48px;
-}
-
-.header-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 28px;
-}
-
-.header-badge {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.badge-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-
-.badge-version {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
-.header-date {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: right;
-  line-height: 1.6;
-}
-
-.doc-title {
-  font-family: 'IBM Plex Serif', serif;
-  font-size: 36px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  color: var(--text);
-  line-height: 1.2;
-  margin-bottom: 8px;
-}
-
-.doc-title span {
-  color: var(--gold);
-}
-
-.doc-subtitle {
-  font-size: 14px;
-  color: var(--text-dim);
-  font-weight: 300;
-  margin-bottom: 24px;
-}
-
-.header-stats {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1px;
-  background: var(--border-dim);
-  border: 0.5px solid var(--border-dim);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 28px;
-}
-
-.stat-cell {
-  background: var(--navy-2);
-  padding: 14px 16px;
-}
-
-.stat-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 5px;
-}
-
-.stat-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.stat-value.gold { color: var(--gold); }
-.stat-value.green { color: var(--green); }
-.stat-value.red { color: var(--red); }
-.stat-value.amber { color: var(--amber); }
-
-/* Tooltip */
-.tt {
-  position: relative;
-  border-bottom: 1px dashed var(--gold);
-  cursor: help;
-  color: var(--gold-light);
-  white-space: nowrap;
-}
-
-.tt::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1e3352;
-  border: 0.5px solid var(--border);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 300;
-  line-height: 1.6;
-  padding: 10px 14px;
-  border-radius: 4px;
-  width: 260px;
-  white-space: normal;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 100;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-
-.tt::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 2px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--border);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 100;
-}
-
-.tt:hover::after,
-.tt:hover::before { opacity: 1; }
-
-/* Sections */
-.section {
-  margin-bottom: 52px;
-}
-
-.section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 0.5px solid var(--border-dim);
-}
-
-.section-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--gold);
-  letter-spacing: 1px;
-}
-
-.section-title {
-  font-family: 'IBM Plex Serif', serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.section-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-left: auto;
-  font-style: italic;
-}
-
-/* Cards and blocks */
-.card {
-  background: var(--navy-2);
-  border: 0.5px solid var(--border-dim);
-  border-radius: 4px;
-  padding: 20px 24px;
-  margin-bottom: 14px;
-}
-
-.card-title {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.alert {
-  border-radius: 4px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  font-size: 13px;
-  line-height: 1.7;
-  border-left: 3px solid;
-}
-
-.alert-red { background: var(--red-bg); border-color: var(--red); color: #f0a0a0; }
-.alert-amber { background: var(--amber-bg); border-color: var(--amber); color: #f0c870; }
-.alert-green { background: var(--green-bg); border-color: var(--green); color: #90d4b0; }
-.alert-blue { background: var(--blue-bg); border-color: var(--blue); color: #a0c8f0; }
-.alert-gold { background: var(--gold-dim); border-color: var(--gold); color: var(--gold-light); }
-
-.alert strong { color: inherit; font-weight: 500; }
-
-/* Tables */
-.tbl-wrap {
-  overflow-x: auto;
-  margin-bottom: 14px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-thead th {
-  background: var(--navy-3);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 0.5px solid var(--border-dim);
-  white-space: nowrap;
-}
-
-tbody td {
-  padding: 10px 14px;
-  border-bottom: 0.5px solid var(--border-dim);
-  color: var(--text);
-  vertical-align: top;
-}
-
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: rgba(255,255,255,0.02); }
-
-td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
-td.green { color: var(--green); }
-td.red { color: var(--red); }
-td.gold { color: var(--gold); }
-td.amber { color: var(--amber); }
-td.dim { color: var(--text-muted); font-size: 12px; }
-
-/* Grid layouts */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-
-/* Layer indicator */
-.layer-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 2px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.layer-1 { background: rgba(76,175,130,0.15); color: var(--green); border: 0.5px solid rgba(76,175,130,0.3); }
-.layer-2 { background: rgba(91,155,213,0.15); color: var(--blue); border: 0.5px solid rgba(91,155,213,0.3); }
-.layer-3 { background: rgba(201,168,76,0.15); color: var(--gold); border: 0.5px solid rgba(201,168,76,0.3); }
-
-/* Formula block */
-.formula {
-  background: var(--navy-3);
-  border: 0.5px solid var(--border-dim);
-  border-radius: 4px;
-  padding: 14px 18px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  color: var(--gold-light);
-  margin: 12px 0;
-  line-height: 2;
-}
-
-/* Steps */
-.steps { counter-reset: step; list-style: none; }
-
-.steps li {
-  counter-increment: step;
-  display: flex;
-  gap: 14px;
-  margin-bottom: 12px;
-  align-items: flex-start;
-}
-
-.steps li::before {
-  content: counter(step);
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  background: var(--gold-dim);
-  border: 0.5px solid var(--border);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: var(--gold);
-  margin-top: 2px;
-}
-
-/* Divider */
-.divider {
-  border: none;
-  border-top: 0.5px solid var(--border-dim);
-  margin: 28px 0;
-}
-
-/* Fuse levels */
-.fuse-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.fuse-row {
-  display: grid;
-  grid-template-columns: 80px 1fr 1fr;
-  gap: 0;
-  border: 0.5px solid var(--border-dim);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.fuse-level {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 14px 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.fuse-trigger, .fuse-action {
-  padding: 12px 16px;
-  font-size: 12.5px;
-  line-height: 1.7;
-  border-left: 0.5px solid var(--border-dim);
-}
-
-.fuse-trigger { background: var(--navy-2); }
-.fuse-action { background: var(--navy-3); }
-
-.lv-l1 { background: rgba(76,175,130,0.12); color: var(--green); }
-.lv-l2 { background: rgba(232,168,56,0.12); color: var(--amber); }
-.lv-l3 { background: rgba(224,92,92,0.12); color: var(--red); }
-.lv-l4 { background: rgba(150,100,200,0.12); color: #c080f0; }
-
-/* Inline highlight */
-mark {
-  background: var(--gold-dim);
-  color: var(--gold-light);
-  padding: 1px 5px;
-  border-radius: 2px;
-  font-style: normal;
-}
-
-.param-key {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
-.param-val {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-/* Footer */
-.doc-footer {
-  margin-top: 60px;
-  padding-top: 24px;
-  border-top: 0.5px solid var(--border-dim);
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.7;
-  font-style: italic;
-}
-
-.inline-tag {
-  display: inline-block;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 2px;
-  margin: 0 2px;
-  vertical-align: middle;
-}
-
-.tag-red { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(224,92,92,0.3); }
-.tag-green { background: var(--green-bg); color: var(--green); border: 0.5px solid rgba(76,175,130,0.3); }
-.tag-gold { background: var(--gold-dim); color: var(--gold); border: 0.5px solid var(--border); }
-.tag-blue { background: var(--blue-bg); color: var(--blue); border: 0.5px solid rgba(91,155,213,0.3); }
-
-p { margin-bottom: 10px; }
-p:last-child { margin-bottom: 0; }
-
-ul, ol { padding-left: 20px; }
-li { margin-bottom: 6px; }
-li:last-child { margin-bottom: 0; }
-
-strong { font-weight: 500; color: var(--text); }
-
-h4 {
-  font-family: 'IBM Plex Serif', serif;
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--text);
-  margin: 16px 0 8px;
-}
-
-@media (max-width: 768px) {
-  .page { padding: 32px 20px; }
-  .header-stats { grid-template-columns: repeat(3, 1fr); }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .fuse-row { grid-template-columns: 60px 1fr; }
-  .fuse-action { display: none; }
-  .doc-title { font-size: 26px; }
-}
-</style>
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="assets/css/strategy.css">
 </head>
 <body>
-
-<nav class="site-chrome" aria-label="全站导航">
-  <div class="site-chrome-brand"><a href="index.html">期权学习中心</a></div>
-  <a href="index.html">首页总览</a>
-  <a href="study.html">学习计划</a>
-  <a href="guide.html">作战手册</a>
-  <a href="guide_v.html">新手指南</a>
-  <a href="wheel.html">波动率卖方</a>
-  <a href="put.html">PUT+Wheel</a>
+<div class="layout-wrapper">
+<nav class="sidebar">
+  <div class="sidebar-brand"><a href="index.html">CRCL 期权增强收益操作手册</a></div>
+  <a href="#s00">CRCL 特性分析与策略定位</a>
+  <a href="#s01">NRA 税务框架</a>
+  <a href="#s02">账户架构与权限配置</a>
+  <a href="#s03">市场状态引擎</a>
+  <a href="#s04">CRCL 波动率校准体系</a>
+  <a href="#s05">流动性评分体系</a>
+  <a href="#s06">三层策略架构</a>
+  <a href="#s07">预期价值（EV）计算</a>
+  <a href="#s08">标准执行流程</a>
+  <a href="#s09">持仓管理规则</a>
+  <a href="#s10">尾部风险管理</a>
+  <a href="#s11">四级熔断机制</a>
+  <a href="#s12">月度操作清单</a>
+  <a href="#s13">绩效追踪与台账</a>
+  <a href="#s14">心理纪律与策略哲学</a>
 </nav>
-
+<main class="main-content">
 <div class="page">
 
 <!-- ═══════════════════════════════════════ HEADER ═══════════════════════════════════════ -->
@@ -567,7 +72,7 @@ h4 {
 
 
 <!-- ═══════════════════════════════════════ SECTION 0: CRCL 特性分析 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s00">
   <div class="section-header">
     <span class="section-num">00</span>
     <h2 class="section-title">CRCL 特性分析与策略定位</h2>
@@ -631,7 +136,7 @@ h4 {
 
 
 <!-- ═══════════════════════════════════════ SECTION 1: NRA 税务框架 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s01">
   <div class="section-header">
     <span class="section-num">01</span>
     <h2 class="section-title">NRA 税务框架</h2>
@@ -700,7 +205,7 @@ h4 {
 
 
 <!-- ═══════════════════════════════════════ SECTION 2: 账户架构 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s02">
   <div class="section-header">
     <span class="section-num">02</span>
     <h2 class="section-title">账户架构与权限配置</h2>
@@ -756,7 +261,7 @@ h4 {
 
 
 <!-- ═══════════════════════════════════════ SECTION 3: 市场状态引擎 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s03">
   <div class="section-header">
     <span class="section-num">03</span>
     <h2 class="section-title">市场状态引擎</h2>
@@ -823,7 +328,7 @@ h4 {
 
 
 <!-- ═══════════════════════════════════════ SECTION 4: 波动率校准 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s04">
   <div class="section-header">
     <span class="section-num">04</span>
     <h2 class="section-title">CRCL 波动率校准体系</h2>
@@ -904,7 +409,7 @@ IV/HRV = CRCL 30日<span class="tt" data-tip="隐含波动率（IV）：从当�
 
 
 <!-- ═══════════════════════════════════════ SECTION 5: 流动性评分 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s05">
   <div class="section-header">
     <span class="section-num">05</span>
     <h2 class="section-title">流动性评分体系</h2>
@@ -977,7 +482,7 @@ IV/HRV = CRCL 30日<span class="tt" data-tip="隐含波动率（IV）：从当�
 
 
 <!-- ═══════════════════════════════════════ SECTION 6: 三层策略架构 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s06">
   <div class="section-header">
     <span class="section-num">06</span>
     <h2 class="section-title">三层策略架构</h2>
@@ -1174,7 +679,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 7: EV 计算 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s07">
   <div class="section-header">
     <span class="section-num">07</span>
     <h2 class="section-title">预期价值（EV）计算</h2>
@@ -1246,7 +751,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 8: 执行流程 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s08">
   <div class="section-header">
     <span class="section-num">08</span>
     <h2 class="section-title">标准执行流程</h2>
@@ -1309,7 +814,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 9: 持仓管理 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s09">
   <div class="section-header">
     <span class="section-num">09</span>
     <h2 class="section-title">持仓管理规则</h2>
@@ -1383,7 +888,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 10: 尾部风险 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s10">
   <div class="section-header">
     <span class="section-num">10</span>
     <h2 class="section-title">尾部风险管理</h2>
@@ -1466,7 +971,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 11: 熔断机制 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s11">
   <div class="section-header">
     <span class="section-num">11</span>
     <h2 class="section-title">四级熔断机制</h2>
@@ -1565,7 +1070,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 12: 月度操作清单 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s12">
   <div class="section-header">
     <span class="section-num">12</span>
     <h2 class="section-title">月度操作清单</h2>
@@ -1636,7 +1141,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 13: 绩效追踪 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s13">
   <div class="section-header">
     <span class="section-num">13</span>
     <h2 class="section-title">绩效追踪与台账</h2>
@@ -1721,7 +1226,7 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 
 
 <!-- ═══════════════════════════════════════ SECTION 14: 心理纪律 ═══════════════════════════════════════ -->
-<section class="section">
+<section class="section" id="s14">
   <div class="section-header">
     <span class="section-num">14</span>
     <h2 class="section-title">心理纪律与策略哲学</h2>
@@ -1783,5 +1288,8 @@ N<sub>COIN</sub> = 10 × (0.20 × 90) ÷ (0.20 × 175) ÷ 1.3 ≈ 4 张
 </div>
 
 </div>
+</main>
+</div>
+<script src="assets/js/disclaimer.js" defer></script>
 </body>
 </html>
