@@ -4,498 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wheel 卖 PUT 策略 · 机构级执行手册 v2.0</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg:       #0d0f12;
-    --bg2:      #13161c;
-    --bg3:      #1a1e27;
-    --border:   #252b38;
-    --border2:  #2e3545;
-    --gold:     #c9a84c;
-    --gold2:    #e8c96a;
-    --gold-dim: rgba(201,168,76,0.12);
-    --text:     #d4d8e2;
-    --text2:    #8a90a0;
-    --text3:    #5a5f6e;
-    --green:    #3dba8a;
-    --green-bg: rgba(61,186,138,0.10);
-    --red:      #e05c5c;
-    --red-bg:   rgba(224,92,92,0.10);
-    --blue:     #5b8dee;
-    --blue-bg:  rgba(91,141,238,0.10);
-    --amber:    #e8a93a;
-    --amber-bg: rgba(232,169,58,0.10);
-    --purple:   #9b72e8;
-    --r:        8px;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-
-  /* ── NAV ── */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(13,15,18,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    display: flex; align-items: center; gap: 0;
-    overflow-x: auto;
-  }
-  nav a {
-    display: inline-block;
-    padding: 14px 14px;
-    font-size: 12px; font-weight: 500;
-    color: var(--text2);
-    text-decoration: none;
-    white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: color .2s, border-color .2s;
-  }
-  nav a:hover { color: var(--gold); border-bottom-color: var(--gold); }
-  .nav-brand {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 2px;
-    padding: 14px 14px 14px 0;
-    margin-right: 8px;
-    border-right: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  /* ── LAYOUT ── */
-  .page { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
-
-  /* ── HERO ── */
-  .hero {
-    padding: 72px 0 56px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 56px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; top: -60px; right: -80px;
-    width: 480px; height: 480px;
-    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-tag {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--gold-dim);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; letter-spacing: 1.5px;
-    color: var(--gold);
-    margin-bottom: 20px;
-    text-transform: uppercase;
-  }
-  .hero h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 52px; line-height: 1.1;
-    color: #eef0f5;
-    margin-bottom: 16px;
-    max-width: 680px;
-  }
-  .hero h1 em { color: var(--gold); font-style: italic; }
-  .hero p {
-    font-size: 15px; color: var(--text2);
-    max-width: 560px; margin-bottom: 36px;
-  }
-  .hero-stats {
-    display: flex; flex-wrap: wrap; gap: 20px;
-  }
-  .stat-pill {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    padding: 12px 20px;
-    text-align: center;
-    min-width: 130px;
-  }
-  .stat-pill .sv { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--gold2); }
-  .stat-pill .sl { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
-
-  /* ── SECTION ── */
-  section { margin-bottom: 64px; }
-  .sec-head {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 28px;
-  }
-  .sec-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; letter-spacing: 2px;
-    color: var(--gold);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 4px;
-    padding: 3px 8px;
-  }
-  .sec-head h2 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 26px; font-weight: 400;
-    color: #eef0f5;
-  }
-  .sec-desc { font-size: 13px; color: var(--text2); max-width: 640px; margin-bottom: 24px; }
-
-  /* ── CARD ── */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 20px 24px;
-  }
-  .card-title {
-    font-size: 12px; font-weight: 600;
-    letter-spacing: 1px; text-transform: uppercase;
-    color: var(--text2); margin-bottom: 14px;
-  }
-
-  /* ── TABLES ── */
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
-    text-transform: uppercase; color: var(--text3);
-    padding: 10px 14px; text-align: left;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-  td {
-    padding: 11px 14px; font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  .tbl-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
-
-  /* tags */
-  .tag {
-    display: inline-block;
-    padding: 2px 8px; border-radius: 4px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
-  }
-  .tag-green { background: var(--green-bg); color: var(--green); }
-  .tag-red   { background: var(--red-bg);   color: var(--red); }
-  .tag-amber { background: var(--amber-bg); color: var(--amber); }
-  .tag-blue  { background: var(--blue-bg);  color: var(--blue); }
-  .tag-gold  { background: var(--gold-dim); color: var(--gold2); }
-
-  /* ── CAPITAL LAYOUT ── */
-  .capital-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 2fr 1.5fr;
-    gap: 0;
-  }
-  .cg-header {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
-    color: var(--text3); font-weight: 600;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-  .cg-cell {
-    padding: 13px 16px; font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    display: flex; align-items: center;
-  }
-  .cg-cell:last-child { border-right: none; }
-  .cg-row:last-child .cg-cell { border-bottom: none; }
-  .pillar-bar {
-    height: 4px; border-radius: 2px; margin-top: 4px;
-  }
-
-  /* ── CHECKLIST ── */
-  .check-group { margin-bottom: 20px; }
-  .check-group-title {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--text3); font-weight: 600;
-    margin-bottom: 10px; padding-left: 4px;
-  }
-  .check-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    transition: background .15s;
-    border-radius: 0;
-  }
-  .check-item:first-of-type { border-top: 1px solid var(--border); }
-  .check-item:hover { background: rgba(255,255,255,0.02); }
-  .check-item.checked { background: var(--green-bg); }
-  .check-item.checked .ci-text { color: var(--text2); text-decoration: line-through; text-decoration-color: var(--text3); }
-  .ci-box {
-    width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;
-    border: 1.5px solid var(--border2);
-    border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s;
-  }
-  .check-item.checked .ci-box {
-    background: var(--green); border-color: var(--green);
-  }
-  .ci-check { display: none; color: #fff; font-size: 10px; }
-  .check-item.checked .ci-check { display: block; }
-  .ci-text { font-size: 13px; flex: 1; }
-  .ci-badge {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    color: var(--text3); flex-shrink: 0; margin-top: 3px;
-  }
-  .check-progress {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 16px;
-  }
-  .progress-bar {
-    flex: 1; height: 4px; background: var(--border);
-    border-radius: 2px; overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%; background: var(--green);
-    border-radius: 2px; transition: width .3s;
-  }
-  .progress-label { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; min-width: 50px; }
-  .reset-btn {
-    font-size: 11px; color: var(--text3);
-    background: none; border: 1px solid var(--border);
-    border-radius: 4px; padding: 3px 10px; cursor: pointer;
-    transition: color .15s;
-  }
-  .reset-btn:hover { color: var(--text); }
-
-  /* ── SCORING MODEL ── */
-  .score-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .score-dim {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 14px 16px;
-  }
-  .sd-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-  .sd-name { font-size: 13px; font-weight: 500; }
-  .sd-pts { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); }
-  .sd-item { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: flex; gap: 6px; }
-  .sd-item::before { content: '›'; color: var(--gold); flex-shrink: 0; }
-
-  /* ── SCORE THRESHOLDS ── */
-  .thresholds { display: flex; gap: 12px; margin-top: 16px; }
-  .thresh {
-    flex: 1; border-radius: var(--r);
-    padding: 14px 16px; text-align: center;
-    border: 1px solid transparent;
-  }
-  .thresh-exec { background: var(--green-bg); border-color: rgba(61,186,138,0.3); }
-  .thresh-add  { background: var(--gold-dim);  border-color: rgba(201,168,76,0.3); }
-  .thresh-skip { background: var(--red-bg);    border-color: rgba(224,92,92,0.3); }
-  .thresh-val { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; }
-  .thresh-exec .thresh-val { color: var(--green); }
-  .thresh-add  .thresh-val { color: var(--gold2); }
-  .thresh-skip .thresh-val { color: var(--red); }
-  .thresh-label { font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
-
-  /* ── DECISION TREE ── */
-  .dtree {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    line-height: 2;
-    color: var(--text2);
-  }
-  .dt-trigger { color: var(--amber); font-weight: 500; }
-  .dt-yes { color: var(--green); }
-  .dt-no  { color: var(--red); }
-  .dt-action { color: var(--text); }
-  .dt-indent { padding-left: 24px; }
-  .dt-indent2 { padding-left: 48px; }
-  .dt-note { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
-  /* ── VIX MATRIX ── */
-  .vix-matrix { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr 1.5fr; gap: 0; }
-  .vm-header {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
-    color: var(--text3); font-weight: 600;
-    padding: 10px 16px; border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-  .vm-cell {
-    padding: 12px 16px; font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-  }
-  .vm-cell:nth-child(4n) { border-right: none; }
-  .vm-row:last-child .vm-cell { border-bottom: none; }
-  .vix-bar {
-    display: inline-block;
-    height: 6px; border-radius: 3px;
-    margin-right: 8px; vertical-align: middle;
-  }
-
-  /* ── RISK RED LINES ── */
-  .risk-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .risk-tier {
-    border-radius: var(--r);
-    padding: 18px 20px;
-    border: 1px solid transparent;
-  }
-  .risk-tier.t1 { background: var(--amber-bg); border-color: rgba(232,169,58,0.3); }
-  .risk-tier.t2 { background: rgba(155,114,232,0.08); border-color: rgba(155,114,232,0.3); }
-  .risk-tier.t3 { background: var(--red-bg); border-color: rgba(224,92,92,0.3); }
-  .rt-level { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
-  .t1 .rt-level { color: var(--amber); }
-  .t2 .rt-level { color: var(--purple); }
-  .t3 .rt-level { color: var(--red); }
-  .rt-threshold { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; margin-bottom: 8px; }
-  .rt-action { font-size: 12px; color: var(--text2); }
-
-  /* ── SIGNAL FORMAT ── */
-  .signal-box {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 20px 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    line-height: 2;
-  }
-  .sf-key { color: var(--text3); }
-  .sf-val { color: var(--text); }
-  .sf-val.gold { color: var(--gold2); }
-  .sf-val.green { color: var(--green); }
-  .sf-val.amber { color: var(--amber); }
-
-  /* ── MISC ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
-  .mono { font-family: 'DM Mono', monospace; }
-  .text-gold { color: var(--gold); }
-  .text-green { color: var(--green); }
-  .text-red { color: var(--red); }
-  .text-amber { color: var(--amber); }
-  .text-dim { color: var(--text2); }
-  .text-dimmer { color: var(--text3); }
-  .fs11 { font-size: 11px; }
-  .fs12 { font-size: 12px; }
-  .fs13 { font-size: 13px; }
-  ul.dot-list { padding-left: 0; list-style: none; }
-  ul.dot-list li { padding: 4px 0; padding-left: 14px; position: relative; font-size: 13px; color: var(--text2); }
-  ul.dot-list li::before { content: '·'; position: absolute; left: 0; color: var(--gold); }
-  .inline-note {
-    background: var(--gold-dim);
-    border-left: 3px solid var(--gold);
-    border-radius: 0 var(--r) var(--r) 0;
-    padding: 10px 14px;
-    font-size: 12px; color: var(--text2);
-    margin: 12px 0;
-  }
-  .inline-warn {
-    background: var(--red-bg);
-    border-left: 3px solid var(--red);
-    border-radius: 0 var(--r) var(--r) 0;
-    padding: 10px 14px;
-    font-size: 12px; color: var(--text2);
-    margin: 12px 0;
-  }
-  .wheel-flow {
-    display: flex; align-items: center; gap: 0;
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--r); overflow: hidden; flex-wrap: wrap;
-  }
-  .wf-step {
-    flex: 1; min-width: 140px; padding: 16px 14px; text-align: center;
-    border-right: 1px solid var(--border);
-    position: relative;
-  }
-  .wf-step:last-child { border-right: none; }
-  .wf-num {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    color: var(--gold); letter-spacing: 1px; margin-bottom: 6px;
-  }
-  .wf-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
-  .wf-sub { font-size: 11px; color: var(--text2); }
-  .wf-arrow {
-    position: absolute; right: -10px; top: 50%;
-    transform: translateY(-50%);
-    width: 18px; height: 18px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; color: var(--gold);
-    z-index: 1;
-  }
-
-  /* ── PRINT ── */
-  @media print {
-    nav { display: none; }
-    body { background: #fff; color: #000; }
-    .card, .tbl-wrap { border: 1px solid #ccc; }
-  }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
-</style>
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="css/strategy.css">
 </head>
 <body>
-
-<nav>
-  <span class="nav-brand">WHEEL / PUT</span>
-  <a href="#overview">概览</a>
-  <a href="#capital">资金结构</a>
-  <a href="#tickers">标的矩阵</a>
-  <a href="#entry">开仓系统</a>
-  <a href="#checklist">每日清单</a>
-  <a href="#exit">出场决策</a>
-  <a href="#vix">VIX矩阵</a>
-  <a href="#risk">风控红线</a>
-  <a href="#wheel2">Wheel闭环</a>
-  <a href="#signal">信号格式</a>
+<div class="layout-wrapper">
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">OpenClaw 期权增强<br>操作手册</div>
+    <div class="logo-ver">2026 年 4 月</div>
+  </div>
+  <div class="nav-section-label">系统介绍</div>
+  <a href="#principle" class="nav-item">01 · 系统运行原理</a>
+  <a href="#value" class="nav-item">02 · 核心价值</a>
+  <a href="#scenarios" class="nav-item">03 · 使用场景</a>
+  <div class="nav-section-label">配置与规则</div>
+  <a href="#budget" class="nav-item">04 · 服务与预算</a>
+  <a href="#prereq" class="nav-item">05 · 使用前提</a>
+  <a href="#rules" class="nav-item">06 · 铁律</a>
 </nav>
-
-<div class="page">
+<main class="main-content">
+<div >
 
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-tag">
-      <span>▸</span> 机构级执行手册 v2.0 · 2026年4月
-    </div>
-    <h1>100万美元<br><em>Wheel 卖 PUT</em><br>策略执行手册</h1>
-    <div class="hero-stats">
-      <div class="stat-pill">
+  <div class="hero-eyebrow">美股期权 · AI 数据参谋</div>
+  <h1>OpenClaw 智能参谋系统</h1>
+  <p class="hero-sub">信息聚合 · 策略合规检查 · 数据驱动推送。只做参谋，不自动下单，判断权永远在人</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">监控标的</span><span class="value">20+</span></div>
+    <div class="hero-meta-item"><span class="label">数据源冗余</span><span class="value">9层</span></div>
+    <div class="hero-meta-item"><span class="label">自动扫描</span><span class="value">24/7</span></div>
+    <div class="hero-meta-item"><span class="label">年化筛选门槛</span><span class="value">≥30%</span></div>
+  </div>
+</div>
+
+<h1>100万美元<br><em>Wheel 卖 PUT</em><br>策略执行手册</h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
         <div class="sv">$1,000,000</div>
         <div class="sl">总资金</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">25–38%</div>
         <div class="sl">年化基准目标</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">≤15%</div>
         <div class="sl">最大回撤控制</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">75/25</div>
         <div class="sl">部署/现金比</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">7</div>
         <div class="sl">核心标的池</div>
       </div>
@@ -503,14 +65,14 @@
   </div>
 
   <!-- S1 OVERVIEW -->
-  <section id="overview">
-    <div class="sec-head">
-      <span class="sec-num">01</span>
+  <section class="section" id="overview">
+    <div class="section-header">
+      <span class="section-num">01</span>
       <h2>策略定位与预期管理</h2>
     </div>
     <div class="sec-desc">铁律先行——在进入任何操作细节之前，先把收益预期、收益来源和资金结构定死。</div>
 
-    <div class="tbl-wrap" style="margin-bottom:20px">
+    <div class="table-wrap" style="margin-bottom:20px">
       <table>
         <thead><tr>
           <th>维度</th><th>客户原始设定</th><th>本方案优化后</th><th>逻辑说明</th>
@@ -551,13 +113,13 @@
   </section>
 
   <!-- S2 CAPITAL -->
-  <section id="capital">
-    <div class="sec-head">
-      <span class="sec-num">02</span>
+  <section class="section" id="capital">
+    <div class="section-header">
+      <span class="section-num">02</span>
       <h2>资金结构</h2>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>支柱</th><th>仓位占比</th><th>资金量</th><th>核心标的</th><th>角色定位</th>
@@ -598,14 +160,14 @@
   </section>
 
   <!-- S3 TICKERS -->
-  <section id="tickers">
-    <div class="sec-head">
-      <span class="sec-num">03</span>
+  <section class="section" id="tickers">
+    <div class="section-header">
+      <span class="section-num">03</span>
       <h2>标的池矩阵</h2>
     </div>
     <div class="sec-desc">7个核心标的，覆盖5个独立驱动板块，天然弱相关性是对抗系统性风险的第一道护城河。<strong style="color:var(--red)">UNG已全部剔除</strong>——期货升水（Contango）损耗破坏Wheel闭环完整性。</div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>梯队</th><th>标的</th><th>板块</th><th>仓位上限</th><th>行权价区间</th><th>IV Rank门槛</th><th>特殊要求</th>
@@ -681,15 +243,15 @@
   </section>
 
   <!-- S4 ENTRY -->
-  <section id="entry">
-    <div class="sec-head">
-      <span class="sec-num">04</span>
+  <section class="section" id="entry">
+    <div class="section-header">
+      <span class="section-num">04</span>
       <h2>开仓信号系统</h2>
     </div>
     <div class="sec-desc">双重验证机制：6项硬性门槛为过滤器（全部满足才进入打分），5维打分为排序器（≥70分才执行）。</div>
 
     <h3 style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">第一步：6项硬性门槛（全满足方进入打分）</h3>
-    <div class="tbl-wrap" style="margin-bottom:28px">
+    <div class="table-wrap" style="margin-bottom:28px">
       <table>
         <thead><tr><th>#</th><th>条件</th><th>标准</th><th>核查方式</th></tr></thead>
         <tbody>
@@ -800,7 +362,7 @@
     </div>
 
     <h3 style="font-size:14px;font-weight:600;margin:24px 0 14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">合约参数速查</h3>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>标的类型</th><th>行权价</th><th>DTE</th><th>年化收益验证</th><th>Delta参考</th></tr></thead>
         <tbody>
@@ -825,9 +387,9 @@
   </section>
 
   <!-- S5 DAILY CHECKLIST -->
-  <section id="checklist">
-    <div class="sec-head">
-      <span class="sec-num">05</span>
+  <section class="section" id="checklist">
+    <div class="section-header">
+      <span class="section-num">05</span>
       <h2>每日执行清单</h2>
     </div>
     <div class="sec-desc">三个时间节点，逐项打勾。全绿才执行当日开仓。</div>
@@ -929,16 +491,16 @@
   </section>
 
   <!-- S6 EXIT -->
-  <section id="exit">
-    <div class="sec-head">
-      <span class="sec-num">06</span>
+  <section class="section" id="exit">
+    <div class="section-header">
+      <span class="section-num">06</span>
       <h2>出场与持仓管理决策树</h2>
     </div>
 
     <div class="two-col" style="margin-bottom:20px">
       <div>
         <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px">止盈系统（开仓即刻设置）</h3>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <thead><tr><th>规则</th><th>触发条件</th><th>动作</th></tr></thead>
             <tbody>
@@ -1015,14 +577,14 @@
   </section>
 
   <!-- S7 VIX -->
-  <section id="vix">
-    <div class="sec-head">
-      <span class="sec-num">07</span>
+  <section class="section" id="vix">
+    <div class="section-header">
+      <span class="section-num">07</span>
       <h2>VIX 动态仓位矩阵</h2>
     </div>
     <div class="sec-desc">根据当前VIX水平动态调整整体暴露度，这是防止在错误时机过度布仓的关键机制。</div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>VIX区间</th><th>市场状态</th><th>建议仓位上限</th><th>优先动作</th>
@@ -1069,9 +631,9 @@
   </section>
 
   <!-- S8 RISK -->
-  <section id="risk">
-    <div class="sec-head">
-      <span class="sec-num">08</span>
+  <section class="section" id="risk">
+    <div class="section-header">
+      <span class="section-num">08</span>
       <h2>三层硬性风控红线</h2>
     </div>
 
@@ -1094,7 +656,7 @@
     </div>
 
     <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:28px 0 14px">极端情景应急预案</h3>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>情景</th><th>触发假设</th><th>账户影响</th><th>应对动作</th></tr></thead>
         <tbody>
@@ -1150,9 +712,9 @@
   </section>
 
   <!-- S9 WHEEL2 -->
-  <section id="wheel2">
-    <div class="sec-head">
-      <span class="sec-num">09</span>
+  <section class="section" id="wheel2">
+    <div class="section-header">
+      <span class="section-num">09</span>
       <h2>Wheel 第二阶段：被行权后的 Covered Call</h2>
     </div>
     <div class="sec-desc">被行权不是失败，是Wheel策略的既定环节。坦然接盘，立即转为"收租模式"。</div>
@@ -1189,7 +751,7 @@
       </div>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>参数</th><th>设置</th><th>逻辑</th></tr></thead>
         <tbody>
@@ -1229,9 +791,9 @@
   </section>
 
   <!-- S10 SIGNAL FORMAT -->
-  <section id="signal">
-    <div class="sec-head">
-      <span class="sec-num">10</span>
+  <section class="section" id="signal">
+    <div class="section-header">
+      <span class="section-num">10</span>
       <h2>OpenClaw 信号输出格式</h2>
     </div>
     <div class="sec-desc">每日收盘后生成，最多推送3条（Top 3打分），无信号时不推送。可直接接入 OpenClaw 技能执行。</div>
@@ -1274,11 +836,11 @@
 
   <!-- LAUNCH PATH -->
   <section>
-    <div class="sec-head">
-      <span class="sec-num">11</span>
+    <div class="section-header">
+      <span class="section-num">11</span>
       <h2>落地启动路径</h2>
     </div>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>阶段</th><th>时间</th><th>任务</th><th>目标</th></tr></thead>
         <tbody>
@@ -1313,8 +875,8 @@
 
   <!-- PERFORMANCE EXPECTATIONS -->
   <section>
-    <div class="sec-head">
-      <span class="sec-num">12</span>
+    <div class="section-header">
+      <span class="section-num">12</span>
       <h2>收益预期与绩效基准</h2>
     </div>
 
@@ -1339,7 +901,7 @@
       </div>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>市场环境</th><th>VIX区间</th><th>月权利金收入</th><th>年化折算</th><th>时间占比</th></tr></thead>
         <tbody>
@@ -1417,5 +979,8 @@
   countAll();
   updateProgress();
 </script>
+</main>
+</div>
+<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

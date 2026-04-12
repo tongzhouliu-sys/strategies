@@ -4,493 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TSLA 期权卖方策略操作手册 v4.0</title>
-<style>
-:root {
-  --navy: #0D1B2A;
-  --navy-mid: #1A3249;
-  --gold: #B8902A;
-  --gold-light: #F0D080;
-  --gold-pale: #FBF4E3;
-  --text: #1C1C1E;
-  --text-muted: #6B7280;
-  --text-light: #9CA3AF;
-  --bg: #F8F7F4;
-  --surface: #FFFFFF;
-  --border: #E4E0D8;
-  --border-strong: #C9C3B8;
-  --green: #15803D;
-  --green-bg: #F0FDF4;
-  --green-border: #86EFAC;
-  --red: #B91C1C;
-  --red-bg: #FEF2F2;
-  --red-border: #FCA5A5;
-  --amber: #92400E;
-  --amber-bg: #FFFBEB;
-  --amber-border: #FCD34D;
-  --blue: #1E40AF;
-  --blue-bg: #EFF6FF;
-  --blue-border: #93C5FD;
-  --radius: 6px;
-  --radius-lg: 10px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; font-size: 15px; }
-body {
-  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
-}
-a { color: var(--gold); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* ── LAYOUT ── */
-.page-wrap { max-width: 920px; margin: 0 auto; padding: 0 24px 80px; }
-
-/* ── COVER ── */
-.cover {
-  background: var(--navy);
-  color: #fff;
-  padding: 64px 56px 56px;
-  margin: 0 -24px 48px;
-  position: relative;
-  overflow: hidden;
-}
-.cover::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 320px; height: 320px;
-  border: 1px solid rgba(184,144,42,0.2);
-  border-radius: 50%;
-}
-.cover::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; right: 40px;
-  width: 200px; height: 200px;
-  border: 1px solid rgba(184,144,42,0.12);
-  border-radius: 50%;
-}
-.cover-eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold-light);
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-.cover h1 {
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 12px;
-  letter-spacing: -0.02em;
-}
-.cover h1 span { color: var(--gold-light); }
-.cover-sub {
-  font-size: 16px;
-  color: rgba(255,255,255,0.65);
-  margin-bottom: 40px;
-  max-width: 520px;
-}
-.cover-meta { display: flex; gap: 32px; flex-wrap: wrap; }
-.cover-meta-item { }
-.cover-meta-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
-.cover-meta-val { font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500; }
-.cover-disclaimer {
-  margin-top: 36px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255,255,255,0.12);
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  line-height: 1.6;
-  max-width: 640px;
-}
-
-/* ── ALERT BOXES ── */
-.alert {
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  margin: 20px 0;
-  font-size: 13.5px;
-  line-height: 1.65;
-  border-left: 3px solid;
-}
-.alert-title { font-weight: 600; margin-bottom: 4px; font-size: 13px; }
-.alert-red { background: var(--red-bg); border-color: var(--red); color: #7F1D1D; }
-.alert-amber { background: var(--amber-bg); border-color: var(--gold); color: #78350F; }
-.alert-green { background: var(--green-bg); border-color: var(--green); color: #14532D; }
-.alert-blue { background: var(--blue-bg); border-color: var(--blue); color: #1E3A8A; }
-
-/* ── SECTION HEADERS ── */
-.chapter-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin: 56px 0 28px;
-  padding-bottom: 20px;
-  border-bottom: 1.5px solid var(--border);
-}
-.chapter-num {
-  background: var(--navy);
-  color: var(--gold-light);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-top: 4px;
-  white-space: nowrap;
-}
-.chapter-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--navy);
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-.chapter-header p {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 5px;
-  line-height: 1.55;
-}
-h3 {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--navy);
-  margin: 28px 0 12px;
-  padding-left: 12px;
-  border-left: 3px solid var(--gold);
-}
-h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 20px 0 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-p { margin-bottom: 12px; font-size: 14.5px; }
-
-/* ── EXECUTIVE SUMMARY CARDS ── */
-.exec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 28px 0; }
-.exec-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px 16px;
-  box-shadow: var(--shadow);
-}
-.exec-card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
-.exec-card-val { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
-.exec-card-sub { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
-.exec-card.highlight { background: var(--navy); border-color: var(--navy); }
-.exec-card.highlight .exec-card-label { color: rgba(255,255,255,0.5); }
-.exec-card.highlight .exec-card-val { color: var(--gold-light); }
-.exec-card.highlight .exec-card-sub { color: rgba(255,255,255,0.45); }
-
-/* ── TABLES ── */
-.tbl-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow); }
-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-thead { background: var(--navy); }
-thead th { color: rgba(255,255,255,0.85); padding: 11px 14px; text-align: left; font-weight: 500; font-size: 12px; letter-spacing: 0.05em; white-space: nowrap; }
-tbody tr:nth-child(even) { background: #FAFAF8; }
-tbody tr:hover { background: #F5F3EE; }
-tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
-tbody tr:last-child td { border-bottom: none; }
-td.num { font-variant-numeric: tabular-nums; font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; }
-td.green { color: var(--green); font-weight: 600; }
-td.red { color: var(--red); font-weight: 600; }
-td.amber { color: var(--amber); font-weight: 600; }
-
-/* ── CHECKLIST ── */
-.checklist { list-style: none; margin: 16px 0; }
-.checklist li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 9px 14px;
-  border-radius: var(--radius);
-  margin-bottom: 6px;
-  font-size: 13.5px;
-  line-height: 1.55;
-}
-.checklist li.green { background: var(--green-bg); color: #14532D; }
-.checklist li.red { background: var(--red-bg); color: #7F1D1D; }
-.checklist li.amber { background: var(--amber-bg); color: #78350F; }
-.check-icon {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 1px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700;
-}
-.check-icon.ok { background: var(--green); color: #fff; }
-.check-icon.no { background: var(--red); color: #fff; }
-.check-icon.warn { background: var(--gold); color: #fff; }
-
-/* ── DECISION TREE ── */
-.dtree {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin: 20px 0;
-  box-shadow: var(--shadow);
-}
-.dtree-row {
-  display: grid;
-  grid-template-columns: 3fr 2fr 3fr 2fr;
-  border-bottom: 1px solid var(--border);
-}
-.dtree-row:last-child { border-bottom: none; }
-.dtree-head { background: var(--navy); }
-.dtree-cell { padding: 10px 14px; font-size: 13px; line-height: 1.55; }
-.dtree-cell.scenario { background: #F8F7F4; font-weight: 600; color: var(--navy); }
-.dtree-cell.action { background: #F0F7FF; }
-.dtree-cell.signal { font-weight: 500; color: #92400E; }
-.dtree-head .dtree-cell { color: rgba(255,255,255,0.8); font-size: 11px; letter-spacing: 0.07em; font-weight: 600; text-transform: uppercase; }
-
-/* ── TOOLTIP ── */
-.term {
-  cursor: help;
-  border-bottom: 1px dashed var(--gold);
-  color: inherit;
-  position: relative;
-}
-.tooltip {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  background: var(--navy);
-  color: rgba(255,255,255,0.9);
-  font-size: 12.5px;
-  line-height: 1.6;
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  max-width: 300px;
-  box-shadow: var(--shadow-md);
-  pointer-events: none;
-  border-top: 2px solid var(--gold);
-}
-.tooltip.active { display: block; }
-.tooltip-label { font-size: 11px; color: var(--gold-light); font-weight: 600; letter-spacing: 0.05em; margin-bottom: 5px; }
-
-/* ── TOC ── */
-.toc {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin: 0 0 48px;
-  box-shadow: var(--shadow);
-}
-.toc-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; color: var(--text-muted); margin-bottom: 16px; }
-.toc ol { list-style: none; counter-reset: toc-counter; }
-.toc li { counter-increment: toc-counter; margin-bottom: 5px; }
-.toc li::before {
-  content: "0" counter(toc-counter);
-  font-size: 11px;
-  color: var(--gold);
-  font-weight: 700;
-  margin-right: 10px;
-  font-variant-numeric: tabular-nums;
-}
-.toc a { font-size: 14px; color: var(--text); }
-.toc a:hover { color: var(--gold); text-decoration: none; }
-.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 28px; }
-
-/* ── FORMULA BOX ── */
-.formula {
-  background: #F0F0F0;
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 13px;
-  color: var(--navy);
-  margin: 12px 0;
-  line-height: 1.8;
-  border: 1px solid var(--border);
-}
-
-/* ── BADGE ── */
-.badge {
-  display: inline-block;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-.badge-green { background: var(--green-bg); color: #15803D; border: 1px solid var(--green-border); }
-.badge-red { background: var(--red-bg); color: #B91C1C; border: 1px solid var(--red-border); }
-.badge-amber { background: var(--amber-bg); color: #92400E; border: 1px solid var(--amber-border); }
-.badge-navy { background: var(--navy); color: var(--gold-light); border: 1px solid var(--navy); }
-.badge-blue { background: var(--blue-bg); color: #1E40AF; border: 1px solid var(--blue-border); }
-
-/* ── SCENARIO CARDS ── */
-.scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
-.scenario-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-.scenario-card-head { padding: 12px 16px; font-weight: 600; font-size: 13px; }
-.scenario-card-head.red { background: var(--red-bg); color: #7F1D1D; border-bottom: 1px solid var(--red-border); }
-.scenario-card-head.green { background: var(--green-bg); color: #14532D; border-bottom: 1px solid var(--green-border); }
-.scenario-card-head.amber { background: var(--amber-bg); color: #78350F; border-bottom: 1px solid var(--amber-border); }
-.scenario-card-head.blue { background: var(--blue-bg); color: #1E3A8A; border-bottom: 1px solid var(--blue-border); }
-.scenario-card-body { padding: 14px 16px; font-size: 13px; line-height: 1.65; background: var(--surface); }
-.scenario-card-body ol, .scenario-card-body ul { padding-left: 18px; }
-.scenario-card-body li { margin-bottom: 5px; }
-.scenario-card-body strong { color: var(--navy); }
-
-/* ── STEP LIST ── */
-.steps { counter-reset: step-counter; list-style: none; margin: 16px 0; }
-.steps li {
-  counter-increment: step-counter;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  font-size: 13.5px;
-  line-height: 1.6;
-}
-.steps li::before {
-  content: counter(step-counter);
-  min-width: 26px; height: 26px;
-  background: var(--navy);
-  color: var(--gold-light);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-/* ── TWO COLUMN ── */
-.col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
-.col3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
-
-/* ── HIGHLIGHT BOX ── */
-.highlight-box {
-  background: var(--navy);
-  color: rgba(255,255,255,0.9);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
-  margin: 20px 0;
-}
-.highlight-box h4 { color: var(--gold-light); text-transform: none; letter-spacing: 0; font-size: 14px; margin-bottom: 8px; margin-top: 0; }
-.highlight-box p, .highlight-box li { font-size: 13px; color: rgba(255,255,255,0.78); }
-.highlight-box ul { padding-left: 18px; }
-.highlight-box li { margin-bottom: 5px; }
-
-/* ── QUICK REF CARD ── */
-.qr-card {
-  background: var(--navy);
-  color: #fff;
-  border-radius: var(--radius-lg);
-  padding: 28px 32px;
-  margin: 28px 0;
-}
-.qr-card h3 { color: var(--gold-light); border-left-color: var(--gold); }
-.qr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-.qr-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-.qr-label { font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.qr-val { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9); }
-
-/* ── FOOTNOTES / DISCLAIMER ── */
-.disclaimer {
-  margin-top: 56px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  font-size: 11.5px;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-
-/* ── DIVIDER ── */
-.divider { height: 1px; background: var(--border); margin: 32px 0; }
-
-/* ── PRINT ── */
-@media print {
-  .cover { margin: 0; padding: 40px; }
-  .page-wrap { padding: 0 20px; }
-  .tooltip { display: none !important; }
-  h3 { break-after: avoid; }
-  table { break-inside: avoid; }
-  .scenario-card { break-inside: avoid; }
-}
-@media (max-width: 680px) {
-  .exec-grid { grid-template-columns: 1fr 1fr; }
-  .col2, .col3 { grid-template-columns: 1fr; }
-  .scenario-grid { grid-template-columns: 1fr; }
-  .toc-grid { grid-template-columns: 1fr; }
-  .dtree-row { grid-template-columns: 1fr; }
-  .qr-grid { grid-template-columns: 1fr; }
-  .cover h1 { font-size: 24px; }
-}
-</style>
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="css/strategy.css">
 </head>
 <body>
+<div class="layout-wrapper">
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">TSLA 期权卖方<br>操作手册</div>
+    <div class="logo-ver">V4.0 · 2026 年 4 月</div>
+  </div>
 
-<div class="page-wrap">
+  <div class="nav-section-label">策略概览</div>
+  <a href="#exec" class="nav-item">00 · 执行摘要</a>
+  <a href="#ch1" class="nav-item">01 · TSLA 标的分析</a>
+  <a href="#ch2" class="nav-item">02 · 策略框架</a>
 
-<!-- ═══════════ COVER ═══════════ -->
-<div class="cover">
-  <div class="cover-eyebrow">机构级期权策略 · 客户专属交付版</div>
+  <div class="nav-section-label">账户与执行</div>
+  <a href="#ch3" class="nav-item">03 · 账户配置</a>
+  <a href="#ch4" class="nav-item">04 · 开仓条件</a>
+  <a href="#ch5" class="nav-item">05 · 仓位计算</a>
+  <a href="#ch6" class="nav-item">06 · 执行操作</a>
+
+  <div class="nav-section-label">风险与合规</div>
+  <a href="#ch7" class="nav-item">07 · 持仓监控</a>
+  <a href="#ch8" class="nav-item">08 · 风险控制</a>
+  <a href="#ch9" class="nav-item">09 · 财报季规程</a>
+  <a href="#ch10" class="nav-item">10 · 税务合规</a>
+  <a href="#appendix" class="nav-item">11 · 快速参考卡</a>
+</nav>
+<main class="main-content">
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">机构级期权策略 · 客户专属交付版</div>
   <h1>TSLA 期权卖方策略<br><span>专业操作手册</span></h1>
-  <div class="cover-sub">Covered Call + Wheel 完整执行指引 · 适用于 IBKR NRA 账户</div>
-  <div class="cover-meta">
-    <div class="cover-meta-item"><div class="cover-meta-label">版本</div><div class="cover-meta-val">V4.0 综合修订版</div></div>
-    <div class="cover-meta-item"><div class="cover-meta-label">基准日期</div><div class="cover-meta-val">2026 年 4 月</div></div>
-    <div class="cover-meta-item"><div class="cover-meta-label">策略级别</div><div class="cover-meta-val">中高风险</div></div>
-    <div class="cover-meta-item"><div class="cover-meta-label">最低建议资金</div><div class="cover-meta-val">$150,000 USD</div></div>
-    <div class="cover-meta-item"><div class="cover-meta-label">账户类型</div><div class="cover-meta-val">IBKR NRA（非居民外国人）</div></div>
+  <p class="hero-sub">Covered Call + Wheel 完整执行指引 · 适用于 IBKR NRA 账户</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">版本</span><span class="value">V4.0 综合修订版</span></div>
+    <div class="hero-meta-item"><span class="label">基准日期</span><span class="value">2026 年 4 月</span></div>
+    <div class="hero-meta-item"><span class="label">策略级别</span><span class="value">中高风险</span></div>
+    <div class="hero-meta-item"><span class="label">最低建议资金</span><span class="value">$150,000 USD</span></div>
+    <div class="hero-meta-item"><span class="label">账户类型</span><span class="value">IBKR NRA（非居民外国人）</span></div>
   </div>
-  <div class="cover-disclaimer">
-    重要声明：本手册仅供参考，不构成任何投资建议或证券推荐。期权交易存在重大亏损风险，可能损失全部本金。所有收益率估算均为理论值，不代表未来实际收益。投资前请务必咨询持牌投资顾问及具备美国税务资质的 CPA。
-  </div>
-</div>
-
-<!-- ═══════════ TOC ═══════════ -->
-<div class="toc">
-  <div class="toc-title">目录</div>
-  <div class="toc-grid">
-    <ol>
-      <li><a href="#exec">执行摘要</a></li>
-      <li><a href="#ch1">TSLA 标的深度分析</a></li>
-      <li><a href="#ch2">策略框架与收益预期</a></li>
-      <li><a href="#ch3">账户配置与合规设置</a></li>
-      <li><a href="#ch4">开仓条件与信号体系</a></li>
-    </ol>
-    <ol start="6">
-      <li><a href="#ch5">仓位计算与分层管理</a></li>
-      <li><a href="#ch6">执行操作指引（TWS）</a></li>
-      <li><a href="#ch7">持仓监控与滚动决策</a></li>
-      <li><a href="#ch8">风险控制矩阵</a></li>
-      <li><a href="#ch9">财报季操作规程</a></li>
-    </ol>
-  </div>
-  <div style="margin-top:10px"><ol start="11"><li><a href="#ch10">税务合规指引（NRA）</a></li><li><a href="#appendix">附录：快速参考卡</a></li></ol></div>
 </div>
 
 
 <!-- ═══════════ EXEC SUMMARY ═══════════ -->
-<section id="exec">
-<div class="chapter-header">
-  <div class="chapter-num">摘要</div>
+<section class="section" id="exec">
+<div class="section-header">
+  <span class="section-num">摘要</span>
   <div>
-    <h2>执行摘要</h2>
-    <p>在持有 TSLA 正股的前提下，系统化卖出价外期权，将高波动率转化为稳定现金流</p>
+    <div class="section-title">执行摘要</div>
+    <div class="section-subtitle">在持有 TSLA 正股的前提下，系统化卖出价外期权，将高波动率转化为稳定现金流</div>
   </div>
 </div>
 
@@ -517,9 +82,9 @@ td.amber { color: var(--amber); font-weight: 600; }
   </div>
 </div>
 
-<div class="alert alert-amber">
-  <div class="alert-title">核心风险预警（必读）</div>
-  本策略不能防止 TSLA 正股大幅下跌。权利金仅提供约 2%–4% 的下行缓冲。TSLA 历史上曾出现单年下跌 65% 的情形，权利金收入在此类极端情景下几乎无法提供实质性保护。建议 TSLA 仓位不超过您总可投资资产的 <strong>30%</strong>。
+<div class="callout warning">
+  <span class="callout-icon">⚠</span>
+  <div><strong>核心风险预警（必读）：</strong>本策略不能防止 TSLA 正股大幅下跌。权利金仅提供约 2%–4% 的下行缓冲。TSLA 历史上曾出现单年下跌 65% 的情形，权利金收入在此类极端情景下几乎无法提供实质性保护。建议 TSLA 仓位不超过您总可投资资产的 <strong>30%</strong>。</div>
 </div>
 
 <p>本策略适合：<strong>长期看好 TSLA 正股、能够承受高于平均水平的波动、每周可花 30 分钟以上检视持仓</strong>的投资者。若无法接受上行收益封顶，请审慎评估是否适合执行本策略。</p>
@@ -527,18 +92,18 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 
 <!-- ═══════════ CH 1: TSLA ANALYSIS ═══════════ -->
-<section id="ch1">
-<div class="chapter-header">
-  <div class="chapter-num">第一章</div>
+<section class="section" id="ch1">
+<div class="section-header">
+  <span class="section-num">01</span>
   <div>
-    <h2>TSLA 标的深度分析</h2>
-    <p>理解标的特性是策略成功的前提，本章拆解 TSLA 的波动率结构与特有风险</p>
+    <div class="section-title">TSLA 标的深度分析</div>
+    <div class="section-subtitle">理解标的特性是策略成功的前提，本章拆解 TSLA 的波动率结构与特有风险</div>
   </div>
 </div>
 
 <h3>1.1 当前市场坐标（2026 年 4 月）</h3>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>指标</th><th>当前数值</th><th>正常区间</th><th>策略含义</th></tr></thead>
 <tbody>
@@ -552,15 +117,15 @@ td.amber { color: var(--amber); font-weight: 600; }
 </table>
 </div>
 
-<div class="alert alert-red">
-  <div class="alert-title">数据核实警告</div>
-  多份市场资料曾引用"60 日 HV = 28.8%"。若此数字属实，IV/HV 溢价高达 3.3 倍，属极罕见异常。考虑 TSLA 2024–2025 年间实际价格剧烈震荡，真实 60 日 RV 可能在 <strong>50%–75%</strong> 之间。IV/HV 真实溢价约 1.3–1.9 倍。卖方仍有统计优势，但远低于部分资料宣称的水平。
+<div class="callout danger">
+  <span class="callout-icon">🔴</span>
+  <div><strong>数据核实警告：</strong>多份市场资料曾引用"60 日 HV = 28.8%"。若此数字属实，IV/HV 溢价高达 3.3 倍，属极罕见异常。考虑 TSLA 2024–2025 年间实际价格剧烈震荡，真实 60 日 RV 可能在 <strong>50%–75%</strong> 之间。IV/HV 真实溢价约 1.3–1.9 倍。卖方仍有统计优势，但远低于部分资料宣称的水平。</div>
 </div>
 
 <h3>1.2 TSLA 五类特有风险</h3>
 <p>TSLA 的风险结构与普通科技股存在本质差异，以下风险在设计期权策略时必须单独考量：</p>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>风险类型</th><th>具体描述</th><th>对期权策略的影响</th></tr></thead>
 <tbody>
@@ -593,14 +158,14 @@ td.amber { color: var(--amber); font-weight: 600; }
 </table>
 </div>
 
-<div class="alert alert-amber">
-  <div class="alert-title">仓位集中度硬性建议</div>
-  无论资金规模，建议单一标的 TSLA 的仓位上限不超过投资者<strong>总可投资资产的 30%</strong>。若总资产为 $300 万，则最多 $100 万执行本策略。这是超越任何具体操作参数的最重要风险控制原则。
+<div class="callout warning">
+  <span class="callout-icon">⚠</span>
+  <div><strong>仓位集中度硬性建议：</strong>无论资金规模，建议单一标的 TSLA 的仓位上限不超过投资者<strong>总可投资资产的 30%</strong>。若总资产为 $300 万，则最多 $100 万执行本策略。这是超越任何具体操作参数的最重要风险控制原则。</div>
 </div>
 
 <h3>1.3 期权流动性评估</h3>
 <p>TSLA 期权流动性是全球最佳之一，适合大资金操作：</p>
-<ul style="font-size:14px;line-height:2;padding-left:20px">
+<ul>
   <li>日均期权成交量通常达 <strong>500 万张</strong>以上</li>
   <li>正常行情下 ATM 期权买卖价差约 $0.05–$0.15，OTM 期权约 $0.05–$0.30</li>
   <li>大资金（200 张合约以上）应分批执行，每批 50 张，间隔 5–10 秒</li>
@@ -610,36 +175,36 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 
 <!-- ═══════════ CH 2: STRATEGY ═══════════ -->
-<section id="ch2">
-<div class="chapter-header">
-  <div class="chapter-num">第二章</div>
+<section class="section" id="ch2">
+<div class="section-header">
+  <span class="section-num">02</span>
   <div>
-    <h2>策略框架与收益预期</h2>
-    <p>三层收益引擎、Wheel 循环、以及基于真实假设的收益率测算</p>
+    <div class="section-title">策略框架与收益预期</div>
+    <div class="section-subtitle">三层收益引擎、Wheel 循环、以及基于真实假设的收益率测算</div>
   </div>
 </div>
 
 <h3>2.1 核心策略哲学（三个不依赖）</h3>
-<div class="col3">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px">不依赖</div>
-    <div style="font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px">方向性预测</div>
-    <div style="font-size:12.5px;color:var(--text-muted)">震荡、小涨、小跌均可正<span class="term" data-key="theta">Theta</span>，无需判断涨跌</div>
+<div class="card-grid card-grid-3">
+  <div class="card">
+    <div class="stat-label">不依赖</div>
+    <div class="stat-value">方向性预测</div>
+    <div class="stat-note">震荡、小涨、小跌均可正<span class="term" data-key="theta">Theta</span>，无需判断涨跌</div>
   </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px">不依赖</div>
-    <div style="font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px">精准择时</div>
-    <div style="font-size:12.5px;color:var(--text-muted)">30–45 天固定周期，规则化执行，每周检视一次即可</div>
+  <div class="card">
+    <div class="stat-label">不依赖</div>
+    <div class="stat-value">精准择时</div>
+    <div class="stat-note">30–45 天固定周期，规则化执行，每周检视一次即可</div>
   </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow)">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px">不依赖</div>
-    <div style="font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px">高频交易</div>
-    <div style="font-size:12.5px;color:var(--text-muted)">大资金可分批执行，策略容量大，无需盯盘</div>
+  <div class="card">
+    <div class="stat-label">不依赖</div>
+    <div class="stat-value">高频交易</div>
+    <div class="stat-note">大资金可分批执行，策略容量大，无需盯盘</div>
   </div>
 </div>
 
 <h3>2.2 三层收益引擎</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>收益层次</th><th>来源</th><th>稳定性</th><th>本策略的处理方式</th></tr></thead>
 <tbody>
@@ -667,44 +232,53 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 <h3>2.3 Wheel 策略完整循环</h3>
 
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin:20px 0;box-shadow:var(--shadow)">
-<div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap">
-  <div style="flex:1;min-width:160px;text-align:center;padding:16px;background:#F8F7F4;border-radius:var(--radius);position:relative">
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">阶段一</div>
-    <div style="font-size:14px;font-weight:600;color:var(--navy)">持有正股</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:6px">卖出价外 Call<br>每月收取权利金</div>
+<div class="card">
+<div class="flow-steps" style="flex-direction:row;flex-wrap:wrap">
+  <div class="flow-step">
+    <div class="flow-step-num">一</div>
+    <div class="flow-step-body">
+      <strong>持有正股</strong>
+      <p>卖出价外 Call<br>每月收取权利金</p>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;padding:0 10px;color:var(--gold);font-size:20px;font-weight:300">→</div>
-  <div style="flex:1;min-width:160px;text-align:center;padding:16px;background:#FFF8EC;border-radius:var(--radius)">
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">阶段二</div>
-    <div style="font-size:14px;font-weight:600;color:#92400E">Call 被行权</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:6px">正股以行权价卖出<br>资金回收</div>
+  <div style="display:flex;align-items:center;padding:0 10px;font-size:20px">→</div>
+  <div class="flow-step">
+    <div class="flow-step-num">二</div>
+    <div class="flow-step-body">
+      <strong>Call 被行权</strong>
+      <p>正股以行权价卖出<br>资金回收</p>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;padding:0 10px;color:var(--gold);font-size:20px;font-weight:300">→</div>
-  <div style="flex:1;min-width:160px;text-align:center;padding:16px;background:#EFF6FF;border-radius:var(--radius)">
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">阶段三</div>
-    <div style="font-size:14px;font-weight:600;color:#1E40AF">持现金卖 Put</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:6px">卖出价外 <span class="term" data-key="csp">CSP</span><br>等待折价回购</div>
+  <div style="display:flex;align-items:center;padding:0 10px;font-size:20px">→</div>
+  <div class="flow-step">
+    <div class="flow-step-num">三</div>
+    <div class="flow-step-body">
+      <strong>持现金卖 Put</strong>
+      <p>卖出价外 <span class="term" data-key="csp">CSP</span><br>等待折价回购</p>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;padding:0 10px;color:var(--gold);font-size:20px;font-weight:300">→</div>
-  <div style="flex:1;min-width:160px;text-align:center;padding:16px;background:#F0FDF4;border-radius:var(--radius)">
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">阶段四</div>
-    <div style="font-size:14px;font-weight:600;color:#15803D">Put 被行权</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:6px">低价买回正股<br>回到阶段一</div>
+  <div style="display:flex;align-items:center;padding:0 10px;font-size:20px">→</div>
+  <div class="flow-step">
+    <div class="flow-step-num">四</div>
+    <div class="flow-step-body">
+      <strong>Put 被行权</strong>
+      <p>低价买回正股<br>回到阶段一</p>
+    </div>
   </div>
 </div>
-<div class="alert alert-amber" style="margin-top:16px;margin-bottom:0">
-  <strong>Wheel 风险提示：</strong>当 TSLA 处于单边下跌趋势时，Wheel 策略可能使投资者以递进方式"接飞刀"。本策略严格禁止在 TSLA 跌破 20 日均线下方 15% 后启动新的 Put 卖出。
+<div class="callout warning">
+  <span class="callout-icon">⚠</span>
+  <div><strong>Wheel 风险提示：</strong>当 TSLA 处于单边下跌趋势时，Wheel 策略可能使投资者以递进方式"接飞刀"。本策略严格禁止在 TSLA 跌破 20 日均线下方 15% 后启动新的 Put 卖出。</div>
 </div>
 </div>
 
 <h3>2.4 真实收益预期（必读）</h3>
-<div class="alert alert-red">
-  <div class="alert-title">30%–50% 收益率幻觉警告</div>
-  部分资料宣称 Covered Call 可实现"年化 30%–50% 税后收益率"。这些数字基于：①忽略税收；②用最高 IV 时点数据外推；③不计滚动摩擦；④忽略机会成本和 IV 均值回归。持续稳定执行本策略的<strong>现实税后净增强收益约 12%–20%</strong>，本手册的以下表格为合理预期。
+<div class="callout danger">
+  <span class="callout-icon">🔴</span>
+  <div><strong>30%–50% 收益率幻觉警告：</strong>部分资料宣称 Covered Call 可实现"年化 30%–50% 税后收益率"。这些数字基于：①忽略税收；②用最高 IV 时点数据外推；③不计滚动摩擦；④忽略机会成本和 IV 均值回归。持续稳定执行本策略的<strong>现实税后净增强收益约 12%–20%</strong>，本手册的以下表格为合理预期。</div>
 </div>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>收益层次</th><th>年化比例</th><th>关键假设与说明</th></tr></thead>
 <tbody>
@@ -713,7 +287,7 @@ td.amber { color: var(--amber); font-weight: 600; }
 <tr><td>扣除预扣税（30% 税率）</td><td class="num amber">18%–22%</td><td>保守情景，未享受协定优惠或 IBKR 按 FDAP 处理</td></tr>
 <tr><td>扣除滚动成本和价差</td><td class="num red">-2% 至 -4%</td><td>每次滚动的买卖价差和执行滑点</td></tr>
 <tr><td>扣除 <span class="term" data-key="iv">IV</span> 均值回归影响</td><td class="num red">-3% 至 -8%</td><td>若 IV 从 95% 回落至 60%，权利金大幅收薄</td></tr>
-<tr><td><strong>现实税后净增强收益</strong></td><td class="num" style="font-weight:700;font-size:15px;color:var(--navy)">12%–20%</td><td><strong>合理假设下的综合估算，应以此为预期基准</strong></td></tr>
+<tr><td><strong>现实税后净增强收益</strong></td><td class="num">12%–20%</td><td><strong>合理假设下的综合估算，应以此为预期基准</strong></td></tr>
 <tr><td>正股大涨（+40%）时的机会成本</td><td class="num red">损失 10%–20% 涨幅</td><td>被封顶后错失的超额上行收益，这是策略最大的隐性成本</td></tr>
 </tbody>
 </table>
@@ -722,29 +296,29 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 
 <!-- ═══════════ CH 3: ACCOUNT SETUP ═══════════ -->
-<section id="ch3">
-<div class="chapter-header">
-  <div class="chapter-num">第三章</div>
+<section class="section" id="ch3">
+<div class="section-header">
+  <span class="section-num">03</span>
   <div>
-    <h2>账户配置与合规设置</h2>
-    <p>IBKR 账户开通、期权权限申请、W-8BEN 税务配置的完整步骤</p>
+    <div class="section-title">账户配置与合规设置</div>
+    <div class="section-subtitle">IBKR 账户开通、期权权限申请、W-8BEN 税务配置的完整步骤</div>
   </div>
 </div>
 
 <h3>3.1 账户类型选择</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>资金规模</th><th>推荐账户类型</th><th>保证金特点</th><th>升级条件</th></tr></thead>
 <tbody>
 <tr><td>$15 万 – $50 万</td><td><span class="badge badge-blue">Reg T Margin</span></td><td><span class="term" data-key="coveredcall">Covered Call</span> 无额外保证金占用</td><td>无需升级，标准账户即可</td></tr>
 <tr><td>$50 万 – $200 万</td><td><span class="badge badge-blue">Reg T Margin</span></td><td>卖出 Put 时保证金要求较高</td><td>可申请升级至 Portfolio Margin</td></tr>
-<tr><td>$200 万 以上</td><td><span class="badge badge-navy">Portfolio Margin</span></td><td>基于 <span class="term" data-key="pm">VaR 模型</span>，保证金降低 30%–50%</td><td>净值 ≥ $110,000，通过 IBKR 在线申请</td></tr>
+<tr><td>$200 万 以上</td><td><span class="badge badge-blue">Portfolio Margin</span></td><td>基于 <span class="term" data-key="pm">VaR 模型</span>，保证金降低 30%–50%</td><td>净值 ≥ $110,000，通过 IBKR 在线申请</td></tr>
 </tbody>
 </table>
 </div>
 
 <h3>3.2 权限开通步骤（IBKR 操作路径）</h3>
-<ol class="steps">
+<ol class="sop-steps">
   <li>登录 IBKR Client Portal → Settings → Account Settings → Trading Permissions</li>
   <li>确认已开通：<strong>Stocks（美国股票）</strong> + <strong>Options Level 3</strong>（允许 Covered Call 和 Cash-Secured Put）</li>
   <li>严禁开通 Level 4 / 5（裸卖空期权，NRA 风险极高且税务不友好）</li>
@@ -753,7 +327,7 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 <h3>3.3 W-8BEN 税务表格配置（关键）</h3>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>配置项</th><th>要求</th><th>操作路径</th><th>错误后果</th></tr></thead>
 <tbody>
@@ -765,20 +339,20 @@ td.amber { color: var(--amber); font-weight: 600; }
 </table>
 </div>
 
-<div class="alert alert-amber">
-  <div class="alert-title">实务税务处理说明</div>
-  IBKR 对 <span class="term" data-key="nra">NRA</span> 账户期权权利金的实际预扣政策因账户类型和 IBKR 内部政策而存在差异。<strong>建议：开户后立即致电 IBKR 客服，明确询问期权权利金的预扣税处理方式，并获取书面（邮件）确认。</strong> 在未获确认前，请按 30% 预扣税进行收益预算，避免实际收益低于预期。
+<div class="callout warning">
+  <span class="callout-icon">⚠</span>
+  <div><strong>实务税务处理说明：</strong>IBKR 对 <span class="term" data-key="nra">NRA</span> 账户期权权利金的实际预扣政策因账户类型和 IBKR 内部政策而存在差异。<strong>建议：开户后立即致电 IBKR 客服，明确询问期权权利金的预扣税处理方式，并获取书面（邮件）确认。</strong> 在未获确认前，请按 30% 预扣税进行收益预算，避免实际收益低于预期。</div>
 </div>
 </section>
 
 
 <!-- ═══════════ CH 4: ENTRY CONDITIONS ═══════════ -->
-<section id="ch4">
-<div class="chapter-header">
-  <div class="chapter-num">第四章</div>
+<section class="section" id="ch4">
+<div class="section-header">
+  <span class="section-num">04</span>
   <div>
-    <h2>开仓条件与信号体系</h2>
-    <p>每周开仓前必须完成的检查清单，以及行权价 Delta 的动态选择规则</p>
+    <div class="section-title">开仓条件与信号体系</div>
+    <div class="section-subtitle">每周开仓前必须完成的检查清单，以及行权价 Delta 的动态选择规则</div>
   </div>
 </div>
 
@@ -800,7 +374,7 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 <h3>4.2 Delta 与行权价动态选择表</h3>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>IV Rank 区间</th><th>推荐 <span class="term" data-key="delta">Delta</span> 范围</th><th>价外幅度（约）</th><th>30天权利金/股（$372）</th><th>理论被行权概率</th><th>操作建议</th></tr></thead>
 <tbody>
@@ -813,7 +387,7 @@ td.amber { color: var(--amber); font-weight: 600; }
   <td>理想状态，积极开仓，仓位系数 1.0</td>
 </tr>
 <tr>
-  <td><span class="badge badge-amber">50%–80%</span></td>
+  <td><span class="badge badge-yellow">50%–80%</span></td>
   <td class="num">0.13–0.20</td>
   <td class="num">价外 5%–8%</td>
   <td class="num">$5–$9</td>
@@ -830,7 +404,7 @@ td.amber { color: var(--amber); font-weight: 600; }
 </tr>
 <tr>
   <td><span class="badge badge-green">&lt; 30%</span></td>
-  <td class="num" style="color:var(--red)">暂停 / ≤ 0.08</td>
+  <td class="num">暂停 / ≤ 0.08</td>
   <td class="num">价外 15%+</td>
   <td class="num">$2–$4</td>
   <td class="num green">&lt; 10%</td>
@@ -840,13 +414,13 @@ td.amber { color: var(--amber); font-weight: 600; }
 </table>
 </div>
 
-<div class="alert alert-blue">
-  <div class="alert-title">当前操作建议（2026 年 4 月初，IV Rank ≈ 15%–40%）</div>
-  当前处于中低 IV 环境，推荐使用 <strong>Delta 0.10–0.12</strong>（而非高 IV 时的 0.16）。参考行权价：股价 $372 × (1 + 12%) ≈ <strong>$415–$430 附近</strong>。权利金预期约 $5–$8/股，低于高 IV 时期，但策略逻辑仍成立。4 月财报临近，建议减少新仓规模，优先管理已有持仓。
+<div class="callout info">
+  <span class="callout-icon">💡</span>
+  <div><strong>当前操作建议（2026 年 4 月初，IV Rank ≈ 15%–40%）：</strong>当前处于中低 IV 环境，推荐使用 <strong>Delta 0.10–0.12</strong>（而非高 IV 时的 0.16）。参考行权价：股价 $372 × (1 + 12%) ≈ <strong>$415–$430 附近</strong>。权利金预期约 $5–$8/股，低于高 IV 时期，但策略逻辑仍成立。4 月财报临近，建议减少新仓规模，优先管理已有持仓。</div>
 </div>
 
 <h3>4.3 到期日选择规则</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>资金规模</th><th>主周期</th><th>辅助批次</th><th>选择理由</th></tr></thead>
 <tbody>
@@ -860,12 +434,12 @@ td.amber { color: var(--amber); font-weight: 600; }
 
 
 <!-- ═══════════ CH 5: POSITION SIZING ═══════════ -->
-<section id="ch5">
-<div class="chapter-header">
-  <div class="chapter-num">第五章</div>
+<section class="section" id="ch5">
+<div class="section-header">
+  <span class="section-num">05</span>
   <div>
-    <h2>仓位计算与分层管理</h2>
-    <p>经过修正的精确仓位计算公式，以及适合不同资金规模的分层结构</p>
+    <div class="section-title">仓位计算与分层管理</div>
+    <div class="section-subtitle">经过修正的精确仓位计算公式，以及适合不同资金规模的分层结构</div>
   </div>
 </div>
 
@@ -876,13 +450,13 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 现金储备     = 总资金 × 现金配置比例（最低 10%）
 </div>
 
-<div class="alert alert-blue">
-  <div class="alert-title">计算说明</div>
-  以股价 $372 为基准。实际操作时请用当日开盘价重新计算。合约数量必须向下取整（零股不能用于卖 Call）。
+<div class="callout info">
+  <span class="callout-icon">💡</span>
+  <div><strong>计算说明：</strong>以股价 $372 为基准。实际操作时请用当日开盘价重新计算。合约数量必须向下取整（零股不能用于卖 Call）。</div>
 </div>
 
 <h3>5.2 各资金规模仓位参数表</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>总资金</th><th>股票配置比例</th><th>可买股数（$372）</th><th>合约数</th><th>现金储备</th><th>每周期权利金（@$10/股）</th><th>年化权利金（税前）</th></tr></thead>
 <tbody>
@@ -894,12 +468,12 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 </tbody>
 </table>
 </div>
-<p style="font-size:12px;color:var(--text-muted)">注：年化权利金基于每周期 $10/股，对应 Delta 0.16、IV ≈ 95% 环境。当前 IV Rank 偏低时权利金约为 $6–$8/股，年化收益率应相应下调 20%–30%。税后净收益请参照第二章收益预期表。</p>
+<p>注：年化权利金基于每周期 $10/股，对应 Delta 0.16、IV ≈ 95% 环境。当前 IV Rank 偏低时权利金约为 $6–$8/股，年化收益率应相应下调 20%–30%。税后净收益请参照第二章收益预期表。</p>
 
 <h3>5.3 金字塔分层结构（$100 万以上推荐）</h3>
 <p>将正股持仓分为四个批次，对应不同的行权价和到期日，避免全部仓位集中在同一价位被行权：</p>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>批次</th><th>持仓比例</th><th>行权价 Delta</th><th>到期日</th><th>示例行权价（$372）</th><th>管理特点</th></tr></thead>
 <tbody>
@@ -920,7 +494,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
   <td>核心权利金来源，Theta 衰减最优</td>
 </tr>
 <tr>
-  <td><span class="badge badge-amber">C 批（收益）</span></td>
+  <td><span class="badge badge-yellow">C 批（收益）</span></td>
   <td class="num">30%</td>
   <td class="num">0.15–0.18</td>
   <td>60 天</td>
@@ -941,7 +515,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 <h3>5.4 Uncapped Tranche（保留无上限敞口）</h3>
 
-<div class="highlight-box">
+<div class="card">
   <h4>Uncapped Tranche 概念</h4>
   <p>建议保留 <strong>15%–20% 的正股持仓不参与期权操作</strong>，使这部分仓位拥有无上限的上行收益潜力。当 TSLA 出现 Cybercab 投产、FSD 突破等重大利好引发暴涨时，这部分仓位可充分享受上涨，作为整体策略的"上行保险"。</p>
   <p>例如：持有 2,100 股，其中 1,750 股（83%）参与 Covered Call，350 股（17%）保留为自由仓位，不卖任何期权。</p>
@@ -950,17 +524,17 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 
 <!-- ═══════════ CH 6: EXECUTION ═══════════ -->
-<section id="ch6">
-<div class="chapter-header">
-  <div class="chapter-num">第六章</div>
+<section class="section" id="ch6">
+<div class="section-header">
+  <span class="section-num">06</span>
   <div>
-    <h2>执行操作指引（IBKR TWS）</h2>
-    <p>从期权链筛选到订单传送的完整操作步骤</p>
+    <div class="section-title">执行操作指引（IBKR TWS）</div>
+    <div class="section-subtitle">从期权链筛选到订单传送的完整操作步骤</div>
   </div>
 </div>
 
 <h3>6.1 Covered Call 标准开仓流程</h3>
-<ol class="steps">
+<ol class="sop-steps">
   <li>打开 TWS → 搜索 <strong>TSLA</strong> → 右键 → 期权链（Option Chain）</li>
   <li>在期权链顶部选择目标<strong>到期日（30–45 天后）</strong>，跳过覆盖财报日的合约</li>
   <li>点击 <strong>Delta 列</strong>排序，找到 Delta 最接近目标值（0.10–0.16）的价外 Call</li>
@@ -973,13 +547,13 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
   <li>成交后记录：合约代码、行权价、到期日、收取权利金金额（建入交易日志）</li>
 </ol>
 
-<div class="alert alert-red">
-  <div class="alert-title">永远使用限价单</div>
-  绝对禁止使用市价单（Market Order）执行期权交易。TSLA 期权流动性虽佳，但市价单在快速波动时可能以极不利价格成交，造成不必要损失。
+<div class="callout danger">
+  <span class="callout-icon">🔴</span>
+  <div><strong>永远使用限价单：</strong>绝对禁止使用市价单（Market Order）执行期权交易。TSLA 期权流动性虽佳，但市价单在快速波动时可能以极不利价格成交，造成不必要损失。</div>
 </div>
 
 <h3>6.2 大资金执行注意事项（100 张合约以上）</h3>
-<ul style="font-size:14px;line-height:2;padding-left:20px">
+<ul>
   <li>使用 TWS 的 <strong>Accumulate / Distribute 算法</strong>：总量拆分为 10–20 批，设置时间间隔 5–10 秒自动执行</li>
   <li>单次手动执行不超过 <strong>50 张</strong>合约，避免价格冲击</li>
   <li>若期权市场价差异常扩大（Spread &gt; $0.40），停止当次执行，等待流动性恢复</li>
@@ -987,31 +561,31 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 </ul>
 
 <h3>6.3 最佳执行时段</h3>
-<div class="col2">
-  <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);padding:16px">
-    <div style="font-weight:600;color:var(--green);margin-bottom:6px">推荐时段</div>
-    <div style="font-size:13.5px;color:#14532D">美东时间 <strong>10:00–11:30</strong><br>美东时间 <strong>14:00–15:30</strong><br>流动性充足，价差最窄</div>
+<div class="card-grid">
+  <div class="card">
+    <div class="stat-label">推荐时段</div>
+    <p>美东时间 <strong>10:00–11:30</strong><br>美东时间 <strong>14:00–15:30</strong><br>流动性充足，价差最窄</p>
   </div>
-  <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:16px">
-    <div style="font-weight:600;color:var(--red);margin-bottom:6px">避免时段</div>
-    <div style="font-size:13.5px;color:#7F1D1D">开盘前 15 分钟（09:30–09:45）<br>收盘前 30 分钟（15:30–16:00）<br>新闻发布或重大公告后 30 分钟内</div>
+  <div class="card">
+    <div class="stat-label">避免时段</div>
+    <p>开盘前 15 分钟（09:30–09:45）<br>收盘前 30 分钟（15:30–16:00）<br>新闻发布或重大公告后 30 分钟内</p>
   </div>
 </div>
 </section>
 
 
 <!-- ═══════════ CH 7: MONITORING & ROLLING ═══════════ -->
-<section id="ch7">
-<div class="chapter-header">
-  <div class="chapter-num">第七章</div>
+<section class="section" id="ch7">
+<div class="section-header">
+  <span class="section-num">07</span>
   <div>
-    <h2>持仓监控与滚动决策</h2>
-    <p>希腊字母阈值监控、四大滚动情景、以及牛市逃逸条款</p>
+    <div class="section-title">持仓监控与滚动决策</div>
+    <div class="section-subtitle">希腊字母阈值监控、四大滚动情景、以及牛市逃逸条款</div>
   </div>
 </div>
 
 <h3>7.1 希腊字母监控阈值</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>希腊字母</th><th>健康区间</th><th>预警阈值</th><th>触发行动</th><th>监控频率</th></tr></thead>
 <tbody>
@@ -1103,7 +677,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 <h3>7.4 牛市逃逸条款（TSLA 高 Beta 特有机制）</h3>
 
-<div class="highlight-box">
+<div class="card">
   <h4>触发条件</h4>
   <p>满足以下任意一条，立即执行逃逸：</p>
   <ul>
@@ -1122,7 +696,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 <h3>7.5 尾部风险对冲方案（可选）</h3>
 <p>在 Cybercab 投产、AI Day 等重大催化剂窗口期，可以从收取的权利金中拿出 <strong>10%</strong>，买入 <strong>0.05 Delta 的深度价外 Call</strong>：</p>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>项目</th><th>参数</th><th>作用</th></tr></thead>
 <tbody>
@@ -1136,19 +710,19 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 
 <!-- ═══════════ CH 8: RISK MANAGEMENT ═══════════ -->
-<section id="ch8">
-<div class="chapter-header">
-  <div class="chapter-num">第八章</div>
+<section class="section" id="ch8">
+<div class="section-header">
+  <span class="section-num">08</span>
   <div>
-    <h2>风险控制矩阵</h2>
-    <p>压力测试、强制止损规则，以及极端行情下的应急预案</p>
+    <div class="section-title">风险控制矩阵</div>
+    <div class="section-subtitle">压力测试、强制止损规则，以及极端行情下的应急预案</div>
   </div>
 </div>
 
 <h3>8.1 压力测试（$100 万账户，21 手正股）</h3>
 <p>假设：持有 2,100 股 TSLA（成本 $372），卖出 21 张行权价 $410 的 Call，权利金 $10/股（已收 $21,000）：</p>
 
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>情景</th><th>股价变动</th><th>正股盈亏</th><th>已收权利金</th><th>组合净损益</th><th>占总资金比</th></tr></thead>
 <tbody>
@@ -1160,10 +734,10 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 </tbody>
 </table>
 </div>
-<p style="font-size:12px;color:var(--text-muted)">★ 被行权情景说明：正股以 $410 卖出，每股盈利 $38（$410-$372）×2,100 股 + 权利金 $21,000 = 约 $100,800。上方 $446-$410 = $36/股 × 2,100 = $75,600 为策略的机会成本。⚠ TSLA 在 2022 年全年下跌约 65%，此类极端风险是真实存在的。</p>
+<p>★ 被行权情景说明：正股以 $410 卖出，每股盈利 $38（$410-$372）×2,100 股 + 权利金 $21,000 = 约 $100,800。上方 $446-$410 = $36/股 × 2,100 = $75,600 为策略的机会成本。⚠ TSLA 在 2022 年全年下跌约 65%，此类极端风险是真实存在的。</p>
 
 <h3>8.2 强制止损 / 调仓规则</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>触发条件</th><th>具体阈值</th><th>强制操作</th><th>执行时限</th></tr></thead>
 <tbody>
@@ -1178,67 +752,59 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 <h3>8.3 极端行情应急预案</h3>
 
-<div class="scenario-grid">
-  <div class="scenario-card">
-    <div class="scenario-card-head red">情景 A：TSLA 单日暴跌 &gt; 20%</div>
-    <div class="scenario-card-body">
+<div class="state-grid">
+  <div class="state-card state-d">
+    <div class="state-card-header">情景 A：TSLA 单日暴跌 &gt; 20%</div>
       <ol>
         <li><strong>不要恐慌性卖出正股</strong>——长期看好前提下，暴跌是持有成本，不是卖出信号</li>
         <li>检查空头 Call 的距离——若股价远低于行权价，Call 已深度<span class="term" data-key="otm">价外</span>，期权头寸实际上是安全的，无需操作</li>
         <li>若有充足现金储备（≥ 总资金 10%），可在暴跌后 3–5 天卖出价外 15% 的 Put（Delta 0.08–0.12），此时 IV 极高，权利金非常丰厚</li>
         <li>记录事件，评估是否有结构性风险改变（如马斯克相关政策），若有则考虑降低整体仓位规模</li>
       </ol>
-    </div>
   </div>
-  <div class="scenario-card">
-    <div class="scenario-card-head green">情景 B：TSLA 单日暴涨 &gt; 20%</div>
-    <div class="scenario-card-body">
+  <div class="state-card state-a">
+    <div class="state-card-header">情景 B：TSLA 单日暴涨 &gt; 20%</div>
       <ol>
         <li>检查持仓 Call——若 Call 已深度<span class="term" data-key="itm">价内（ITM）</span>，评估是否触发牛市逃逸条款（见第七章）</li>
         <li><strong>不要 FOMO 追高</strong>——不在暴涨当日做任何新的买入操作</li>
         <li>若 Call 被行权，现金回收后等待 1–2 周 IV 回落，再以 <span class="term" data-key="csp">CSP</span> 方式等待回调建仓（Wheel 阶段三）</li>
         <li>避免在 TSLA 大涨后立刻重买正股——通常存在 1–2 周的短期回调窗口</li>
       </ol>
-    </div>
   </div>
-  <div class="scenario-card">
-    <div class="scenario-card-head amber">情景 C：系统性市场崩盘（VIX &gt; 40）</div>
-    <div class="scenario-card-body">
+  <div class="state-card state-c">
+    <div class="state-card-header">情景 C：系统性市场崩盘（VIX &gt; 40）</div>
       <ol>
         <li><strong>唯一正确操作：平仓所有空头期权（包括 Call 和 Put），只保留正股</strong></li>
         <li>在 VIX &gt; 40 的环境下，期权价格严重扭曲，卖方的统计优势完全失效</li>
         <li>保留正股等待市场复苏，暂停一切期权操作</li>
         <li>至少等待 VIX 回落至 <strong>28 以下</strong>，且 TSLA 股价企稳后，再评估重启策略</li>
       </ol>
-    </div>
   </div>
-  <div class="scenario-card">
-    <div class="scenario-card-head blue">情景 D：IV 极高（&gt; 90%）</div>
-    <div class="scenario-card-body">
+  <div class="state-card state-b">
+    <div class="state-card-header">情景 D：IV 极高（&gt; 90%）</div>
       <ol>
         <li>IV 极高通常伴随重大不确定性事件，权利金虽厚，但同向跳空风险也极大</li>
         <li>将新开仓仓位系数降至 <strong>0.5</strong>（正常仓位的一半）</li>
         <li>优先选择深度价外合约（Delta ≤ 0.10），增加安全边际</li>
         <li>考虑加入尾部对冲（见 7.5），将 Covered Call 转化为 Bull Call Spread，限制极端上行风险</li>
       </ol>
-    </div>
   </div>
 </div>
 </section>
 
 
 <!-- ═══════════ CH 9: EARNINGS ═══════════ -->
-<section id="ch9">
-<div class="chapter-header">
-  <div class="chapter-num">第九章</div>
+<section class="section" id="ch9">
+<div class="section-header">
+  <span class="section-num">09</span>
   <div>
-    <h2>财报季操作规程</h2>
-    <p>财报是 TSLA 最大的单次跳空风险，必须严格执行以下规程</p>
+    <div class="section-title">财报季操作规程</div>
+    <div class="section-subtitle">财报是 TSLA 最大的单次跳空风险，必须严格执行以下规程</div>
   </div>
 </div>
 
 <h3>9.1 2026 年 Q1 财报关键时间表</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>时间节点</th><th>预估日期</th><th>强制操作</th><th>理由</th></tr></thead>
 <tbody>
@@ -1282,14 +848,14 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 </table>
 </div>
 
-<div class="highlight-box">
+<div class="card">
   <h4>IV Crush 机制解释</h4>
   <p>财报发布后，无论股价方向如何，<span class="term" data-key="ivcrush">IV 通常骤降 20%–40%</span>（即"IV 压缩"）。这对期权卖方有利——若在财报后立刻买回空头期权，成本极低。但财报后权利金随之变薄，建议等待 2–3 天让 IV 部分回升后再建新仓，以获取更厚的权利金。</p>
 </div>
 
 <h3>9.2 重大事件应对（与财报规程相同）</h3>
 <p>以下事件适用与财报相同的 T-7 平仓规程：</p>
-<ul style="font-size:14px;line-height:2;padding-left:20px">
+<ul>
   <li>Tesla AI Day / Robot Day（马斯克重大产品发布）</li>
   <li>Cybercab 投产进展公告</li>
   <li>全国/全球月度交付数据发布</li>
@@ -1300,22 +866,22 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 
 <!-- ═══════════ CH 10: TAX ═══════════ -->
-<section id="ch10">
-<div class="chapter-header">
-  <div class="chapter-num">第十章</div>
+<section class="section" id="ch10">
+<div class="section-header">
+  <span class="section-num">10</span>
   <div>
-    <h2>税务合规指引（NRA 专项）</h2>
-    <p>期权权利金的预扣税处理、合规红线与年度税务行动清单</p>
+    <div class="section-title">税务合规指引（NRA 专项）</div>
+    <div class="section-subtitle">期权权利金的预扣税处理、合规红线与年度税务行动清单</div>
   </div>
 </div>
 
-<div class="alert alert-red">
-  <div class="alert-title">重要声明</div>
-  本章内容仅作一般性说明，不构成专业税务建议。NRA 的美国税务处理因个人情况、账户类型和 IBKR 政策而差异显著。在执行本策略前及每年，<strong>必须咨询具备美国 / 国际税务资质的持牌 CPA</strong>。
+<div class="callout danger">
+  <span class="callout-icon">🔴</span>
+  <div><strong>重要声明：</strong>本章内容仅作一般性说明，不构成专业税务建议。NRA 的美国税务处理因个人情况、账户类型和 IBKR 政策而差异显著。在执行本策略前及每年，<strong>必须咨询具备美国 / 国际税务资质的持牌 CPA</strong>。</div>
 </div>
 
 <h3>10.1 期权权利金税务处理现实</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>收入类型</th><th>理论税务属性</th><th>IBKR 实务处理（通常）</th><th>保守预算应按</th></tr></thead>
 <tbody>
@@ -1353,7 +919,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 </ul>
 
 <h3>10.3 年度税务行动清单</h3>
-<div class="tbl-wrap">
+<div class="table-wrap">
 <table>
 <thead><tr><th>时间</th><th>行动项</th><th>说明</th></tr></thead>
 <tbody>
@@ -1369,30 +935,35 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
 
 
 <!-- ═══════════ APPENDIX ═══════════ -->
-<section id="appendix">
-<div class="chapter-header">
-  <div class="chapter-num">附录</div>
+<section class="section" id="appendix">
+<div class="section-header">
+  <span class="section-num">附录</span>
   <div>
-    <h2>快速参考卡</h2>
-    <p>可打印，贴于桌旁使用</p>
+    <div class="section-title">快速参考卡</div>
+    <div class="section-subtitle">可打印，贴于桌旁使用</div>
   </div>
 </div>
 
-<div class="qr-card">
-<h3 style="color:var(--gold-light);border-left-color:var(--gold);margin-top:0">核心参数速查</h3>
-<div class="qr-grid">
-  <div class="qr-item"><div class="qr-label">参考股价（需每次更新）</div><div class="qr-val">约 $372</div></div>
-  <div class="qr-item"><div class="qr-label">当前 IV 环境（2026/04）</div><div class="qr-val">IV ≈ 94%，Rank ≈ 15–40%（中低）</div></div>
-  <div class="qr-item"><div class="qr-label">推荐 Call Delta（当前）</div><div class="qr-val">0.10–0.13（IV Rank 偏低时保守）</div></div>
-  <div class="qr-item"><div class="qr-label">推荐到期日</div><div class="qr-val">30–45 天（大资金搭配 60 天批次）</div></div>
-  <div class="qr-item"><div class="qr-label">每周检查时间</div><div class="qr-val">周一 09:45–10:15 ET（开盘稳定后）</div></div>
-  <div class="qr-item"><div class="qr-label">财报前强制平仓</div><div class="qr-val">T-7 天（≈ 4 月 15 日）</div></div>
-  <div class="qr-item"><div class="qr-label">滚动净效益门槛</div><div class="qr-val">≥ $0 收入，或净支出 ≤ $0.50/股</div></div>
-  <div class="qr-item"><div class="qr-label">现金储备下限</div><div class="qr-val">总资金 10%（大资金 15%–20%）</div></div>
-  <div class="qr-item"><div class="qr-label">仓位集中度上限</div><div class="qr-val">TSLA ≤ 总可投资资产 30%</div></div>
-  <div class="qr-item"><div class="qr-label">税务预扣（保守预算）</div><div class="qr-val">按 30% 预扣计算税后收益</div></div>
-  <div class="qr-item"><div class="qr-label">现实税后年化目标</div><div class="qr-val">12%–20%（合理预期）</div></div>
-  <div class="qr-item"><div class="qr-label">IBKR 期权权限级别</div><div class="qr-val">Level 3（禁止 Level 4/5）</div></div>
+<div class="card">
+<h3>核心参数速查</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>参数</th><th>当前值</th></tr></thead>
+<tbody>
+  <tr><td>参考股价（需每次更新）</td><td>约 $372</td></tr>
+  <tr><td>当前 IV 环境（2026/04）</td><td>IV ≈ 94%，Rank ≈ 15–40%（中低）</td></tr>
+  <tr><td>推荐 Call Delta（当前）</td><td>0.10–0.13（IV Rank 偏低时保守）</td></tr>
+  <tr><td>推荐到期日</td><td>30–45 天（大资金搭配 60 天批次）</td></tr>
+  <tr><td>每周检查时间</td><td>周一 09:45–10:15 ET（开盘稳定后）</td></tr>
+  <tr><td>财报前强制平仓</td><td>T-7 天（≈ 4 月 15 日）</td></tr>
+  <tr><td>滚动净效益门槛</td><td>≥ $0 收入，或净支出 ≤ $0.50/股</td></tr>
+  <tr><td>现金储备下限</td><td>总资金 10%（大资金 15%–20%）</td></tr>
+  <tr><td>仓位集中度上限</td><td>TSLA ≤ 总可投资资产 30%</td></tr>
+  <tr><td>税务预扣（保守预算）</td><td>按 30% 预扣计算税后收益</td></tr>
+  <tr><td>现实税后年化目标</td><td>12%–20%（合理预期）</td></tr>
+  <tr><td>IBKR 期权权限级别</td><td>Level 3（禁止 Level 4/5）</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -1416,7 +987,7 @@ Call 合约数量 = 正股持仓股数 ÷ 100（每 100 股对应 1 张合约）
   本操作手册仅供参考和教育目的，不构成任何投资建议、证券推荐或买卖建议。期权交易存在重大亏损风险，最大损失可能达到全部本金。TSLA 历史上曾出现单年度下跌 65% 的情形，权利金收入在此类情景下无法提供实质性保护。所有收益率估算均为理论值，基于特定假设，不代表未来实际收益。税务处理因投资者个人情况而异，本手册中的税务描述仅为一般性说明，不构成税务建议。在执行本策略前，强烈建议咨询持牌投资顾问（RIA）及具备美国税务资质的 CPA。本手册版本 V4.0，基准日期 2026 年 4 月。所有市场数据请在执行前实时更新。
 </div>
 
-</div><!-- end page-wrap -->
+
 
 <!-- ═══════════ TOOLTIP SYSTEM ═══════════ -->
 <div class="tooltip" id="tooltip">
@@ -1546,5 +1117,8 @@ function positionTooltip(e) {
   tooltip.style.top = y + 'px';
 }
 </script>
+</main>
+</div>
+<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

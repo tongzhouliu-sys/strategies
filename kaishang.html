@@ -4,907 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>期权套利自动化系统操作手册 · KAISHANG · BBAE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #080c18;
-  --bg2: #0c1220;
-  --bg3: #101828;
-  --bg4: #141e2e;
-  --border: #1a2640;
-  --border2: #243352;
-  --gold: #d4a843;
-  --gold-dim: #a07c2a;
-  --gold-bg: rgba(212,168,67,0.08);
-  --blue: #4a8fe8;
-  --blue-dim: #2d5a9e;
-  --blue-bg: rgba(74,143,232,0.08);
-  --teal: #2cb8a0;
-  --teal-bg: rgba(44,184,160,0.08);
-  --green: #2ea87a;
-  --green-bg: rgba(46,168,122,0.08);
-  --red: #e05252;
-  --red-bg: rgba(224,82,82,0.08);
-  --amber: #d4884a;
-  --amber-bg: rgba(212,136,74,0.08);
-  --purple: #8b6fd4;
-  --purple-bg: rgba(139,111,212,0.08);
-  --text: #d8dde8;
-  --text2: #8896b0;
-  --text3: #4f607a;
-  --font-head: 'DM Serif Display', Georgia, serif;
-  --font-body: 'Instrument Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
-  --r: 6px;
-  --r2: 10px;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.7;
-  display: flex;
-  min-height: 100vh;
-}
-
-/* ── Sidebar ── */
-.sidebar {
-  width: 220px;
-  min-width: 220px;
-  background: var(--bg2);
-  border-right: 0.5px solid var(--border);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
-}
-
-.sidebar-logo {
-  padding: 24px 20px 18px;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.logo-badge {
-  display: inline-block;
-  background: var(--gold-bg);
-  border: 0.5px solid var(--gold-dim);
-  color: var(--gold);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  padding: 3px 8px;
-  border-radius: 3px;
-  margin-bottom: 8px;
-}
-
-.sidebar-logo h1 {
-  font-family: var(--font-head);
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--text);
-  line-height: 1.3;
-}
-
-.sidebar-logo p {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 4px;
-  font-family: var(--font-mono);
-}
-
-.nav-section-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  color: var(--text3);
-  text-transform: uppercase;
-  padding: 16px 20px 6px;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 20px;
-  text-decoration: none;
-  color: var(--text2);
-  font-size: 12.5px;
-  transition: all 0.15s;
-  border-left: 2px solid transparent;
-}
-
-.nav-link:hover {
-  color: var(--text);
-  background: var(--bg3);
-}
-
-.nav-link.active {
-  color: var(--gold);
-  border-left-color: var(--gold);
-  background: var(--gold-bg);
-}
-
-.nav-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--text3);
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-
-.nav-link:hover .nav-dot, .nav-link.active .nav-dot {
-  background: var(--gold);
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 16px 20px;
-  border-top: 0.5px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text3);
-  line-height: 1.8;
-}
-
-.confidential {
-  display: inline-block;
-  background: var(--red-bg);
-  color: var(--red);
-  border: 0.5px solid rgba(224,82,82,0.3);
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-
-/* ── Main content ── */
-.main {
-  margin-left: 220px;
-  flex: 1;
-  min-width: 0;
-}
-
-/* ── Hero ── */
-.hero {
-  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
-  border-bottom: 0.5px solid var(--border);
-  padding: 48px 56px 40px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.meta-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  padding: 3px 10px;
-  border-radius: 3px;
-  border: 0.5px solid;
-}
-
-.mb-version { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-dim); }
-.mb-nra { background: var(--teal-bg); color: var(--teal); border-color: rgba(44,184,160,0.3); }
-.mb-bbae { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-dim); }
-
-.hero h2 {
-  font-family: var(--font-head);
-  font-size: 36px;
-  font-weight: 400;
-  color: #edf0f6;
-  line-height: 1.2;
-  margin-bottom: 12px;
-}
-
-.hero h2 span { color: var(--gold); font-style: italic; }
-
-.hero-sub {
-  font-size: 14px;
-  color: var(--text2);
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-.hero-cards {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-top: 32px;
-}
-
-.hero-card {
-  background: var(--bg);
-  border: 0.5px solid var(--border2);
-  border-radius: var(--r2);
-  padding: 14px 16px;
-}
-
-.hc-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.hc-value {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--gold);
-}
-
-.hc-sub {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 2px;
-}
-
-/* ── Sections ── */
-.section {
-  padding: 52px 56px;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.section:last-child { border-bottom: none; }
-
-.section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 32px;
-}
-
-.section-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--gold-dim);
-  letter-spacing: 0.1em;
-}
-
-.section-header h3 {
-  font-family: var(--font-head);
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--text);
-}
-
-.section-divider {
-  flex: 1;
-  height: 0.5px;
-  background: var(--border);
-}
-
-/* ── Cards & blocks ── */
-.card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  padding: 22px 24px;
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 14px;
-}
-
-.card.gold-accent { border-left: 3px solid var(--gold); }
-.card.red-accent { border-left: 3px solid var(--red); }
-.card.green-accent { border-left: 3px solid var(--green); }
-.card.blue-accent { border-left: 3px solid var(--blue); }
-.card.teal-accent { border-left: 3px solid var(--teal); }
-.card.purple-accent { border-left: 3px solid var(--purple); }
-
-/* ── Tables ── */
-.table-wrap { overflow-x: auto; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-thead th {
-  background: var(--bg3);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 0.5px solid var(--border2);
-  white-space: nowrap;
-}
-
-tbody td {
-  padding: 10px 14px;
-  border-bottom: 0.5px solid var(--border);
-  color: var(--text);
-  vertical-align: top;
-}
-
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--bg3); }
-
-.mono { font-family: var(--font-mono); }
-.gold { color: var(--gold); }
-.blue { color: var(--blue); }
-.green { color: var(--green); }
-.red { color: var(--red); }
-.teal { color: var(--teal); }
-.amber { color: var(--amber); }
-.purple { color: var(--purple); }
-.muted { color: var(--text2); }
-.dim { color: var(--text3); }
-
-/* ── Tags ── */
-.tag {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 3px;
-  border: 0.5px solid;
-  letter-spacing: 0.05em;
-}
-.tag-gold { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-dim); }
-.tag-blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-dim); }
-.tag-red { background: var(--red-bg); color: var(--red); border-color: rgba(224,82,82,0.3); }
-.tag-green { background: var(--green-bg); color: var(--green); border-color: rgba(46,168,122,0.3); }
-.tag-teal { background: var(--teal-bg); color: var(--teal); border-color: rgba(44,184,160,0.3); }
-.tag-amber { background: var(--amber-bg); color: var(--amber); border-color: rgba(212,136,74,0.3); }
-.tag-purple { background: var(--purple-bg); color: var(--purple); border-color: rgba(139,111,212,0.3); }
-
-/* ── Alert boxes ── */
-.alert {
-  border: 0.5px solid;
-  border-radius: var(--r);
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.alert-icon {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.alert-warn {
-  background: var(--amber-bg);
-  border-color: rgba(212,136,74,0.25);
-  color: var(--text2);
-}
-.alert-warn .alert-icon { background: var(--amber-bg); color: var(--amber); }
-
-.alert-danger {
-  background: var(--red-bg);
-  border-color: rgba(224,82,82,0.25);
-  color: var(--text2);
-}
-.alert-danger .alert-icon { background: var(--red-bg); color: var(--red); }
-
-.alert-info {
-  background: var(--blue-bg);
-  border-color: rgba(74,143,232,0.25);
-  color: var(--text2);
-}
-.alert-info .alert-icon { background: var(--blue-bg); color: var(--blue); }
-
-.alert-success {
-  background: var(--green-bg);
-  border-color: rgba(46,168,122,0.25);
-  color: var(--text2);
-}
-.alert-success .alert-icon { background: var(--green-bg); color: var(--green); }
-
-/* ── Push notification template ── */
-.push-demo {
-  background: var(--bg);
-  border: 0.5px solid var(--border2);
-  border-radius: var(--r2);
-  overflow: hidden;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-}
-
-.push-header {
-  background: var(--gold-bg);
-  border-bottom: 0.5px solid var(--border2);
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.push-header-title {
-  color: var(--gold);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-}
-
-.push-id { color: var(--text3); font-size: 10px; }
-
-.push-body { padding: 18px; }
-
-.push-row {
-  display: flex;
-  gap: 0;
-  padding: 4px 0;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.push-row:last-child { border-bottom: none; }
-
-.push-key {
-  width: 200px;
-  min-width: 200px;
-  color: var(--text3);
-  font-size: 11px;
-}
-
-.push-val { color: var(--text); font-size: 12px; }
-
-.push-val.highlight { color: var(--gold); font-weight: 500; }
-.push-val.new-field { color: var(--teal); }
-
-.new-field-marker {
-  display: inline-block;
-  background: var(--teal-bg);
-  color: var(--teal);
-  border: 0.5px solid rgba(44,184,160,0.3);
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: 2px;
-  margin-left: 6px;
-  letter-spacing: 0.08em;
-}
-
-/* ── Target cards ── */
-.target-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.target-card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  overflow: hidden;
-}
-
-.target-header {
-  padding: 14px 18px;
-  border-bottom: 0.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.target-ticker {
-  font-family: var(--font-mono);
-  font-size: 17px;
-  font-weight: 500;
-  color: var(--gold);
-}
-
-.target-name {
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 2px;
-}
-
-.target-strategy {
-  font-size: 11px;
-  color: var(--text2);
-  text-align: right;
-}
-
-.target-body { padding: 16px 18px; }
-
-.param-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 5px 0;
-  border-bottom: 0.5px solid var(--border);
-  font-size: 12.5px;
-}
-
-.param-row:last-child { border-bottom: none; }
-.param-key { color: var(--text3); }
-.param-val { font-family: var(--font-mono); color: var(--text); font-size: 12px; }
-.param-val.em { color: var(--gold); }
-
-.target-footer {
-  background: var(--bg3);
-  padding: 10px 18px;
-  font-size: 11.5px;
-  color: var(--text2);
-  border-top: 0.5px solid var(--border);
-  line-height: 1.5;
-}
-
-.target-card-full {
-  grid-column: 1 / -1;
-}
-
-/* ── IBIT state matrix ── */
-.state-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.state-card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r);
-  padding: 14px 16px;
-}
-
-.state-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.state-def {
-  font-size: 11.5px;
-  color: var(--text2);
-  margin-bottom: 10px;
-  line-height: 1.5;
-}
-
-.state-action {
-  font-size: 11.5px;
-  line-height: 1.6;
-}
-
-/* ── Flow steps ── */
-.flow-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.flow-step {
-  display: flex;
-  gap: 20px;
-  position: relative;
-}
-
-.flow-step:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 15px;
-  top: 38px;
-  bottom: 0;
-  width: 0.5px;
-  background: var(--border2);
-}
-
-.flow-num {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bg3);
-  border: 0.5px solid var(--border2);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.flow-content {
-  flex: 1;
-  padding-bottom: 24px;
-}
-
-.flow-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 6px;
-}
-
-.flow-body {
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.7;
-}
-
-.checklist {
-  list-style: none;
-  margin-top: 10px;
-}
-
-.checklist li {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 4px 0;
-  font-size: 13px;
-  color: var(--text2);
-}
-
-.checklist li::before {
-  content: '○';
-  font-family: var(--font-mono);
-  color: var(--text3);
-  font-size: 11px;
-  flex-shrink: 0;
-}
-
-/* ── Risk meters ── */
-.risk-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.risk-card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px;
-}
-
-.risk-metric {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 500;
-  margin: 8px 0 4px;
-}
-
-.risk-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-
-.risk-desc { font-size: 12px; color: var(--text2); }
-
-.meter-bar {
-  height: 3px;
-  background: var(--border2);
-  border-radius: 2px;
-  margin: 10px 0 6px;
-  overflow: hidden;
-}
-
-.meter-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s;
-}
-
-/* ── Code block ── */
-.code-block {
-  background: var(--bg);
-  border: 0.5px solid var(--border2);
-  border-radius: var(--r);
-  padding: 18px 20px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.7;
-  overflow-x: auto;
-  color: var(--text2);
-}
-
-.code-block .kw { color: var(--blue); }
-.code-block .str { color: var(--green); }
-.code-block .num { color: var(--gold); }
-.code-block .key { color: var(--teal); }
-.code-block .cmt { color: var(--text3); }
-
-/* ── Two-col layout ── */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-/* ── Tax section ── */
-.tax-row {
-  display: grid;
-  grid-template-columns: 180px 1fr 1fr;
-  gap: 0;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.tax-row:last-child { border-bottom: none; }
-
-.tax-cell {
-  padding: 10px 14px;
-  font-size: 13px;
-  border-right: 0.5px solid var(--border);
-}
-
-.tax-cell:last-child { border-right: none; }
-
-.tax-header .tax-cell {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--bg3);
-}
-
-/* ── Appendix table ── */
-.appendix-wrap {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r2);
-  overflow: hidden;
-}
-
-/* ── Utils ── */
-.mb-8 { margin-bottom: 8px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-24 { margin-bottom: 24px; }
-.mb-32 { margin-bottom: 32px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-
-p { margin-bottom: 10px; color: var(--text2); font-size: 13.5px; line-height: 1.7; }
-p:last-child { margin-bottom: 0; }
-
-h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 20px 0 10px;
-}
-
-ul, ol {
-  padding-left: 18px;
-  color: var(--text2);
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-strong { color: var(--text); font-weight: 500; }
-
-@media print {
-  .sidebar { display: none; }
-  .main { margin-left: 0; }
-}
-</style>
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="css/strategy.css">
 </head>
 <body>
-
+<div class="layout-wrapper">
 <!-- ══════════════════════════════════════
      SIDEBAR
 ══════════════════════════════════════ -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-badge">CONFIDENTIAL · SOP v2.0</div>
-    <h1>期权套利<br>操作手册</h1>
-    <p>KAISHANG · BBAE · NRA</p>
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">Kaishang 期权增强<br>操作手册</div>
+    <div class="logo-ver">KAISHANG V2.0</div>
   </div>
-
   <div class="nav-section-label">核心流程</div>
-  <a href="#overview" class="nav-link active"><span class="nav-dot"></span>方案总览</a>
-  <a href="#filters" class="nav-link"><span class="nav-dot"></span>通用筛选器</a>
-  <a href="#push" class="nav-link"><span class="nav-dot"></span>商机推送模板</a>
-
+  <a href="#overview" class="nav-item">方案总览</a>
+  <a href="#filters" class="nav-item">通用筛选器</a>
+  <a href="#push" class="nav-item">商机推送模板</a>
   <div class="nav-section-label">五大标的</div>
-  <a href="#crcl" class="nav-link"><span class="nav-dot"></span>CRCL · 事件驱动</a>
-  <a href="#hood" class="nav-link"><span class="nav-dot"></span>HOOD · 财报套利</a>
-  <a href="#coin" class="nav-link"><span class="nav-dot"></span>COIN · 跨市场</a>
-  <a href="#mstr" class="nav-link"><span class="nav-dot"></span>MSTR · 溢价回归</a>
-  <a href="#ibit" class="nav-link"><span class="nav-dot"></span>IBIT · 趋势备兑</a>
-
+  <a href="#crcl" class="nav-item">CRCL · 事件驱动</a>
+  <a href="#hood" class="nav-item">HOOD · 财报套利</a>
+  <a href="#coin" class="nav-item">COIN · 跨市场</a>
+  <a href="#mstr" class="nav-item">MSTR · 溢价回归</a>
+  <a href="#ibit" class="nav-item">IBIT · 趋势备兑</a>
   <div class="nav-section-label">运营管理</div>
-  <a href="#sop" class="nav-link"><span class="nav-dot"></span>决策执行 SOP</a>
-  <a href="#risk" class="nav-link"><span class="nav-dot"></span>风险控制 · 熔断</a>
-  <a href="#tax" class="nav-link"><span class="nav-dot"></span>NRA 税务合规</a>
-  <a href="#tech" class="nav-link"><span class="nav-dot"></span>系统技术规格</a>
-  <a href="#appendix" class="nav-link"><span class="nav-dot"></span>附录 · 参数配置表</a>
-
-  <div class="sidebar-footer">
-    <div class="confidential">CONFIDENTIAL</div><br>
-    仅供账户持有人使用<br>
-    2026-03-30 · v2.0
-  </div>
+  <a href="#sop" class="nav-item">决策执行 SOP</a>
+  <a href="#risk" class="nav-item">风险控制 · 熔断</a>
+  <a href="#tax" class="nav-item">NRA 税务合规</a>
+  <a href="#tech" class="nav-item">系统技术规格</a>
+  <a href="#appendix" class="nav-item">附录 · 参数配置</a>
 </nav>
-
+<main class="main-content">
 <!-- ══════════════════════════════════════
      MAIN
 ══════════════════════════════════════ -->
-<main class="main">
+<div >
 
 <!-- HERO -->
-<section class="hero">
+<div class="hero">
+  <div class="hero-eyebrow">KAISHANG · BBAE · NRA | 期权套利手册 V2.0</div>
+  <h1>期权套利<br>自动化商机操作手册</h1>
+  <p class="hero-sub">综合十大 AI 方案精华，整合最佳商机推送模板、执行 SOP、风控熔断机制及 NRA 税务合规要求。</p>
   <div class="hero-meta">
-    <span class="meta-badge mb-version">V 2.0 FINAL</span>
-    <span class="meta-badge mb-nra">NRA 身份</span>
-    <span class="meta-badge mb-bbae">BBAE 账户</span>
+    <div class="hero-meta-item"><span class="label">账户持有人</span><span class="value">KAISHANG</span></div>
+    <div class="hero-meta-item"><span class="label">资金规模</span><span class="value">$10万–$100万</span></div>
+    <div class="hero-meta-item"><span class="label">监控标的</span><span class="value">5 个</span></div>
+    <div class="hero-meta-item"><span class="label">年化目标</span><span class="value">12%–25%</span></div>
   </div>
-  <h2>期权套利<br><span>自动化商机</span>操作手册</h2>
-  <p class="hero-sub">综合十大 AI 方案精华，整合最佳商机推送模板、执行 SOP、风控熔断机制及 NRA 税务合规要求。以自动化监控为引擎，赚取权利金为核心目标。</p>
-  <div class="hero-cards">
-    <div class="hero-card">
-      <div class="hc-label">账户持有人</div>
-      <div class="hc-value">KAISHANG</div>
-      <div class="hc-sub">中国国籍</div>
-    </div>
-    <div class="hero-card">
-      <div class="hc-label">资金规模</div>
-      <div class="hc-value">$10万–$100万</div>
-      <div class="hc-sub">美元</div>
-    </div>
-    <div class="hero-card">
-      <div class="hc-label">扫描频率</div>
-      <div class="hc-value">15 min</div>
-      <div class="hc-sub">09:30–16:00 ET</div>
-    </div>
-    <div class="hero-card">
-      <div class="hc-label">监控标的</div>
-      <div class="hc-value">5 个</div>
-      <div class="hc-sub">CRCL HOOD COIN MSTR IBIT</div>
-    </div>
-    <div class="hero-card">
-      <div class="hc-label">年化目标</div>
-      <div class="hc-value">12%–25%</div>
-      <div class="hc-sub">视波动率而定</div>
-    </div>
-  </div>
-</section>
+</div>
 
 <!-- ── SECTION 1: OVERVIEW ── -->
 <section class="section" id="overview">
@@ -934,7 +81,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-info">
+  <div class="callout info">
     <div class="alert-icon">ℹ</div>
     <div>本手册整合了十份 AI 方案的最优元素：Claude 的完整推送字段、Qwen 的 OI 流动性筛选与 CRCL 上市前置确认、ChatGPT 的 JSON 标准化输出结构、Grok 的操作 Checklist 与推送 ID 机制、Gemini 的顾问视角风险建议、Kimi 的 IBIT 趋势自适应框架，并修正了部分方案中 NRA 税务处理的严重错误。</div>
   </div>
@@ -1015,7 +162,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-warn">
+  <div class="callout warning">
     <div class="alert-icon">!</div>
     <div><strong>CRCL 上市前置确认（Qwen 提出）：</strong>由于 CRCL 为新上市公司，系统在推送前必须自动校验该标的期权链已正式在 BBAE 开通交易权限。若未确认，系统屏蔽所有 CRCL 推送，并将资金权重临时分配至 COIN 或 MSTR，直至确认可交易。</div>
   </div>
@@ -1097,11 +244,11 @@ strong { color: var(--text); font-weight: 500; }
   </div>
 
   <div class="two-col">
-    <div class="alert alert-success">
+    <div class="callout gold">
       <div class="alert-icon">✓</div>
       <div><strong>推送有效性规则：</strong>若当前市场报价与推送时权利金偏离超过 <span class="mono gold">10%</span>，系统在推送中自动标注"价格已漂移"，客户应放弃本次机会，等待下一轮扫描。严禁追价市价下单。</div>
     </div>
-    <div class="alert alert-info">
+    <div class="callout info">
       <div class="alert-icon">ℹ</div>
       <div><strong>推送渠道优先级：</strong>Discord / Telegram 推送（推荐）→ 邮件备份 → App 弹窗。每条推送含唯一 Push-ID，系统自动记录，防止同一合约当日重复推送。</div>
     </div>
@@ -1122,7 +269,7 @@ strong { color: var(--text); font-weight: 500; }
     <span style="font-size:13px;color:var(--text2);">Circle Internet Group · 事件驱动高 IV 卖 Put</span>
   </div>
 
-  <div class="alert alert-warn mb-16">
+  <div class="callout warning">
     <div class="alert-icon">!</div>
     <div><strong>前置确认（必做）：</strong>交易前系统必须自动校验 CRCL 已正式上市且 BBAE 期权链已开通。否则自动屏蔽该标的，不得手动绕过。</div>
   </div>
@@ -1146,7 +293,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-danger mb-32">
+  <div class="callout danger">
     <div class="alert-icon">⚠</div>
     <div><strong>操作要点：</strong>CRCL 对加密监管政策高度敏感，立法投票前后 IV 波动剧烈。事件结束后应尽快平仓锁利（不要等到到期），以规避事件结果超预期带来的 Gamma 风险。若 CRCL 单日跌幅 &gt;5%，系统自动暂停该标的所有推送。</div>
   </div>
@@ -1180,7 +327,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-warn mb-32">
+  <div class="callout warning">
     <div class="alert-icon">!</div>
     <div><strong>操作要点：</strong>铁鹰建立后，若 HOOD 单边突破行权价范围 70% 以上，应考虑提前平仓止损，而非持有到期。严禁财报前 3 天内新建仓位，此时 Gamma 风险极高，权利金的时间价值已无法弥补方向风险。最大亏损 = 翼宽 − 净权利金，需提前计算清楚再决策。</div>
   </div>
@@ -1213,7 +360,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-warn mb-32">
+  <div class="callout warning">
     <div class="alert-icon">!</div>
     <div><strong>操作要点：</strong>此策略依赖 COIN/BTC 的 IV 差值稳定存在。若 BTC 发生重大利空事件（监管打压、鲸鱼砸盘），两者 IV 将同步飙升，对冲效果显著减弱。BTC 单日波动 &gt;5% 时，系统自动暂停 COIN 新仓位推送。组合 Delta 目标绝对值 &lt;0.1，若偏离超过 0.15 应及时调仓。</div>
   </div>
@@ -1247,7 +394,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-danger mb-32">
+  <div class="callout danger">
     <div class="alert-icon">⚠</div>
     <div><strong>高风险提示：</strong>裸卖 Call 为本手册中风险最高的操作。若 BTC 突破历史新高，MSTR NAV 溢价可能持续扩大，裸 Call 亏损理论无上限。当 BTC 单日涨幅 &gt;8% 时，系统自动暂停 MSTR 新仓位推送。<strong>强烈建议持有正股后使用备兑 Call，而非裸卖。</strong></div>
   </div>
@@ -1365,7 +512,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-info mb-0">
+  <div class="callout info">
     <div class="alert-icon">ℹ</div>
     <div><strong>实际成本管理公式：</strong>实际成本 = 原始成本 − 累计权利金收入 ÷ 总股数。12个月目标：将实际持仓成本降低 $5 以上。BTC 牛市时，优先保留正股上涨红利，减少备兑频率，不要为了收租而错失主升浪。</div>
   </div>
@@ -1476,7 +623,7 @@ strong { color: var(--text); font-weight: 500; }
     <div class="section-divider"></div>
   </div>
 
-  <div class="alert alert-danger mb-24">
+  <div class="callout danger">
     <div class="alert-icon">⚠</div>
     <div><strong>核心警告：</strong>期权卖方具备收益有限、亏损不对称的内在特征。以下所有风险控制规则为<strong>强制执行</strong>，系统不得因"即将止损"而给出任何例外放宽。规则失效的那一刻，往往就是最大亏损发生的那一刻。</div>
   </div>
@@ -1579,7 +726,7 @@ strong { color: var(--text); font-weight: 500; }
     <div class="section-divider"></div>
   </div>
 
-  <div class="alert alert-danger mb-24">
+  <div class="callout danger">
     <div class="alert-icon">⚠</div>
     <div><strong>重要警告：</strong>某些 AI 方案中存在「期权权利金收入需按美国个人所得税率（最高37%）缴税」的严重错误说法。该描述对 NRA 身份完全不适用，照此操作将导致不必要的巨额税务损失。以下为正确的 NRA 税务处理。</div>
   </div>
@@ -1617,7 +764,7 @@ strong { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <div class="alert alert-warn">
+  <div class="callout warning">
     <div class="alert-icon">!</div>
     <div><strong>免责声明：</strong>本节税务信息仅供参考，不构成专业税务建议</div>
   </div>
@@ -1845,7 +992,7 @@ strong { color: var(--text); font-weight: 500; }
   </div>
 </section>
 
-</main>
+</div>
 
 <script>
 // Active nav highlight on scroll
@@ -1866,5 +1013,8 @@ function updateNav() {
 window.addEventListener('scroll', updateNav, { passive: true });
 updateNav();
 </script>
+</main>
+</div>
+<script src="js/disclaimer.js" defer></script>
 </body>
 </html>
