@@ -8,74 +8,32 @@
 </head>
 <body>
 <div class="layout-wrapper">
-<aside class="sidebar">
-  <div class="sidebar-section">
-    <div class="sidebar-label">核心知识</div>
-    <a class="sidebar-item active" onclick="showSection('overview'); scrollTo('s0')" href="#">
-      <span class="icon">🎯</span> 策略定位与边界
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s1')" href="#">
-      <span class="icon">📖</span> 策略定义与逻辑
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s2')" href="#">
-      <span class="icon">💰</span> 账户结构与资金
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s3')" href="#">
-      <span class="icon">⚙️</span> 核心交易参数
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s4')" href="#">
-      <span class="icon">📋</span> 标的白名单
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s5')" href="#">
-      <span class="icon">✅</span> 开仓规则
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s6')" href="#">
-      <span class="icon">👁</span> 持仓监控
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s7')" href="#">
-      <span class="icon">🔄</span> 展期规则
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s8')" href="#">
-      <span class="icon">⚡</span> Wheel 被行权
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s10')" href="#">
-      <span class="icon">🚨</span> 极端行情应急
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s11')" href="#">
-      <span class="icon">📊</span> 月度复盘
-    </a>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">Put+Wheel 期权增强<br>操作手册</div>
+    <div class="logo-ver">FO-TONGZHOU</div>
   </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">工具与互动</div>
-    <a class="sidebar-item" onclick="showSection('checklist')" href="#">
-      <span class="icon">☑️</span> 开仓检查面板
-    </a>
-    <a class="sidebar-item" onclick="showSection('dashboard')" href="#">
-      <span class="icon">📡</span> 实时风控仪表盘
-    </a>
-    <a class="sidebar-item" onclick="showSection('cases')" href="#">
-      <span class="icon">🔬</span> 案例教学
-    </a>
-    <a class="sidebar-item" onclick="showSection('errors')" href="#">
-      <span class="icon">⛔</span> 常见错误警示
-    </a>
-    <a class="sidebar-item" onclick="showSection('openclaw')" href="#">
-      <span class="icon">🤖</span> OpenClaw 配置
-    </a>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">快速参考</div>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('s12')" href="#">
-      <span class="icon">🃏</span> 执行卡片
-    </a>
-    <a class="sidebar-item" onclick="showSection('overview'); scrollTo('lifelines')" href="#">
-      <span class="icon">🆘</span> 三条生命线
-    </a>
-  </div>
-</aside>
+  <div class="nav-section-label">核心知识</div>
+  <a href="#s0" class="nav-item">01 · 策略定位与边界</a>
+  <a href="#s1" class="nav-item">02 · 策略定义与逻辑</a>
+  <a href="#s2" class="nav-item">03 · 账户结构与资金</a>
+  <a href="#s3" class="nav-item">04 · 核心交易参数</a>
+  <a href="#s4" class="nav-item">05 · 标的白名单</a>
+  <a href="#s5" class="nav-item">06 · 开仓规则</a>
+  <a href="#s6" class="nav-item">07 · 持仓监控</a>
+  <a href="#s7" class="nav-item">08 · 展期规则</a>
+  <a href="#s8" class="nav-item">09 · Wheel被行权</a>
+  <a href="#s10" class="nav-item">10 · 极端行情应急</a>
+  <a href="#s11" class="nav-item">11 · 月度复盘</a>
+  <div class="nav-section-label">工具参考</div>
+  <a href="#checklist" class="nav-item">开仓检查清单</a>
+  <a href="#cases" class="nav-item">案例教学</a>
+  <a href="#errors" class="nav-item">常见错误</a>
+</nav>
 
 <!-- MAIN CONTENT -->
-<main class="main">
+<main >
 
 <!-- ═══════════════ SECTION: OVERVIEW ═══════════════ -->
 <div class="section active" id="section-overview">
@@ -87,8 +45,8 @@
   <!-- SECTION 0 -->
   <h2 data-num="§0">OpenClaw 真实能力边界 · 必读</h2>
 
-  <div class="alert alert-amber">
-    <div class="alert-title">⚠️ 重要定位说明</div>
+  <div class="callout warning">
+    <div class="callout-icon">⚠️ 重要定位说明</div>
     OpenClaw 的原生 Smart Trading 对接的是加密货币市场（Hyperliquid L1），<strong>不是美股期权</strong>。<br>
     但其「Heartbeat 引擎 + IBKR API + Telegram 告警」架构，完全可以承担期权策略的<strong>监控、计算和告警职责</strong>。<br><br>
     正确定位：OpenClaw 是你的「<strong>实时哨兵 + 计算引擎 + 报告员</strong>」，<em>不是自动开仓机器人</em>。
@@ -127,8 +85,8 @@
   <div id="s1"></div>
   <h2 data-num="§1">策略定义与核心逻辑</h2>
 
-  <div class="alert alert-green">
-    <div class="alert-title">✅ 策略正确名称</div>
+  <div class="callout gold">
+    <div class="callout-icon">✅ 策略正确名称</div>
     <strong>现金担保卖 Put（Cash-Secured Put）+ Wheel 策略</strong><br>
     ⚠️ 不是「裸卖 Put（Naked Put）」——两者账户权限、保证金和风险性质完全不同。
   </div>
@@ -176,12 +134,12 @@
   </div>
 
   <h3>现实收益预期</h3>
-  <div class="alert alert-red">
-    <div class="alert-title">⚠️ 避坑提示</div>
+  <div class="callout danger">
+    <div class="callout-icon">⚠️ 避坑提示</div>
     任何宣称「月入 2–3%」的卖 Put 策略都<strong>没有计入止损成本</strong>。以下为基于历史回测的保守预期：
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr>
         <th>市场环境</th><th>月均权利金</th><th>年化（扣止损后）</th><th>备注</th>
@@ -194,7 +152,7 @@
       </tr>
       <tr>
         <td>正常市场</td>
-        <td><span class="badge badge-amber">0.45%–0.65%</span></td>
+        <td><span class="badge badge-yellow">0.45%–0.65%</span></td>
         <td>5%–8%</td>
         <td>约每月 1–2 次开仓机会</td>
       </tr>
@@ -245,7 +203,7 @@
   </div>
 
   <h3>四色保证金警戒体系</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr>
         <th>状态</th><th>总保证金占用</th><th>允许操作</th><th>强制操作</th>
@@ -257,7 +215,7 @@
         <td>无</td>
       </tr>
       <tr style="background:rgba(255,165,2,0.05)">
-        <td><span class="badge badge-amber">🟡 黄色·观望</span></td>
+        <td><span class="badge badge-yellow">🟡 黄色·观望</span></td>
         <td>20%–25%</td>
         <td>仅开仓 A 级（AAPL/MSFT/QQQ/SPY）</td>
         <td>监控 Delta，准备止盈单</td>
@@ -279,12 +237,12 @@
 
   <h3><span class="tt" data-tip="VIX（波动率指数）：衡量标普500期权的隐含波动率，俗称「恐慌指数」。VIX越高市场越恐慌，期权权利金越贵。">VIX</span> 动态仓位调节</h3>
   <div class="card">
-    <div class="alert alert-blue" style="margin-bottom:12px">
-      <div class="alert-title">📐 VIX 动态公式</div>
+    <div class="callout info" style="margin-bottom:12px">
+      <div class="callout-icon">📐 VIX 动态公式</div>
       目标保证金上限 = <strong>25% × (20 ÷ 当前 VIX)</strong><br>
       示例：VIX = 25 时，目标上限 = 25% × (20/25) = <strong>20%</strong>；VIX = 30 时 = <strong>16.7%</strong>
     </div>
-    <div class="tbl-wrap" style="margin:0">
+    <div class="table-wrap" style="margin:0">
       <table>
         <tr><th>VIX 水平</th><th>总仓位上限</th><th>Delta 上限</th><th>操作指导</th></tr>
         <tr>
@@ -292,7 +250,7 @@
           <td>0.15</td><td>正常开仓，可选所有白名单标的</td>
         </tr>
         <tr>
-          <td>20 ≤ VIX ≤ 25</td><td><span class="badge badge-amber">15%</span></td>
+          <td>20 ≤ VIX ≤ 25</td><td><span class="badge badge-yellow">15%</span></td>
           <td>0.13</td><td>仅开仓 A 级标的（指数 ETF + AAPL/MSFT）</td>
         </tr>
         <tr>
@@ -349,8 +307,8 @@
   </div>
 
   <h3>双触发提前止损（⚡ 重要升级）</h3>
-  <div class="alert alert-red">
-    <div class="alert-title">满足任一条件即触发告警</div>
+  <div class="callout danger">
+    <div class="callout-icon">满足任一条件即触发告警</div>
     <strong>条件一：</strong>浮亏 ≥ 初始权利金 × <strong>80%</strong>（价格触发）<br>
     <strong>条件二：</strong>当前 Delta ≥ <strong>0.30</strong>（方向性触发）<br><br>
     满足任一 → OpenClaw 立即推送「建议止损」告警 → 你人工确认执行<br><br>
@@ -358,8 +316,8 @@
   </div>
 
   <h3><span class="tt" data-tip="IVR（IV Rank）：当前 IV 在过去一年高低区间中的百分位。IVR=0 表示处于年内最低，=100 表示最高。">IVR</span> / <span class="tt" data-tip="IVP（IV Percentile）：过去 252 天中 IV 低于当前值的天数占比。IVP=60 表示当前 IV 高于历史上 60% 的时间。">IVP</span> 指标正确计算（必须用 252 天窗口）</h3>
-  <div class="alert alert-amber">
-    <div class="alert-title">⚠️ 关键修正：必须使用 252 天窗口，不是 20 天</div>
+  <div class="callout warning">
+    <div class="callout-icon">⚠️ 关键修正：必须使用 252 天窗口，不是 20 天</div>
     20 天窗口内一次财报波动就能完全扭曲 IV 百分位结果，导致在不该开仓时开仓。<br><br>
     <strong>IVR</strong> = (当前 IV - 年最低) ÷ (年最高 - 年最低) × 100，窗口：<strong>252 个交易日</strong><br>
     <strong>IVP</strong> = 过去 252 天中 IV 低于当前值的天数 ÷ 252 × 100<br><br>
@@ -368,12 +326,12 @@
   </div>
 
   <h3>流动性硬性要求</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>指标</th><th>最低标准</th><th>说明</th></tr>
       <tr><td>期权日成交量</td><td><span class="badge badge-green">≥ 1500 张</span></td><td>成交量太低会导致填单价差过大</td></tr>
       <tr><td>买卖价差</td><td><span class="badge badge-blue">&lt; 权利金的 5%</span></td><td>原版 20% 标准太宽，5% 才能控制滑点损耗</td></tr>
-      <tr><td>市值要求</td><td><span class="badge badge-amber">&gt; 500 亿美元</span></td><td>避免小盘股流动性和退市风险</td></tr>
+      <tr><td>市值要求</td><td><span class="badge badge-yellow">&gt; 500 亿美元</span></td><td>避免小盘股流动性和退市风险</td></tr>
     </table>
   </div>
 
@@ -388,7 +346,7 @@
       <div class="grade-name">A+ 级 · 指数 ETF · 核心仓位</div>
       <div class="grade-badge" style="color:var(--green-text)">A+</div>
     </div>
-    <div class="tbl-wrap" style="margin:0;border:none">
+    <div class="table-wrap" style="margin:0;border:none">
       <table style="border:none">
         <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th><th>财报</th></tr>
         <tr>
@@ -409,7 +367,7 @@
       <div class="grade-name">A 级 · 核心科技 · 稳定仓位</div>
       <div class="grade-badge" style="color:var(--blue-text)">A</div>
     </div>
-    <div class="tbl-wrap" style="margin:0;border:none">
+    <div class="table-wrap" style="margin:0;border:none">
       <table>
         <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>财报窗口</th></tr>
         <tr><td>苹果</td><td><code>AAPL</code></td><td>0.12</td><td>12%</td><td>1/4/7/10 月下旬 · 禁止开仓提前 10 天</td></tr>
@@ -423,7 +381,7 @@
       <div class="grade-name">B 级 · 防御价值 · 降低 Beta（Grok 创新）</div>
       <div class="grade-badge" style="color:var(--amber-text)">B</div>
     </div>
-    <div class="tbl-wrap" style="margin:0;border:none">
+    <div class="table-wrap" style="margin:0;border:none">
       <table>
         <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特点</th></tr>
         <tr><td>台积电</td><td><code>TSM</code></td><td>0.13</td><td>8%</td><td>有 <span class="tt" data-tip="ADR 折价：ADR（美国存托凭证）相对于原股市场的价差，TSM 在美上市的 ADR 有时会有折溢价。">ADR 折价</span>；财报日历要精准</td></tr>
@@ -439,7 +397,7 @@
       <div class="grade-name">C 级 · 高波动 · 谨慎配置</div>
       <div class="grade-badge" style="color:var(--orange)">C</div>
     </div>
-    <div class="tbl-wrap" style="margin:0;border:none">
+    <div class="table-wrap" style="margin:0;border:none">
       <table>
         <tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th></tr>
         <tr><td>Meta</td><td><code>META</code></td><td>0.10</td><td>6%</td><td>财报前 <strong>14 天</strong>（不是 7 天）绝对禁止开仓</td></tr>
@@ -450,7 +408,7 @@
   </div>
 
   <h3>板块集中度控制</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>板块</th><th>包含标的</th><th>总占用上限</th><th>逻辑说明</th></tr>
       <tr>
@@ -462,7 +420,7 @@
       <tr>
         <td>防御板块</td>
         <td>SPY + V + MA</td>
-        <td><span class="badge badge-amber">≤ 净资产 15%</span></td>
+        <td><span class="badge badge-yellow">≤ 净资产 15%</span></td>
         <td>提供市场下行时的缓冲</td>
       </tr>
     </table>
@@ -475,7 +433,7 @@
   <h2 data-num="§5">开仓规则与检查清单</h2>
 
   <h3>市场三色灯（每日开盘前判断）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>状态</th><th>判断标准</th><th>操作指令</th><th>Delta 上限</th><th>仓位上限</th></tr>
       <tr style="background:rgba(0,214,143,0.05)">
@@ -484,7 +442,7 @@
         <td>正常开仓</td><td>0.15</td><td>20%</td>
       </tr>
       <tr style="background:rgba(255,165,2,0.05)">
-        <td><span class="badge badge-amber">🟡 黄灯·震荡</span></td>
+        <td><span class="badge badge-yellow">🟡 黄灯·震荡</span></td>
         <td>QQQ 在 200 日均线 ±5% 范围 &amp; 20 ≤ VIX ≤ 30</td>
         <td>谨慎，仅 A/A+ 级</td><td>0.12</td><td>15%</td>
       </tr>
@@ -511,75 +469,75 @@
   <h2 data-num="§6">持仓监控与每日工作流</h2>
 
   <div class="stepper">
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot active">09:00</div>
         <div class="step-line"></div>
       </div>
       <div class="step-body">
-        <div class="step-title">🤖 OpenClaw 早盘例行（09:00–09:30）</div>
-        <div class="step-content">拉取市场数据；计算三色灯；检查财报/宏观日历；计算当日 VIX 动态上限<br>
+        <div class="flow-step-body">🤖 OpenClaw 早盘例行（09:00–09:30）</div>
+        <div class="flow-step-body">拉取市场数据；计算三色灯；检查财报/宏观日历；计算当日 VIX 动态上限<br>
         <strong>输出：</strong>《早盘市场灯》推送 Telegram</div>
       </div>
     </div>
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot">09:30</div>
         <div class="step-line"></div>
       </div>
       <div class="step-body">
-        <div class="step-title">👤 投资人审核（09:30–10:00）</div>
-        <div class="step-content">审核市场灯状态；确认今日可开仓标的清单；检查现金储备<br>
+        <div class="flow-step-body">👤 投资人审核（09:30–10:00）</div>
+        <div class="flow-step-body">审核市场灯状态；确认今日可开仓标的清单；检查现金储备<br>
         <strong>输出：</strong>《今日开仓许可》（心理确认）</div>
       </div>
     </div>
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot">10:00</div>
         <div class="step-line"></div>
       </div>
       <div class="step-body">
-        <div class="step-title">👤 执行开仓（10:00–11:00）</div>
-        <div class="step-content">在 IBKR 执行开仓；按 10 条检查清单逐项确认（见「开仓检查」面板）<br>
+        <div class="flow-step-body">👤 执行开仓（10:00–11:00）</div>
+        <div class="flow-step-body">在 IBKR 执行开仓；按 10 条检查清单逐项确认（见「开仓检查」面板）<br>
         <strong>输出：</strong>《成交确认》手动记录</div>
       </div>
     </div>
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot active">盘中</div>
         <div class="step-line"></div>
       </div>
       <div class="step-body">
-        <div class="step-title">🤖 OpenClaw 实时监控（10:00–收盘）</div>
-        <div class="step-content">每 15 分钟检查 Delta、权利金、保证金；发现触发立即推送告警<br>
+        <div class="flow-step-body">🤖 OpenClaw 实时监控（10:00–收盘）</div>
+        <div class="flow-step-body">每 15 分钟检查 Delta、权利金、保证金；发现触发立即推送告警<br>
         <strong>输出：</strong>实时告警推送</div>
       </div>
     </div>
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot active">15:30</div>
         <div class="step-line"></div>
       </div>
       <div class="step-body">
-        <div class="step-title">🤖 OpenClaw 持仓日报（15:30–16:00）</div>
-        <div class="step-content">生成当日持仓日报；标记需要关注的合约；推送明日财报/宏观预警<br>
+        <div class="flow-step-body">🤖 OpenClaw 持仓日报（15:30–16:00）</div>
+        <div class="flow-step-body">生成当日持仓日报；标记需要关注的合约；推送明日财报/宏观预警<br>
         <strong>输出：</strong>《持仓日报》推送</div>
       </div>
     </div>
-    <div class="step">
+    <div class="flow-step">
       <div class="step-indicator">
         <div class="step-dot">16:00</div>
       </div>
       <div class="step-body">
-        <div class="step-title">👤 投资人复核（16:00–16:30）</div>
-        <div class="step-content">复核日报；处理任何异常告警；记录今日操作<br>
+        <div class="flow-step-body">👤 投资人复核（16:00–16:30）</div>
+        <div class="flow-step-body">复核日报；处理任何异常告警；记录今日操作<br>
         <strong>输出：</strong>签字确认（手机确认即可）</div>
       </div>
     </div>
   </div>
 
   <h3>OpenClaw 实时监控告警矩阵</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>监控指标</th><th>告警阈值</th><th>OpenClaw 动作</th><th>你的操作</th></tr>
       <tr>
@@ -635,13 +593,13 @@
   <div id="s7"></div>
   <h2 data-num="§7">展期（Roll）规则</h2>
 
-  <div class="alert alert-blue">
-    <div class="alert-title">🔑 核心原则：每次展期必须是「净权利金流入（Credit Roll）」</div>
+  <div class="callout info">
+    <div class="callout-icon">🔑 核心原则：每次展期必须是「净权利金流入（Credit Roll）」</div>
     新合约权利金收入 &gt; 平仓旧合约费用，即展期后净现金为正。<br>
     如果展期需要付出净成本（Debit），<strong>直接止损离场</strong>，不要为了逃避亏损而锁定更大风险。
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>股价跌幅</th><th>当前 Delta</th><th>当前 DTE</th><th>决策</th><th>具体操作</th></tr>
       <tr style="background:rgba(74,158,255,0.05)">
@@ -651,7 +609,7 @@
       </tr>
       <tr style="background:rgba(255,165,2,0.05)">
         <td>5%–8%</td><td>0.25–0.30</td><td>&gt; 21 天</td>
-        <td><span class="badge badge-amber">🟡 向上展期（时间轴）</span></td>
+        <td><span class="badge badge-yellow">🟡 向上展期（时间轴）</span></td>
         <td>平仓当前 Put；开仓延长 +30 天、相同行权价的新 Put；确认展期为 Credit Roll</td>
       </tr>
       <tr style="background:rgba(255,99,72,0.05)">
@@ -672,8 +630,8 @@
     </table>
   </div>
 
-  <div class="alert alert-red">
-    <div class="alert-title">⚠️ 展期次数限制：向下展期最多 1 次（防死亡螺旋）</div>
+  <div class="callout danger">
+    <div class="callout-icon">⚠️ 展期次数限制：向下展期最多 1 次（防死亡螺旋）</div>
     第一次被测试到行权价 → 可以考虑向下展期一次<br>
     第二次被测试 → 不再展期，必须止损或接受行权<br><br>
     目的：防止「死亡螺旋」——反复展期只是把亏损越滚越大，永远不落地。<br>
@@ -687,13 +645,13 @@
   <h2 data-num="§8">被行权后的 Wheel 策略</h2>
 
   <h3>行权发生后的即时操作（24 小时内完成）</h3>
-  <div class="alert alert-amber">
-    <div class="alert-title">关键判断问题</div>
+  <div class="callout warning">
+    <div class="callout-icon">关键判断问题</div>
     「今天才认识这家公司，<strong>愿意在此价格买入并持有 2 年以上吗？</strong>」<br>
     如果答案是「否」，就应该在被行权后尽快以 Covered Call 出清，不要硬撑。
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>被行权后股价</th><th>操作策略</th><th>Covered Call 参数</th><th>目标</th></tr>
       <tr>
@@ -723,8 +681,8 @@
     </table>
   </div>
 
-  <div class="alert alert-blue">
-    <div class="alert-title">📐 Wheel 策略完整收益公式</div>
+  <div class="callout info">
+    <div class="callout-icon">📐 Wheel 策略完整收益公式</div>
     总收益 = <strong>Put 权利金 + Covered Call 权利金 ± 股票差价</strong><br>
     即使股票最终未能回到买入成本，多轮 Covered Call 的权利金也能逐步弥补亏损。<br>
     OpenClaw 在行权后自动切换监控模式：转为追踪股票价格 vs 成本价，并监控 Covered Call 的展期情况。
@@ -736,7 +694,7 @@
   <div id="s10"></div>
   <h2 data-num="§10">极端行情应急预案</h2>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>触发条件</th><th>OpenClaw 自动动作</th><th>你的操作</th><th>时间窗口</th></tr>
       <tr>
@@ -772,15 +730,15 @@
     </table>
   </div>
 
-  <div class="alert alert-amber">
-    <div class="alert-title">⚡ 流动性枯竭应对</div>
+  <div class="callout warning">
+    <div class="callout-icon">⚡ 流动性枯竭应对</div>
     市场暴跌时，期权买卖价差可能扩大至 20%+，<strong>禁止市价平仓</strong>（滑点损失巨大）。<br>
     使用限价单，挂在 Bid-Ask 中间价；每 5 分钟调整一次，等待成交。<br>
     若无法平仓且保证金告急，优先平流动性最好的标的（SPY/QQQ）。
   </div>
 
   <h3>心态五条军规</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>军规</th><th>规则</th><th>为什么</th></tr>
       <tr><td><strong>不追高</strong></td><td>标的连续上涨超过 20 日均线 3% 时坚决不开仓</td><td>高价开仓的 Put 风险敞口不划算</td></tr>
@@ -798,7 +756,7 @@
   <h2 data-num="§11">月度复盘与季度调整</h2>
 
   <h3>月度复盘（每月最后一周，30–45 分钟）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <tr><th>复盘模块</th><th>核心问题</th><th>目标</th></tr>
       <tr><td>收益统计</td><td>月度权利金总收入？止盈/止损次数？净收益率（÷月初净资产）？</td><td>年化 5%–12% 为正常区间</td></tr>
@@ -910,7 +868,7 @@
       </div>
       <button class="btn btn-primary" onclick="runAutoCheck()">自动检查 1–8 项</button>
     </div>
-    <div id="ck-symbol-hint" class="alert alert-blue" style="display:none;margin-bottom:12px"></div>
+    <div id="ck-symbol-hint" class="callout info" style="display:none;margin-bottom:12px"></div>
   </div>
 
   <div class="progress-bar-outer">
@@ -1141,8 +1099,8 @@
             </div>
           </div>
         </div>
-        <div class="alert alert-green">
-          <div class="alert-title">✅ 本案例关键学习点</div>
+        <div class="callout gold">
+          <div class="callout-icon">✅ 本案例关键学习点</div>
           1. <strong>提前提交 GTC 止盈单</strong>，不要盯盘等待，避免情绪干扰<br>
           2. <strong>50% 止盈的纪律性</strong>比贪更多权利金更重要<br>
           3. <strong>12 天止盈</strong>是理想场景，实际平均持有约 20–30 天<br>
@@ -1159,7 +1117,7 @@
           <div class="case-title">📙 案例二：MSFT Put 展期决策</div>
           <div style="font-size:12px;color:var(--white-dim);margin-top:4px">股价下跌，需要判断展期还是止损</div>
         </div>
-        <span class="badge badge-amber">结果：展期后盈利</span>
+        <span class="badge badge-yellow">结果：展期后盈利</span>
       </div>
       <div class="case-body">
         <div class="timeline">
@@ -1213,8 +1171,8 @@
             </div>
           </div>
         </div>
-        <div class="alert alert-blue">
-          <div class="alert-title">🔑 本案例关键学习点</div>
+        <div class="callout info">
+          <div class="callout-icon">🔑 本案例关键学习点</div>
           1. <strong>展期≠放弃</strong>，只要是 Credit Roll 就锁定了额外权利金<br>
           2. 展期后 Delta 必须回到目标区间（此案例从 0.26 降至 0.18）<br>
           3. 向下展期最多 1 次；如果还被测试就要止损<br>
@@ -1279,8 +1237,8 @@
             </div>
           </div>
         </div>
-        <div class="alert alert-green">
-          <div class="alert-title">✅ Wheel 策略的力量</div>
+        <div class="callout gold">
+          <div class="callout-icon">✅ Wheel 策略的力量</div>
           即使被行权，Covered Call 的权利金也能大幅摊低持仓成本。<br>
           关键：选 Call 行权价 <strong>必须 ≥ 原 Put 行权价</strong>（成本价），不锁定亏损。
         </div>
@@ -1298,8 +1256,8 @@
         <span class="badge badge-red">极端风险场景</span>
       </div>
       <div class="case-body">
-        <div class="alert alert-red">
-          <div class="alert-title">场景设定：某日市场大幅波动</div>
+        <div class="callout danger">
+          <div class="callout-icon">场景设定：某日市场大幅波动</div>
           开盘 QQQ 跌 4.2%，VIX 从 18 单日飙升至 42（涨幅 133%）<br>
           持有 3 个合约：AAPL Put $195，QQQ Put $460，NVDA Put $880
         </div>
@@ -1339,8 +1297,8 @@
             </div>
           </div>
         </div>
-        <div class="alert alert-amber">
-          <div class="alert-title">⚡ 黑天鹅中存活的关键</div>
+        <div class="callout warning">
+          <div class="callout-icon">⚡ 黑天鹅中存活的关键</div>
           1. <strong>总保证金 ≤ 20%</strong> 是最大保护——有空间承受冲击<br>
           2. <strong>多标的分散</strong>——单一标的上限控制了单次损失<br>
           3. <strong>限价单平仓</strong>——避免在恐慌时被市价扫走<br>
@@ -1482,8 +1440,8 @@
   <div class="section-title">OpenClaw 配置规范</div>
   <div class="section-subtitle">OpenClaw 是监控引擎，不是下单机器人。以下是完整配置与使用指南。</div>
 
-  <div class="alert alert-red">
-    <div class="alert-title">⚠️ 安全配置（必须先做，否则不要运行）</div>
+  <div class="callout danger">
+    <div class="callout-icon">⚠️ 安全配置（必须先做，否则不要运行）</div>
     将 IBKR API Key 设为 <strong>只读（Read-Only）权限</strong>——只允许读取持仓，不允许下单<br>
     永远不要在 OpenClaw 配置里放有交易执行权限的 API Key<br>
     将 OpenClaw 运行在 Docker 容器中，隔离文件系统访问<br>
@@ -2241,6 +2199,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <main class="main-content">
+<div class="hero">
+  <div class="hero-eyebrow">机构级内训手册 · FO-TONGZHOU</div>
+  <h1>现金担保卖 Put + Wheel 策略</h1>
+  <p class="hero-sub">完整操作规程，适用于 IBKR NRA 账户</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">账户类型</span><span class="value">IBKR NRA</span></div>
+    <div class="hero-meta-item"><span class="label">最低资金</span><span class="value">$150,000</span></div>
+    <div class="hero-meta-item"><span class="label">策略类型</span><span class="value">Put + Wheel</span></div>
+    <div class="hero-meta-item"><span class="label">版本</span><span class="value">FO-TONGZHOU</span></div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="header">
   <div class="header-logo">🦞 PUT + WHEEL</div>
@@ -2254,7 +2224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <button onclick="showSection('errors')" id="nav-errors">错误警示</button>
     <button onclick="showSection('openclaw')" id="nav-openclaw">OpenClaw</button>
   </nav>
-</header>
+
 
 <!-- SIDEBAR -->
 

@@ -8,57 +8,32 @@
 </head>
 <body>
 <div class="layout-wrapper">
-<nav id="sidebar" class="sidebar">
-  <div class="sidebar-header">
-    <span class="sidebar-brand">操作手册</span>
-    <span class="sidebar-sub">V4.0 · 2026-04-01</span>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">SPX/QQQ 期权增强<br>操作手册</div>
+    <div class="logo-ver">V4.0 · 2026 年 4 月</div>
   </div>
-
-  <div class="nav-section">
-    <div class="nav-label">概览</div>
-    <a class="nav-item" href="#overview"><span class="nav-num">00</span>策略总览</a>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">前置条件</div>
-    <a class="nav-item" href="#ch01"><span class="nav-num">01</span>税务合规框架</a>
-    <a class="nav-item" href="#ch02"><span class="nav-num">02</span>账户架构与资金</a>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">决策引擎</div>
-    <a class="nav-item" href="#ch03"><span class="nav-num">03</span>市场状态引擎</a>
-    <a class="nav-item" href="#ch04"><span class="nav-num">04</span>三因子量化模型</a>
-    <a class="nav-item" href="#ch05"><span class="nav-num">05</span>EV门槛与Delta矩阵</a>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">执行策略</div>
-    <a class="nav-item" href="#ch06"><span class="nav-num">06</span>五层收益结构</a>
-    <a class="nav-item" href="#ch07"><span class="nav-num">07</span>核心层·SPX卖Put价差</a>
-    <a class="nav-item" href="#ch08"><span class="nav-num">08</span>备兑层·QQQ Covered Call</a>
-    <a class="nav-item" href="#ch09"><span class="nav-num">09</span>套利层与对冲层</a>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">风险控制</div>
-    <a class="nav-item" href="#ch10"><span class="nav-num">10</span>25%下跌切换机制</a>
-    <a class="nav-item" href="#ch11"><span class="nav-num">11</span>三级熔断机制</a>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">运营管理</div>
-    <a class="nav-item" href="#ch12"><span class="nav-num">12</span>月度操作清单</a>
-    <a class="nav-item" href="#ch13"><span class="nav-num">13</span>绩效追踪与台账</a>
-    <a class="nav-item" href="#ch14"><span class="nav-num">14</span>心理纪律守则</a>
-  </div>
-
-  <div class="sidebar-footer">
-    <div style="margin-bottom:8px;color:rgba(193,154,60,0.7);font-weight:600;">持有人</div>
-    MR CMBHAO<br>
-    中国税务居民 · 美国 <span class="tip" data-tip="Non-Resident Alien：非居民外国人，在美国税法下享有特殊税务待遇，资本利得通常免联邦税。">NRA</span><br>
-    IBKR 主账户 · BBAE 备用
-  </div>
+  <div class="nav-section-label">前置条件</div>
+  <a href="#overview" class="nav-item">00 · 策略总览</a>
+  <a href="#ch01" class="nav-item">01 · 税务合规框架</a>
+  <a href="#ch02" class="nav-item">02 · 账户架构与资金</a>
+  <div class="nav-section-label">决策引擎</div>
+  <a href="#ch03" class="nav-item">03 · 市场状态引擎</a>
+  <a href="#ch04" class="nav-item">04 · 三因子量化模型</a>
+  <a href="#ch05" class="nav-item">05 · EV门槛与Delta矩阵</a>
+  <div class="nav-section-label">执行策略</div>
+  <a href="#ch06" class="nav-item">06 · 五层收益结构</a>
+  <a href="#ch07" class="nav-item">07 · SPX卖Put价差</a>
+  <a href="#ch08" class="nav-item">08 · QQQ Covered Call</a>
+  <a href="#ch09" class="nav-item">09 · 套利层与对冲层</a>
+  <div class="nav-section-label">风险控制</div>
+  <a href="#ch10" class="nav-item">10 · 25%下跌切换机制</a>
+  <a href="#ch11" class="nav-item">11 · 三级熔断机制</a>
+  <div class="nav-section-label">运营管理</div>
+  <a href="#ch12" class="nav-item">12 · 月度操作清单</a>
+  <a href="#ch13" class="nav-item">13 · 绩效追踪与台账</a>
+  <a href="#ch14" class="nav-item">14 · 心理纪律守则</a>
 </nav>
 
 <!-- ══ MAIN ══ -->
@@ -66,9 +41,9 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-tag">系统化操作手册</div>
+  <div class="hero-eyebrow">系统化操作手册</div>
   <h1>SPX / QQQ<br>波动率溢价增强收益策略</h1>
-  <p class="hero-sub">以保险公司视角管理波动率风险，将 <span class="tip" data-tip="Theta：期权时间价值衰减。随着到期日临近，期权价值每日减少的速度称为Theta。卖方每天坐收Theta衰减带来的收益。">Theta</span> 与 <span class="tip" data-tip="VRP（Volatility Risk Premium）：波动率风险溢价。市场对未来波动率的隐含预期（VIX）长期高于实际波动率，卖方通过收取这一溢价获利。">VRP</span> 转化为稳定的确定性收益</p>
+  <p class="hero-sub">以保险公司视角管理波动率风险，将 <span class="term" data-tip="Theta：期权时间价值衰减。随着到期日临近，期权价值每日减少的速度称为Theta。卖方每天坐收Theta衰减带来的收益。">Theta</span> 与 <span class="term" data-tip="VRP（Volatility Risk Premium）：波动率风险溢价。市场对未来波动率的隐含预期（VIX）长期高于实际波动率，卖方通过收取这一溢价获利。">VRP</span> 转化为稳定的确定性收益</p>
   <div class="hero-meta">
     <div class="hero-meta-item">
       <span class="hm-label">目标年化（税后）</span>
@@ -97,8 +72,8 @@
 <div class="content">
 
 <!-- ══ CH00 OVERVIEW ══ -->
-<section class="chapter" id="overview">
-  <div class="chapter-header">
+<section class="section" id="overview">
+  <div class="section-header">
     <span class="ch-num">00</span>
     <h2>策略总览</h2>
   </div>
@@ -113,19 +88,19 @@
 
   <div class="section">
     <h3>策略逻辑</h3>
-    <p>本策略通过在 <span class="tip" data-tip="SPX：标准普尔500指数期权。欧式现金结算，到期时直接结算现金差价，不发生股票交割，对NRA身份尤其友好。">SPX</span> 和 <span class="tip" data-tip="QQQ：纳斯达克100 ETF期权。追踪纳斯达克100指数，美式实物交割，流动性极高。">QQQ</span> 上系统性卖出虚值期权，收取 <span class="tip" data-tip="波动率溢价（VRP）：市场对未来波动率的恐惧溢价。VIX长期平均高于实际已实现波动率约4-6个百分点，卖方通过收取这一溢价实现持续盈利。">波动率溢价</span> 和时间价值，同时通过严格的仓位管理与多层对冲控制尾部风险。策略的可持续性建立于三个优势之上：</p>
+    <p>本策略通过在 <span class="term" data-tip="SPX：标准普尔500指数期权。欧式现金结算，到期时直接结算现金差价，不发生股票交割，对NRA身份尤其友好。">SPX</span> 和 <span class="term" data-tip="QQQ：纳斯达克100 ETF期权。追踪纳斯达克100指数，美式实物交割，流动性极高。">QQQ</span> 上系统性卖出虚值期权，收取 <span class="term" data-tip="波动率溢价（VRP）：市场对未来波动率的恐惧溢价。VIX长期平均高于实际已实现波动率约4-6个百分点，卖方通过收取这一溢价实现持续盈利。">波动率溢价</span> 和时间价值，同时通过严格的仓位管理与多层对冲控制尾部风险。策略的可持续性建立于三个优势之上：</p>
     <ul style="list-style:none;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
       <li style="display:flex;gap:12px;font-size:14px;color:var(--text-secondary);">
         <span style="color:var(--gold);font-weight:600;">①</span>
-        <span><strong style="color:var(--text-primary);">税务优势：</strong><span class="tip" data-tip="NRA身份下，美国联邦资本利得税豁免，SPX欧式现金结算进一步规避税务复杂性。">NRA身份</span> 结合 <span class="tip" data-tip="SPX为欧式现金结算，无股票接收，不产生FDAP收入，权利金税务性质更清晰。">SPX现金结算</span>，合法最大化税后收益</span>
+        <span><strong style="color:var(--text-primary);">税务优势：</strong><span class="term" data-tip="NRA身份下，美国联邦资本利得税豁免，SPX欧式现金结算进一步规避税务复杂性。">NRA身份</span> 结合 <span class="term" data-tip="SPX为欧式现金结算，无股票接收，不产生FDAP收入，权利金税务性质更清晰。">SPX现金结算</span>，合法最大化税后收益</span>
       </li>
       <li style="display:flex;gap:12px;font-size:14px;color:var(--text-secondary);">
         <span style="color:var(--gold);font-weight:600;">②</span>
-        <span><strong style="color:var(--text-primary);">保证金效率：</strong><span class="tip" data-tip="Portfolio Margin（PM）：投资组合保证金模式，基于整体风险计算保证金，效率远高于标准保证金。通常需净值$125,000+方可申请。">Portfolio Margin</span> 模式下，SPX价差保证金占用仅为名义值的2–3%</span>
+        <span><strong style="color:var(--text-primary);">保证金效率：</strong><span class="term" data-tip="Portfolio Margin（PM）：投资组合保证金模式，基于整体风险计算保证金，效率远高于标准保证金。通常需净值$125,000+方可申请。">Portfolio Margin</span> 模式下，SPX价差保证金占用仅为名义值的2–3%</span>
       </li>
       <li style="display:flex;gap:12px;font-size:14px;color:var(--text-secondary);">
         <span style="color:var(--gold);font-weight:600;">③</span>
-        <span><strong style="color:var(--text-primary);">统计优势：</strong>期权 <span class="tip" data-tip="隐含波动率（IV）长期高于已实现波动率（RV）约4–6个百分点，这一系统性溢价为卖方策略提供了统计上的持续优势。">卖方胜率</span> 长期约75–85%，复利效应显著</span>
+        <span><strong style="color:var(--text-primary);">统计优势：</strong>期权 <span class="term" data-tip="隐含波动率（IV）长期高于已实现波动率（RV）约4–6个百分点，这一系统性溢价为卖方策略提供了统计上的持续优势。">卖方胜率</span> 长期约75–85%，复利效应显著</span>
       </li>
     </ul>
   </div>
@@ -134,8 +109,8 @@
 <hr class="divider">
 
 <!-- ══ CH01 TAX ══ -->
-<section class="chapter" id="ch01">
-  <div class="chapter-header">
+<section class="section" id="ch01">
+  <div class="section-header">
     <span class="ch-num">01</span>
     <h2>税务合规框架</h2>
   </div>
@@ -165,19 +140,19 @@
             <tr>
               <td class="td-num td-center">1</td>
               <td><strong>SPX权利金预扣税</strong></td>
-              <td>SPX欧式现金结算权利金是否属于 <span class="tip" data-tip="FDAP：Fixed, Determinable, Annual, or Periodical Income。美国税法规定，外国人的FDAP收入需预扣30%税款。SPX现金结算权利金通常不被认定为FDAP，但须CPA书面确认。">FDAP</span>，是否触发30%预扣</td>
+              <td>SPX欧式现金结算权利金是否属于 <span class="term" data-tip="FDAP：Fixed, Determinable, Annual, or Periodical Income。美国税法规定，外国人的FDAP收入需预扣30%税款。SPX现金结算权利金通常不被认定为FDAP，但须CPA书面确认。">FDAP</span>，是否触发30%预扣</td>
               <td><span class="badge badge-red">禁止SPX操作</span></td>
             </tr>
             <tr>
               <td class="td-num td-center">2</td>
               <td><strong>SPX 1256合约处理</strong></td>
-              <td><span class="tip" data-tip="IRC §1256合约：期货合约及期货期权按60/40规则处理——60%视为长期资本利得，40%为短期，对NRA是否适用须CPA确认。">IRC §1256</span> 的60/40资本利得分割是否适用于NRA身份</td>
+              <td><span class="term" data-tip="IRC §1256合约：期货合约及期货期权按60/40规则处理——60%视为长期资本利得，40%为短期，对NRA是否适用须CPA确认。">IRC §1256</span> 的60/40资本利得分割是否适用于NRA身份</td>
               <td><span class="badge badge-red">仅持有现金</span></td>
             </tr>
             <tr>
               <td class="td-num td-center">3</td>
               <td><strong>QQQ权利金预扣税</strong></td>
-              <td>QQQ美式ETF期权权利金在 <span class="tip" data-tip="W-8BEN：外国人美国税务身份证明表格，有效期3年。提交后可享受条约待遇或免税资格。需在IBKR和BBAE账户各维护一份有效表格。">W-8BEN</span> 下是否预扣30%</td>
+              <td>QQQ美式ETF期权权利金在 <span class="term" data-tip="W-8BEN：外国人美国税务身份证明表格，有效期3年。提交后可享受条约待遇或免税资格。需在IBKR和BBAE账户各维护一份有效表格。">W-8BEN</span> 下是否预扣30%</td>
               <td><span class="badge badge-red">禁止QQQ期权</span></td>
             </tr>
             <tr>
@@ -189,13 +164,13 @@
             <tr>
               <td class="td-num td-center">5</td>
               <td><strong>Wash Sale适用性</strong></td>
-              <td><span class="tip" data-tip="Wash Sale规则：IRC §1091规定，亏损卖出证券后30天内买回相同或实质相同证券，亏损不得当年扣除。NRA同样适用，QQQ主动减仓与卖Put接货若在30天内同时发生可能触发。">Wash Sale</span> 对NRA是否完整适用，SPX现金结算是否豁免</td>
-              <td><span class="badge badge-amber">30天隔离</span></td>
+              <td><span class="term" data-tip="Wash Sale规则：IRC §1091规定，亏损卖出证券后30天内买回相同或实质相同证券，亏损不得当年扣除。NRA同样适用，QQQ主动减仓与卖Put接货若在30天内同时发生可能触发。">Wash Sale</span> 对NRA是否完整适用，SPX现金结算是否豁免</td>
+              <td><span class="badge badge-yellow">30天隔离</span></td>
             </tr>
             <tr>
               <td class="td-num td-center">6</td>
               <td><strong>遗产税风险</strong></td>
-              <td>NRA持有美国境内资产免税额仅 <span class="tip" data-tip="遗产税豁免额：NRA在美国的遗产税免税额仅$60,000，远低于美国公民的1200万+。QQQ正股属于美国境内资产，SPX欧式现金结算期权通常不属于，因此应将QQQ正股持仓严格限制在$60,000以下。">$60,000</span>，确认期权持仓分类</td>
+              <td>NRA持有美国境内资产免税额仅 <span class="term" data-tip="遗产税豁免额：NRA在美国的遗产税免税额仅$60,000，远低于美国公民的1200万+。QQQ正股属于美国境内资产，SPX欧式现金结算期权通常不属于，因此应将QQQ正股持仓严格限制在$60,000以下。">$60,000</span>，确认期权持仓分类</td>
               <td><span class="badge badge-red">QQQ正股=0</span></td>
             </tr>
           </tbody>
@@ -206,25 +181,25 @@
 
   <div class="section">
     <h3>W-8BEN 年度维护 SOP</h3>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
         <div class="step-body">
-          <div class="step-title">每年 1 月 15 日前</div>
+          <div class="flow-step-body">每年 1 月 15 日前</div>
           <p>登录 IBKR → 账户管理 → 税务表格，确认 W-8BEN 有效期（3年）。同步检查 BBAE 账户。如即将到期，提前 30 天重新提交。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
         <div class="step-body">
-          <div class="step-title">每笔交易台账标记</div>
+          <div class="flow-step-body">每笔交易台账标记</div>
           <p>在台账"税务事件"字段区分：权利金收入 / 接货成本调整 / 资本利得 / 对冲损失，并记录当日人民币汇率（中国人民银行中间价）。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
         <div class="step-body">
-          <div class="step-title">季度末对账</div>
+          <div class="flow-step-body">季度末对账</div>
           <p>将 IBKR 交易记录转交国内税务师，评估中国申报义务。每年 5–6 月个税汇算清缴时主动申报境外所得（即使免税也需申报，避免滞纳金）。</p>
         </div>
       </div>
@@ -235,8 +210,8 @@
 <hr class="divider">
 
 <!-- ══ CH02 ACCOUNTS ══ -->
-<section class="chapter" id="ch02">
-  <div class="chapter-header">
+<section class="section" id="ch02">
+  <div class="section-header">
     <span class="ch-num">02</span>
     <h2>账户架构与资金分配</h2>
   </div>
@@ -254,12 +229,12 @@
               <td><strong>IBKR<br><span style="font-size:11px;color:var(--text-muted);">主账户</span></strong></td>
               <td>核心策略全量执行</td>
               <td>
-                <span class="tip" data-tip="Portfolio Margin（PM）：投资组合保证金模式，通常需净值$110,000+，由IBKR审核后开通。保证金效率比标准Reg-T模式高30–50%。">PM保证金</span><br>
+                <span class="term" data-tip="Portfolio Margin（PM）：投资组合保证金模式，通常需净值$110,000+，由IBKR审核后开通。保证金效率比标准Reg-T模式高30–50%。">PM保证金</span><br>
                 期货权限（VX对冲）<br>
                 期权 Level 4
               </td>
               <td>SPX全策略<br>QQQ备兑/期权<br>VX期货<br>SGOV/BIL</td>
-              <td>保证金使用率超60%<br>裸卖 <span class="tip" data-tip="裸Put：不加任何保护腿的卖Put操作，理论亏损无上限。本策略绝对禁止，必须配合买入更虚值Put构成价差结构。">裸Put</span></td>
+              <td>保证金使用率超60%<br>裸卖 <span class="term" data-tip="裸Put：不加任何保护腿的卖Put操作，理论亏损无上限。本策略绝对禁止，必须配合买入更虚值Put构成价差结构。">裸Put</span></td>
             </tr>
             <tr>
               <td><strong>BBAE<br><span style="font-size:11px;color:var(--text-muted);">备用账户</span></strong></td>
@@ -287,7 +262,7 @@
               <td><strong>现金 + 短期国债</strong><br><span class="page-note">安全垫与担保品</span></td>
               <td class="td-center td-num">≥ 35%</td>
               <td class="td-center td-num">≥ $350万</td>
-              <td><span class="tip" data-tip="SGOV/BIL：iShares短期美国国债ETF，年化收益约4–4.5%，流动性极高，可作为保证金担保品，同时获取无风险利息。">SGOV / BIL</span></td>
+              <td><span class="term" data-tip="SGOV/BIL：iShares短期美国国债ETF，年化收益约4–4.5%，流动性极高，可作为保证金担保品，同时获取无风险利息。">SGOV / BIL</span></td>
               <td><span class="badge badge-red">永不低于25%</span></td>
             </tr>
             <tr>
@@ -335,8 +310,8 @@
 <hr class="divider">
 
 <!-- ══ CH03 MARKET STATE ══ -->
-<section class="chapter" id="ch03">
-  <div class="chapter-header">
+<section class="section" id="ch03">
+  <div class="section-header">
     <span class="ch-num">03</span>
     <h2>市场状态引擎</h2>
   </div>
@@ -349,12 +324,12 @@
       <div class="table-border">
         <table>
           <thead>
-            <tr><th>状态</th><th>技术条件（需同时满足）</th><th><span class="tip" data-tip="VIX：芝加哥期权交易所波动率指数，衡量市场对未来30天SPX波动率的隐含预期。VIX越高代表市场恐慌程度越高。">VIX</span> 参考</th><th>策略基调</th><th>开仓系数</th></tr>
+            <tr><th>状态</th><th>技术条件（需同时满足）</th><th><span class="term" data-tip="VIX：芝加哥期权交易所波动率指数，衡量市场对未来30天SPX波动率的隐含预期。VIX越高代表市场恐慌程度越高。">VIX</span> 参考</th><th>策略基调</th><th>开仓系数</th></tr>
           </thead>
           <tbody>
             <tr class="state-a">
               <td><strong>A · 强势上涨</strong></td>
-              <td>SPX &gt; <span class="tip" data-tip="MA20：20日（或周）简单移动平均线，反映中期趋势方向，是判断市场状态最核心的技术指标。">MA20</span> &gt; MA50，MA20斜率向上</td>
+              <td>SPX &gt; <span class="term" data-tip="MA20：20日（或周）简单移动平均线，反映中期趋势方向，是判断市场状态最核心的技术指标。">MA20</span> &gt; MA50，MA20斜率向上</td>
               <td class="td-num">&lt; 18</td>
               <td>积极卖方，行权价上移</td>
               <td class="td-center"><span class="badge badge-green">1.0×</span></td>
@@ -371,7 +346,7 @@
               <td>SPX &lt; MA20 但 &gt; MA50，或MA20走平转下</td>
               <td class="td-num">20 – 30</td>
               <td>防御性备兑，强制价差保护</td>
-              <td class="td-center"><span class="badge badge-amber">0.5×</span></td>
+              <td class="td-center"><span class="badge badge-yellow">0.5×</span></td>
             </tr>
             <tr class="state-d">
               <td><strong>D · 强势下跌</strong></td>
@@ -403,12 +378,12 @@
             <tr>
               <td class="td-num">20 – 28</td>
               <td>新仓规模减半，仅状态 A / B 可开仓</td>
-              <td class="td-center"><span class="badge badge-amber">0.5×</span></td>
+              <td class="td-center"><span class="badge badge-yellow">0.5×</span></td>
             </tr>
             <tr>
               <td class="td-num">28 – 35</td>
               <td>新仓规模减至四分之一，仅状态 A 可开仓</td>
-              <td class="td-center"><span class="badge badge-amber">0.25×</span></td>
+              <td class="td-center"><span class="badge badge-yellow">0.25×</span></td>
             </tr>
             <tr>
               <td class="td-num">&gt; 35</td>
@@ -428,10 +403,10 @@
 
   <div class="section">
     <h3>每周判定 SOP（15 分钟）</h3>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">获取数据</div><p>IBKR 图表打开 SPX 周线，添加 SMA20 和 SMA50。记录：当前 SPX 价格 / MA20 数值 / MA50 数值 / MA20 本周较上周变化方向（向上/走平/向下）。</p></div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">查看 VIX 期限结构</div><p>CBOE 官网查看即期 VIX 和 <span class="tip" data-tip="VIX3M：90天隐含波动率指数。与VIX（30天）的差值反映波动率期限溢价，是三因子模型中VRP因子的核心输入。">VIX3M</span>。VIX &gt; VIX3M（期限结构倒挂）代表市场短期恐慌，卖方溢价更厚但风险更高。</p></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">判断唯一状态</div><p>对照状态矩阵，若条件处于边界，优先判断为更保守状态（B/C 边界则定为 C）。在台账「周状态日志」记录：日期 / 状态 / SPX / MA20 / VIX / 本周开仓系数。</p></div></div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="flow-step-num">1</div><div class="step-body"><div class="flow-step-body">获取数据</div><p>IBKR 图表打开 SPX 周线，添加 SMA20 和 SMA50。记录：当前 SPX 价格 / MA20 数值 / MA50 数值 / MA20 本周较上周变化方向（向上/走平/向下）。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">2</div><div class="step-body"><div class="flow-step-body">查看 VIX 期限结构</div><p>CBOE 官网查看即期 VIX 和 <span class="term" data-tip="VIX3M：90天隐含波动率指数。与VIX（30天）的差值反映波动率期限溢价，是三因子模型中VRP因子的核心输入。">VIX3M</span>。VIX &gt; VIX3M（期限结构倒挂）代表市场短期恐慌，卖方溢价更厚但风险更高。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">3</div><div class="step-body"><div class="flow-step-body">判断唯一状态</div><p>对照状态矩阵，若条件处于边界，优先判断为更保守状态（B/C 边界则定为 C）。在台账「周状态日志」记录：日期 / 状态 / SPX / MA20 / VIX / 本周开仓系数。</p></div></div>
     </div>
   </div>
 </section>
@@ -439,15 +414,15 @@
 <hr class="divider">
 
 <!-- ══ CH04 THREE FACTOR ══ -->
-<section class="chapter" id="ch04">
-  <div class="chapter-header">
+<section class="section" id="ch04">
+  <div class="section-header">
     <span class="ch-num">04</span>
     <h2>三因子量化决策模型</h2>
   </div>
 
   <p style="color:var(--text-secondary);font-size:14.5px;margin-bottom:20px;">每个交易日开盘后 15 分钟内，通过三因子加权得分输出当日仓位系数，替代主观判断。全程约 5 分钟，建议 Excel 自动化。</p>
 
-  <div class="formula">
+  <div class="formula-box">
     综合得分 = F₁(波动率溢价) × 40% + F₂(估值安全边际) × 30% + F₃(方向性趋势强度) × 30%
   </div>
 
@@ -472,13 +447,13 @@
               <td class="td-center td-num">30%</td>
               <td><a href="https://multpl.com/shiller-pe" style="color:var(--blue);">multpl.com</a><br>Shiller CAPE</td>
               <td>CAPE 历史百分位（逆向打分，估值越低得分越高）<br><span style="font-size:12px;">≤30%→100分；30–60%→60分；&gt;80%→10分</span></td>
-              <td style="font-size:13px;"><span class="tip" data-tip="Shiller CAPE：周期调整市盈率，使用10年平均盈利计算，比普通PE更能反映长期估值水平。当前约35，处于历史高位，意味着卖Put的尾部风险相对较高。">CAPE 越低，安全边际越高，卖 Put 越安全</span></td>
+              <td style="font-size:13px;"><span class="term" data-tip="Shiller CAPE：周期调整市盈率，使用10年平均盈利计算，比普通PE更能反映长期估值水平。当前约35，处于历史高位，意味着卖Put的尾部风险相对较高。">CAPE 越低，安全边际越高，卖 Put 越安全</span></td>
             </tr>
             <tr>
-              <td><strong>F₃ 方向性趋势强度 <span class="badge badge-navy" style="font-size:10px;">V4修正</span></strong></td>
+              <td><strong>F₃ 方向性趋势强度 <span class="badge badge-blue" style="font-size:10px;">V4修正</span></strong></td>
               <td class="td-center td-num">30%</td>
               <td>IBKR图表<br>ADX(20)</td>
-              <td><span class="tip" data-tip="ADX：平均趋势方向指数，衡量趋势强度。注意：ADX本身不区分涨跌方向，必须结合+DI/-DI方向判断。V4版本新增方向因子修正，避免强势下跌时ADX=30也得满分的缺陷。">ADX</span> × 方向因子（SPX&gt;MA20时+1，&lt;MA20时−1）<br><span style="font-size:12px;">上涨趋势强→100分；强势下跌→0分（正确！）</span></td>
+              <td><span class="term" data-tip="ADX：平均趋势方向指数，衡量趋势强度。注意：ADX本身不区分涨跌方向，必须结合+DI/-DI方向判断。V4版本新增方向因子修正，避免强势下跌时ADX=30也得满分的缺陷。">ADX</span> × 方向因子（SPX&gt;MA20时+1，&lt;MA20时−1）<br><span style="font-size:12px;">上涨趋势强→100分；强势下跌→0分（正确！）</span></td>
               <td style="font-size:13px;">修正了原版只看强度不看方向的缺陷；强势下跌时得0分，与VIX硬约束一致</td>
             </tr>
           </tbody>
@@ -510,7 +485,7 @@
             </tr>
             <tr>
               <td class="td-num"><strong>30 – 49 分</strong></td>
-              <td><span class="badge badge-amber">0.25×</span></td>
+              <td><span class="badge badge-yellow">0.25×</span></td>
               <td>仅开最优质仓位（SPX 卖 Put 价差，状态 B/C）</td>
               <td>VIX偏高或趋势不明朗（约25%）</td>
             </tr>
@@ -530,8 +505,8 @@
 <hr class="divider">
 
 <!-- ══ CH05 EV & DELTA ══ -->
-<section class="chapter" id="ch05">
-  <div class="chapter-header">
+<section class="section" id="ch05">
+  <div class="section-header">
     <span class="ch-num">05</span>
     <h2>EV 门槛与 Delta 矩阵</h2>
   </div>
@@ -540,7 +515,7 @@
     <h3>预期价值（EV）强制门槛</h3>
     <p style="color:var(--text-secondary);font-size:14px;">每笔卖出期权操作，执行前必须计算 EV。未达标则<strong>禁止开仓</strong>，不得以主观判断替代。</p>
 
-    <div class="formula">
+    <div class="formula-box">
       EV = 权利金收入 × (1 − 被行权概率) − 最大亏损 × 被行权概率
       <div style="font-size:12px;margin-top:6px;opacity:0.8;">门槛：EV &gt; 0 且 EV / 权利金收入 &gt; 20%</div>
     </div>
@@ -554,7 +529,7 @@
           <tbody>
             <tr>
               <td><strong>被行权概率</strong></td>
-              <td>SPX：≈ <span class="tip" data-tip="Delta（Δ）：期权价格对标的资产价格变动的敏感度，0至1之间（对于Put为负值）。虚值Put的Delta绝对值也近似等于该期权被行权的概率，是快速估算EV的便捷方式。">Delta</span> 绝对值<br>QQQ：Delta绝对值 × 1.2（<span class="tip" data-tip="胖尾效应：ETF相比指数有更高的尾部风险，实际被行权概率高于Delta隐含值，QQQ使用1.2修正因子更为保守。">胖尾修正</span>）</td>
+              <td>SPX：≈ <span class="term" data-tip="Delta（Δ）：期权价格对标的资产价格变动的敏感度，0至1之间（对于Put为负值）。虚值Put的Delta绝对值也近似等于该期权被行权的概率，是快速估算EV的便捷方式。">Delta</span> 绝对值<br>QQQ：Delta绝对值 × 1.2（<span class="term" data-tip="胖尾效应：ETF相比指数有更高的尾部风险，实际被行权概率高于Delta隐含值，QQQ使用1.2修正因子更为保守。">胖尾修正</span>）</td>
               <td>IBKR 期权链直接读取Delta值</td>
             </tr>
             <tr>
@@ -574,7 +549,7 @@
   </div>
 
   <div class="section">
-    <h3>SPX 卖 Put 价差 Delta 矩阵（<span class="tip" data-tip="DTE：Days to Expiration，距离到期日的天数。35–45天是Theta衰减加速但Gamma风险尚未激增的最优窗口期。">DTE</span> 35–45 天）</h3>
+    <h3>SPX 卖 Put 价差 Delta 矩阵（<span class="term" data-tip="DTE：Days to Expiration，距离到期日的天数。35–45天是Theta衰减加速但Gamma风险尚未激增的最优窗口期。">DTE</span> 35–45 天）</h3>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">卖出行权价必须满足：距当前 SPX 价格 ≥ 8%（跳空缓冲）</p>
     <div class="table-wrap">
       <div class="table-border">
@@ -667,8 +642,8 @@
 <hr class="divider">
 
 <!-- ══ CH06 FIVE LAYERS ══ -->
-<section class="chapter" id="ch06">
-  <div class="chapter-header">
+<section class="section" id="ch06">
+  <div class="section-header">
     <span class="ch-num">06</span>
     <h2>五层收益结构</h2>
   </div>
@@ -676,22 +651,22 @@
   <p style="color:var(--text-secondary);font-size:14.5px;margin-bottom:20px;">通过五层低相关性收益叠加，在不同市场环境下平滑收益曲线，减少单一策略的波动依赖。</p>
 
   <div class="metric-grid" style="margin-bottom:28px;">
-    <div class="metric-card">
+    <div class="stat-card">
       <span class="mc-label">基础年化（税后）</span>
       <span class="mc-val">12–15%</span>
       <div class="mc-sub">首年保守目标</div>
     </div>
-    <div class="metric-card">
+    <div class="stat-card">
       <span class="mc-label">目标年化（税后）</span>
       <span class="mc-val">18–25%</span>
       <div class="mc-sub">验证后第二年</div>
     </div>
-    <div class="metric-card">
+    <div class="stat-card">
       <span class="mc-label">历史胜率</span>
       <span class="mc-val">75–85%</span>
       <div class="mc-sub">月度计算</div>
     </div>
-    <div class="metric-card">
+    <div class="stat-card">
       <span class="mc-label">最大可接受回撤</span>
       <span class="mc-val">≤ 15%</span>
       <div class="mc-sub">压力情景 18%</div>
@@ -702,7 +677,7 @@
     <div class="layer">
       <div class="layer-num ln-1">L1</div>
       <div>
-        <div class="layer-name">核心层 · SPX <span class="tip" data-tip="Bull Put Spread（牛市看跌价差）：同时卖出较高行权价Put（K1）和买入较低行权价Put（K2）。最大收益为净权利金，最大亏损为价差宽度减去权利金。价差结构天然限制最大亏损，是本策略的核心形式。">Bull Put Spread</span></div>
+        <div class="layer-name">核心层 · SPX <span class="term" data-tip="Bull Put Spread（牛市看跌价差）：同时卖出较高行权价Put（K1）和买入较低行权价Put（K2）。最大收益为净权利金，最大亏损为价差宽度减去权利金。价差结构天然限制最大亏损，是本策略的核心形式。">Bull Put Spread</span></div>
         <div class="layer-desc">主要收益来源，VRP+Theta复合收割</div>
       </div>
       <div class="layer-ticker">SPX</div>
@@ -722,7 +697,7 @@
     <div class="layer">
       <div class="layer-num ln-3">L3</div>
       <div>
-        <div class="layer-name">备兑层 · QQQ <span class="tip" data-tip="Covered Call（备兑认购期权）：持有正股的同时卖出等量Call期权，收取权利金以降低持股成本，同时在行权价以下获得保护。仅在持有QQQ正股后方可执行。">Covered Call</span></div>
+        <div class="layer-name">备兑层 · QQQ <span class="term" data-tip="Covered Call（备兑认购期权）：持有正股的同时卖出等量Call期权，收取权利金以降低持股成本，同时在行权价以下获得保护。仅在持有QQQ正股后方可执行。">Covered Call</span></div>
         <div class="layer-desc">持股增强收益，适度牺牲上行</div>
       </div>
       <div class="layer-ticker">QQQ</div>
@@ -732,7 +707,7 @@
     <div class="layer">
       <div class="layer-num ln-4">L4</div>
       <div>
-        <div class="layer-name">套利层 · <span class="tip" data-tip="SKEW指数：衡量市场对深度虚值Put的需求，反映期权曲面的偏斜度。SKEW≥145代表Put端被严重高估，存在卖方套利机会；≤115代表市场过度自满，Call端相对低估。">波动率曲面套利</span></div>
+        <div class="layer-name">套利层 · <span class="term" data-tip="SKEW指数：衡量市场对深度虚值Put的需求，反映期权曲面的偏斜度。SKEW≥145代表Put端被严重高估，存在卖方套利机会；≤115代表市场过度自满，Call端相对低估。">波动率曲面套利</span></div>
         <div class="layer-desc">信号触发，Delta中性，低相关收益</div>
       </div>
       <div class="layer-ticker">SPX</div>
@@ -755,8 +730,8 @@
 <hr class="divider">
 
 <!-- ══ CH07 CORE LAYER ══ -->
-<section class="chapter" id="ch07">
-  <div class="chapter-header">
+<section class="section" id="ch07">
+  <div class="section-header">
     <span class="ch-num">07</span>
     <h2>核心层 · SPX Bull Put Spread</h2>
   </div>
@@ -776,7 +751,7 @@
       <li><div class="check-box"></div><span>当前市场状态为 A、B 或 C（非 D）</span></li>
       <li><div class="check-box"></div><span>VIX ≤ 35（硬约束）</span></li>
       <li><div class="check-box"></div><span>加入本批后，总 SPX 名义敞口仍 ≤ 净值 50%</span></li>
-      <li><div class="check-box"></div><span>今日无重大事件（<span class="tip" data-tip="FOMC：联邦公开市场委员会，美联储的货币政策决策机构，约每6-8周召开一次会议。会议当日期权波动率往往异常，建议避开开仓。">FOMC</span> 决议 / CPI 发布 / 财报密集季）</span></li>
+      <li><div class="check-box"></div><span>今日无重大事件（<span class="term" data-tip="FOMC：联邦公开市场委员会，美联储的货币政策决策机构，约每6-8周召开一次会议。会议当日期权波动率往往异常，建议避开开仓。">FOMC</span> 决议 / CPI 发布 / 财报密集季）</span></li>
       <li><div class="check-box"></div><span>EV 计算已完成并达标（EV &gt; 0 且 EV/权利金 &gt; 20%）</span></li>
       <li><div class="check-box"></div><span>卖出行权价距当前 SPX 价格 ≥ 8%（跳空缓冲）</span></li>
     </ul>
@@ -784,54 +759,54 @@
 
   <div class="section">
     <h3>逐步开仓流程</h3>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
         <div class="step-body">
-          <div class="step-title">选择到期日（DTE 35–45 天）</div>
+          <div class="flow-step-body">选择到期日（DTE 35–45 天）</div>
           <p>IBKR → OptionTrader → 选择 SPX → 筛选距到期 35–45 天合约，优先选择整月到期（第三个周五），流动性最佳。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
         <div class="step-body">
-          <div class="step-title">按 Delta 矩阵选定行权价</div>
+          <div class="flow-step-body">按 Delta 矩阵选定行权价</div>
           <p>根据当前 SPX 相对 MA20 位置和市场状态，从§05 矩阵中查取目标 Delta 范围，确定卖出行权价 K₁。验证跳空缓冲 ≥ 8%，否则上移 K₁ 直至满足。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
         <div class="step-body">
-          <div class="step-title">选择保护腿行权价 K₂</div>
+          <div class="flow-step-body">选择保护腿行权价 K₂</div>
           <p>K₂ = K₁ − 价差宽度（参考§05 价差宽度矩阵，VIX 18–25 时取 $100宽）。确认 K₂ 的买入成本，计算净权利金。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">4</div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
         <div class="step-body">
-          <div class="step-title">计算 EV 并验证</div>
+          <div class="flow-step-body">计算 EV 并验证</div>
           <p>EV/张 = 净权利金×100×(1−P) − 最大亏损×P，其中 P = K₁的 Delta绝对值。EV/（净权利金×100）必须 &gt; 20%，否则换行权价重算或放弃本次开仓。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">5</div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
         <div class="step-body">
-          <div class="step-title">确定张数（含仓位系数）</div>
+          <div class="flow-step-body">确定张数（含仓位系数）</div>
           <p>单批名义敞口上限 = 净值 × 12% × 仓位系数。张数 = 上限 ÷ (K₁ × 100)，向下取整。</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">6</div>
+      <div class="flow-step">
+        <div class="flow-step-num">6</div>
         <div class="step-body">
-          <div class="step-title">分两批执行（间隔 1 个交易日）</div>
+          <div class="flow-step-body">分两批执行（间隔 1 个交易日）</div>
           <p>第一批 60% 张数：当日以买卖价差中间价挂限价组合单（Vertical Spread Order）。第二批 40%：次日观察盘中波动后执行，争取更好成交价。<strong>绝对禁止使用市价单。</strong></p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">7</div>
+      <div class="flow-step">
+        <div class="flow-step-num">7</div>
         <div class="step-body">
-          <div class="step-title">同步挂 GTC 止盈单</div>
-          <p>开仓同时在 IBKR 设置 <span class="tip" data-tip="GTC：Good Till Canceled，好至取消订单。设置后自动持续有效直至成交或手动取消，无需每日重新挂单。">GTC</span> 限价平仓单：价格 = 开仓净权利金 × 50%（即权利金衰减50%时自动止盈平仓）。</p>
+          <div class="flow-step-body">同步挂 GTC 止盈单</div>
+          <p>开仓同时在 IBKR 设置 <span class="term" data-tip="GTC：Good Till Canceled，好至取消订单。设置后自动持续有效直至成交或手动取消，无需每日重新挂单。">GTC</span> 限价平仓单：价格 = 开仓净权利金 × 50%（即权利金衰减50%时自动止盈平仓）。</p>
         </div>
       </div>
     </div>
@@ -847,22 +822,22 @@
           </thead>
           <tbody>
             <tr>
-              <td><span class="pill pill-green">止盈</span></td>
+              <td><span class="badge badge-gray">止盈</span></td>
               <td>GTC 单自动触发（权利金衰减 50%）</td>
               <td>自动平仓，不追求最后 50% 价值</td>
             </tr>
             <tr>
-              <td><span class="pill pill-amber">时间止损</span></td>
+              <td><span class="badge badge-gray">时间止损</span></td>
               <td>持仓超 21 天，盈利 &lt; 50%</td>
-              <td>评估 <span class="tip" data-tip="Roll（滚动）：平仓当前仓位，同时开立新的更远到期或更优行权价的仓位。本策略每批次仅允许Roll一次，且新权利金必须≥原权利金60%。">Roll</span>（仅允许 1 次，新权利金 ≥ 原 60%），否则直接平仓</td>
+              <td>评估 <span class="term" data-tip="Roll（滚动）：平仓当前仓位，同时开立新的更远到期或更优行权价的仓位。本策略每批次仅允许Roll一次，且新权利金必须≥原权利金60%。">Roll</span>（仅允许 1 次，新权利金 ≥ 原 60%），否则直接平仓</td>
             </tr>
             <tr>
-              <td><span class="pill pill-red">行权止损</span></td>
+              <td><span class="badge badge-gray">行权止损</span></td>
               <td>SPX 接近 K₁（距离 &lt; 3%）</td>
               <td>启动监控，每日评估；跌破 K₁ 评估是否提前平仓</td>
             </tr>
             <tr>
-              <td><span class="pill pill-red">紧急平仓</span></td>
+              <td><span class="badge badge-gray">紧急平仓</span></td>
               <td>状态恶化为 D 或 VIX &gt; 35</td>
               <td>不论盈亏，立即市价买入平仓所有 Put 价差</td>
             </tr>
@@ -876,8 +851,8 @@
 <hr class="divider">
 
 <!-- ══ CH08 COVERED CALL ══ -->
-<section class="chapter" id="ch08">
-  <div class="chapter-header">
+<section class="section" id="ch08">
+  <div class="section-header">
     <span class="ch-num">08</span>
     <h2>备兑层 · QQQ Covered Call</h2>
   </div>
@@ -966,7 +941,7 @@
   <div class="section">
     <h3>被行权后标准化处理流程</h3>
     <div class="two-col">
-      <div class="callout success">
+      <div class="callout gold">
         <div class="callout-icon">✓</div>
         <div class="callout-body">
           <strong>情景 A：行权价 &gt; 综合成本（已解套）</strong>
@@ -987,8 +962,8 @@
 <hr class="divider">
 
 <!-- ══ CH09 ARB & HEDGE ══ -->
-<section class="chapter" id="ch09">
-  <div class="chapter-header">
+<section class="section" id="ch09">
+  <div class="section-header">
     <span class="ch-num">09</span>
     <h2>套利层与对冲层</h2>
   </div>
@@ -1024,7 +999,7 @@
       <div class="callout-icon">⚠</div>
       <div class="callout-body">
         <strong>V4 关键修正：VX期货方向</strong>
-        <p>危机对冲的正确方向是<strong>买入近月VX期货</strong>（近月VX在恐慌时涨幅最大）。原DeepSeek版"卖近月+买远月"是正常市场中的<span class="tip" data-tip="Contango套利：VIX期货正常情况下呈现远月>近月的正向结构（Contango），卖近月买远月可收取基差。但当VIX飙升时，期限结构倒挂（Backwardation），此操作将大幅亏损。">Contango基差套利</span>，VIX真正飙升时会<strong>大幅亏损</strong>，绝对禁止作为危机对冲使用。</p>
+        <p>危机对冲的正确方向是<strong>买入近月VX期货</strong>（近月VX在恐慌时涨幅最大）。原DeepSeek版"卖近月+买远月"是正常市场中的<span class="term" data-tip="Contango套利：VIX期货正常情况下呈现远月>近月的正向结构（Contango），卖近月买远月可收取基差。但当VIX飙升时，期限结构倒挂（Backwardation），此操作将大幅亏损。">Contango基差套利</span>，VIX真正飙升时会<strong>大幅亏损</strong>，绝对禁止作为危机对冲使用。</p>
       </div>
     </div>
 
@@ -1032,7 +1007,7 @@
       <div style="background:var(--white);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
         <div style="font-weight:600;font-size:14px;color:var(--navy);margin-bottom:12px;">方案 A · VX期货（首选）</div>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
-          <li style="font-size:13px;color:var(--text-secondary);display:flex;gap:8px;"><span style="color:var(--gold);">·</span><span><strong>触发：</strong>VIX &gt; 25 且期货结构为 <span class="tip" data-tip="Backwardation（期货结构倒挂）：近月VX > 远月VX，代表市场短期恐慌程度高于长期，此时买入近月VX对冲成本最低，收益最大。">Backwardation</span></span></li>
+          <li style="font-size:13px;color:var(--text-secondary);display:flex;gap:8px;"><span style="color:var(--gold);">·</span><span><strong>触发：</strong>VIX &gt; 25 且期货结构为 <span class="term" data-tip="Backwardation（期货结构倒挂）：近月VX > 远月VX，代表市场短期恐慌程度高于长期，此时买入近月VX对冲成本最低，收益最大。">Backwardation</span></span></li>
           <li style="font-size:13px;color:var(--text-secondary);display:flex;gap:8px;"><span style="color:var(--gold);">·</span><span><strong>操作：</strong>买入近月VX期货（≤净值0.5%名义）</span></li>
           <li style="font-size:13px;color:var(--text-secondary);display:flex;gap:8px;"><span style="color:var(--gold);">·</span><span><strong>退出：</strong>VIX回落至20以下，或持有最长60天</span></li>
           <li style="font-size:13px;color:var(--text-secondary);display:flex;gap:8px;"><span style="color:var(--gold);">·</span><span><strong>年化成本：</strong>≤ 净值 0.5%</span></li>
@@ -1054,8 +1029,8 @@
 <hr class="divider">
 
 <!-- ══ CH10 25% SWITCH ══ -->
-<section class="chapter" id="ch10">
-  <div class="chapter-header">
+<section class="section" id="ch10">
+  <div class="section-header">
     <span class="ch-num">10</span>
     <h2>25% 下跌切换机制</h2>
   </div>
@@ -1099,12 +1074,12 @@
 
   <div class="section">
     <h3>切换执行流程（T 日触发确认后 T+1 执行）</h3>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">评估平仓成本</div><p>逐笔计算所有卖方仓位当前平仓成本。若总成本 ≤ 净值 5%，全部平仓。若超过，优先平仓亏损最小的仓位，其余等待自然到期。</p></div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">T+1 开盘：全部平仓卖方仓位</div><p>市价买入平仓所有 SPX 卖 Put 价差。市价平仓所有 QQQ 备兑 Call（若有）。释放全部保证金。</p></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">等待 VIX 回落再建指数仓位</div><p>不立即买入正股，等待 VIX 从峰值回落 ≥ 20% 后，将核心仓资金 50–60% 转为 SPY/QQQ 正股。剩余 30% 保持现金/SGOV。</p></div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">持有指数模式管理</div><p>停止所有卖 Put 操作。对指数仓位执行低 Delta（≤ 0.15）备兑 Call，仅用于降低持仓成本，不影响指数收益。</p></div></div>
-      <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">监控退出条件</div><p>每周一检查：指数从最低点反弹 ≥ 20%，且 SPX 站上 MA20 并维持 3 天，且 VIX &lt; 25。三项全满足后，以 25% 仓位系数试仓 1 个月，再评估是否全量恢复。</p></div></div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="flow-step-num">1</div><div class="step-body"><div class="flow-step-body">评估平仓成本</div><p>逐笔计算所有卖方仓位当前平仓成本。若总成本 ≤ 净值 5%，全部平仓。若超过，优先平仓亏损最小的仓位，其余等待自然到期。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">2</div><div class="step-body"><div class="flow-step-body">T+1 开盘：全部平仓卖方仓位</div><p>市价买入平仓所有 SPX 卖 Put 价差。市价平仓所有 QQQ 备兑 Call（若有）。释放全部保证金。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">3</div><div class="step-body"><div class="flow-step-body">等待 VIX 回落再建指数仓位</div><p>不立即买入正股，等待 VIX 从峰值回落 ≥ 20% 后，将核心仓资金 50–60% 转为 SPY/QQQ 正股。剩余 30% 保持现金/SGOV。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">4</div><div class="step-body"><div class="flow-step-body">持有指数模式管理</div><p>停止所有卖 Put 操作。对指数仓位执行低 Delta（≤ 0.15）备兑 Call，仅用于降低持仓成本，不影响指数收益。</p></div></div>
+      <div class="flow-step"><div class="flow-step-num">5</div><div class="step-body"><div class="flow-step-body">监控退出条件</div><p>每周一检查：指数从最低点反弹 ≥ 20%，且 SPX 站上 MA20 并维持 3 天，且 VIX &lt; 25。三项全满足后，以 25% 仓位系数试仓 1 个月，再评估是否全量恢复。</p></div></div>
     </div>
   </div>
 </section>
@@ -1112,8 +1087,8 @@
 <hr class="divider">
 
 <!-- ══ CH11 CIRCUIT BREAKER ══ -->
-<section class="chapter" id="ch11">
-  <div class="chapter-header">
+<section class="section" id="ch11">
+  <div class="section-header">
     <span class="ch-num">11</span>
     <h2>三级熔断机制</h2>
   </div>
@@ -1163,7 +1138,7 @@
       <div class="cc-triggers">
         <div class="cc-sub">触发条件（任一）</div>
         <div class="cc-item">SPX 5日累计跌 &gt; 12%</div>
-        <div class="cc-item">收到经纪商 <span class="tip" data-tip="Margin Call：保证金追缴通知，当账户净值低于维持保证金要求时，经纪商要求在规定时间内补充资金或平仓减仓。">Margin Call</span></div>
+        <div class="cc-item">收到经纪商 <span class="term" data-tip="Margin Call：保证金追缴通知，当账户净值低于维持保证金要求时，经纪商要求在规定时间内补充资金或平仓减仓。">Margin Call</span></div>
         <div class="cc-item">VIX &gt; 40 且 SPX &lt; MA200×80%</div>
         <div class="cc-item">账户浮亏超净值 15%</div>
       </div>
@@ -1181,13 +1156,13 @@
 <hr class="divider">
 
 <!-- ══ CH12 MONTHLY ══ -->
-<section class="chapter" id="ch12">
-  <div class="chapter-header">
+<section class="section" id="ch12">
+  <div class="section-header">
     <span class="ch-num">12</span>
     <h2>月度操作清单</h2>
   </div>
 
-  <p style="color:var(--text-secondary);font-size:14.5px;margin-bottom:20px;"><strong>标准执行日：</strong>每月第 2 个周二（避开第三周五 <span class="tip" data-tip="OpEx（期权到期日）：每月第三个周五为标准期权到期日，市场流动性格局有时出现异常，价差扩大。在此前3天开仓是常见策略，但本手册建议提前至第2周二，以获得更稳定的成交环境。">OpEx</span> 前后流动性异常）。全程约 90 分钟。</p>
+  <p style="color:var(--text-secondary);font-size:14.5px;margin-bottom:20px;"><strong>标准执行日：</strong>每月第 2 个周二（避开第三周五 <span class="term" data-tip="OpEx（期权到期日）：每月第三个周五为标准期权到期日，市场流动性格局有时出现异常，价差扩大。在此前3天开仓是常见策略，但本手册建议提前至第2周二，以获得更稳定的成交环境。">OpEx</span> 前后流动性异常）。全程约 90 分钟。</p>
 
   <div class="section">
     <h3>第一步 · 环境分析（20 分钟）</h3>
@@ -1195,7 +1170,7 @@
       <li><div class="check-box"></div><span>IBKR 图表打开 SPX 周线 → 记录：价格 / MA20 / MA50 / MA20 斜率方向</span></li>
       <li><div class="check-box"></div><span>记录 VIX 即时值和 VIX3M → 判断 VIX 硬约束级别（§03）</span></li>
       <li><div class="check-box"></div><span>运行三因子模型（§04）→ 计算 F1/F2/F3 → 获取综合得分和仓位系数</span></li>
-      <li><div class="check-box"></div><span>查询期权链 <span class="tip" data-tip="IVR（Implied Volatility Rank）：隐含波动率排名，衡量当前IV在过去52周中的相对位置。IVR=100%代表当前IV处于一年最高点，是开仓卖方的最佳时机；IVR<30%代表波动率过低，权利金收入不划算。">IVR</span>（Implied Volatility Rank），IVR &gt; 40% 为理想开仓区间</span></li>
+      <li><div class="check-box"></div><span>查询期权链 <span class="term" data-tip="IVR（Implied Volatility Rank）：隐含波动率排名，衡量当前IV在过去52周中的相对位置。IVR=100%代表当前IV处于一年最高点，是开仓卖方的最佳时机；IVR<30%代表波动率过低，权利金收入不划算。">IVR</span>（Implied Volatility Rank），IVR &gt; 40% 为理想开仓区间</span></li>
       <li><div class="check-box"></div><span>查看 CBOE SKEW 指数 → 是否触发 L4 套利条件（≥145 或 ≤115）</span></li>
       <li><div class="check-box"></div><span>台账「月度状态表」填写所有数据，确认本月策略基调</span></li>
     </ul>
@@ -1275,17 +1250,17 @@
 <hr class="divider">
 
 <!-- ══ CH13 TRACKING ══ -->
-<section class="chapter" id="ch13">
-  <div class="chapter-header">
+<section class="section" id="ch13">
+  <div class="section-header">
     <span class="ch-num">13</span>
     <h2>绩效追踪与台账</h2>
   </div>
 
   <div class="section">
     <h3>核心收益计算公式</h3>
-    <div class="formula">月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%</div>
-    <div class="formula">年化收益率 = (1 + 月化收益率)^12 − 1</div>
-    <div class="formula">QQQ 综合成本 = (原综合成本 × 持仓数 − 本月净权利金) ÷ 当前持仓数</div>
+    <div class="formula-box">月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%</div>
+    <div class="formula-box">年化收益率 = (1 + 月化收益率)^12 − 1</div>
+    <div class="formula-box">QQQ 综合成本 = (原综合成本 × 持仓数 − 本月净权利金) ÷ 当前持仓数</div>
   </div>
 
   <div class="section">
@@ -1345,8 +1320,8 @@
 <hr class="divider">
 
 <!-- ══ CH14 DISCIPLINE ══ -->
-<section class="chapter" id="ch14">
-  <div class="chapter-header">
+<section class="section" id="ch14">
+  <div class="section-header">
     <span class="ch-num">14</span>
     <h2>心理纪律守则</h2>
   </div>

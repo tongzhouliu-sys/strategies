@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh" class="site-doc">
+<html lang="zh-CN" class="site-doc">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,51 +9,67 @@
 <body>
 <div class="layout-wrapper">
 <nav class="sidebar">
-  <div class="sidebar-brand"><a href="index.html">作战手册</a></div>
-  <a href="#indicators">指标阈值</a>
-  <a href="#matrix">策略矩阵</a>
-  <a href="#signals">信号规则</a>
-  <a href="#tickers">股票档案</a>
-  <a href="#risk">风险管理</a>
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">期权策略 期权增强<br>操作手册</div>
+    <div class="logo-ver">机构级 · 2026 年</div>
+  </div>
+  <div class="nav-section-label">核心参考</div>
+  <a href="#indicators" class="nav-item">01 · 指标阈值</a>
+  <a href="#matrix" class="nav-item">02 · 策略矩阵</a>
+  <a href="#signals" class="nav-item">03 · 信号规则</a>
+  <div class="nav-section-label">标的与风控</div>
+  <a href="#tickers" class="nav-item">04 · 股票档案</a>
+  <a href="#risk" class="nav-item">05 · 风险管理</a>
 </nav>
 <main class="main-content">
 <div class="hero">
-  <div class="hero-tag">● LEVEL 4 · INSTITUTIONAL GRADE · 机构级作战手册</div>
+  <div class="hero-eyebrow">机构级 · 期权策略作战手册</div>
   <h1>期权策略监控<br>作战手册</h1>
-  <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系<br>覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
-  <div class="watchlist-pills">
-    <span class="pill pill-tech">AAPL</span>
-    <span class="pill pill-tech">META</span>
-    <span class="pill pill-semi">NVDA</span>
-    <span class="pill pill-tech">TSLA</span>
-    <span class="pill pill-crypto">MSTR</span>
-    <span class="pill pill-finance">HOOD</span>
-    <span class="pill pill-crypto">COIN</span>
-    <span class="pill pill-semi">TSM</span>
-    <span class="pill pill-semi">ASML</span>
-    <span class="pill pill-finance">MA</span>
-    <span class="pill pill-finance">V</span>
-    <span class="pill pill-pharma">NVO</span>
-    <span class="pill pill-crypto">CRCL</span>
-    <span class="pill pill-etf">QQQ</span>
-    <span class="pill pill-etf">SPX</span>
-    <span class="pill pill-etf">IBIT</span>
-    <span class="pill pill-etf">GLD</span>
-    <span class="pill pill-etf">XLU</span>
-    <span class="pill pill-etf">EWJ</span>
-    <span class="pill pill-etf">OESX</span>
+  <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系，覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">标的池</span><span class="value">20只</span></div>
+    <div class="hero-meta-item"><span class="label">指标维度</span><span class="value">6维</span></div>
+    <div class="hero-meta-item"><span class="label">版本</span><span class="value">机构级</span></div>
+    <div class="hero-meta-item"><span class="label">适用账户</span><span class="value">NRA · IBKR</span></div>
   </div>
 </div>
 
-<div class="main">
+<h1>期权策略监控<br>作战手册</h1>
+  <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系<br>覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
+  <div class="watchlist-pills">
+    <span class="badge badge-gray">AAPL</span>
+    <span class="badge badge-gray">META</span>
+    <span class="badge badge-gray">NVDA</span>
+    <span class="badge badge-gray">TSLA</span>
+    <span class="badge badge-gray">MSTR</span>
+    <span class="badge badge-gray">HOOD</span>
+    <span class="badge badge-gray">COIN</span>
+    <span class="badge badge-gray">TSM</span>
+    <span class="badge badge-gray">ASML</span>
+    <span class="badge badge-gray">MA</span>
+    <span class="badge badge-gray">V</span>
+    <span class="badge badge-gray">NVO</span>
+    <span class="badge badge-gray">CRCL</span>
+    <span class="badge badge-gray">QQQ</span>
+    <span class="badge badge-gray">SPX</span>
+    <span class="badge badge-gray">IBIT</span>
+    <span class="badge badge-gray">GLD</span>
+    <span class="badge badge-gray">XLU</span>
+    <span class="badge badge-gray">EWJ</span>
+    <span class="badge badge-gray">OESX</span>
+  </div>
+</div>
+
+<div >
 
 <!-- ═══════════════════════════════════════
      SECTION 1: 指标体系
 ═══════════════════════════════════════ -->
 <div class="section" id="indicators">
-  <div class="section-title">
-    <span class="section-badge">01</span>
-    <h2>六维指标体系 · 阈值定义与交易含义</h2>
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div><div class="section-title">六维指标体系 · 阈值定义与交易含义</div></div>
   </div>
 
   <!-- VIX -->
@@ -132,7 +148,7 @@
   <!-- IV Percentile -->
   <div style="margin-bottom:28px;">
     <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">IV PERCENTILE — 隐含波动率百分位（单股核心决策指标）</div>
-    <div class="alert alert-info" style="margin-bottom:12px;">💡 <strong>IV百分位 vs IV本身：</strong>IV百分位是过去252个交易日中，当前IV高于多少天的百分比。比 IV 绝对值更重要——高 IV 的股票百分位低意味着相对便宜。</div>
+    <div class="callout info" style="margin-bottom:12px;">💡 <strong>IV百分位 vs IV本身：</strong>IV百分位是过去252个交易日中，当前IV高于多少天的百分比。比 IV 绝对值更重要——高 IV 的股票百分位低意味着相对便宜。</div>
     
     <div class="iv-band iv-low">
       <div class="iv-band-label"><div class="iv-range">0–30%</div><div class="iv-name">LOW IV · 便宜区</div></div>
@@ -229,12 +245,12 @@
      SECTION 2: 策略决策矩阵
 ═══════════════════════════════════════ -->
 <div class="section" id="matrix">
-  <div class="section-title">
-    <span class="section-badge">02</span>
-    <h2>策略决策矩阵 · 条件组合 → 策略映射</h2>
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div><div class="section-title">策略决策矩阵 · 条件组合 → 策略映射</div></div>
   </div>
 
-  <div class="alert alert-info" style="margin-bottom:18px;">📊 以下矩阵按「市场方向 × IV百分位 × VIX」三维条件匹配最优策略。监控软件扫描出指标后，对应查表即可。</div>
+  <div class="callout info" style="margin-bottom:18px;">📊 以下矩阵按「市场方向 × IV百分位 × VIX」三维条件匹配最优策略。监控软件扫描出指标后，对应查表即可。</div>
 
   <table class="decision-table">
     <thead>
@@ -348,9 +364,9 @@
      SECTION 3: 具体信号触发规则
 ═══════════════════════════════════════ -->
 <div class="section" id="signals">
-  <div class="section-title">
-    <span class="section-badge">03</span>
-    <h2>监控信号触发规则 · 看到什么数字做什么</h2>
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div><div class="section-title">监控信号触发规则 · 看到什么数字做什么</div></div>
   </div>
 
   <div class="tab-nav">
@@ -389,7 +405,7 @@
             <li>目标盈利：权利金翻倍（+100%）时可兑现 50% 仓位</li>
           </ul>
         </div>
-        <div class="alert alert-warn">⚠️ <strong>适合标的：</strong>AAPL、META、NVDA、TSM、ASML（低Beta，趋势清晰）。TSLA、MSTR、COIN 因波动极大，IV 基本长期偏高，买 Call 成本贵，需更严格的 IV 筛选。</div>
+        <div class="callout warning">⚠️ <strong>适合标的：</strong>AAPL、META、NVDA、TSM、ASML（低Beta，趋势清晰）。TSLA、MSTR、COIN 因波动极大，IV 基本长期偏高，买 Call 成本贵，需更严格的 IV 筛选。</div>
       </div>
     </div>
   </div>
@@ -419,7 +435,7 @@
             <li>止损：权利金亏损 40% 时离场；或股价反向穿越均线</li>
           </ul>
         </div>
-        <div class="alert alert-warn">⚠️ <strong>高风险标的的 Put 策略：</strong>TSLA、MSTR、COIN 下跌时 IV 飙升，Put 价格会快速上涨（对你有利），但反弹时 IV 暴跌导致 Put 损失惨重。这类标的的 Put 需要更快的兑现决策。</div>
+        <div class="callout warning">⚠️ <strong>高风险标的的 Put 策略：</strong>TSLA、MSTR、COIN 下跌时 IV 飙升，Put 价格会快速上涨（对你有利），但反弹时 IV 暴跌导致 Put 损失惨重。这类标的的 Put 需要更快的兑现决策。</div>
       </div>
     </div>
   </div>
@@ -450,7 +466,7 @@
             <li>若股价快速上涨逼近行权价：买回旧 Call（可能亏损），滚到更高行权价或更远到期日</li>
           </ul>
         </div>
-        <div class="alert alert-good">✅ <strong>最适合标的：</strong>AAPL、MA、V、QQQ、NVO（走势稳健，IV 适中，趋势明确）。这类股票 Covered Call 可以每月稳定贡献 1~2% 的额外收益。</div>
+        <div class="callout info">✅ <strong>最适合标的：</strong>AAPL、MA、V、QQQ、NVO（走势稳健，IV 适中，趋势明确）。这类股票 Covered Call 可以每月稳定贡献 1~2% 的额外收益。</div>
       </div>
     </div>
   </div>
@@ -482,8 +498,8 @@
             <li>收取净权利金 = 4 腿合计收入；目标在 50% 盈利时平仓</li>
           </ul>
         </div>
-        <div class="alert alert-danger">🚨 <strong>突破警报规则：</strong>任意卖腿 Δ 超过 ±0.35（说明股价已逼近行权价），立即处理亏损侧：买回该侧两腿，或将卖腿 Roll 到更远价格/更晚日期。不要等待"回来"。</div>
-        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>QQQ、SPX（流动性最好，价差最小）、GLD、XLU（低波动 ETF）。单只股票（尤其 TSLA、MSTR）做 Iron Condor 风险较大，慎用。</div>
+        <div class="callout danger">🚨 <strong>突破警报规则：</strong>任意卖腿 Δ 超过 ±0.35（说明股价已逼近行权价），立即处理亏损侧：买回该侧两腿，或将卖腿 Roll 到更远价格/更晚日期。不要等待"回来"。</div>
+        <div class="callout info" style="margin-top:8px;">✅ <strong>最适合标的：</strong>QQQ、SPX（流动性最好，价差最小）、GLD、XLU（低波动 ETF）。单只股票（尤其 TSLA、MSTR）做 Iron Condor 风险较大，慎用。</div>
       </div>
     </div>
   </div>
@@ -514,8 +530,8 @@
             <li>计算公式：需要的最小波动 = 总权利金 ÷ 当前股价 × 100%</li>
           </ul>
         </div>
-        <div class="alert alert-warn">⚠️ <strong>IV Crush 陷阱：</strong>如果你在财报前 2 天才买跨式，IV 已经极高，财报后 IV 暴跌（即使方向对），两腿都会贬值。最佳布局时间是财报前 10~14 天，IV 还未完全上升时。</div>
-        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>NVDA、META、AAPL（大盘股财报往往有 5~10% 以上波动）、TSLA（波动更大，但权利金也更贵）。</div>
+        <div class="callout warning">⚠️ <strong>IV Crush 陷阱：</strong>如果你在财报前 2 天才买跨式，IV 已经极高，财报后 IV 暴跌（即使方向对），两腿都会贬值。最佳布局时间是财报前 10~14 天，IV 还未完全上升时。</div>
+        <div class="callout info" style="margin-top:8px;">✅ <strong>最适合标的：</strong>NVDA、META、AAPL（大盘股财报往往有 5~10% 以上波动）、TSLA（波动更大，但权利金也更贵）。</div>
       </div>
     </div>
   </div>
@@ -554,9 +570,9 @@
      SECTION 4: 股票档案
 ═══════════════════════════════════════ -->
 <div class="section" id="tickers">
-  <div class="section-title">
-    <span class="section-badge">04</span>
-    <h2>标的监控档案 · 特征 & 适用策略</h2>
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div><div class="section-title">标的监控档案 · 特征 & 适用策略</div></div>
   </div>
 
   <!-- 科技巨头 -->
@@ -756,9 +772,9 @@
      SECTION 5: 风险管理
 ═══════════════════════════════════════ -->
 <div class="section" id="risk">
-  <div class="section-title">
-    <span class="section-badge">05</span>
-    <h2>风险管理框架 · 仓位 · 止损 · 监控频率</h2>
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div><div class="section-title">风险管理框架 · 仓位 · 止损 · 监控频率</div></div>
   </div>
 
   <!-- Position sizing -->

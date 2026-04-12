@@ -9,65 +9,83 @@
 <body>
 <div class="layout-wrapper">
 <nav class="sidebar">
-  <div class="sidebar-brand"><a href="index.html">IBIT 操作手册 · KAISHANG</a></div>
-  <a href="#overview">概览</a>
-  <a href="#architecture">仓位架构</a>
-  <a href="#trend">趋势判断</a>
-  <a href="#zones">价格区间</a>
-  <a href="#iv">IV 策略</a>
-  <a href="#tax">NRA 税务</a>
-  <a href="#risk">风险纪律</a>
-  <a href="#checklist">月度清单</a>
-  <a href="#exit">减仓路径</a>
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">IBIT 期权增强<br>操作手册</div>
+    <div class="logo-ver">V1.0 · 2026 年 3 月</div>
+  </div>
+  <div class="nav-section-label">概览</div>
+  <a href="#overview" class="nav-item">概览</a>
+  <a href="#architecture" class="nav-item">仓位架构</a>
+  <a href="#trend" class="nav-item">趋势判断</a>
+  <a href="#zones" class="nav-item">价格区间</a>
+  <div class="nav-section-label">策略执行</div>
+  <a href="#iv" class="nav-item">IV 策略</a>
+  <a href="#tax" class="nav-item">NRA 税务</a>
+  <div class="nav-section-label">风控与运营</div>
+  <a href="#risk" class="nav-item">风险纪律</a>
+  <a href="#checklist" class="nav-item">月度清单</a>
+  <a href="#exit" class="nav-item">减仓路径</a>
 </nav>
 <main class="main-content">
-<div class="wrapper">
+<div >
 
   <!-- HERO -->
-  <div class="hero" id="overview">
-    <div class="hero-tag">CONFIDENTIAL · 期权增强收益操作手册 V1.0</div>
-    <h1>IBIT 系统化期权收租方案</h1>
+  <div class="hero">
+  <div class="hero-eyebrow">IBIT 期权增强收益操作手册 · KAISHANG</div>
+  <h1>IBIT 系统化期权收租方案</h1>
+  <p class="hero-sub">账户持有人：KAISHANG · 国籍：中国 · 税务身份：美国 NRA · 制定日期：2026年3月30日</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">总持仓</span><span class="value">8,888 IBIT股</span></div>
+    <div class="hero-meta-item"><span class="label">综合成本</span><span class="value">$47.20</span></div>
+    <div class="hero-meta-item"><span class="label">当前价格</span><span class="value">$37.40</span></div>
+    <div class="hero-meta-item"><span class="label">IBKR持仓</span><span class="value">6,308股</span></div>
+    <div class="hero-meta-item"><span class="label">BBAE持仓</span><span class="value">204股</span></div>
+  </div>
+</div>
+
+<h1>IBIT 系统化期权收租方案</h1>
     <p class="hero-sub">账户持有人：KAISHANG &nbsp;·&nbsp; 国籍：中国 &nbsp;·&nbsp; 税务身份：美国 NRA &nbsp;·&nbsp; 制定日期：2026年3月30日</p>
-    <div class="hero-stats">
+    <div class="hero-meta">
       <div class="stat-card">
         <div class="stat-label">总持仓</div>
         <div class="stat-value">8,888</div>
-        <div class="stat-sub">IBIT 股</div>
+        <div class="stat-note">IBIT 股</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">综合成本</div>
         <div class="stat-value">$47.20</div>
-        <div class="stat-sub">加权平均</div>
+        <div class="stat-note">加权平均</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">当前价格</div>
         <div class="stat-value">$37.40</div>
-        <div class="stat-sub">2026.03.30</div>
+        <div class="stat-note">2026.03.30</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">当前浮亏</div>
         <div class="stat-value" style="color:var(--red)">−20.8%</div>
-        <div class="stat-sub">−$63,910 (估)</div>
+        <div class="stat-note">−$63,910 (估)</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">IBKR 持仓</div>
         <div class="stat-value">6,308</div>
-        <div class="stat-sub">成本 $46.96</div>
+        <div class="stat-note">成本 $46.96</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">BBAE 持仓</div>
         <div class="stat-value">204</div>
-        <div class="stat-sub">成本 $54.40</div>
+        <div class="stat-note">成本 $54.40</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">当前 IV</div>
         <div class="stat-value">~54%</div>
-        <div class="stat-sub">正常区间</div>
+        <div class="stat-note">正常区间</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">目标持仓</div>
         <div class="stat-value">5k–10k</div>
-        <div class="stat-sub">长期持有</div>
+        <div class="stat-note">长期持有</div>
       </div>
     </div>
   </div>
@@ -119,7 +137,7 @@
 
     <div style="margin-top:1.2rem;">
       <div class="card-title" style="margin-bottom:8px;">四大策略工具使用矩阵</div>
-      <div class="tbl-wrap">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -283,7 +301,7 @@
         <div class="op-row"><div class="op-tool"><span class="tag tag-red">卖Put</span></div><div class="op-detail"><span class="hl">坚决禁止</span>。接货后可能继续下跌，风险不可控。</div></div>
         <div class="op-row"><div class="op-tool"><span class="tag tag-amber">保护Put</span></div><div class="op-detail">若已持有，可用<span class="num">3个月</span>权利金收入的<span class="num">20%</span>以内，买入当前价下方<span class="num">5%–10%</span>的虚值Put，对冲进一步下跌。</div></div>
         <div class="sub-title">风险评估框架</div>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <thead><tr><th>情景判断</th><th>操作建议</th></tr></thead>
             <tbody>
@@ -315,7 +333,7 @@
         <div class="op-row"><div class="op-tool">张数（收益仓）</div><div class="op-detail">IBKR：26张（对应2,600股）；增强仓视趋势B状态可加13张，合计约 <span class="num">39张</span></div></div>
 
         <div class="sub-title">裸卖看跌（仅满足以下所有条件时操作）</div>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <thead><tr><th>准入条件</th><th>参数设置</th></tr></thead>
             <tbody>
@@ -389,7 +407,7 @@
         <div class="op-row"><div class="op-tool">权利金目标</div><div class="op-detail">月化 <span class="num">3%–4%</span>，高位权利金丰厚，但优先保护利润</div></div>
         <div class="op-row"><div class="op-tool">裸卖Put</div><div class="op-detail"><span class="hl">暂停</span>。高位卖put风险过高，避免回调被套。</div></div>
         <div class="sub-title">主动减仓至目标仓位（5,000–10,000股）</div>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <thead><tr><th>价格里程碑</th><th>建议操作</th><th>剩余仓位</th></tr></thead>
             <tbody>
@@ -418,7 +436,7 @@
       <strong>IBIT IV的特殊性：</strong>与普通股票不同，IBIT价格上涨时IV可能<strong>下降</strong>（比特币牛市情绪平稳），价格下跌时IV大幅上升。这意味着在跌势中卖put反而能收到更高权利金，但风险也更大。
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead>
           <tr>
@@ -519,46 +537,46 @@
     </div>
 
     <div class="card-title" style="margin-bottom:8px;">六条税务优化操作规则</div>
-    <div class="steps">
+    <div class="flow-steps">
       <div class="step-item">
         <div class="step-dot">T1</div>
-        <div class="step-content">
-          <div class="step-title">减少行权频率（最重要）</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">减少行权频率（最重要）</div>
           <div class="step-desc">备兑开仓行权价选择区间上限（如区间二要求15%–20%，直接选20%而非15%）。被行权意味着股票以行权价卖出，会产生资本利得计算事件，虽然NRA资本利得通常免税，但频繁行权增加税务申报复杂性，且卖出后买回需要摩擦成本。<strong style="color:var(--text);">保持持仓不被行权是最简洁的税务优化。</strong></div>
         </div>
       </div>
       <div class="step-item">
         <div class="step-dot">T2</div>
-        <div class="step-content">
-          <div class="step-title">解套后延长合约期限</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">解套后延长合约期限</div>
           <div class="step-desc">价格达到区间四（$47.2以上）后，将备兑合约从30天延长至45–60天。减少每月平仓/开仓次数，降低权利金收入的税务计提频率，同时减少交易手续费。</div>
         </div>
       </div>
       <div class="step-item">
         <div class="step-dot">T3</div>
-        <div class="step-content">
-          <div class="step-title">同年度亏损对冲盈利</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">同年度亏损对冲盈利</div>
           <div class="step-desc">在同一纳税年度内，期权操作的亏损（如备兑向上滚动时的买入平仓亏损）可与权利金收入互抵，减少当年的FDAP应税金额。例如：当月备兑平仓亏损$1,000，当月卖出权利金$2,500，净FDAP收入仅为$1,500，而非$2,500。<strong style="color:var(--text);">年底前可主动实现部分亏损以降低税基。</strong></div>
         </div>
       </div>
       <div class="step-item">
         <div class="step-dot">T4</div>
-        <div class="step-content">
-          <div class="step-title">分账户隔离税务</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">分账户隔离税务</div>
           <div class="step-desc">IBKR负责主力备兑，BBAE负责小额卖Put。两账户税务分开核算，避免混乱。每月记录时按账户分别统计权利金收入/亏损，便于年末整理1042-S报告核对。</div>
         </div>
       </div>
       <div class="step-item">
         <div class="step-dot">T5</div>
-        <div class="step-content">
-          <div class="step-title">保留完整交易流水</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">保留完整交易流水</div>
           <div class="step-desc">每月从IBKR和BBAE导出交易记录，记录日期、标的、策略类型、行权价、权利金金额、到期日、是否被行权。IBKR可导出Activity Statement，BBAE可导出Trade Confirmation。<strong style="color:var(--text);">年末整理税务时必须依赖这些原始记录。</strong></div>
         </div>
       </div>
       <div class="step-item">
         <div class="step-dot">T6</div>
-        <div class="step-content">
-          <div class="step-title">每年咨询NRA专业税务师</div>
+        <div class="flow-step-body">
+          <div class="flow-step-body">每年咨询NRA专业税务师</div>
           <div class="step-desc">中美税收协定下的权利金处理存在灰色地带，券商的处理方式可能不一致。建议每年报税前咨询熟悉NRA业务的美国税务师（CPA），确认预扣税是否可申请退还，以及是否需要提交Form 1040-NR。这项投入通常能换回数倍的税务节省。</div>
         </div>
       </div>
@@ -598,7 +616,7 @@
     </div>
 
     <div class="card-title" style="margin-bottom:8px;">黑天鹅应对预案（BTC单日暴跌20%+）</div>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>时间节点</th><th>立即行动</th></tr></thead>
         <tbody>
@@ -758,7 +776,7 @@
 
     <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.8;">客户目标是长期维持5,000–10,000股IBIT持仓。当前8,888股已在目标区间内，无需主动减仓，但在高位时应通过系统性方式锁定利润并降低集中度风险。</p>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead>
           <tr>
@@ -809,7 +827,7 @@
     <div class="g2" style="margin-top:1rem;">
       <div class="card">
         <div class="card-title">关键价格参照系</div>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <tbody>
               <tr><td class="muted" style="font-size:11px;">综合成本</td><td class="mono gold">$47.20</td><td style="font-size:11px;color:var(--text3);">解套目标</td></tr>

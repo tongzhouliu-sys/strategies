@@ -9,45 +9,55 @@
 <body>
 <div class="layout-wrapper">
 <nav class="sidebar">
-  <div class="sidebar-brand"><a href="index.html">WHEEL / PUT</a></div>
-  <a href="#overview">概览</a>
-  <a href="#capital">资金结构</a>
-  <a href="#tickers">标的矩阵</a>
-  <a href="#entry">开仓系统</a>
-  <a href="#checklist">每日清单</a>
-  <a href="#exit">出场决策</a>
-  <a href="#vix">VIX矩阵</a>
-  <a href="#risk">风控红线</a>
-  <a href="#wheel2">Wheel闭环</a>
-  <a href="#signal">信号格式</a>
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">OpenClaw 期权增强<br>操作手册</div>
+    <div class="logo-ver">2026 年 4 月</div>
+  </div>
+  <div class="nav-section-label">系统介绍</div>
+  <a href="#principle" class="nav-item">01 · 系统运行原理</a>
+  <a href="#value" class="nav-item">02 · 核心价值</a>
+  <a href="#scenarios" class="nav-item">03 · 使用场景</a>
+  <div class="nav-section-label">配置与规则</div>
+  <a href="#budget" class="nav-item">04 · 服务与预算</a>
+  <a href="#prereq" class="nav-item">05 · 使用前提</a>
+  <a href="#rules" class="nav-item">06 · 铁律</a>
 </nav>
 <main class="main-content">
-<div class="page">
+<div >
 
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-tag">
-      <span>▸</span> 机构级执行手册 v2.0 · 2026年4月
-    </div>
-    <h1>100万美元<br><em>Wheel 卖 PUT</em><br>策略执行手册</h1>
-    <div class="hero-stats">
-      <div class="stat-pill">
+  <div class="hero-eyebrow">美股期权 · AI 数据参谋</div>
+  <h1>OpenClaw 智能参谋系统</h1>
+  <p class="hero-sub">信息聚合 · 策略合规检查 · 数据驱动推送。只做参谋，不自动下单，判断权永远在人</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">监控标的</span><span class="value">20+</span></div>
+    <div class="hero-meta-item"><span class="label">数据源冗余</span><span class="value">9层</span></div>
+    <div class="hero-meta-item"><span class="label">自动扫描</span><span class="value">24/7</span></div>
+    <div class="hero-meta-item"><span class="label">年化筛选门槛</span><span class="value">≥30%</span></div>
+  </div>
+</div>
+
+<h1>100万美元<br><em>Wheel 卖 PUT</em><br>策略执行手册</h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
         <div class="sv">$1,000,000</div>
         <div class="sl">总资金</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">25–38%</div>
         <div class="sl">年化基准目标</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">≤15%</div>
         <div class="sl">最大回撤控制</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">75/25</div>
         <div class="sl">部署/现金比</div>
       </div>
-      <div class="stat-pill">
+      <div class="hero-meta-item">
         <div class="sv">7</div>
         <div class="sl">核心标的池</div>
       </div>
@@ -55,14 +65,14 @@
   </div>
 
   <!-- S1 OVERVIEW -->
-  <section id="overview">
-    <div class="sec-head">
-      <span class="sec-num">01</span>
+  <section class="section" id="overview">
+    <div class="section-header">
+      <span class="section-num">01</span>
       <h2>策略定位与预期管理</h2>
     </div>
     <div class="sec-desc">铁律先行——在进入任何操作细节之前，先把收益预期、收益来源和资金结构定死。</div>
 
-    <div class="tbl-wrap" style="margin-bottom:20px">
+    <div class="table-wrap" style="margin-bottom:20px">
       <table>
         <thead><tr>
           <th>维度</th><th>客户原始设定</th><th>本方案优化后</th><th>逻辑说明</th>
@@ -103,13 +113,13 @@
   </section>
 
   <!-- S2 CAPITAL -->
-  <section id="capital">
-    <div class="sec-head">
-      <span class="sec-num">02</span>
+  <section class="section" id="capital">
+    <div class="section-header">
+      <span class="section-num">02</span>
       <h2>资金结构</h2>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>支柱</th><th>仓位占比</th><th>资金量</th><th>核心标的</th><th>角色定位</th>
@@ -150,14 +160,14 @@
   </section>
 
   <!-- S3 TICKERS -->
-  <section id="tickers">
-    <div class="sec-head">
-      <span class="sec-num">03</span>
+  <section class="section" id="tickers">
+    <div class="section-header">
+      <span class="section-num">03</span>
       <h2>标的池矩阵</h2>
     </div>
     <div class="sec-desc">7个核心标的，覆盖5个独立驱动板块，天然弱相关性是对抗系统性风险的第一道护城河。<strong style="color:var(--red)">UNG已全部剔除</strong>——期货升水（Contango）损耗破坏Wheel闭环完整性。</div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>梯队</th><th>标的</th><th>板块</th><th>仓位上限</th><th>行权价区间</th><th>IV Rank门槛</th><th>特殊要求</th>
@@ -233,15 +243,15 @@
   </section>
 
   <!-- S4 ENTRY -->
-  <section id="entry">
-    <div class="sec-head">
-      <span class="sec-num">04</span>
+  <section class="section" id="entry">
+    <div class="section-header">
+      <span class="section-num">04</span>
       <h2>开仓信号系统</h2>
     </div>
     <div class="sec-desc">双重验证机制：6项硬性门槛为过滤器（全部满足才进入打分），5维打分为排序器（≥70分才执行）。</div>
 
     <h3 style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">第一步：6项硬性门槛（全满足方进入打分）</h3>
-    <div class="tbl-wrap" style="margin-bottom:28px">
+    <div class="table-wrap" style="margin-bottom:28px">
       <table>
         <thead><tr><th>#</th><th>条件</th><th>标准</th><th>核查方式</th></tr></thead>
         <tbody>
@@ -352,7 +362,7 @@
     </div>
 
     <h3 style="font-size:14px;font-weight:600;margin:24px 0 14px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">合约参数速查</h3>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>标的类型</th><th>行权价</th><th>DTE</th><th>年化收益验证</th><th>Delta参考</th></tr></thead>
         <tbody>
@@ -377,9 +387,9 @@
   </section>
 
   <!-- S5 DAILY CHECKLIST -->
-  <section id="checklist">
-    <div class="sec-head">
-      <span class="sec-num">05</span>
+  <section class="section" id="checklist">
+    <div class="section-header">
+      <span class="section-num">05</span>
       <h2>每日执行清单</h2>
     </div>
     <div class="sec-desc">三个时间节点，逐项打勾。全绿才执行当日开仓。</div>
@@ -481,16 +491,16 @@
   </section>
 
   <!-- S6 EXIT -->
-  <section id="exit">
-    <div class="sec-head">
-      <span class="sec-num">06</span>
+  <section class="section" id="exit">
+    <div class="section-header">
+      <span class="section-num">06</span>
       <h2>出场与持仓管理决策树</h2>
     </div>
 
     <div class="two-col" style="margin-bottom:20px">
       <div>
         <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px">止盈系统（开仓即刻设置）</h3>
-        <div class="tbl-wrap">
+        <div class="table-wrap">
           <table>
             <thead><tr><th>规则</th><th>触发条件</th><th>动作</th></tr></thead>
             <tbody>
@@ -567,14 +577,14 @@
   </section>
 
   <!-- S7 VIX -->
-  <section id="vix">
-    <div class="sec-head">
-      <span class="sec-num">07</span>
+  <section class="section" id="vix">
+    <div class="section-header">
+      <span class="section-num">07</span>
       <h2>VIX 动态仓位矩阵</h2>
     </div>
     <div class="sec-desc">根据当前VIX水平动态调整整体暴露度，这是防止在错误时机过度布仓的关键机制。</div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr>
           <th>VIX区间</th><th>市场状态</th><th>建议仓位上限</th><th>优先动作</th>
@@ -621,9 +631,9 @@
   </section>
 
   <!-- S8 RISK -->
-  <section id="risk">
-    <div class="sec-head">
-      <span class="sec-num">08</span>
+  <section class="section" id="risk">
+    <div class="section-header">
+      <span class="section-num">08</span>
       <h2>三层硬性风控红线</h2>
     </div>
 
@@ -646,7 +656,7 @@
     </div>
 
     <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin:28px 0 14px">极端情景应急预案</h3>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>情景</th><th>触发假设</th><th>账户影响</th><th>应对动作</th></tr></thead>
         <tbody>
@@ -702,9 +712,9 @@
   </section>
 
   <!-- S9 WHEEL2 -->
-  <section id="wheel2">
-    <div class="sec-head">
-      <span class="sec-num">09</span>
+  <section class="section" id="wheel2">
+    <div class="section-header">
+      <span class="section-num">09</span>
       <h2>Wheel 第二阶段：被行权后的 Covered Call</h2>
     </div>
     <div class="sec-desc">被行权不是失败，是Wheel策略的既定环节。坦然接盘，立即转为"收租模式"。</div>
@@ -741,7 +751,7 @@
       </div>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>参数</th><th>设置</th><th>逻辑</th></tr></thead>
         <tbody>
@@ -781,9 +791,9 @@
   </section>
 
   <!-- S10 SIGNAL FORMAT -->
-  <section id="signal">
-    <div class="sec-head">
-      <span class="sec-num">10</span>
+  <section class="section" id="signal">
+    <div class="section-header">
+      <span class="section-num">10</span>
       <h2>OpenClaw 信号输出格式</h2>
     </div>
     <div class="sec-desc">每日收盘后生成，最多推送3条（Top 3打分），无信号时不推送。可直接接入 OpenClaw 技能执行。</div>
@@ -826,11 +836,11 @@
 
   <!-- LAUNCH PATH -->
   <section>
-    <div class="sec-head">
-      <span class="sec-num">11</span>
+    <div class="section-header">
+      <span class="section-num">11</span>
       <h2>落地启动路径</h2>
     </div>
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>阶段</th><th>时间</th><th>任务</th><th>目标</th></tr></thead>
         <tbody>
@@ -865,8 +875,8 @@
 
   <!-- PERFORMANCE EXPECTATIONS -->
   <section>
-    <div class="sec-head">
-      <span class="sec-num">12</span>
+    <div class="section-header">
+      <span class="section-num">12</span>
       <h2>收益预期与绩效基准</h2>
     </div>
 
@@ -891,7 +901,7 @@
       </div>
     </div>
 
-    <div class="tbl-wrap">
+    <div class="table-wrap">
       <table>
         <thead><tr><th>市场环境</th><th>VIX区间</th><th>月权利金收入</th><th>年化折算</th><th>时间占比</th></tr></thead>
         <tbody>

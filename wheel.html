@@ -9,51 +9,32 @@
 <body>
 <div class="layout-wrapper">
 <nav class="sidebar">
-  <div class="nav-group">
-    <div class="nav-label">强制前置</div>
-    <a class="nav-item active" href="#s00"><span class="nav-num">§00</span>税务合规框架</a>
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">Wheel 期权增强<br>操作手册</div>
+    <div class="logo-ver">V2.0 · 2026 年 4 月</div>
   </div>
-  <div class="nav-group">
-    <div class="nav-label">账户与资金</div>
-    <a class="nav-item" href="#s01"><span class="nav-num">§01</span>账户架构与资金分配</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">市场决策系统</div>
-    <a class="nav-item" href="#s02"><span class="nav-num">§02</span>市场状态引擎</a>
-    <a class="nav-item" href="#s03"><span class="nav-num">§03</span>三因子量化决策模型</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">标的与参数</div>
-    <a class="nav-item" href="#s04"><span class="nav-num">§04</span>全球标的池评级矩阵</a>
-    <a class="nav-item" href="#s05"><span class="nav-num">§05</span>EV门槛与Delta矩阵</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">收益结构</div>
-    <a class="nav-item" href="#s06"><span class="nav-num">§06</span>五层收益结构</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">核心操作手册</div>
-    <a class="nav-item" href="#s07"><span class="nav-num">§07</span>现金担保卖Put操作</a>
-    <a class="nav-item" href="#s08"><span class="nav-num">§08</span>Wheel备兑层操作</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">风险控制</div>
-    <a class="nav-item" href="#s09"><span class="nav-num">§09</span>三级熔断与极端行情</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">日常运营</div>
-    <a class="nav-item" href="#s10"><span class="nav-num">§10</span>月度操作SOP</a>
-    <a class="nav-item" href="#s11"><span class="nav-num">§11</span>绩效追踪台账</a>
-    <a class="nav-item" href="#s12"><span class="nav-num">§12</span>心理纪律守则</a>
-  </div>
+  <div class="nav-section-label">核心框架</div>
+  <a href="#overview" class="nav-item">01 · 策略概览</a>
+  <a href="#capital" class="nav-item">02 · 资金结构</a>
+  <a href="#tickers" class="nav-item">03 · 标的矩阵</a>
+  <div class="nav-section-label">执行系统</div>
+  <a href="#entry" class="nav-item">04 · 开仓系统</a>
+  <a href="#checklist" class="nav-item">05 · 每日清单</a>
+  <a href="#exit" class="nav-item">06 · 出场决策</a>
+  <div class="nav-section-label">风控</div>
+  <a href="#vix" class="nav-item">07 · VIX矩阵</a>
+  <a href="#risk" class="nav-item">08 · 风控红线</a>
+  <a href="#wheel2" class="nav-item">09 · Wheel闭环</a>
+  <a href="#signal" class="nav-item">10 · 信号格式</a>
 </nav>
 <main class="main-content">
 <!-- ══════════════════════ HEADER ══════════════════════ -->
-<header class="hdr">
-  <div class="hdr-logo">全球期权卖方波动率策略</div>
-  <div class="hdr-ver">V 1.0 · 2026-04</div>
-  <div class="hdr-spacer"></div>
-  <div class="hdr-tag">NRA · IBKR · $150K–$10M</div>
+<header class="hero">
+  <div class="hero-eyebrow">全球期权卖方波动率策略</div>
+  <div >V 1.0 · 2026-04</div>
+  <div ></div>
+  <div class="hero-meta-item">NRA · IBKR · $150K–$10M</div>
 </header>
 
 <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
@@ -80,10 +61,10 @@
 <!-- ══════════ §00 ══════════ -->
 <section class="section" id="s00">
   <div class="sec-eyebrow">§ 00 · 强制前置条件</div>
-  <h2 class="sec-title">税务合规框架</h2>
+  <h2 class="section-title">税务合规框架</h2>
   <p class="sec-lead">以下六项税务确认在获得持牌 CPA 书面回复前，账户仅允许持有 <span class="t" data-tip="SGOV 是追踪0–3个月美国国债的ETF，BIL 类似，均为无信用风险的超短期现金替代工具，适合作为期权保证金的担保品。">SGOV/BIL</span> 短期国债，或对已持有正股执行最低风险的备兑 Call 操作。<strong style="color:#e06060;">任何违反将使整套策略的税务架构失效。</strong></p>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>#</th><th>确认事项</th><th>核心关切</th><th>未确认时限制</th></tr></thead>
       <tbody>
@@ -98,7 +79,7 @@
   </div>
 
   <h3>W-8BEN 年度维护 SOP</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>每年 1 月 15 日前</strong>：登录 IBKR → 账户管理 → 税务表格，确认 W-8BEN 有效期（3年）。距到期 30 天内提前重新提交电子版。</li>
     <li><strong>每笔交易台账标记</strong>：区分税务事件类型——权利金收入 / 接货成本调整 / 资本利得 / 对冲损失。同步记录当日人民币汇率（中国人民银行中间价），备用境外所得申报。</li>
     <li><strong>季度末对账</strong>：导出 IBKR 交易记录（CSV）转交国内税务师，评估中国申报义务。每年 5–6 月个税汇算清缴时主动申报境外所得（即使免税也需申报）。</li>
@@ -109,11 +90,11 @@
 <!-- ══════════ §01 ══════════ -->
 <section class="section" id="s01">
   <div class="sec-eyebrow">§ 01 · 账户架构与资金分配</div>
-  <h2 class="sec-title">账户架构与资金分配</h2>
+  <h2 class="section-title">账户架构与资金分配</h2>
   <p class="sec-lead">双账户分工确保税务隔离与保证金效率，资金分层铁律以净值动态调整，任何规模均适用同一分层逻辑。</p>
 
   <h3>双账户分工矩阵</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>账户</th><th>角色</th><th>必须开通权限</th><th>允许操作</th><th>禁止操作</th></tr></thead>
       <tbody>
@@ -136,7 +117,7 @@
   </div>
 
   <h3>资金分层铁律（按净值规模）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>净值规模</th><th>现金+SGOV 安全垫</th><th>期权保证金上限</th><th>长期持股（BBAE）</th><th>灵活缓冲</th><th>保证金模式</th></tr></thead>
       <tbody>
@@ -148,13 +129,13 @@
     </table>
   </div>
 
-  <div class="alert alert-gold">
+  <div class="callout gold">
     <strong>VIX 动态保证金上限公式（所有规模通用）：</strong><br>
     实际上限 = MIN（基准上限，基准上限 × 20 / 当前 <span class="t" data-tip="VIX（CBOE波动率指数）：衡量标普500指数未来30天预期年化波动率的实时指标。VIX &lt; 15 为低恐慌，15–25 为正常，&gt; 30 为高恐慌，&gt; 40 为市场极端压力。">VIX</span>）<br>
     <span style="color:var(--text3);font-size:12px;">示例：基准25%，VIX=30 → 实际上限=25%×(20/30)=16.7%；VIX=15 → 维持25%上限</span>
   </div>
 
-  <div class="alert alert-red">
+  <div class="callout danger">
     <strong>遗产税硬红线：</strong>IBKR 主账户中 AAPL、META 等美国正股（包括被行权接货的股票）市值之和，任何时刻不得超过 <strong>$60,000</strong>。超出后须立即将超额部分转入 BBAE 账户或启动离岸控股架构评估。
   </div>
 </section>
@@ -162,11 +143,11 @@
 <!-- ══════════ §02 ══════════ -->
 <section class="section" id="s02">
   <div class="sec-eyebrow">§ 02 · 市场决策系统</div>
-  <h2 class="sec-title">市场状态引擎</h2>
+  <h2 class="section-title">市场状态引擎</h2>
   <p class="sec-lead">每周一美东时间 9:00–9:30 完成唯一状态判定，驱动本周全部开仓决策。状态一旦确定，本周内不再更改（熔断触发除外）。以 SPX（宽基市场）和 AAPL（科技）同步评估，取保守值。</p>
 
   <h3>四状态定义矩阵</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>状态</th><th>技术条件（需同时满足）</th><th>VIX 参考</th><th>策略基调</th><th>开仓系数</th></tr></thead>
       <tbody>
@@ -203,7 +184,7 @@
   </div>
 
   <h3>VIX 独立硬约束（优先于状态判断）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>VIX 水平</th><th>执行动作</th><th>叠加系数</th></tr></thead>
       <tbody>
@@ -217,7 +198,7 @@
   </div>
 
   <h3>每周判定 SOP（15 分钟）</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>获取数据：</strong>IBKR 图表打开 SPX 和 AAPL 周线，分别添加 SMA20 和 SMA50，记录：当前价格 / MA20 数值 / MA50 数值 / MA20 本周斜率方向（上 / 平 / 下）。</li>
     <li><strong>查看 VIX 期限结构：</strong>CBOE 官网查看即期 VIX 和 VIX3M。若 VIX &gt; VIX3M（期限结构倒挂），代表短期恐慌溢价，卖方权利金更厚但风险更高，建议收紧 <span class="t" data-tip="Delta：衡量期权价格相对标的资产价格变动1美元的变化量。Put的Delta介于-1至0，绝对值越大代表越接近实值。通常用作被行权概率的近似值。">Delta</span> 上限 0.01–0.02。</li>
     <li><strong>判断唯一状态：</strong>对照状态矩阵，边界情况优先判断为更保守状态（B/C 边界定为 C）。在台账「周状态日志」记录：日期 / 状态 / SPX 价格 / MA20 / MA50 / VIX / 本周开仓系数。</li>
@@ -227,14 +208,14 @@
 <!-- ══════════ §03 ══════════ -->
 <section class="section" id="s03">
   <div class="sec-eyebrow">§ 03 · 市场决策系统</div>
-  <h2 class="sec-title">三因子量化决策模型</h2>
+  <h2 class="section-title">三因子量化决策模型</h2>
   <p class="sec-lead">每个交易日开盘后 15 分钟内，通过三因子加权得分计算当日仓位系数，替代主观判断。得分 &lt; 50 不开新仓，无论市场多诱人。</p>
 
-  <div class="formula">
+  <div class="formula-box">
     综合得分 = F₁(波动率溢价) × 40% + F₂(安全边际) × 30% + F₃(趋势强度) × 30%
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>得分规则</th></tr></thead>
       <tbody>
@@ -264,7 +245,7 @@
   </div>
 
   <h3>综合得分 → 仓位系数映射</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th><th>典型市场环境（出现概率）</th></tr></thead>
       <tbody>
@@ -280,11 +261,11 @@
 <!-- ══════════ §04 ══════════ -->
 <section class="section" id="s04">
   <div class="sec-eyebrow">§ 04 · 标的与参数</div>
-  <h2 class="sec-title">全球标的池评级矩阵</h2>
+  <h2 class="section-title">全球标的池评级矩阵</h2>
   <p class="sec-lead">五级标的评级基于：期权流动性（日均成交量、<span class="t" data-tip="未平仓合约（Open Interest，OI）：市场上尚未平仓的期权合约总数。OI越高代表市场参与度越高，流动性越好，交易时买卖价差通常越窄。">OI</span>、买卖价差）、标的与 SPX 的相关性、波动率特征、财报风险窗口。主仓位（≥70%资金）集中于 A+/A 级，卫星仓位（≤30%）配置 B/C 级。D 级全球标的需 $500K+ 账户且已确认时区/保证金权限。</p>
 
   <h3>A+ 级 · 全球核心指数（无财报风险，最高优先级）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>标的</th><th>代码</th><th>市场</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th><th>与 SPX 相关性</th></tr></thead>
       <tbody>
@@ -297,7 +278,7 @@
   </div>
 
   <h3>A 级 · 全球科技蓝筹（财报窗口控制）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>财报黑名单</th><th>额外条件</th></tr></thead>
       <tbody>
@@ -310,7 +291,7 @@
   </div>
 
   <h3>B 级 · 防御 / 价值（低波动稳定现金流）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>特殊规则</th></tr></thead>
       <tbody>
@@ -323,7 +304,7 @@
   </div>
 
   <h3>C 级 · 高波动（仅在 IVR &gt; 60 时轻仓参与）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>标的</th><th>代码</th><th>Delta 上限</th><th>单标上限</th><th>强制条件</th></tr></thead>
       <tbody>
@@ -334,7 +315,7 @@
     </table>
   </div>
 
-  <div class="alert alert-amber">
+  <div class="callout warning">
     <strong>流动性硬性门槛（开仓前必查，任一不达标则放弃该合约）：</strong><br>
     日均期权成交量 ≥ 1,500 张 &nbsp;|&nbsp; <span class="t" data-tip="OI（未平仓合约）：市场上尚未结清的期权合约总数，是流动性深度的重要指标。OI&lt;5,000张时，大单可能造成明显价格冲击。">OI</span> ≥ 5,000 张 &nbsp;|&nbsp; 买卖价差 &lt; 权利金的 5%（即 (Ask-Bid)/Mid &lt; 5%）
   </div>
@@ -343,11 +324,11 @@
 <!-- ══════════ §05 ══════════ -->
 <section class="section" id="s05">
   <div class="sec-eyebrow">§ 05 · 标的与参数</div>
-  <h2 class="sec-title">EV 强制门槛与 Delta 矩阵</h2>
+  <h2 class="section-title">EV 强制门槛与 Delta 矩阵</h2>
   <p class="sec-lead">每笔卖出期权操作，执行前必须计算预期价值（EV）。未达标则<strong style="color:#e06060;">禁止开仓</strong>，任何主观判断不得替代量化结果。</p>
 
   <h3>预期价值（EV）强制门槛</h3>
-  <div class="formula">
+  <div class="formula-box">
     EV = 权利金收入 × (1 − 被行权概率) − 最大亏损 × 被行权概率
     <br><br>
     <span class="comment">── 双重门槛，两项均须满足方可开仓 ──</span>
@@ -357,7 +338,7 @@
     门槛② EV / 权利金收入 &gt; 20%
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>计算要素</th><th>具体方法</th><th>注意事项</th></tr></thead>
       <tbody>
@@ -377,7 +358,7 @@
 
   <h3>卖 Put 行权价 Delta 矩阵（DTE 35–45 天）</h3>
   <p style="font-size:12.5px;color:var(--text3);margin-bottom:8px;">卖出行权价距当前价格须 ≥ 6%（AAPL等个股）/ ≥ 8%（指数类）作为跳空缓冲</p>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>标的位置（相对 MA20）</th><th>状态 A · VIX&lt;18</th><th>状态 B · VIX 15–22</th><th>状态 C · VIX 20–30</th><th>状态 D</th></tr></thead>
       <tbody>
@@ -390,7 +371,7 @@
   </div>
 
   <h3>价差宽度矩阵（价差结构保护腿）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>VIX 水平</th><th>建议价差宽度</th><th>单张最大亏损</th><th>目标权利金/价差比</th></tr></thead>
       <tbody>
@@ -406,7 +387,7 @@
 <!-- ══════════ §06 ══════════ -->
 <section class="section" id="s06">
   <div class="sec-eyebrow">§ 06 · 收益结构</div>
-  <h2 class="sec-title">五层收益结构</h2>
+  <h2 class="section-title">五层收益结构</h2>
   <p class="sec-lead">通过五层低相关性收益叠加，在不同市场环境下平滑年化曲线。<span class="t" data-tip="Theta（θ）：期权的时间价值衰减率，即在其他条件不变时，期权每经过一天所损失的价值。对期权卖方而言，Theta为正（每天赚取时间价值）；越接近到期日，衰减越快（非线性加速）。">Theta</span> 层是基础，利息层保证现金底仓收益，备兑层降低持股成本，套利层捕捉结构性机会，对冲层控制尾部风险。</p>
 
   <div style="background:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:20px;margin:16px 0;">
@@ -452,7 +433,7 @@
     </div>
   </div>
 
-  <div class="alert alert-blue">
+  <div class="callout info">
     <strong>初期建议：</strong>资金 &lt; $500K 时，仅执行 L1+L2+L3 三层，确保策略简单可执行。L4/L5 在账户净值 &gt; $500K 且策略运行稳定超过 6 个月后逐步引入。L4 每次仓位 ≤ 净值 5%。
   </div>
 </section>
@@ -460,7 +441,7 @@
 <!-- ══════════ §07 ══════════ -->
 <section class="section" id="s07">
   <div class="sec-eyebrow">§ 07 · 核心操作手册</div>
-  <h2 class="sec-title">现金担保卖 Put 操作手册</h2>
+  <h2 class="section-title">现金担保卖 Put 操作手册</h2>
   <p class="sec-lead">本节为 L1 核心层的完整操作流程，从开仓前检查到持仓管理，每一步均需人工最终确认。严格执行清单优先于任何主观判断。</p>
 
   <h3>开仓前 10 项强制检查清单</h3>
@@ -479,7 +460,7 @@
   </ul>
 
   <h3>逐步开仓流程（IBKR TWS）</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>选择到期日（DTE 35–45 天）：</strong>TWS → OptionTrader → 输入标的 → 筛选到期日列。优先选择每月第三个周五（整月到期），流动性最佳，成交量通常是周到期的 3–5 倍。</li>
     <li><strong>按 Delta 矩阵选定行权价：</strong>根据当前价格相对 MA20 位置与市场状态，查§05矩阵获取目标 Delta 范围。在期权链中筛选 Put，选择最接近目标的行权价。验证跳空缓冲（当前价 − 行权价）/ 当前价 ≥ 6% 或 8%。</li>
     <li><strong>选择保护腿（价差结构时）：</strong>K₂ = K₁ − 价差宽度（参考§05价差宽度矩阵）。确认净权利金（卖出K₁权利金 − 买入K₂权利金）。</li>
@@ -490,7 +471,7 @@
   </ul>
 
   <h3>持仓管理规则</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>场景</th><th>触发条件</th><th>执行动作</th><th>备注</th></tr></thead>
       <tbody>
@@ -505,7 +486,7 @@
   </div>
 
   <h3>Credit Roll 操作规则</h3>
-  <div class="formula">
+  <div class="formula-box">
     净权利金 = 新合约卖出 Bid 价 − 当前合约买入 Ask 价
     <br><br>
     <span class="comment">── 硬性要求：净权利金 &gt; 0（至少+$5/手），否则直接止损 ──</span>
@@ -513,7 +494,7 @@
     最多展期：1次（同一合约第二次测试行权价 → 必须止损或接受行权）
   </div>
 
-  <div class="alert alert-red">
+  <div class="callout danger">
     <strong>展期的三个禁止：</strong>① 禁止 Debit Roll（花钱展期）；② 禁止在 DTE &lt; 7 天时展期（Gamma 风险极高）；③ 禁止向上展期到比原行权价更高的价格（锁定更大亏损）。
   </div>
 </section>
@@ -521,11 +502,11 @@
 <!-- ══════════ §08 ══════════ -->
 <section class="section" id="s08">
   <div class="sec-eyebrow">§ 08 · 核心操作手册</div>
-  <h2 class="sec-title">Wheel 备兑层操作手册</h2>
+  <h2 class="section-title">Wheel 备兑层操作手册</h2>
   <p class="sec-lead"><span class="t" data-tip="Wheel 策略：期权策略的循环体系。阶段一：卖现金担保Put，收取权利金。若到期未被行权，权利金全部保留，重新卖Put；若被行权，以行权价买入股票，进入阶段二。阶段二：卖备兑Call，持股同时收取权利金。若被行权（股价超过Call行权价），股票以行权价卖出，回到阶段一；若未被行权，继续持股卖Call，摊低成本。">Wheel 策略</span>在被行权接货后进入第二阶段。核心原则：不在亏损状态下卖 Call 锁死亏损；备兑行权价必须不低于综合持股成本；每次只允许 Credit Roll。</p>
 
   <h3>被行权前24小时决策</h3>
-  <div class="alert alert-gold">
+  <div class="callout gold">
     <strong>关键问题：</strong>「我是否愿意以当前行权价买入该股票并持有至少12个月？」<br>
     是 → 准备现金接货，进入 Covered Call 阶段。<br>
     否 → <strong>立即止损平仓 Put</strong>，不接货，冷却7天后方可重新开仓同标的。
@@ -533,7 +514,7 @@
 
   <h3>Covered Call Delta 矩阵（DTE 30–40 天）</h3>
   <p style="font-size:12.5px;color:var(--text3);margin-bottom:8px;">行权价必须高于当前价格 ≥ 8%，且不低于综合持股成本（禁止卖Call锁定亏损）</p>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>股价位置（相对持股成本）</th><th>状态 A</th><th>状态 B</th><th>状态 C</th></tr></thead>
       <tbody>
@@ -546,7 +527,7 @@
   </div>
 
   <h3>被行权处理标准化流程</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>情景 A：行权价 &gt; 综合成本（已解套）：</strong>3 日内开始备兑 Call，Delta 0.20–0.30，目标行权价 ≥ 当前股价 × 1.08。若被 Call 走（股票被买走），收回现金，完成一个 Wheel 循环，计算总收益。</li>
     <li><strong>情景 B：行权价 ≈ 综合成本（保本区）：</strong>卖备兑 Call，行权价设为当前价格 × 1.05–1.10，以期小幅盈利出场。避免行权价低于成本价。</li>
     <li><strong>情景 C：行权价 &lt; 综合成本（浮亏区）：</strong>不卖 Call（否则锁死亏损）。持有等待股价回升至成本附近。若基本面未变，期间以极低 Delta（0.15 以下）卖远期 Call 轻微摊薄成本。若基本面恶化，直接市价卖出股票，止损离场，冷却 14 天。</li>
@@ -554,7 +535,7 @@
   </ul>
 
   <h3>Covered Call 向上滚动规则</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>要素</th><th>规则</th></tr></thead>
       <tbody>
@@ -567,7 +548,7 @@
     </table>
   </div>
 
-  <div class="formula">
+  <div class="formula-box">
     Wheel 总收益 = Put 权利金收入 + Covered Call 权利金收入 + (股票卖出价 − 行权价)
     <br>
     综合持股成本 = (行权价 × 股数 − 累计 Put 权利金) ÷ 当前股数
@@ -577,20 +558,20 @@
 <!-- ══════════ §09 ══════════ -->
 <section class="section" id="s09">
   <div class="sec-eyebrow">§ 09 · 风险控制</div>
-  <h2 class="sec-title">三级熔断与极端行情应对</h2>
+  <h2 class="section-title">三级熔断与极端行情应对</h2>
   <p class="sec-lead">三级熔断为刚性纪律，触发即执行，不得以「市场可能反弹」为由延迟。25% 跌幅切换机制是整套策略的最终兜底，执行后至少等待 VIX 回落 ≥ 20% 再恢复。</p>
 
   <h3>三级熔断机制</h3>
 
-  <div class="alert alert-amber" style="margin-bottom:8px;">
+  <div class="callout warning" style="margin-bottom:8px;">
     <strong class="state-l1">L1 黄色预警（触发任一）：</strong>SPX 单日跌 &gt; 3% | VIX 单日涨 &gt; 25% | 账户浮亏超净值 6% | 保证金使用率 &gt; 55%<br>
     <strong>强制动作：</strong>停止所有新开卖方仓位；检查所有持仓 Delta 是否超0.25；台账记录触发原因+时间戳；24小时后自动解除（若无升级）。
   </div>
-  <div class="alert alert-amber" style="margin-bottom:8px;border-color:var(--red);background:rgba(196,125,26,0.1);">
+  <div class="callout warning" style="margin-bottom:8px;border-color:var(--red);background:rgba(196,125,26,0.1);">
     <strong class="state-l2">L2 橙色警戒（触发任一）：</strong>SPX 3日累计跌 &gt; 6% | 保证金使用率 &gt; 65% | 任意 Put 价差保护腿接近实值 | 账户浮亏超净值 10%<br>
     <strong>强制动作（24小时内完成）：</strong>平仓 50% 期权仓位（优先平 Delta 最高的）；止损所有价内 Put 价差；买入 SPX/QQQ 保护 Put（覆盖核心敞口30%）；将保证金使用率压至 50% 以下。
   </div>
-  <div class="alert alert-red" style="margin-bottom:0;">
+  <div class="callout danger" style="margin-bottom:0;">
     <strong class="state-l3">L3 红色紧急（触发任一）：</strong>SPX 5日累计跌 &gt; 12% | 收到经纪商 Margin Call | VIX &gt; 40 且 SPX &lt; MA200 × 80% | 账户浮亏超净值 15%<br>
     <strong>立即执行（市价单）：</strong>市价平仓所有期权仓位（优先流动性好的指数，最后个股）；资金全部转入 SGOV/现金；暂停交易至少 30 个日历日；30 天后经系统重新评估方可恢复。
   </div>
@@ -598,14 +579,14 @@
   <h3>25% 跌幅切换机制</h3>
   <p>当核心指数（SPX 或 QQQ）从近期高点下跌 ≥ 25%，策略从「卖方收权利金」模式切换为「持有指数等待反弹」模式。</p>
 
-  <div class="alert alert-blue">
+  <div class="callout info">
     <strong>触发条件（任一满足，需连续 5 日确认；若10日内跌&gt;20%则无需确认）：</strong><br>
     ① SPX/QQQ 较策略启动基准价下跌 ≥ 25%<br>
     ② SPX/QQQ 较 MA200 下跌 ≥ 25%<br>
     ③ 10 个交易日内跌幅 &gt; 20%（实时监测）
   </div>
 
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>T 日（触发确认后）：</strong>评估所有卖方仓位当前平仓成本。若总平仓成本 ≤ 净值 5%，全部平仓；否则逐笔计算，优先平仓最高风险仓位。</li>
     <li><strong>T+1 开盘：</strong>市价买入平仓所有 SPX/SX5E 卖 Put 价差；市价平仓所有备兑 Call。将核心仓资金 50%–60% 转为 SPY/QQQ 正股（等待反弹买入，而非清仓离场）。</li>
     <li><strong>持有指数模式：</strong>停止所有卖 Put 操作。对指数仓位执行低 Delta（≤ 0.10）备兑 Call，轻微增收。</li>
@@ -613,7 +594,7 @@
   </ul>
 
   <h3>极端流动性枯竭应对</h3>
-  <div class="alert alert-amber">
+  <div class="callout warning">
     市场暴跌时期权买卖价差可能扩大至 20%+，<strong>禁止使用市价单平仓</strong>，滑点将吞噬大量资金。<br>
     正确做法：用限价单挂在 (Bid + Ask) / 2，每5分钟向 Bid 方向移动 $0.05，直到成交。多个合约平仓时，<strong>优先平 SPY/QQQ/SX5E 等高流动性指数</strong>，最后处理个股。
   </div>
@@ -622,7 +603,7 @@
 <!-- ══════════ §10 ══════════ -->
 <section class="section" id="s10">
   <div class="sec-eyebrow">§ 10 · 日常运营</div>
-  <h2 class="sec-title">月度操作 SOP</h2>
+  <h2 class="section-title">月度操作 SOP</h2>
   <p class="sec-lead">标准执行日为每月第 2 个周二（避开期权到期周前后的流动性异常），全程约 90 分钟。建议固定时间段执行，形成操作肌肉记忆。</p>
 
   <h3>第一步 · 环境分析（20 分钟）</h3>
@@ -637,7 +618,7 @@
   </ul>
 
   <h3>第二步 · 制定方案（30 分钟）</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li><strong>核心层（L1）：</strong>若仓位系数 ≥ 0.5 且 VIX ≤ 35，按§05 Delta 矩阵逐一筛选 2–4 个标的的开仓方案；计算每笔 EV；确定张数（含仓位系数和单标上限）。</li>
     <li><strong>备兑层（L3）：</strong>若持有 AAPL/META 正股，按§08矩阵选备兑 Call 参数；验证行权价不低于综合成本；EV 验证。</li>
     <li><strong>对冲层（L5）：</strong>若 VIX &gt; 25，评估是否买入近月 VX 期货或 SPX 保护性 Put（覆盖核心敞口 20%–30%，成本 ≤ 净值 1%）。</li>
@@ -645,7 +626,7 @@
   </ul>
 
   <h3>第三步 · 执行交易（25 分钟）</h3>
-  <ul class="steps">
+  <ul class="flow-steps">
     <li>IBKR 核心层：第一批（60%）以中间价挂限价组合单（Vertical Spread Order 或单腿 CSP）</li>
     <li>为所有新仓位同步设置 GTC 止盈单（权利金衰减 50%）</li>
     <li>设置价格告警：行权价 × 97%（提前3%预警） / 行权价 × 100%（立即评估）</li>
@@ -655,7 +636,7 @@
   </ul>
 
   <h3>第四步 · 风控检查（10 分钟）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr></thead>
       <tbody>
@@ -681,11 +662,11 @@
 <!-- ══════════ §11 ══════════ -->
 <section class="section" id="s11">
   <div class="sec-eyebrow">§ 11 · 日常运营</div>
-  <h2 class="sec-title">绩效追踪台账</h2>
+  <h2 class="section-title">绩效追踪台账</h2>
   <p class="sec-lead">台账是策略的镜子，也是税务的原始凭证。每笔期权操作均须完整录入，缺一不可。建议使用 Excel 或 Google Sheets 并开启自动版本历史。</p>
 
   <h3>核心收益计算公式</h3>
-  <div class="formula">
+  <div class="formula-box">
     月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%
     <br>
     年化收益率（复利）= (1 + 月化收益率)¹² − 1
@@ -696,7 +677,7 @@
   </div>
 
   <h3>台账必填字段（每笔期权，缺一不可）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>字段</th><th>示例</th><th>用途</th></tr></thead>
       <tbody>
@@ -733,11 +714,11 @@
 <!-- ══════════ §12 ══════════ -->
 <section class="section" id="s12">
   <div class="sec-eyebrow">§ 12 · 日常运营</div>
-  <h2 class="sec-title">心理纪律守则</h2>
+  <h2 class="section-title">心理纪律守则</h2>
   <p class="sec-lead">期权卖方策略的最终 Alpha 在于纪律，而非预测能力。顶级执行是枯燥的重复，不是激动人心的博弈。以下五大心理陷阱是绝大多数亏损的根本来源。</p>
 
   <h3>五大心理陷阱与应对 SOP</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead><tr><th>心理陷阱</th><th>症状</th><th>正确认知</th><th>纪律 SOP</th></tr></thead>
       <tbody>

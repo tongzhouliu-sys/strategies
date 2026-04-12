@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hans" class="site-doc">
+<html lang="zh-CN" class="site-doc">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -563,15 +563,15 @@
     <li><span class="ck req"></span><div>总价差敞口 ≤ 总资金 3%（单笔 ≤ 1.5%）</div></li>
   </ul>
 
-  <div class="alert alert-warn">
+  <div class="callout warning">
     <strong>执行注意事项</strong>
     止损：股价接近卖出腿行权价 &lt; 5% 时，立即平仓整个价差头寸（两腿同时平）。<strong>禁止仅平仓卖腿而持有买腿</strong>——价差结构必须作为整体管理。禁止亏损后加仓或尝试滚仓，亏损直接止损离场。
   </div>
 
   <!-- 8.3 Naked Call -->
-  <div id="s8c" class="sec-sep">8.3 — 裸卖看涨期权（Naked Call）</div>
+  <div id="s8c" class="section-subtitle">8.3 — 裸卖看涨期权（Naked Call）</div>
 
-  <div class="alert alert-danger">
+  <div class="callout danger">
     <strong>⚠ 极高风险操作 — 请完整阅读本节后再决定是否执行</strong>
     裸卖 Call 的亏损理论上无上限。MSTR 历史上曾出现单日 +40% 以上的行情，盘后 BTC 大涨导致次日开盘直接跳空，<strong>限价止损单完全失效</strong>。本节所有内容仅在同时满足以下全部八项条件时方可适用，<strong>建议大多数客户完全跳过本节</strong>，仅执行备兑 Call 或看涨熊市价差。
   </div>
@@ -593,22 +593,22 @@
     </table>
   </div>
 
-  <div class="alert alert-warn">
+  <div class="callout warning">
     <strong>强制止损铁律（违反即触发红线守则）</strong>
     MSTR 价格突破行权价 → 立即市价平仓，不犹豫，不等待回调，不加仓。裸卖 Call 浮亏 &gt; 已收权利金的 100% → 触发强制止损，不得尝试「等回调」。BTC 单日涨幅 &gt; 8% → 所有裸卖仓位须在 24 小时内评估是否提前平仓。<strong>禁止向上滚仓（Roll Up）裸卖 Call</strong>——滚仓只会将风险递延，无法消除。
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s9">
-  <div class="sec-header">
-    <div class="sec-num">Section 09</div>
-    <div class="sec-title">动态仓位管理</div>
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">Section 09</div>
+    <div class="section-title">动态仓位管理</div>
     <div class="sn">09</div>
   </div>
 
   <h3 class="sub">动态裸卖仓位公式（反脆弱机制）</h3>
-  <div class="formula">
+  <div class="formula-box">
     <div class="f-label">动态最大仓位上限（Qwen 模型）</div>
     <div class="f-main">裸卖最大仓位 = 2% × (3.0 ÷ 当前 NAV 溢价率)</div>
     <div class="f-note" style="margin-top:10px">
@@ -640,21 +640,21 @@
     </table>
   </div>
 
-  <div class="alert alert-gold">
+  <div class="callout gold">
     <strong>硬性约束（不可因任何理由突破）</strong>
     总保证金占用 ≤ 25%（比标准 30% 更严） · 裸卖 Call 预留 100% 额外保证金准备金 · 备兑 Call 可覆盖全部正股，不受上限限制 · 总账户净值 &lt; $100,000 时，禁止任何裸卖操作
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s10">
-  <div class="sec-header">
-    <div class="sec-num">Section 10</div>
-    <div class="sec-title">跳空风险专项解决方案 — OCA 止损</div>
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-num">Section 10</div>
+    <div class="section-title">跳空风险专项解决方案 — OCA 止损</div>
     <div class="sn">10</div>
   </div>
 
-  <div class="alert alert-danger">
+  <div class="callout danger">
     <strong>裸卖 Call 最危险的场景：周末跳空缺口</strong>
     假设：您在周五收盘前卖出 MSTR $1,800 Call（当时股价 $1,500）。周六晚 BTC 暴涨 20%，周一 MSTR 跳空开盘 $1,900，<strong>直接越过您设置的所有限价止损单（如 $1,700 止损）</strong>。结果：您的裸卖 Call 开盘即深度实值，亏损 = ($1,900 − $1,800) × 100 × 张数 = $10,000/张起步，且随价格继续上涨持续扩大，限价止损无法成交。
   </div>
@@ -666,7 +666,7 @@
   </div>
 
   <h3 class="sub">设置步骤（IBKR TWS）</h3>
-  <ol class="steps">
+  <ol class="flow-steps">
     <li><strong>开仓同步设置止损</strong>：在提交卖单的同时，设置 One-Cancels-All (OCA) 止损组合单</li>
     <li><strong>触发条件</strong>：MSTR 股价 ≥ 行权价 × 93%（即距行权价 7% 以内时触发）。示例：行权价 $1,800，触发价设为 $1,674</li>
     <li><strong>止损订单类型</strong>：选择 <strong>Market Order（市价单）</strong>——这是关键，只有市价单才能在跳空缺口中确保成交</li>
@@ -674,29 +674,29 @@
   </ol>
 
   <h3 class="sub">每日盘前人工补充检查</h3>
-  <ol class="steps">
+  <ol class="flow-steps">
     <li>每个交易日盘前 30 分钟，检查 MSTR AH 盘（盘后）价格和 BTC 当前价格</li>
     <li>若 BTC 单日涨幅 &gt; 7%，立即登录 IBKR，手动评估是否需要提前平仓裸卖 Call</li>
     <li>若 MSTR 盘前价格距行权价 &lt; 8%，<strong>开盘后立即以市价平仓</strong>，不等待正式市场确认</li>
   </ol>
 
-  <div class="alert alert-warn">
+  <div class="callout warning">
     <strong>OCA 止损单的局限性</strong>
     OCA 止损仅能减少损失，无法完全消除跳空风险。在极端情景下（BTC 单日 +30% 以上），即使市价单也可能在高度波动的开盘阶段出现延迟成交。这再次证明：<strong>裸卖 Call 的仓位必须极小（≤ 总资金 1%），使得即使在最坏情景下，账户也不会受到致命损伤。</strong>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s11">
-  <div class="sec-header">
-    <div class="sec-num">Section 11</div>
-    <div class="sec-title">三级熔断机制 — 强制执行</div>
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num">Section 11</div>
+    <div class="section-title">三级熔断机制 — 强制执行</div>
     <div class="sn">11</div>
   </div>
   <p class="lead">熔断机制是整个策略的最后防线。触发任何级别的熔断后，系统动作必须在规定时间内执行完毕，<strong>不得以"我认为会反弹"为由延迟执行</strong>。</p>
 
   <div class="cb-grid">
-    <div class="cb-card cb-l1">
+    <div class="circuit-level l1">
       <div class="cb-num">L1</div>
       <div class="cb-label">黄色预警 — 暂停开仓</div>
       <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 单日波动 &gt; ±10%</div>
@@ -707,7 +707,7 @@
       <div class="cb-item">检查所有裸卖头寸，评估是否触发止损</div>
       <div class="cb-item">观察，做记录，24 小时后重新评估</div>
     </div>
-    <div class="cb-card cb-l2">
+    <div class="circuit-level l2">
       <div class="cb-num">L2</div>
       <div class="cb-label">橙色警报 — 强制减仓</div>
       <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 3 日累计波动 &gt; 25%</div>
@@ -718,7 +718,7 @@
       <div class="cb-item">平仓 50% 备兑 Call 头寸</div>
       <div class="cb-item">若未配置，买入保护性 Put</div>
     </div>
-    <div class="cb-card cb-l3">
+    <div class="circuit-level l3">
       <div class="cb-num">L3</div>
       <div class="cb-label">红色紧急 — 全面清仓</div>
       <div class="cb-item"><strong>触发条件（任一满足）</strong>MSTR 单日涨幅 &gt; 25%（跳空缺口）</div>
@@ -733,10 +733,10 @@
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s12">
-  <div class="sec-header">
-    <div class="sec-num">Section 12</div>
-    <div class="sec-title">保护性 Put — 尾部风险对冲</div>
+<section class="section" id="s12">
+  <div class="section-header">
+    <div class="section-num">Section 12</div>
+    <div class="section-title">保护性 Put — 尾部风险对冲</div>
     <div class="sn">12</div>
   </div>
   <p>MSTR 历史最大回撤超过 80%，<span class="t" data-t="保护性Put|Protective Put，买入看跌期权（Put），为持有的正股提供下行保护。当股价跌破行权价时，Put 期权价值上升，对冲正股损失，类似于为持股购买保险。">保护性 Put</span> 是必要的风险管理工具，为极端下行情景提供最后保护。</p>
@@ -754,17 +754,17 @@
     </table>
   </div>
 
-  <div class="alert alert-danger">
+  <div class="callout danger">
     <strong>严格禁止：风险逆转（Risk Reversal）</strong>
     在 MSTR 策略中，<strong>严禁使用风险逆转（卖 Put + 买 Call）</strong>。卖 Put 腿承担接货风险，而 MSTR 下行波动极大（历史单月最大跌幅超 −50%），极易造成巨额亏损。若有 CSP（现金担保卖 Put）需求，须单独评估，并在接货后立即转为备兑 Call，且仅限状态 B/C、IVR &gt; 50%、行权价在支撑位下方 15% 的极端保守条件。
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s13">
-  <div class="sec-header">
-    <div class="sec-num">Section 13</div>
-    <div class="sec-title">月度操作清单 — 标准化 SOP</div>
+<section class="section" id="s13">
+  <div class="section-header">
+    <div class="section-num">Section 13</div>
+    <div class="section-title">月度操作清单 — 标准化 SOP</div>
     <div class="sn">13</div>
   </div>
   <p class="lead">每月第一个交易日（建议周二）执行，全程约 60 分钟。以下五个步骤按顺序执行，完成后在台账中记录「月度操作完成」。</p>
@@ -815,10 +815,10 @@
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s14">
-  <div class="sec-header">
-    <div class="sec-num">Section 14</div>
-    <div class="sec-title">台账系统 — 绩效追踪与税务合规</div>
+<section class="section" id="s14">
+  <div class="section-header">
+    <div class="section-num">Section 14</div>
+    <div class="section-title">台账系统 — 绩效追踪与税务合规</div>
     <div class="sn">14</div>
   </div>
 
@@ -851,22 +851,22 @@
 
   <h3 class="sub">月度绩效核心指标</h3>
   <div class="card-grid">
-    <div class="metric-card"><div class="metric-label">月化权利金收益率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">当月净权利金 ÷ 月初总资金</div></div>
-    <div class="metric-card"><div class="metric-label">年化权利金收益率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">(1 + 月化) ^ 12 − 1</div></div>
-    <div class="metric-card"><div class="metric-label">备兑 Call 胜率</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">到期未行权次数 ÷ 总次数（目标 &gt; 75%）</div></div>
-    <div class="metric-card"><div class="metric-label">NAV 溢价相关性</div><div class="metric-val" style="font-size:14px;font-family:Georgia,serif">每季统计溢价与权利金收益的相关系数</div></div>
+    <div class="stat-card"><div class="stat-label">月化权利金收益率</div><div class="stat-value" style="font-size:14px;font-family:Georgia,serif">当月净权利金 ÷ 月初总资金</div></div>
+    <div class="stat-card"><div class="stat-label">年化权利金收益率</div><div class="stat-value" style="font-size:14px;font-family:Georgia,serif">(1 + 月化) ^ 12 − 1</div></div>
+    <div class="stat-card"><div class="stat-label">备兑 Call 胜率</div><div class="stat-value" style="font-size:14px;font-family:Georgia,serif">到期未行权次数 ÷ 总次数（目标 &gt; 75%）</div></div>
+    <div class="stat-card"><div class="stat-label">NAV 溢价相关性</div><div class="stat-value" style="font-size:14px;font-family:Georgia,serif">每季统计溢价与权利金收益的相关系数</div></div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s15">
-  <div class="sec-header">
-    <div class="sec-num">Section 15</div>
-    <div class="sec-title">心理纪律与红线守则</div>
+<section class="section" id="s15">
+  <div class="section-header">
+    <div class="section-num">Section 15</div>
+    <div class="section-title">心理纪律与红线守则</div>
     <div class="sn">15</div>
   </div>
 
-  <div class="alert alert-gold">
+  <div class="callout gold">
     <strong>策略长期成功：70% 取决于执行纪律，30% 取决于参数选择</strong>
     「你不是在预测 MSTR 的顶部，你是在经营一家溢价回归基金，专门捕捉市场对比特币杠杆工具的过度追捧。大多数时间你在收取高额保费；当狂热退潮时，你收获利润。永远不要与狂热为敌，只需在狂热时卖出保险，等待理性回归。」
   </div>
@@ -911,24 +911,24 @@
     <li><span class="ck req"></span><div>因看好 MSTR 后市而拒绝执行备兑 Call 的向上滚仓或被行权流程</div></li>
   </ul>
 
-  <div class="alert alert-info">
+  <div class="callout info">
     <strong>关于 4 周强制停止操作</strong>
     强制停止操作的目的不是惩罚，而是让情绪恢复理性，重新审视参数和当前市场环境。每次违反红线都意味着策略面临真实的资本损毁风险，停止操作是保护资金的必要措施。复出前，必须在台账中记录违规原因分析并制定改进措施。
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
-<section id="s16">
-  <div class="sec-header">
-    <div class="sec-num">Section 16</div>
-    <div class="sec-title">快速参考卡</div>
+<section class="section" id="s16">
+  <div class="section-header">
+    <div class="section-num">Section 16</div>
+    <div class="section-title">快速参考卡</div>
     <div class="sn">16</div>
   </div>
 
   <div class="two-col">
-    <div class="qref">
-      <div class="qref-head"><h3>每日 5 分钟快检</h3></div>
-      <div class="qref-body">
+    <div class="card">
+      <div class="section-title"><h3>每日 5 分钟快检</h3></div>
+      <div >
         <div class="table-wrap" style="margin:0">
           <table>
             <thead><tr><th>检查项</th><th>来源</th><th>异动阈值</th><th>动作</th></tr></thead>
@@ -941,47 +941,47 @@
         </div>
       </div>
     </div>
-    <div class="qref">
-      <div class="qref-head"><h3>关键数据工具</h3></div>
-      <div class="qref-body" style="font-size:13px;color:var(--cream2);line-height:2">
-        <div>BTC 趋势图：<span class="pill">TradingView BTCUSD</span></div>
-        <div>NAV 溢价：<span class="pill">mstr-tracker.com</span></div>
-        <div>IVR 数据：<span class="pill">OptionCharts.io</span></div>
-        <div>期权执行（主）：<span class="pill">IBKR TWS</span></div>
-        <div>期权执行（辅）：<span class="pill">BBAE 备兑专用</span></div>
-        <div>MSTR IR 公告：<span class="pill">ir.strategy.com</span></div>
+    <div class="card">
+      <div class="section-title"><h3>关键数据工具</h3></div>
+      <div  style="font-size:13px;color:var(--cream2);line-height:2">
+        <div>BTC 趋势图：<span class="badge badge-gray">TradingView BTCUSD</span></div>
+        <div>NAV 溢价：<span class="badge badge-gray">mstr-tracker.com</span></div>
+        <div>IVR 数据：<span class="badge badge-gray">OptionCharts.io</span></div>
+        <div>期权执行（主）：<span class="badge badge-gray">IBKR TWS</span></div>
+        <div>期权执行（辅）：<span class="badge badge-gray">BBAE 备兑专用</span></div>
+        <div>MSTR IR 公告：<span class="badge badge-gray">ir.strategy.com</span></div>
       </div>
     </div>
   </div>
 
   <h3 class="sub" style="margin-top:24px">决策流程摘要</h3>
   <div class="card" style="font-size:13px;line-height:2.2">
-    <span class="pill">每周一</span> 判断 BTC 状态（A/B/C/D）+ NAV MA20 趋势
+    <span class="badge badge-gray">每周一</span> 判断 BTC 状态（A/B/C/D）+ NAV MA20 趋势
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">查 NAV</span> ≥ 2.5x？
+    <span class="badge badge-gray">查 NAV</span> ≥ 2.5x？
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">查 IVR</span> &gt; 70%？
+    <span class="badge badge-gray">查 IVR</span> &gt; 70%？
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">选策略</span> 备兑 / 价差 / 裸卖
+    <span class="badge badge-gray">选策略</span> 备兑 / 价差 / 裸卖
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">检查清单</span> 8 项条件全满足？
+    <span class="badge badge-gray">检查清单</span> 8 项条件全满足？
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">流动性</span> ≥ 7 分？
+    <span class="badge badge-gray">流动性</span> ≥ 7 分？
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">执行 + 止损单</span>
+    <span class="badge badge-gray">执行 + 止损单</span>
     <span style="color:var(--gold);padding:0 8px">→</span>
-    <span class="pill">台账记录</span>
+    <span class="badge badge-gray">台账记录</span>
   </div>
 
   <h3 class="sub">目标绩效参考（年化，无历史回测保证）</h3>
   <div class="card-grid">
-    <div class="metric-card"><div class="metric-label">备兑 Call 年化</div><div class="metric-val">8–15%</div><div class="metric-sub">持仓市值，保守估计</div></div>
-    <div class="metric-card"><div class="metric-label">备兑 + 价差年化</div><div class="metric-val">12–20%</div><div class="metric-sub">NAV ≥ 2.5x 时</div></div>
-    <div class="metric-card"><div class="metric-label">最大回撤目标</div><div class="metric-val">&lt; 12%</div><div class="metric-sub">期权层；正股回撤另计</div></div>
-    <div class="metric-card"><div class="metric-label">备兑胜率目标</div><div class="metric-val">&gt; 75%</div><div class="metric-sub">到期未被行权比例</div></div>
+    <div class="stat-card"><div class="stat-label">备兑 Call 年化</div><div class="stat-value">8–15%</div><div class="metric-sub">持仓市值，保守估计</div></div>
+    <div class="stat-card"><div class="stat-label">备兑 + 价差年化</div><div class="stat-value">12–20%</div><div class="metric-sub">NAV ≥ 2.5x 时</div></div>
+    <div class="stat-card"><div class="stat-label">最大回撤目标</div><div class="stat-value">&lt; 12%</div><div class="metric-sub">期权层；正股回撤另计</div></div>
+    <div class="stat-card"><div class="stat-label">备兑胜率目标</div><div class="stat-value">&gt; 75%</div><div class="metric-sub">到期未被行权比例</div></div>
   </div>
 
-  <div class="alert alert-warn" style="margin-top:32px">
+  <div class="callout warning" style="margin-top:32px">
     <strong>关于收益率预期的警示</strong>
     上述收益率目标未经历史回测验证，仅为策略逻辑推导的参考范围。MSTR 与 BTC 的相关性可能断裂，历史 NAV 溢价区间不代表未来。在强势趋势行情（如 2024 Q4–2025 Q1）中，备兑 Call 连续被行权可能导致显著踏空损失，实际收益率可能大幅低于目标。本策略的核心价值在于系统化、可重复执行的风险管理，而非追求最大化收益。
   </div>

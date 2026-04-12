@@ -9,28 +9,41 @@
 <body>
 <div class="layout-wrapper">
 <nav class="sidebar">
-  <div class="sidebar-brand"><a href="index.html">CRCL 策略手册</a></div>
-  <a href="#s1">CRCL解构</a>
-  <a href="#s2">波动率框架</a>
-  <a href="#s3">策略矩阵</a>
-  <a href="#s4">事件引擎</a>
-  <a href="#s5">Greeks管理</a>
-  <a href="#s6">执行手册</a>
-  <a href="#s7">风险熔断</a>
-  <a href="#s8">跨资产对冲</a>
-  <a href="#s9">税务合规</a>
-  <a href="#s10">绩效追踪</a>
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">CRCL VIP 期权增强<br>操作手册</div>
+    <div class="logo-ver">V1.0 · 2026 年 4 月</div>
+  </div>
+  <div class="nav-section-label">前置条件</div>
+  <a href="#s00" class="nav-item">00 · 策略定位</a>
+  <a href="#s01" class="nav-item">01 · NRA 税务</a>
+  <a href="#s02" class="nav-item">02 · 账户架构</a>
+  <div class="nav-section-label">决策引擎</div>
+  <a href="#s03" class="nav-item">03 · 市场状态</a>
+  <a href="#s04" class="nav-item">04 · 波动率校准</a>
+  <a href="#s05" class="nav-item">05 · 流动性</a>
+  <a href="#s06" class="nav-item">06 · 策略架构</a>
+  <a href="#s07" class="nav-item">07 · EV 计算</a>
+  <div class="nav-section-label">执行与管理</div>
+  <a href="#s08" class="nav-item">08 · 执行流程</a>
+  <a href="#s09" class="nav-item">09 · 持仓管理</a>
+  <a href="#s10" class="nav-item">10 · 尾部风险</a>
+  <a href="#s11" class="nav-item">11 · 熔断机制</a>
+  <div class="nav-section-label">运营</div>
+  <a href="#s12" class="nav-item">12 · 月度清单</a>
+  <a href="#s13" class="nav-item">13 · 台账</a>
+  <a href="#s14" class="nav-item">14 · 纪律守则</a>
 </nav>
 <main class="main-content">
 <!-- ══════════════ HERO ══════════════ -->
-<header class="hero">
-  <div class="hero-grid"></div>
+<div class="hero">
+  <div ></div>
   <div class="hero-corner"></div>
   <div class="ver-badge">机构级 · CRCR期权套利策略 · 2026-04-01</div>
 
-  <div class="hero-tag">CRCL · Circle Internet Group · NYSE · Options Alpha Framework</div>
+  <div class="hero-eyebrow">CRCL · Circle Internet Group · NYSE · Options Alpha Framework</div>
 
-  <h1 class="hero-title">
+  <h1 >
     CRCL 期权<br>
     <span class="accent">套利策略手册</span>
   </h1>
@@ -62,7 +75,7 @@
       <div class="hm-val">机构 · Level IV</div>
     </div>
   </div>
-</header>
+
 
 <!-- ══════════════ NAV ══════════════ -->
 
@@ -71,7 +84,7 @@
 <section class="sec" id="s1">
   <div class="sec-hd">
     <span class="sec-n">01</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Fundamental Deconstruction</span>
       CRCL 基础定价解构
     </h2>
@@ -83,7 +96,7 @@
   </div>
 
   <h3>1.1 业务驱动因子与期权策略映射</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -157,7 +170,7 @@
   </div>
 
   <h3>1.2 CRCL 期权特征 vs. 同类标的</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>标的</th><th>典型 HV30</th><th>事件峰值 IV</th><th>IV Crush 幅度</th><th>偏斜特征</th><th>IVR 基准</th></tr>
@@ -209,14 +222,14 @@
 <section class="sec" id="s2">
   <div class="sec-hd">
     <span class="sec-n">02</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Volatility Architecture</span>
       四维波动率分析框架
     </h2>
   </div>
 
   <h3>2.1 四维同步监控体系（缺一不开仓）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>维度</th><th>指标</th><th>数据源</th><th>卖方开仓阈值</th><th>买方开仓阈值</th><th>信号解读</th></tr>
@@ -259,7 +272,7 @@
   </div>
 
   <h3>2.2 核心计算公式</h3>
-  <div class="formula">
+  <div class="formula-box">
 <span class="cm">// ─── 波动率溢价比（核心触发指标）</span>
 <span class="k">VP_Ratio</span> = <span class="v">CRCL_ATM_IV_30DTE</span> / <span class="v">HV30_realized</span>
 
@@ -280,7 +293,7 @@
   </div>
 
   <h3>2.3 偏斜套利信号矩阵</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>偏斜状态</th><th>Δ25 Put IV</th><th>Δ25 Call IV</th><th>偏斜差值</th><th>市场含义</th><th>最优策略</th></tr>
@@ -323,7 +336,7 @@
   </div>
 
   <h3>2.4 市场状态引擎（每周一执行，驱动全部策略选择）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>状态</th><th>技术定义</th><th>CRCL–BTC 相关性</th><th>VIX</th><th>策略行动</th><th>最大敞口</th></tr>
@@ -370,7 +383,7 @@
 <section class="sec" id="s3">
   <div class="sec-hd">
     <span class="sec-n">03</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Multi-Strategy Matrix</span>
       六策略结构化矩阵
     </h2>
@@ -485,7 +498,7 @@
   </div>
 
   <h3>3.1 策略选择决策树</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>市场状态</th><th>距事件天数</th><th>修正 IVR</th><th>VP Ratio</th><th>首选策略</th><th>仓位上限</th></tr>
@@ -508,14 +521,14 @@
 <section class="sec" id="s4">
   <div class="sec-hd">
     <span class="sec-n">04</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Event-Driven Alpha Engine</span>
       事件驱动 Alpha 引擎
     </h2>
   </div>
 
   <h3>4.1 CRCL 事件日历与 IV 影响量化</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>事件类型</th><th>典型频率</th><th>IV 膨胀幅度</th><th>IV Crush 窗口</th><th>股价预期移动</th><th>首选结构</th><th>入场时机</th></tr>
@@ -584,7 +597,7 @@
   <h3>4.2 三情景期望价值（EV）模型</h3>
   <p>机构级 EV 计算不使用"二元被行权概率"（Delta × 修正系数会导致 EV 长期为负），改用三情景加权模型。<strong>EV > 0 且 EV / 权利金收入 > 20% 才可执行；> 35% 为优选。</strong></p>
 
-  <div class="formula">
+  <div class="formula-box">
 <span class="cm">// ─── 三情景加权 EV 模型（Bull Put Spread 版本）</span>
 <span class="cm">// 以"GENIUS Act 投票，当前价 $95，卖 $78P / 买 $65P，净权利金 $1.80"为例</span>
 
@@ -667,7 +680,7 @@
 <section class="sec" id="s5">
   <div class="sec-hd">
     <span class="sec-n">05</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Greeks Portfolio Management</span>
       组合 Greeks 精确管理
     </h2>
@@ -676,7 +689,7 @@
   <p>机构级期权管理的核心在于<strong>组合层面的 Greeks 监控</strong>，而非单笔交易的孤立分析。以下目标区间每周一固定检查，事件前 3 天每日检查。</p>
 
   <h3>5.1 Greeks 目标区间与硬性触发规则</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>希腊字母</th><th>正常运营目标</th><th>事件前 3 天目标</th><th>偏离触发阈值</th><th>调整工具</th></tr>
@@ -722,7 +735,7 @@
   </div>
 
   <h3>5.2 各策略 Greeks Profile 速查</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>策略</th><th>Delta</th><th>Gamma</th><th>Vega</th><th>Theta</th><th>核心风险</th><th>最优市场环境</th></tr>
@@ -778,7 +791,7 @@
   </div>
 
   <h3>5.3 Delta 对冲执行协议</h3>
-  <div class="formula">
+  <div class="formula-box">
 <span class="cm">// ─── Delta 中性化执行规则</span>
 
 <span class="k">检查频率</span>：每周一开盘后 30 分钟；事件前 3 天改为每日检查
@@ -802,14 +815,14 @@
 <section class="sec" id="s6">
   <div class="sec-hd">
     <span class="sec-n">06</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Execution Playbook</span>
       逐笔执行手册
     </h2>
   </div>
 
   <h3>6.1 流动性评分体系（开仓前必查，< 7 分禁止执行）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>评估维度</th><th>权重</th><th>10 分</th><th>7 分</th><th>4 分</th><th>0 分（拒绝）</th></tr>
@@ -858,7 +871,7 @@
     GENIUS Act 众议院投票倒计时 4 天 · CRCL 现价 $95 · 修正 IVR = 87% · VP Ratio = 1.72 · 市场状态 B · 总资金 $200,000
   </div>
 
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>步骤</th><th>操作</th><th>具体数值</th><th>验证标准</th><th>结果</th></tr>
@@ -939,7 +952,7 @@
   </div>
 
   <h3>6.3 Iron Condor 完整结构（财报场景）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>腿</th><th>方向</th><th>行权价</th><th>Delta</th><th>权利金</th><th>作用</th></tr>
@@ -970,14 +983,14 @@
 <section class="sec" id="s7">
   <div class="sec-hd">
     <span class="sec-n">07</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Risk Management & Circuit Breakers</span>
       风险管理与四级熔断
     </h2>
   </div>
 
   <h3>7.1 仓位六维硬性约束</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>风险维度</th><th>上限</th><th>计算方式</th><th>违反处理</th></tr>
@@ -994,7 +1007,7 @@
   </div>
 
   <h3>7.2 四级熔断机制</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>级别</th><th>触发条件（满足任一即触发）</th><th>立即行动</th><th>冷却期</th></tr>
@@ -1073,7 +1086,7 @@
 <section class="sec" id="s8">
   <div class="sec-hd">
     <span class="sec-n">08</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Cross-Asset Hedging Engine</span>
       跨资产对冲引擎
     </h2>
@@ -1085,7 +1098,7 @@
   </div>
 
   <h3>8.1 CRCL–COIN 配对交易（稳定币 vs. 交易所）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>信号</th><th>CRCL 操作</th><th>COIN 操作</th><th>逻辑</th><th>平仓条件</th></tr>
@@ -1117,7 +1130,7 @@
   </div>
 
   <h3>8.2 CRCL–BTC Beta 中性对冲</h3>
-  <div class="formula">
+  <div class="formula-box">
 <span class="cm">// ─── Beta 中性保证金计算（每月重新校准）</span>
 
 <span class="k">CRCL_Beta_BTC</span> ≈ <span class="v">0.85</span>（滚动 30 日回归，季度更新）
@@ -1136,7 +1149,7 @@
 
   <h3>8.3 CRCL–TLT 利率敏感性套利（独家维度）</h3>
   <p><strong>核心逻辑：</strong>CRCL 的储备收益直接来自 USDC 储备中持有的美国国债利息，与 10 年期美债收益率正相关，与 TLT（长期美债 ETF）负相关。当 10 年期收益率快速拉升时，CRCL 储备收益上升（利好），但 TLT 下跌——两者的反向关系提供了天然对冲基础。</p>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>利率场景</th><th>CRCL 影响</th><th>TLT 方向</th><th>联动操作</th></tr>
@@ -1175,7 +1188,7 @@
 <section class="sec" id="s9">
   <div class="sec-hd">
     <span class="sec-n">09</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">NRA Tax Compliance Framework</span>
       NRA 税务合规框架
     </h2>
@@ -1240,7 +1253,7 @@
   </ul>
 
   <h3>9.3 台账税务字段（每笔必填）</h3>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>字段</th><th>填写内容</th><th>税务用途</th></tr>
@@ -1261,7 +1274,7 @@
 <section class="sec" id="s10">
   <div class="sec-hd">
     <span class="sec-n">10</span>
-    <h2 class="sec-title">
+    <h2 class="section-title">
       <span class="en">Performance Tracking & Attribution</span>
       绩效追踪与归因分析
     </h2>
@@ -1313,7 +1326,7 @@
 
   <h3>10.2 收益归因框架</h3>
   <p>每月底生成归因报告，将总收益分解为以下四个来源。<strong>Vega 收益占比应 > 55%</strong>——若方向性收益（Delta P&L）占比超过 30%，说明策略偏向了方向性赌注，需重新校准执行纪律。</p>
-  <div class="tbl-wrap">
+  <div class="table-wrap">
     <table>
       <thead>
         <tr><th>收益来源</th><th>定义</th><th>目标占比</th><th>计算方式</th></tr>
