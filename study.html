@@ -1,71 +1,308 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>美股期权完整实战学习计划 · 终极版</title>
-<link rel="stylesheet" href="css/strategy.css">
+<style>
+:root {
+  --ink: #1a1a18;
+  --paper: #f6f3ee;
+  --paper2: #ede9e0;
+  --paper3: #e4dfd5;
+  --gold: #b08a0e;
+  --rust: #b83c28;
+  --sage: #3d7a58;
+  --slate: #2e4f78;
+  --purple: #5a3fa0;
+  --dim: #6b6558;
+  --rule: rgba(26,26,24,0.1);
+  --green-bg: rgba(61,122,88,0.07);
+  --red-bg: rgba(184,60,40,0.06);
+  --blue-bg: rgba(46,79,120,0.07);
+  --gold-bg: rgba(176,138,14,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--paper);color:var(--ink);font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;font-size:15px;line-height:1.75;}
+.page{max-width:900px;margin:0 auto;padding:60px 36px 120px;}
+
+/* MASTHEAD */
+.masthead{border-bottom:3px solid var(--ink);padding-bottom:32px;margin-bottom:52px;}
+.badge-line{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1.5px solid;}
+.badge-g{border-color:var(--sage);color:var(--sage);}
+.badge-b{border-color:var(--slate);color:var(--slate);}
+.badge-o{border-color:var(--gold);color:var(--gold);}
+.badge-r{border-color:var(--rust);color:var(--rust);}
+h1{font-size:clamp(32px,5.5vw,54px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .sub{font-size:clamp(18px,3vw,26px);font-weight:300;color:var(--dim);letter-spacing:0;}
+.intro{font-size:15px;color:var(--dim);line-height:1.8;margin-top:18px;max-width:720px;}
+
+/* NAV */
+.toc{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:22px 26px;margin-bottom:52px;}
+.toc-title{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;}
+@media(max-width:600px){.toc-grid{grid-template-columns:1fr;}}
+.toc-item{font-size:13px;color:var(--slate);padding:4px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;}
+.toc-item a{color:var(--slate);text-decoration:none;}
+.toc-item a:hover{color:var(--ink);}
+.toc-num{font-size:11px;color:var(--dim);}
+
+/* SECTION */
+.sec{margin-top:64px;}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--rule);}
+h2{font-size:30px;font-weight:700;margin-bottom:6px;line-height:1.2;}
+h2.rust{color:var(--rust);}
+h2.sage{color:var(--sage);}
+h2.slate{color:var(--slate);}
+h2.gold{color:var(--gold);}
+h2.purple{color:var(--purple);}
+.sec-intro{font-size:14.5px;color:var(--dim);margin-bottom:24px;line-height:1.8;max-width:740px;}
+
+/* PHASE CARD */
+.phase{border:1px solid var(--rule);border-radius:6px;margin-bottom:18px;overflow:hidden;}
+.phase-header{display:flex;align-items:stretch;background:var(--paper2);border-bottom:1px solid var(--rule);}
+.phase-num{font-size:42px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1.5px var(--ink);line-height:1;padding:18px 22px 18px 18px;display:flex;align-items:center;}
+.phase-meta{padding:16px 20px 16px 0;flex:1;}
+.phase-title{font-size:17px;font-weight:700;margin-bottom:3px;}
+.phase-sub{font-size:12.5px;color:var(--dim);}
+.phase-tag{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 9px;border-radius:2px;margin-left:auto;margin-right:16px;align-self:center;white-space:nowrap;}
+.tag-now{background:var(--sage);color:#fff;}
+.tag-soon{background:var(--slate);color:#fff;}
+.tag-later{background:var(--gold);color:#fff;}
+.tag-adv{background:var(--purple);color:#fff;}
+.phase-body{padding:22px 24px;}
+.phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:600px){.phase-cols{grid-template-columns:1fr;}}
+.col-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.col-title.blue{color:var(--slate);}
+.col-title.red{color:var(--rust);}
+.col-title.green{color:var(--sage);}
+ul.items{list-style:none;}
+ul.items li{font-size:13.5px;padding:5px 0 5px 20px;position:relative;border-bottom:1px solid var(--rule);line-height:1.55;}
+ul.items li:last-child{border-bottom:none;}
+ul.items li::before{content:'›';position:absolute;left:0;color:var(--gold);font-size:17px;top:4px;}
+ul.items li strong{font-weight:600;}
+ul.items li .note{display:block;font-size:12px;color:var(--dim);margin-top:2px;font-style:italic;}
+.phase-goal{background:var(--paper3);border-radius:4px;padding:12px 16px;font-size:13.5px;margin-top:18px;line-height:1.65;}
+.phase-goal strong{color:var(--gold);}
+
+/* STRATEGY CARD */
+.strat{border:1px solid var(--rule);border-radius:6px;margin-bottom:22px;overflow:hidden;}
+.strat-header{background:var(--paper2);padding:14px 20px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px;}
+.strat-icon{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;}
+.si-green{background:var(--green-bg);color:var(--sage);}
+.si-blue{background:var(--blue-bg);color:var(--slate);}
+.si-gold{background:var(--gold-bg);color:var(--gold);}
+.si-red{background:var(--red-bg);color:var(--rust);}
+.strat-name{font-size:16px;font-weight:700;}
+.strat-name small{font-size:12px;font-weight:400;color:var(--dim);margin-left:8px;}
+.strat-body{padding:20px 22px;}
+.strat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px;}
+@media(max-width:650px){.strat-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:400px){.strat-grid{grid-template-columns:1fr;}}
+.param{background:var(--paper2);border-radius:4px;padding:12px 14px;}
+.param-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.param-val{font-size:15px;font-weight:700;color:var(--ink);}
+.param-note{font-size:11.5px;color:var(--dim);margin-top:3px;}
+
+/* CHECKLIST */
+.checklist{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:18px 22px;margin:16px 0;}
+.checklist-title{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13.5px;}
+.check-item:last-child{border-bottom:none;}
+.cb{width:18px;height:18px;border:1.5px solid var(--dim);border-radius:3px;flex-shrink:0;margin-top:2px;}
+.check-q{flex:1;line-height:1.55;}
+.check-q .fill{font-size:11px;font-weight:600;color:var(--slate);background:var(--blue-bg);padding:1px 7px;border-radius:2px;margin-left:6px;}
+
+/* ALERT / NOTICE */
+.alert{background:var(--red-bg);border-left:3px solid var(--rust);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.alert-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--rust);margin-bottom:6px;}
+.alert p{font-size:13.5px;line-height:1.65;}
+.notice{background:var(--green-bg);border-left:3px solid var(--sage);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.notice-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--sage);margin-bottom:6px;}
+.notice p{font-size:13.5px;line-height:1.65;}
+.info{background:var(--blue-bg);border-left:3px solid var(--slate);padding:16px 20px;margin:18px 0;border-radius:0 5px 5px 0;}
+.info-head{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;}
+.info p{font-size:13.5px;line-height:1.65;}
+
+/* RISK TABLE */
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;}
+@media(max-width:600px){.risk-grid{grid-template-columns:1fr 1fr;}}
+.risk-card{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;position:relative;padding-left:52px;}
+.risk-n{position:absolute;left:14px;top:14px;font-size:26px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--ink);line-height:1;}
+.risk-title{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+.risk-desc{font-size:12.5px;color:var(--dim);line-height:1.5;margin-bottom:6px;}
+.risk-val{font-size:12px;font-weight:700;color:var(--rust);background:var(--red-bg);padding:3px 8px;border-radius:3px;display:inline-block;}
+
+/* REGIME TABLE */
+table.regime{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+table.regime th{background:var(--paper3);padding:9px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);}
+table.regime td{padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top;}
+table.regime tr:last-child td{border-bottom:none;}
+table.regime tr:nth-child(even){background:rgba(0,0,0,0.02);}
+.regime-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:0.04em;}
+.rt-sell{background:var(--green-bg);color:var(--sage);}
+.rt-buy{background:var(--blue-bg);color:var(--slate);}
+.rt-wait{background:var(--gold-bg);color:var(--gold);}
+.rt-iron{background:rgba(90,63,160,0.08);color:var(--purple);}
+.rt-reduce{background:var(--red-bg);color:var(--rust);}
+
+/* ROUTINE */
+.routine{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:14px 0;}
+.routine-row{display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--rule);}
+.routine-row:last-child{border-bottom:none;}
+.routine-time{background:var(--paper3);padding:14px 16px;font-size:12px;font-weight:700;color:var(--dim);display:flex;align-items:flex-start;}
+.routine-content{padding:14px 18px;}
+.routine-content strong{font-size:14px;font-weight:700;}
+.routine-content p{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.6;}
+.r-tag{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-left:8px;}
+.r-analyze{background:var(--blue-bg);color:var(--slate);}
+.r-trade{background:var(--green-bg);color:var(--sage);}
+.r-review{background:var(--gold-bg);color:var(--gold);}
+.r-rule{background:var(--red-bg);color:var(--rust);}
+
+/* JOURNAL */
+table.journal{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0;min-width:600px;}
+table.journal th{background:var(--paper3);padding:8px 10px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);white-space:nowrap;}
+table.journal td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top;font-size:12px;color:var(--dim);font-style:italic;}
+.scroll-wrap{overflow-x:auto;}
+
+/* NRA BOX */
+.nra-box{border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:14px 0;}
+.nra-row{display:grid;grid-template-columns:180px 1fr;border-bottom:1px solid var(--rule);}
+.nra-row:last-child{border-bottom:none;}
+.nra-label{background:var(--paper2);padding:12px 16px;font-size:13px;font-weight:700;}
+.nra-val{padding:12px 16px;font-size:13px;line-height:1.6;}
+.ok{color:var(--sage);font-weight:700;}
+.warn{color:var(--rust);font-weight:700;}
+.neutral{color:var(--slate);font-weight:700;}
+
+/* BOOKS */
+.book-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:600px){.book-list{grid-template-columns:1fr;}}
+.book{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;gap:14px;}
+.book-order{font-size:28px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--gold);min-width:36px;line-height:1;}
+.book-title{font-size:14px;font-weight:700;}
+.book-author{font-size:12px;color:var(--dim);margin-top:2px;}
+.book-when{font-size:11px;font-weight:700;color:var(--slate);margin-top:4px;}
+.book-note{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5;}
+
+/* TOOLS */
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0;}
+@media(max-width:600px){.tools{grid-template-columns:1fr 1fr;}}
+.tool{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:14px;}
+.tool-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.tool-type{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.tool-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+
+/* MILESTONES */
+.milestones{position:relative;padding-left:36px;}
+.milestones::before{content:'';position:absolute;left:12px;top:20px;bottom:20px;width:1.5px;background:var(--rule);}
+.ms{position:relative;margin-bottom:28px;}
+.ms-dot{position:absolute;left:-30px;top:3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--dim);background:var(--paper);}
+.ms-dot.done{background:var(--sage);border-color:var(--sage);}
+.ms-dot.active{background:var(--slate);border-color:var(--slate);box-shadow:0 0 0 3px rgba(46,79,120,0.15);}
+.ms-month{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:3px;}
+.ms-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.ms-desc{font-size:13px;color:var(--dim);line-height:1.6;}
+
+/* CODE BLOCK */
+.code{background:var(--paper3);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;font-family:monospace;font-size:13px;margin:14px 0;line-height:1.7;white-space:pre-wrap;}
+
+/* FORMULA */
+.formula{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px 20px;margin:16px 0;text-align:center;font-size:18px;font-weight:700;letter-spacing:0.02em;}
+.formula small{display:block;font-size:12px;font-weight:400;color:var(--dim);margin-top:6px;}
+
+/* GREEK CARDS */
+.greek-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0;}
+@media(max-width:700px){.greek-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:440px){.greek-grid{grid-template-columns:repeat(2,1fr);}}
+.greek{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:14px;text-align:center;}
+.greek-sym{font-size:28px;font-weight:900;margin-bottom:4px;}
+.greek-name{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.greek-def{font-size:12px;color:var(--dim);line-height:1.5;text-align:left;}
+.greek-key{font-size:11px;font-weight:700;margin-top:6px;padding:3px 7px;border-radius:3px;display:inline-block;}
+
+/* SPX DECISION TREE */
+.decision{background:var(--blue-bg);border:1px solid rgba(46,79,120,0.2);border-radius:6px;padding:16px 20px;margin:16px 0;}
+.d-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate);margin-bottom:12px;}
+.d-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;font-size:13.5px;}
+.d-cond{font-weight:700;min-width:180px;}
+.d-arrow{color:var(--slate);font-weight:700;}
+
+/* ROLLING */
+.roll-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:600px){.roll-cards{grid-template-columns:1fr;}}
+.roll{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;}
+.roll-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.roll-when{font-size:11px;font-weight:700;color:var(--slate);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;}
+.roll-desc{font-size:12.5px;color:var(--dim);line-height:1.6;}
+.roll-example{font-size:12px;color:var(--slate);background:var(--blue-bg);padding:8px 10px;border-radius:4px;margin-top:10px;font-style:italic;}
+
+/* PSYCHOLOGY */
+.psych-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:550px){.psych-grid{grid-template-columns:1fr;}}
+.psych{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;}
+.psych-title{font-size:13.5px;font-weight:700;margin-bottom:8px;}
+.psych-body{font-size:12.5px;color:var(--dim);line-height:1.65;}
+
+/* PORTFOLIO */
+.port-table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+.port-table th{background:var(--paper3);padding:9px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule);}
+.port-table td{padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top;}
+.port-table tr:last-child td{border-bottom:none;}
+
+/* FUND LADDER */
+.ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0;}
+@media(max-width:550px){.ladder{grid-template-columns:1fr;}}
+.ladder-step{background:var(--paper2);border:1px solid var(--rule);border-radius:6px;padding:16px;position:relative;}
+.l-num{font-size:36px;font-weight:900;color:var(--paper3);-webkit-text-stroke:1px var(--ink);position:absolute;top:10px;right:12px;line-height:1;}
+.l-phase{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.l-amount{font-size:18px;font-weight:800;margin-bottom:6px;}
+.l-detail{font-size:12.5px;color:var(--dim);line-height:1.6;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--rule);margin:56px 0;}
+
+/* FOOTER */
+.footer{text-align:center;font-size:12px;color:var(--dim);margin-top:32px;line-height:1.8;}
+</style>
 </head>
 <body>
-<div class="layout-wrapper">
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
-    <div class="logo-title">学习 期权增强<br>操作手册</div>
-    <div class="logo-ver">终极版 · 36周</div>
-  </div>
-  <div class="nav-section-label">学习阶段</div>
-  <a href="#s0" class="nav-item">阶段0 · 合规基建</a>
-  <a href="#s1" class="nav-item">阶段1 · 期权认知重构</a>
-  <a href="#s2" class="nav-item">阶段2 · 核心策略体系</a>
-  <a href="#s3" class="nav-item">阶段3 · Rolling管理</a>
-  <a href="#s4" class="nav-item">阶段4 · 实盘验证</a>
-  <a href="#s5" class="nav-item">阶段5 · 组合管理</a>
-  <div class="nav-section-label">参考资料</div>
-  <a href="#risk" class="nav-item">六大风控铁律</a>
-  <a href="#regime" class="nav-item">市场状态识别</a>
-  <a href="#nra" class="nav-item">NRA税务要点</a>
-  <a href="#routine" class="nav-item">交易日程</a>
-  <a href="#journal" class="nav-item">日志模板</a>
-  <a href="#milestone" class="nav-item">12月里程碑</a>
-  <a href="#books" class="nav-item">书单</a>
-  <a href="#tools" class="nav-item">工具清单</a>
-</nav>
-<main class="main-content">
-<div >
+<div class="page">
 
 <!-- MASTHEAD -->
-<div class="hero">
-  <div class="hero-eyebrow">新加坡 NRA 优化版 · IBKR 实操导向 · 36周完整体系</div>
-  <h1>美股期权<br>从零到实盘的完整学习与交易系统</h1>
-  <p class="hero-sub">本计划覆盖认知重构、策略体系、Rolling管理、组合级风控、心理建设与税务优化，共六大阶段36周。</p>
-  <div class="hero-meta">
-    <div class="hero-meta-item"><span class="label">学习周期</span><span class="value">36周</span></div>
-    <div class="hero-meta-item"><span class="label">阶段数</span><span class="value">6大阶段</span></div>
-    <div class="hero-meta-item"><span class="label">版本</span><span class="value">2026 最终版</span></div>
-    <div class="hero-meta-item"><span class="label">优化版本</span><span class="value">新加坡NRA</span></div>
+<div class="masthead">
+  <div class="badge-line">
+    <span class="badge badge-g">新加坡 NRA 优化版</span>
+    <span class="badge badge-b">IBKR 实操导向</span>
+    <span class="badge badge-o">36周完整体系</span>
+    <span class="badge badge-r">2026 最终版</span>
   </div>
-</div>
-
-<h1>美股期权<br><span class="sub">从零到实盘的完整学习与交易系统</span></h1>
+  <h1>美股期权<br><span class="sub">从零到实盘的完整学习与交易系统</span></h1>
   <p class="intro">本计划整合七大AI方案精华，覆盖认知重构、策略体系、Rolling管理、组合级风控、心理建设与税务优化，共六大阶段36周。每个模块都有可直接执行的操作清单与验收标准，不是"教你学知识"，而是帮你建立一套能<strong>长期稳定赚钱的交易系统</strong>。</p>
 </div>
 
-<div class="toc-grid">
-    <div class="toc-item"><a class="nav-item" href="#s0">阶段0：合规基建与账户配置</a><span class="toc-num">第1周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#s1">阶段1：期权认知重构</a><span class="toc-num">第2–5周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#s2">阶段2：核心策略体系</a><span class="toc-num">第6–12周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#s3">阶段3：Rolling管理系统</a><span class="toc-num">第13–15周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#s4">阶段4：实盘验证与心理建设</a><span class="toc-num">第16–22周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#s5">阶段5：组合管理与规模扩展</a><span class="toc-num">第23–36周</span></div>
-    <div class="toc-item"><a class="nav-item" href="#risk">六大风控铁律</a><span class="toc-num">全程遵守</span></div>
-    <div class="toc-item"><a class="nav-item" href="#regime">市场状态识别系统</a><span class="toc-num">全程遵守</span></div>
-    <div class="toc-item"><a class="nav-item" href="#nra">NRA税务要点</a><span class="toc-num">合规必读</span></div>
-    <div class="toc-item"><a class="nav-item" href="#routine">新加坡时区交易日程</a><span class="toc-num">每日执行</span></div>
-    <div class="toc-item"><a class="nav-item" href="#journal">交易日志模板</a><span class="toc-num">每笔记录</span></div>
-    <div class="toc-item"><a class="nav-item" href="#milestone">12个月里程碑</a><span class="toc-num">检查点</span></div>
-    <div class="toc-item"><a class="nav-item" href="#books">按阶段书单</a><span class="toc-num">配套阅读</span></div>
-    <div class="toc-item"><a class="nav-item" href="#tools">必备工具清单</a><span class="toc-num">全部免费</span></div>
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <div class="toc-grid">
+    <div class="toc-item"><a href="#s0">阶段0：合规基建与账户配置</a><span class="toc-num">第1周</span></div>
+    <div class="toc-item"><a href="#s1">阶段1：期权认知重构</a><span class="toc-num">第2–5周</span></div>
+    <div class="toc-item"><a href="#s2">阶段2：核心策略体系</a><span class="toc-num">第6–12周</span></div>
+    <div class="toc-item"><a href="#s3">阶段3：Rolling管理系统</a><span class="toc-num">第13–15周</span></div>
+    <div class="toc-item"><a href="#s4">阶段4：实盘验证与心理建设</a><span class="toc-num">第16–22周</span></div>
+    <div class="toc-item"><a href="#s5">阶段5：组合管理与规模扩展</a><span class="toc-num">第23–36周</span></div>
+    <div class="toc-item"><a href="#risk">六大风控铁律</a><span class="toc-num">全程遵守</span></div>
+    <div class="toc-item"><a href="#regime">市场状态识别系统</a><span class="toc-num">全程遵守</span></div>
+    <div class="toc-item"><a href="#nra">NRA税务要点</a><span class="toc-num">合规必读</span></div>
+    <div class="toc-item"><a href="#routine">新加坡时区交易日程</a><span class="toc-num">每日执行</span></div>
+    <div class="toc-item"><a href="#journal">交易日志模板</a><span class="toc-num">每笔记录</span></div>
+    <div class="toc-item"><a href="#milestone">12个月里程碑</a><span class="toc-num">检查点</span></div>
+    <div class="toc-item"><a href="#books">按阶段书单</a><span class="toc-num">配套阅读</span></div>
+    <div class="toc-item"><a href="#tools">必备工具清单</a><span class="toc-num">全部免费</span></div>
   </div>
 </div>
 
@@ -137,12 +374,12 @@
     </div>
     <div class="phase-body">
 
-      <div class="formula-box">
+      <div class="formula">
         期权价格 ≈ 内在价值 + 时间价值
         <small>内在价值 = max(S − K, 0)（Call）或 max(K − S, 0)（Put）；时间价值受 IV、DTE、Gamma 影响</small>
       </div>
 
-      <div class="formula-box">
+      <div class="formula">
         持仓盈亏 ≈ Δ · ΔS &nbsp;+&nbsp; Θ · Δt &nbsp;+&nbsp; V · ΔIV
         <small>方向贡献 + 时间贡献 + 波动率贡献 &nbsp;—&nbsp; 每笔交易前都要能拆解这三个来源</small>
       </div>
@@ -1136,8 +1373,5 @@
 </div>
 
 </div>
-</main>
-</div>
-<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

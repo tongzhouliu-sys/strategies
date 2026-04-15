@@ -1,50 +1,876 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AAPL 期权增强策略 · 客户操作手册 V3.0</title>
-<link rel="stylesheet" href="css/strategy.css">
+<title>AAPL 波动率溢价增强策略 — 机构级操作手册 V3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+  .term:hover::after { opacity: 1; }
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+  .nav-item .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 8px;
+  }
+  .nav-item.active .num { color: var(--gold); }
+
+  .sidebar-footer {
+    padding: 20px 24px 0;
+    margin-top: 24px;
+    border-top: 1px solid var(--navy-border);
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* Mobile toggle */
+  .menu-toggle { display: none; }
+  .sidebar-overlay { display: none; }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .hero::before {
+    content: 'AAPL';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION STYLES
+  ═══════════════════════════════════════════ */
+  .section { margin-bottom: 56px; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+  strong { color: var(--text-primary); }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card h4 { margin-top: 0; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .card-accent {
+    background: linear-gradient(135deg, var(--navy-card), rgba(201,168,76,0.04));
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+  }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .card-value { font-family: 'DM Mono', monospace; color: var(--gold-light); }
+  .card-value-md { font-size: 17px; font-weight: 500; margin-bottom: 8px; color: var(--text-primary); font-family: 'Playfair Display', serif; }
+  .card-note { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .card-note.em { font-style: italic; }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+  .stat-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .callout-title {
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .callout p { margin: 0; }
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+  .callout.danger .callout-title { color: var(--red); }
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+  .callout.warning .callout-title { color: var(--orange); }
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+  .callout.info .callout-title { color: var(--blue); }
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+  .callout.success .callout-title { color: var(--green); }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .tbl-wrap, .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead tr, table > tr:first-child {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tr { border-bottom: 1px solid rgba(36,59,85,0.6); transition: background 0.15s; }
+  tr:last-child { border-bottom: none; }
+  tbody tr:hover, tr:not(:first-child):hover { background: rgba(255,255,255,0.025); }
+  td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  /* State row colors */
+  tr.state-a td:first-child { color: var(--green); }
+  tr.state-b td:first-child { color: var(--blue); }
+  tr.state-c td:first-child { color: var(--orange); }
+  tr.state-d td:first-child { color: var(--red); }
+
+  /* ═══════════════════════════════════════════
+     BADGES
+  ═══════════════════════════════════════════ */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange, .badge-amber {
+                  background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold   { background: var(--gold-dim);   color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-navy   { background: rgba(36,59,85,0.4); color: var(--text-secondary); border: 1px solid var(--navy-border); }
+  .badge-gray   { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     STATE PILLS
+  ═══════════════════════════════════════════ */
+  .state-pill {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+  }
+  .pill-a { background: rgba(92,184,122,0.15); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .pill-b { background: rgba(91,141,200,0.15); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .pill-c { background: rgba(224,123,60,0.15); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .pill-d { background: rgba(224,92,92,0.15); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula, .formula-box {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2.2;
+  }
+  .formula .f-comment, .formula-box .comment {
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    display: block;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER BLOCKS
+  ═══════════════════════════════════════════ */
+  .breaker {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    border: 1px solid;
+  }
+  .breaker-l1 { background: var(--yellow-dim); border-color: rgba(212,184,74,0.3); }
+  .breaker-l2 { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .breaker-l3 { background: var(--red-dim);    border-color: rgba(224,92,92,0.35); }
+
+  .breaker-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .breaker-l1 .breaker-head { color: var(--yellow); }
+  .breaker-l2 .breaker-head { color: var(--orange); }
+  .breaker-l3 .breaker-head { color: var(--red); }
+
+  .breaker-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .breaker-l1 .breaker-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .breaker-l2 .breaker-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .breaker-l3 .breaker-dot { background: var(--red);    box-shadow: 0 0 8px var(--red); }
+
+  .breaker-body { font-size: 13.5px; line-height: 1.75; }
+  .breaker-l1 .breaker-body { color: #EAE0A0; }
+  .breaker-l2 .breaker-body { color: #F0C0A0; }
+  .breaker-l3 .breaker-body { color: #F0A0A0; }
+  .breaker-body p { margin-bottom: 8px; color: inherit; }
+  .breaker-body p:last-child { margin-bottom: 0; }
+  .breaker-body strong { color: inherit; font-weight: 700; }
+
+  /* ═══════════════════════════════════════════
+     ALLOCATION BAR
+  ═══════════════════════════════════════════ */
+  .alloc-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--navy-border);
+    margin: 12px 0 8px;
+  }
+  .alloc-segment { height: 100%; }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+  .ck-box {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     ORDERED STEPS LIST
+  ═══════════════════════════════════════════ */
+  ol.steps {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    counter-reset: steps;
+  }
+  ol.steps > li {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: border-color 0.15s;
+  }
+  ol.steps > li:hover { border-color: rgba(201,168,76,0.25); }
+  ol.steps > li::before {
+    content: counter(steps);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  ol.steps > li p { margin: 0; color: inherit; }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines, ul.redline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+  }
+  .redline-item, ul.redline-list > li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    color: #F0A0A0;
+    line-height: 1.6;
+  }
+  .redline-num, .rl-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .redline-text { font-size: 13.5px; color: #F0A0A0; line-height: 1.6; }
+
+  /* ═══════════════════════════════════════════
+     SIGNATURE BLOCK
+  ═══════════════════════════════════════════ */
+  .sig-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--navy-border);
+  }
+  .sig-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .sig-line {
+    border-bottom: 1px solid var(--navy-border);
+    margin: 24px 0 10px;
+  }
+
+  /* ═══════════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════════ */
+  .mono { font-family: 'DM Mono', monospace; font-size: 13px; }
+  .highlight { color: var(--gold-light); font-weight: 500; }
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.bullets li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  ul.bullets li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 11px;
+    top: 3px;
+  }
+
+  ul { padding-left: 20px; color: var(--text-secondary); }
+  ul li { line-height: 2; font-size: 14px; }
+
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+  .disclaimer strong { color: var(--text-secondary); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .sidebar.open { display: block; position: fixed; z-index: 100; top: 0; left: 0; height: 100vh; }
+    .sidebar-overlay.open {
+      display: block;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+    .menu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 101;
+      width: 48px; height: 48px;
+      background: var(--gold);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--navy);
+      box-shadow: var(--shadow);
+    }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .sig-block { grid-template-columns: 1fr; }
+    .hero { padding: 28px 24px; }
+    .hero h1 { font-size: 24px; }
+  }
+  @media print {
+    .sidebar, .menu-toggle { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+</style>
 </head>
 <body>
+<div class="layout">
 
-<div class="layout-wrapper">
+<button class="menu-toggle" id="menuToggle" aria-label="打开导航">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- ───── SIDEBAR ───── -->
-<nav class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
-    <div class="logo-title">AAPL 期权<br>增强策略</div>
+    <span class="logo-tag">Client Manual · AAPL</span>
+    <div class="logo-title">期权增强策略<br>操作手册</div>
     <div class="logo-ver">综合版 V3.0 · 2026-04-02</div>
   </div>
 
   <div class="nav-section-label">策略概览</div>
-    <a href="#s0" class="nav-item">00 · 策略总览</a>
-    <a href="#s1" class="nav-item">01 · 税务与合规</a>
-    <a href="#s2" class="nav-item">02 · 资金分配铁律</a>
+  <a class="nav-item" href="#s0"><span class="num">00</span>策略总览</a>
+  <a class="nav-item" href="#s1"><span class="num">01</span>税务与合规</a>
+  <a class="nav-item" href="#s2"><span class="num">02</span>资金分配铁律</a>
 
-    <div class="nav-section-label">决策引擎</div>
-    <a href="#s3" class="nav-item">03 · 市场状态引擎</a>
-    <a href="#s4" class="nav-item">04 · 财报周专属规程</a>
-    <a href="#s5" class="nav-item">05 · 三因子量化模型</a>
-    <a href="#s6" class="nav-item">06 · Delta矩阵与EV门槛</a>
+  <div class="nav-section-label">决策引擎</div>
+  <a class="nav-item" href="#s3"><span class="num">03</span>市场状态引擎</a>
+  <a class="nav-item" href="#s4"><span class="num">04</span>财报周专属规程</a>
+  <a class="nav-item" href="#s5"><span class="num">05</span>三因子量化模型</a>
+  <a class="nav-item" href="#s6"><span class="num">06</span>Delta矩阵与EV门槛</a>
 
-    <div class="nav-section-label">执行与管理</div>
-    <a href="#s7" class="nav-item">07 · 月度执行流程</a>
-    <a href="#s8" class="nav-item">08 · 持仓管理规则</a>
-    <a href="#s9" class="nav-item">09 · 三级熔断机制</a>
+  <div class="nav-section-label">执行与管理</div>
+  <a class="nav-item" href="#s7"><span class="num">07</span>月度执行流程</a>
+  <a class="nav-item" href="#s8"><span class="num">08</span>持仓管理规则</a>
+  <a class="nav-item" href="#s9"><span class="num">09</span>三级熔断机制</a>
 
-    <div class="nav-section-label">绩效与纪律</div>
-    <a href="#s10" class="nav-item">10 · 绩效追踪与台账</a>
-    <a href="#s11" class="nav-item">11 · 心理纪律红线</a>
-    <a href="#s12" class="nav-item">12 · 签署确认</a>
+  <div class="nav-section-label">绩效与纪律</div>
+  <a class="nav-item" href="#s10"><span class="num">10</span>绩效追踪与台账</a>
+  <a class="nav-item" href="#s11"><span class="num">11</span>心理纪律红线</a>
+  <a class="nav-item" href="#s12"><span class="num">12</span>签署确认</a>
 
-</nav>
+  <div class="sidebar-footer">
+    保密文件 · 仅供客户本人使用<br>
+    期权交易存在本金损失风险
+  </div>
+</aside>
 
 <!-- ───── MAIN ───── -->
-<main class="main-content">
+<main class="main">
 
-<!-- ── HERO ── -->
+<!-- ── HERO HEADER ── -->
 <div class="hero">
   <div class="hero-eyebrow">AAPL OPTIONS ENHANCEMENT STRATEGY · PROFESSIONAL EDITION</div>
   <h1>苹果公司期权增强策略<br>客户操作手册</h1>
@@ -79,57 +905,55 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s0">
   <div class="section-header">
-      <span class="section-num">00</span>
-      <div>
-        <div class="section-title">策略总览</div>
-      </div>
-    </div>
+    <span class="section-num">§ 00</span>
+    <h2>策略总览</h2>
+  </div>
 
   <p>本策略的核心定位是：扮演一家小型<span class="term" data-tip="波动率（Volatility）：衡量标的资产价格变动幅度的指标。波动率越高，期权权利金越贵。本策略通过卖出期权来&quot;出售&quot;这种波动率。">波动率</span>保险公司。您的收益来源不是预测AAPL涨跌，而是系统性地向市场出售期权"保费"，赚取<span class="term" data-tip="Theta（时间价值衰减）：期权每过一天自然损失的价值量。对于期权卖方而言，时间流逝是盈利的。例如一份DTE 45天的期权，每日约损失1/45的时间价值。">Theta</span>衰减与<span class="term" data-tip="波动率风险溢价（VRP）：隐含波动率（IV）长期高于已实现波动率（HV）的现象，是期权市场的系统性定价偏差，卖方策略的核心利润来源。">波动率溢价</span>。</p>
 
   <h3>策略三层架构</h3>
-  <div class="card-grid">
-    <div class="card">
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card card-accent">
       <div class="card-label">第一层</div>
-      <div class="card-value" style="font-size:17px;">AAPL多头底仓</div>
-      <div class="card-note" style="margin-top:8px;font-size:12.5px;color:var(--text-secondary);">持有或合成持有AAPL，捕获长期上涨收益。小资金持正股（≤$6万），大资金用合成多头替代。</div>
+      <div class="card-value card-value-md">AAPL多头底仓</div>
+      <div class="card-note em">持有或合成持有AAPL，捕获长期上涨收益。小资金持正股（≤$6万），大资金用合成多头替代。</div>
     </div>
-    <div class="card">
+    <div class="card card-accent">
       <div class="card-label">第二层</div>
-      <div class="card-value" style="font-size:17px;">期权卖方增强</div>
-      <div class="card-note" style="margin-top:8px;font-size:12.5px;color:var(--text-secondary);">系统性卖出虚值Put价差 + 备兑Call，收取权利金，在时间流逝中稳定积累现金流。</div>
+      <div class="card-value card-value-md">期权卖方增强</div>
+      <div class="card-note em">系统性卖出虚值Put价差 + 备兑Call，收取权利金，在时间流逝中稳定积累现金流。</div>
     </div>
-    <div class="card">
+    <div class="card card-accent">
       <div class="card-label">第三层</div>
-      <div class="card-value" style="font-size:17px;">多层风控护盾</div>
-      <div class="card-note" style="margin-top:8px;font-size:12.5px;color:var(--text-secondary);">三级熔断 + 财报静默期 + 保证金硬约束，确保极端行情下资本安全，长期参与市场。</div>
+      <div class="card-value card-value-md">多层风控护盾</div>
+      <div class="card-note em">三级熔断 + 财报静默期 + 保证金硬约束，确保极端行情下资本安全，长期参与市场。</div>
     </div>
   </div>
 
   <h3>真实收益预期（税后净值）</h3>
   <div class="callout warning">
-    <span class="callout-icon">⚠</span>
-      <div><strong>重要说明：收益预期已含税务与成本扣除</strong>
-    <p>市面部分资料所称"年化12–18%"为税前、未扣成本的乐观估算，对NRA客户存在误导。以下数据已扣除NRA适用预扣税、交易摩擦成本及滑点。</p></div>
+    <div class="callout-title">⚠ 重要说明：收益预期已含税务与成本扣除</div>
+    <p>市面部分资料所称"年化12–18%"为税前、未扣成本的乐观估算，对NRA客户存在误导。以下数据已扣除NRA适用预扣税、交易摩擦成本及滑点。</p>
   </div>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>资金规模</th><th>策略重点</th><th>年化净收益目标（税后）</th><th>说明</th></tr>
+    <thead><tr><th>资金规模</th><th>策略重点</th><th>年化净收益目标（税后）</th><th>说明</th></tr></thead>
+    <tbody>
     <tr><td><strong>$15万–$50万</strong></td><td>正股备兑 + 卖Put价差</td><td><span class="badge badge-green">6–10%</span></td><td>含正股增值；期权贡献约4–6%</td></tr>
     <tr><td><strong>$50万–$200万</strong></td><td>合成多头 + 卖Put价差</td><td><span class="badge badge-green">5–9%</span></td><td>正股仓位受限，以权利金为主</td></tr>
     <tr><td><strong>$200万–$1000万</strong></td><td>全期权策略（无正股）</td><td><span class="badge badge-blue">4–8%</span></td><td>风险敞口最小，收益主要来自卖方溢价</td></tr>
+    </tbody>
   </table>
   </div>
 
   <h3>AAPL个股特性：五个关键认知</h3>
   <div class="callout info">
-    <span class="callout-icon">📌</span>
-      <div><strong>执行前必须牢记</strong>
+    <div class="callout-title">ℹ 执行前必须牢记</div>
     <p><strong>①</strong> AAPL是全球流动性最强的期权标的之一，<span class="term" data-tip="Bid-Ask Spread：买入价与卖出价之差。价差越窄，交易成本越低。AAPL期权价差通常仅$0.01–0.05，是卖方策略的理想标的。">买卖价差</span>极窄，适合做卖方。<br>
     <strong>②</strong> 财报前后存在明显<span class="term" data-tip="IV（Implied Volatility，隐含波动率）膨胀：财报前市场对不确定性的定价会推高IV，财报后IV迅速下降（Volatility Crush）。这是本策略的核心风险窗口。">IV膨胀</span>与<span class="term" data-tip="Volatility Crush：财报或重大事件后隐含波动率骤降的现象。对于期权卖方，若在财报前已持有虚值期权，Crush后仓位盈利加速。">Volatility Crush</span>，务必单独管理。<br>
     <strong>③</strong> 历史年化波动率约22–28%，但遭遇负面新闻时单日跌幅可达5–8%。<br>
     <strong>④</strong> VIX低于18时，Delta 0.15的30天备兑Call年化权利金收益约3–5%，不可期待更高。<br>
-    <strong>⑤</strong> AAPL长期上涨趋势明显，强势期坚决不卖<span class="term" data-tip="备兑看涨期权（Covered Call）：持有正股的同时卖出相同数量的看涨期权，收取权利金。在强势上涨时会限制上涨收益，需谨慎使用。">Covered Call</span>，避免牺牲牛市收益。</p></div>
+    <strong>⑤</strong> AAPL长期上涨趋势明显，强势期坚决不卖<span class="term" data-tip="备兑看涨期权（Covered Call）：持有正股的同时卖出相同数量的看涨期权，收取权利金。在强势上涨时会限制上涨收益，需谨慎使用。">Covered Call</span>，避免牺牲牛市收益。</p>
   </div>
 </section>
 
@@ -139,22 +963,20 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s1">
   <div class="section-header">
-      <span class="section-num">01</span>
-      <div>
-        <div class="section-title">税务与合规（NRA强制前置）</div>
-      </div>
-    </div>
+    <span class="section-num">§ 01</span>
+    <h2>税务与合规（NRA强制前置）</h2>
+  </div>
 
   <div class="callout danger">
-    <span class="callout-icon">🚫</span>
-      <div><strong>最高优先级：未获CPA书面确认前，禁止执行任何卖出期权操作</strong>
-    <p>以下税务条款须获得持牌注册会计师（CPA）书面确认后，方可执行完整策略。确认前仅允许持有现金/SGOV，或做极低仓位的AAPL备兑Call。</p></div>
+    <div class="callout-title">🚫 最高优先级：未获CPA书面确认前，禁止执行任何卖出期权操作</div>
+    <p>以下税务条款须获得持牌注册会计师（CPA）书面确认后，方可执行完整策略。确认前仅允许持有现金/SGOV，或做极低仓位的AAPL备兑Call。</p>
   </div>
 
   <h3>六项核心税务确认清单</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>#</th><th>确认事项</th><th>核心风险要点</th><th>未确认时限制</th></tr>
+    <thead><tr><th>#</th><th>确认事项</th><th>核心风险要点</th><th>未确认时限制</th></tr></thead>
+    <tbody>
     <tr>
       <td><strong>01</strong></td>
       <td><span class="term" data-tip="期权权利金是否被IRS认定为FDAP（固定可确定年度或周期性收入），若是，则须预扣30%。W-8BEN表可降低部分税务，但需CPA确认具体适用情形。">权利金预扣税</span></td>
@@ -191,27 +1013,32 @@
       <td>境外所得须年度汇算清缴申报，每笔交易记录人民币折算价</td>
       <td><span class="badge badge-amber">每笔记录CNY折算</span></td>
     </tr>
+    </tbody>
   </table>
   </div>
 
   <h3>遗产税处理方案（按资金规模）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>资金规模</th><th>推荐持仓架构</th><th>说明</th></tr>
+    <thead><tr><th>资金规模</th><th>推荐持仓架构</th><th>说明</th></tr></thead>
+    <tbody>
     <tr><td><strong>$15万–$60万</strong></td><td>可少量持有正股，市值严格 ≤ $60,000</td><td>安全区。其余资金用卖Put价差增强</td></tr>
     <tr><td><strong>$60万–$200万</strong></td><td>放弃正股，改用60/40混合架构：$60,000正股（锚定）+ 超宽Put价差模拟敞口</td><td>保留税务优惠同时规避大额遗产税风险</td></tr>
     <tr><td><strong>$200万以上</strong></td><td>全期权策略（无正股），或通过<span class="term" data-tip="离岸架构：通过在开曼群岛、BVI等地注册的离岸公司持有美国股票，公司作为法律主体不适用NRA遗产税规则。设立成本约$3,000–$8,000/年，需专业律师配合。">离岸架构</span>持有</td><td>正股遗产税风险过高，必须完全规避</td></tr>
+    </tbody>
   </table>
   </div>
 
   <h3>账户配置要求</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>配置项</th><th>要求</th><th>说明</th></tr>
+    <thead><tr><th>配置项</th><th>要求</th><th>说明</th></tr></thead>
+    <tbody>
     <tr><td>交易平台</td><td><strong>IBKR（Interactive Brokers）</strong></td><td>支持NRA开户、期权Level 4权限、Reg T保证金</td></tr>
     <tr><td>期权权限</td><td>Level 4（含价差交易）</td><td>本策略所有卖出期权均以价差结构执行</td></tr>
     <tr><td>账户类型</td><td><span class="term" data-tip="Reg T（Regulation T）保证金：美联储规定的标准保证金账户规则，期权买入方需全额支付，卖方需维持一定保证金比例。相比Portfolio Margin，Reg T更保守，风控纪律更强，适合本策略。">Reg T</span>保证金账户</td><td>不建议使用Portfolio Margin，风控纪律更强</td></tr>
     <tr><td><strong>绝对禁止</strong></td><td>裸卖Put、保证金使用率 &gt; 60%</td><td>一票否决，无论任何行情</td></tr>
+    </tbody>
   </table>
   </div>
 </section>
@@ -222,42 +1049,41 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s2">
   <div class="section-header">
-      <span class="section-num">02</span>
-      <div>
-        <div class="section-title">资金分配铁律</div>
-      </div>
-    </div>
+    <span class="section-num">§ 02</span>
+    <h2>资金分配铁律</h2>
+  </div>
 
   <p>每季度再平衡一次，任何时间点的实际分配均不得超出以下硬性边界。现金垫是整个策略的生命线——它同时是保证金担保品、极端行情的缓冲垫，以及下次机会的火药。</p>
 
   <div class="alloc-bar">
     <div class="alloc-segment" style="width:32%;background:var(--green);"></div>
-    <div class="alloc-segment" style="width:30%;background:var(--navy);"></div>
-    <div class="alloc-segment" style="width:23%;background:var(--gold);"></div>
-    <div class="alloc-segment" style="width:15%;background:var(--border);"></div>
+    <div class="alloc-segment" style="width:28%;background:rgba(91,141,200,0.5);"></div>
+    <div class="alloc-segment" style="width:25%;background:var(--gold);"></div>
+    <div class="alloc-segment" style="width:15%;background:var(--navy-border);"></div>
   </div>
-  <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:16px;">
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px;"></span>现金/SGOV ≥30%</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--navy);border-radius:2px;margin-right:4px;"></span>AAPL底仓 ≤$6万</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px;"></span>卖Put价差 ≤25%</span>
-    <span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;margin-right:4px;"></span>灵活缓冲</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:20px;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>现金/SGOV ≥30%</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:rgba(91,141,200,0.5);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>AAPL底仓 ≤$6万</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>卖Put价差 ≤25%</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--navy-border);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>灵活缓冲</span>
   </div>
 
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>资金桶</th><th>目标占比</th><th>工具</th><th>硬性约束</th></tr>
+    <thead><tr><th>资金桶</th><th>目标占比</th><th>工具</th><th>硬性约束</th></tr></thead>
+    <tbody>
     <tr><td><strong>现金 + SGOV（流动性底层）</strong></td><td><span class="badge badge-green">≥ 30%</span></td><td><span class="term" data-tip="SGOV是追踪0-3个月美国国债收益的ETF，相当于高流动性货币市场工具，年化收益约4.5–5.5%，在策略等待期间可获取无风险利率，同时可作为期权保证金担保品。">SGOV</span> / BIL / 现金</td><td>永不低于25%；作为担保品和紧急缓冲</td></tr>
     <tr><td><strong>AAPL核心底仓</strong></td><td>≤ 市值$60,000</td><td>AAPL正股 / 合成替代</td><td>遗产税硬红线；大资金用合成多头</td></tr>
     <tr><td><strong>卖Put价差（核心增强层）</strong></td><td><span class="badge badge-amber">≤ 25%保证金占用</span></td><td><span class="term" data-tip="牛市看跌价差（Bull Put Spread）：同时卖出高行权价Put + 买入低行权价Put，最大亏损被限定为价差宽度减去收到的权利金，是本策略的核心卖方结构，相比裸卖Put大幅降低风险。">Bull Put Spread</span></td><td>名义敞口（行权价×合约×100）≤ 净值50%</td></tr>
     <tr><td><strong>备兑Call（辅助增强层）</strong></td><td>与底仓联动</td><td><span class="term" data-tip="备兑看涨期权（Covered Call）：已持有正股情况下卖出看涨期权。始终保持100%备兑（即卖出数量不超过持仓），严禁裸卖Call。">Covered Call</span></td><td>始终100%备兑；严禁裸Call</td></tr>
     <tr><td><strong>灵活缓冲</strong></td><td>剩余部分</td><td>SGOV / 现金</td><td>应对追加保证金、机动开仓；禁止用于加仓</td></tr>
+    </tbody>
   </table>
   </div>
 
   <div class="callout warning">
-    <span class="callout-icon">⚠</span>
-      <div><strong>最大亏损必须事先以资金覆盖</strong>
-    <p>所有价差结构的<strong>最大亏损 = （卖出行权价 − 买入行权价）× 100 × 张数 − 已收权利金</strong>。开仓前必须确认现金余额可完全覆盖极端被行权情况，不可依赖保证金贷款支付极端损失。</p></div>
+    <div class="callout-title">⚠ 最大亏损必须事先以资金覆盖</div>
+    <p>所有价差结构的<strong>最大亏损 = （卖出行权价 − 买入行权价）× 100 × 张数 − 已收权利金</strong>。开仓前必须确认现金余额可完全覆盖极端被行权情况，不可依赖保证金贷款支付极端损失。</p>
   </div>
 </section>
 
@@ -267,21 +1093,20 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s3">
   <div class="section-header">
-      <span class="section-num">03</span>
-      <div>
-        <div class="section-title">市场状态引擎</div>
-      </div>
-    </div>
+    <span class="section-num">§ 03</span>
+    <h2>市场状态引擎</h2>
+  </div>
 
   <p>每周一美东时间9:00–9:30执行状态判定，本周所有开仓决策由此驱动。状态D具有一票否决权：状态D下任何开仓指令自动无效，无论其他因子得分如何。</p>
 
   <h3>四状态定义矩阵（AAPL专用）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>状态</th><th>技术判定条件（需同时满足）</th><th>VIX参考</th><th>AAPL IVR参考</th><th>策略基调</th><th>开仓系数</th></tr>
+    <thead><tr><th>状态</th><th>技术判定条件（需同时满足）</th><th>VIX参考</th><th>AAPL IVR参考</th><th>策略基调</th><th>开仓系数</th></tr></thead>
+    <tbody>
     <tr class="state-a">
       <td><span class="state-pill pill-a">A · 强势</span></td>
-      <td>AAPL &gt; <span class="term" data-tip="20日均线（Moving Average 20）：过去20个交易日收盘价的平均值，是判断中期趋势的核心指标。AAPL价格站于MA20上方通常意味着短期趋势向上。">MA20</span> &gt; <span class="term" data-tip="50日均线：过去50个交易日均线，代表中长期趋势。MA20在MA50上方且斜率向上，是强势上涨的标准信号。">MA50</span>，MA20斜率向上</td>
+      <td>AAPL &gt; <span class="term" data-tip="20日均线（Moving Average 20）：过去20个交易日收盘价的平均值，是判断中期趋势的核心指标。">MA20</span> &gt; <span class="term" data-tip="50日均线：过去50个交易日均线，代表中长期趋势。MA20在MA50上方且斜率向上，是强势上涨的标准信号。">MA50</span>，MA20斜率向上</td>
       <td>&lt; 18</td>
       <td>&gt; 50%</td>
       <td>积极卖方，行权价上移</td>
@@ -311,6 +1136,7 @@
       <td>暂停卖方，等待右侧信号</td>
       <td><span class="badge badge-red">0×</span></td>
     </tr>
+    </tbody>
   </table>
   </div>
 
@@ -318,22 +1144,22 @@
   <p><span class="term" data-tip="Implied Volatility Rank：当前IV在过去52周高低点区间内的百分位位置。IVR = (当前IV - 52周低IV) / (52周高IV - 52周低IV)。IVR越高，说明当前权利金相对历史越贵，卖方环境越好。IBKR平台可直接读取。">IVR（隐含波动率排名）</span>比VIX更能反映AAPL个股的卖方溢价环境。AAPL经常因产品发布、监管事件独立于大盘波动，此时VIX可能低但AAPL IVR偏高，提示良好的卖方窗口。IVR &gt; 40%为理想开仓区间。</p>
 
   <h3>VIX独立硬约束（优先于状态判断）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>VIX水平</th><th>执行动作</th><th>叠加系数</th></tr>
+    <thead><tr><th>VIX水平</th><th>执行动作</th><th>叠加系数</th></tr></thead>
+    <tbody>
     <tr><td>≤ 20</td><td>正常按状态执行</td><td><span class="badge badge-green">1.0×</span></td></tr>
     <tr><td>20–28</td><td>新仓规模减半；仅状态A/B可开仓</td><td><span class="badge badge-amber">0.5×</span></td></tr>
     <tr><td>28–35</td><td>新仓规模减至1/4；仅状态A可开仓</td><td><span class="badge badge-amber">0.25×</span></td></tr>
     <tr><td>&gt; 35</td><td>全面停止新开卖方仓位；评估存量是否平仓</td><td><span class="badge badge-red">0×</span></td></tr>
     <tr><td>单日涨幅 &gt; 25%</td><td>立即启动L1熔断（见§09）</td><td><span class="badge badge-red">紧急</span></td></tr>
+    </tbody>
   </table>
   </div>
 
-  <h3>Covered Call的市场状态约束（关键）</h3>
   <div class="callout danger">
-    <span class="callout-icon">🚫</span>
-      <div><strong>强势上涨时（状态A）严禁卖出Covered Call</strong>
-    <p>AAPL处于单边强势上涨（状态A）时，卖出备兑Call将严重拖累上涨收益。仅在状态B（震荡偏多）或状态C（震荡偏空）时方可开启备兑Call。这是本策略与基础版本最重要的差异优化之一。</p></div>
+    <div class="callout-title">🚫 强势上涨时（状态A）严禁卖出Covered Call</div>
+    <p>AAPL处于单边强势上涨（状态A）时，卖出备兑Call将严重拖累上涨收益。仅在状态B（震荡偏多）或状态C（震荡偏空）时方可开启备兑Call。这是本策略与基础版本最重要的差异优化之一。</p>
   </div>
 </section>
 
@@ -343,16 +1169,13 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s4">
   <div class="section-header">
-      <span class="section-num">04</span>
-      <div>
-        <div class="section-title">财报周专属规程</div>
-      </div>
-    </div>
+    <span class="section-num">§ 04</span>
+    <h2>财报周专属规程</h2>
+  </div>
 
   <div class="callout danger">
-    <span class="callout-icon">⚠</span>
-      <div><strong>财报是AAPL期权策略的最大系统性风险源</strong>
-    <p>AAPL每年四次季度财报（通常为1月/4月/7月/10月下旬），财报前<span class="term" data-tip="隐含波动率（Implied Volatility）：期权定价中反映的市场对未来波动率的预期。财报前IV因不确定性大幅上升，财报后因事件落地而骤降（Volatility Crush）。">IV</span>通常膨胀20–40%，财报后Volatility Crush骤降。未纳入财报节奏的卖方策略等同于在信息不对称下裸奔。</p></div>
+    <div class="callout-title">🚫 财报是AAPL期权策略的最大系统性风险源</div>
+    <p>AAPL每年四次季度财报（通常为1月/4月/7月/10月下旬），财报前<span class="term" data-tip="隐含波动率（Implied Volatility）：期权定价中反映的市场对未来波动率的预期。财报前IV因不确定性大幅上升，财报后因事件落地而骤降（Volatility Crush）。">IV</span>通常膨胀20–40%，财报后Volatility Crush骤降。未纳入财报节奏的卖方策略等同于在信息不对称下裸奔。</p>
   </div>
 
   <h3>财报日历管理规则</h3>
@@ -360,18 +1183,18 @@
 
   <h4>财报日前10个交易日起——开仓限制期</h4>
   <ul class="checklist">
-    <li>禁止开启任何<strong>跨越财报日</strong>的新期权仓位。新开仓位的到期日（DTE）须在财报日前至少5个交易日到期。</li>
-    <li>已持有的跨越财报日仓位：若<span class="term" data-tip="Implied Volatility Rank，当前IV相对52周区间的百分位排名。IVR > 60%说明权利金相对较贵，通常是提前平仓锁定利润的好时机。">IVR</span> &gt; 60%，通常应提前平仓锁定利润。</li>
-    <li>备兑Call若行权价低于"当前股价 + 财报预期波动幅度"（通常±5–8%），须在财报前3日内平仓，防止因正面财报导致正股被Call走。</li>
-    <li>记录财报前一周的AAPL IV水平，作为财报后策略重启的基准参考。</li>
+    <li><span class="ck-box"></span><span>禁止开启任何<strong>跨越财报日</strong>的新期权仓位。新开仓位的到期日（DTE）须在财报日前至少5个交易日到期。</span></li>
+    <li><span class="ck-box"></span><span>已持有的跨越财报日仓位：若<span class="term" data-tip="Implied Volatility Rank，当前IV相对52周区间的百分位排名。IVR > 60%说明权利金相对较贵，通常是提前平仓锁定利润的好时机。">IVR</span> &gt; 60%，通常应提前平仓锁定利润。</span></li>
+    <li><span class="ck-box"></span><span>备兑Call若行权价低于"当前股价 + 财报预期波动幅度"（通常±5–8%），须在财报前3日内平仓，防止因正面财报导致正股被Call走。</span></li>
+    <li><span class="ck-box"></span><span>记录财报前一周的AAPL IV水平，作为财报后策略重启的基准参考。</span></li>
   </ul>
 
   <h4>财报日后第1–3个交易日——重启观察期</h4>
   <ul class="checklist">
-    <li>等待Volatility Crush完成（通常财报次日开盘完成），不要在IV最高点急于开仓。</li>
-    <li>财报后第2个交易日，重新运行市场状态判定，满足状态A或B方可重启标准月度开仓流程。</li>
-    <li>若AAPL跳空上涨 &gt; 5%：备兑Call行权价须相应上移（见§08滚动规则）。</li>
-    <li>若IVR已快速回落至 &lt; 25%，暂缓开仓，等待IV回升至合理水平再建仓。</li>
+    <li><span class="ck-box"></span><span>等待Volatility Crush完成（通常财报次日开盘完成），不要在IV最高点急于开仓。</span></li>
+    <li><span class="ck-box"></span><span>财报后第2个交易日，重新运行市场状态判定，满足状态A或B方可重启标准月度开仓流程。</span></li>
+    <li><span class="ck-box"></span><span>若AAPL跳空上涨 &gt; 5%：备兑Call行权价须相应上移（见§08滚动规则）。</span></li>
+    <li><span class="ck-box"></span><span>若IVR已快速回落至 &lt; 25%，暂缓开仓，等待IV回升至合理水平再建仓。</span></li>
   </ul>
 
   <h3>事件驱动机会窗口（进阶）</h3>
@@ -384,23 +1207,22 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s5">
   <div class="section-header">
-      <span class="section-num">05</span>
-      <div>
-        <div class="section-title">三因子量化决策模型</div>
-      </div>
-    </div>
+    <span class="section-num">§ 05</span>
+    <h2>三因子量化决策模型</h2>
+  </div>
 
   <p>综合得分决定当日仓位系数，消除主观判断。每月标准执行日（每月第二个周二）开盘后15分钟运行，得出本次开仓的仓位系数。</p>
 
   <div class="formula">
-    综合得分 = F₁（波动率溢价）× 40% + F₂（IV/HV溢价）× 30% + F₃（趋势强度）× 30%<br>
-    <span class="comment">// 三个维度均以0–100分计，加权后得综合得分</span>
+    综合得分 = F₁（波动率溢价）× 40% + F₂（IV/HV溢价）× 30% + F₃（趋势强度）× 30%
+    <span class="f-comment">// 三个维度均以0–100分计，加权后得综合得分</span>
   </div>
 
   <h3>三个因子的计算方法</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>得分说明</th></tr>
+    <thead><tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>得分说明</th></tr></thead>
+    <tbody>
     <tr>
       <td><strong>F₁ 波动率溢价</strong></td>
       <td><span class="badge badge-navy">40%</span></td>
@@ -418,27 +1240,29 @@
     <tr>
       <td><strong>F₃ 趋势强度</strong></td>
       <td><span class="badge badge-navy">30%</span></td>
-      <td>AAPL日线<span class="term" data-tip="平均方向指数（Average Directional Index）：衡量趋势强度的技术指标（不含方向），值越高说明趋势越强。ADX > 25为强趋势，< 20为无趋势震荡。本策略结合方向因子使用：AAPL在MA20上方时为正，下方时为负。">ADX(14)</span></td>
+      <td>AAPL日线<span class="term" data-tip="平均方向指数（Average Directional Index）：衡量趋势强度的技术指标（不含方向），值越高说明趋势越强。ADX > 25为强趋势，< 20为无趋势震荡。">ADX(14)</span></td>
       <td>ADX值 × 方向因子（AAPL &gt; MA20时+1，&lt; MA20时−1）；标准化至0–100分</td>
       <td>强势上涨=高分；强势下跌=0分</td>
     </tr>
+    </tbody>
   </table>
   </div>
 
   <div class="callout info">
-    <span class="callout-icon">📌</span>
-      <div><strong>为何不使用AAPL市盈率（PE）作为F₂因子</strong>
-    <p>早期方案中F₂使用AAPL PE（TTM），但AAPL在2023–2025年PE长期处于28–32倍历史高位，该因子会系统性压制开仓信号，与实际期权机会严重背离。IV/HV差值直接衡量波动率溢价厚度，与策略目标逻辑更一致，是更有效的替代指标。</p></div>
+    <div class="callout-title">ℹ 为何不使用AAPL市盈率（PE）作为F₂因子</div>
+    <p>早期方案中F₂使用AAPL PE（TTM），但AAPL在2023–2025年PE长期处于28–32倍历史高位，该因子会系统性压制开仓信号，与实际期权机会严重背离。IV/HV差值直接衡量波动率溢价厚度，与策略目标逻辑更一致，是更有效的替代指标。</p>
   </div>
 
   <h3>综合得分 → 仓位系数映射</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th></tr>
+    <thead><tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th></tr></thead>
+    <tbody>
     <tr><td><strong>≥ 70分</strong></td><td><span class="badge badge-green">1.0×</span></td><td>满仓按Delta矩阵开仓</td></tr>
     <tr><td><strong>50–69分</strong></td><td><span class="badge badge-blue">0.5×</span></td><td>半仓开仓，选保守行权价</td></tr>
     <tr><td><strong>30–49分</strong></td><td><span class="badge badge-amber">0.25×</span></td><td>仅开最优质仓位，EV门槛提高至30%</td></tr>
     <tr><td><strong>&lt; 30分</strong></td><td><span class="badge badge-red">0×</span></td><td>不开新仓，仅管理存量仓位</td></tr>
+    </tbody>
   </table>
   </div>
 </section>
@@ -449,63 +1273,65 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s6">
   <div class="section-header">
-      <span class="section-num">06</span>
-      <div>
-        <div class="section-title">Delta矩阵与EV门槛</div>
-      </div>
-    </div>
+    <span class="section-num">§ 06</span>
+    <h2>Delta矩阵与EV门槛</h2>
+  </div>
 
   <h3>预期价值（EV）强制门槛</h3>
   <p>每笔卖出期权操作前<strong>必须计算EV</strong>，未达标禁止开仓，无任何例外。</p>
 
   <div class="formula">
-    EV = 权利金收入 × (1 − P<sub>行权</sub>) − 最大亏损 × P<sub>行权</sub><br>
-    <span class="comment">// P(行权) ≈ Delta绝对值（从IBKR期权链读取）</span><br>
-    <span class="comment">// 最大亏损 = (卖出行权价 − 买入行权价) × 100 × 张数 − 已收权利金</span>
+    EV = 权利金收入 × (1 − P<sub>行权</sub>) − 最大亏损 × P<sub>行权</sub>
+    <span class="f-comment">// P(行权) ≈ Delta绝对值（从IBKR期权链读取）</span>
+    <span class="f-comment">// 最大亏损 = (卖出行权价 − 买入行权价) × 100 × 张数 − 已收权利金</span>
   </div>
 
   <p><strong>准入门槛：</strong><span class="term" data-tip="预期价值（Expected Value）：将所有可能结果按概率加权后的期望回报。EV > 0说明这笔交易从概率角度具有正期望，是系统化卖方策略开仓的最低门槛。">EV</span> &gt; 0，且 EV / 权利金收入 &gt; 20%（综合得分30–49时提高至30%）。</p>
 
   <h3>卖Put价差 Delta矩阵（DTE 35–45天）</h3>
   <div class="callout warning">
-    <span class="callout-icon">⚠</span>
-      <div><strong>行权价缓冲：卖出行权价须距当前AAPL价格 ≥ 10%</strong>
-    <p>原始方案使用8%缓冲，但AAPL单日跳空可达5–8%（如财报、供应链新闻），8%缓冲在单日大跌中可能瞬间被突破。本手册将最低缓冲提高至10%，提供更充足的安全边际。</p></div>
+    <div class="callout-title">⚠ 行权价缓冲：卖出行权价须距当前AAPL价格 ≥ 10%</div>
+    <p>原始方案使用8%缓冲，但AAPL单日跳空可达5–8%（如财报、供应链新闻），8%缓冲在单日大跌中可能瞬间被突破。本手册将最低缓冲提高至10%，提供更充足的安全边际。</p>
   </div>
 
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>AAPL位置（相对MA20）</th><th><span class="state-pill pill-a">状态A</span> VIX&lt;18</th><th><span class="state-pill pill-b">状态B</span> VIX 15–22</th><th><span class="state-pill pill-c">状态C</span> VIX 20–30</th><th><span class="state-pill pill-d">状态D</span></th></tr>
-    <tr><td>高位区（&gt; MA20×1.05）</td><td><code>0.10–0.15</code></td><td><code>0.12–0.18</code></td><td>不开仓</td><td>不开仓</td></tr>
-    <tr><td>中位区（MA20×0.95–1.05）</td><td><code>0.12–0.18</code></td><td><code>0.15–0.22</code></td><td><code>0.18–0.25</code></td><td>不开仓</td></tr>
-    <tr><td>低位区（MA20×0.85–0.95）</td><td><code>0.15–0.20</code></td><td><code>0.18–0.25</code></td><td><code>0.22–0.28</code></td><td>不开仓</td></tr>
-    <tr><td>极端区（&lt; MA20×0.85）</td><td colspan="2">暂停</td><td>仅<code>Delta&lt;0.18</code>且强制价差</td><td>不开仓</td></tr>
+    <thead><tr><th>AAPL位置（相对MA20）</th><th><span class="state-pill pill-a">状态A</span> VIX&lt;18</th><th><span class="state-pill pill-b">状态B</span> VIX 15–22</th><th><span class="state-pill pill-c">状态C</span> VIX 20–30</th><th><span class="state-pill pill-d">状态D</span></th></tr></thead>
+    <tbody>
+    <tr><td>高位区（&gt; MA20×1.05）</td><td class="mono">0.10–0.15</td><td class="mono">0.12–0.18</td><td>不开仓</td><td>不开仓</td></tr>
+    <tr><td>中位区（MA20×0.95–1.05）</td><td class="mono">0.12–0.18</td><td class="mono">0.15–0.22</td><td class="mono">0.18–0.25</td><td>不开仓</td></tr>
+    <tr><td>低位区（MA20×0.85–0.95）</td><td class="mono">0.15–0.20</td><td class="mono">0.18–0.25</td><td class="mono">0.22–0.28</td><td>不开仓</td></tr>
+    <tr><td>极端区（&lt; MA20×0.85）</td><td colspan="2">暂停</td><td>仅 <span class="mono">Delta&lt;0.18</span> 且强制价差</td><td>不开仓</td></tr>
+    </tbody>
   </table>
   </div>
 
   <h3>价差宽度矩阵（按VIX环境）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>VIX水平</th><th>建议价差宽度</th><th>最大亏损/张</th><th>目标权利金/张</th><th>权利金/亏损比</th></tr>
+    <thead><tr><th>VIX水平</th><th>建议价差宽度</th><th>最大亏损/张</th><th>目标权利金/张</th><th>权利金/亏损比</th></tr></thead>
+    <tbody>
     <tr><td>≤ 18</td><td>$8–$12</td><td>$800–1,200</td><td>$1.00–$2.00</td><td>12–25%</td></tr>
     <tr><td>18–25</td><td>$10–$15</td><td>$1,000–1,500</td><td>$1.50–$3.00</td><td>15–30%</td></tr>
     <tr><td>25–35</td><td>$15–$20</td><td>$1,500–2,000</td><td>$2.50–$5.00</td><td>16–25%</td></tr>
     <tr><td>&gt; 35</td><td colspan="4"><span class="badge badge-red">VIX硬约束：禁止开仓</span></td></tr>
+    </tbody>
   </table>
   </div>
 
   <h3>备兑Call Delta矩阵（DTE 30–40天）</h3>
   <div class="callout info">
-    <span class="callout-icon">📌</span>
-      <div><strong>收益预期校正：备兑Call的真实贡献</strong>
-    <p>VIX &lt; 18的正常环境下，Delta 0.15–0.20的30天备兑Call年化权利金收益率约<strong>3–5%</strong>，而非部分资料宣传的8–12%。请以此为准设定收益预期。备兑Call的核心价值是在震荡市降低持仓综合成本，而非创造主要利润。</p></div>
+    <div class="callout-title">ℹ 收益预期校正：备兑Call的真实贡献</div>
+    <p>VIX &lt; 18的正常环境下，Delta 0.15–0.20的30天备兑Call年化权利金收益率约<strong>3–5%</strong>，而非部分资料宣传的8–12%。请以此为准设定收益预期。备兑Call的核心价值是在震荡市降低持仓综合成本，而非创造主要利润。</p>
   </div>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>AAPL位置</th><th><span class="state-pill pill-b">状态B</span></th><th><span class="state-pill pill-c">状态C</span></th><th>接货后快速处理</th></tr>
-    <tr><td>高位（&gt; MA20+10%）</td><td><code>0.15–0.20</code></td><td>仅维护存量</td><td>T+1日内以Delta 0.25–0.35开仓</td></tr>
-    <tr><td>正常区（MA20±10%）</td><td><code>0.18–0.25</code></td><td><code>0.22–0.30</code></td><td>同上，快速降低持仓成本</td></tr>
-    <tr><td>低位（&lt; MA20−10%）</td><td><code>0.22–0.30</code></td><td><code>0.28–0.35</code></td><td>同上，尽快覆盖成本</td></tr>
+    <thead><tr><th>AAPL位置</th><th><span class="state-pill pill-b">状态B</span></th><th><span class="state-pill pill-c">状态C</span></th><th>接货后快速处理</th></tr></thead>
+    <tbody>
+    <tr><td>高位（&gt; MA20+10%）</td><td class="mono">0.15–0.20</td><td>仅维护存量</td><td>T+1日内以Delta 0.25–0.35开仓</td></tr>
+    <tr><td>正常区（MA20±10%）</td><td class="mono">0.18–0.25</td><td class="mono">0.22–0.30</td><td>同上，快速降低持仓成本</td></tr>
+    <tr><td>低位（&lt; MA20−10%）</td><td class="mono">0.22–0.30</td><td class="mono">0.28–0.35</td><td>同上，尽快覆盖成本</td></tr>
+    </tbody>
   </table>
   </div>
 
@@ -519,11 +1345,9 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s7">
   <div class="section-header">
-      <span class="section-num">07</span>
-      <div>
-        <div class="section-title">月度标准执行流程</div>
-      </div>
-    </div>
+    <span class="section-num">§ 07</span>
+    <h2>月度标准执行流程</h2>
+  </div>
 
   <p>标准执行日：<strong>每月第二个周二</strong>（避开财报前10个交易日区间）。全程约65–75分钟，分四步完成。</p>
 
@@ -553,15 +1377,17 @@
   </ol>
 
   <h3>第四步：风控台账（约10分钟）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr>
+    <thead><tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr></thead>
+    <tbody>
     <tr><td>总卖Put名义敞口</td><td>≤ 净值50%</td><td>超过则平仓至满足</td></tr>
     <tr><td>现金+SGOV余额</td><td>≥ 净值30%</td><td>不足则停止新开仓</td></tr>
     <tr><td>保证金使用率</td><td>&lt; 60%</td><td>&gt; 65%触发L2熔断</td></tr>
     <tr><td>AAPL正股市值</td><td>≤ $60,000</td><td>超过立即评估处理方案（24小时内）</td></tr>
     <tr><td>整体持仓Gamma</td><td>≤ 净值0.02</td><td>超过则平减高Gamma期权仓位</td></tr>
     <tr><td>熔断状态</td><td>无触发</td><td>有触发则按§09执行</td></tr>
+    </tbody>
   </table>
   </div>
 </section>
@@ -572,20 +1398,20 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s8">
   <div class="section-header">
-      <span class="section-num">08</span>
-      <div>
-        <div class="section-title">持仓管理规则</div>
-      </div>
-    </div>
+    <span class="section-num">§ 08</span>
+    <h2>持仓管理规则</h2>
+  </div>
 
   <h3>核心层（卖Put价差）管理</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>场景</th><th>触发条件</th><th>执行动作</th></tr>
+    <thead><tr><th>场景</th><th>触发条件</th><th>执行动作</th></tr></thead>
+    <tbody>
     <tr><td><strong>止盈</strong></td><td>GTC单自动触发（权利金衰减50%）</td><td>自动平仓；节省保证金用于下一轮</td></tr>
     <tr><td><strong>时间止损</strong></td><td>持仓超21天，盈利 &lt; 50%</td><td>评估Roll（仅允许1次，新权利金 ≥ 原60%），否则平仓</td></tr>
     <tr><td><strong>临近行权</strong></td><td>AAPL接近卖出行权价（距离 &lt; 5%）</td><td>启动日频监控，评估平仓；不可寄希望于最后反弹</td></tr>
     <tr><td><strong>紧急平仓</strong></td><td>状态恶化为D，或VIX &gt; 35</td><td>市价买入平仓所有Put价差，优先于任何其他决策</td></tr>
+    </tbody>
   </table>
   </div>
 
@@ -593,14 +1419,16 @@
   <p><span class="term" data-tip="Roll（滚动）：平仓当前期权合约，同时开立新的合约（通常更远期或更高/低行权价）的操作。滚动的核心铁律是必须为&quot;Credit Roll&quot;（净收钱），即新合约权利金收入须大于平仓成本，不接受Debit Roll（倒贴钱）。">Roll（滚动）</span>的核心铁律是：<strong>只允许Credit Roll（净收钱的滚动），永不接受Debit Roll</strong>。每笔仓位最多滚动1次，新权利金须 ≥ 原权利金的60%。不得为了规避账面亏损而反复滚动，这会积累隐性风险。</p>
 
   <h3>备兑Call向上滚动规则</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>项目</th><th>要求</th></tr>
+    <thead><tr><th>项目</th><th>要求</th></tr></thead>
+    <tbody>
     <tr><td>触发条件</td><td>AAPL价格上涨至距备兑行权价 &lt; 5%，且市场状态B或A</td></tr>
     <tr><td>操作</td><td>买入平仓当前Call + 卖出更高行权价/更远到期日新Call（组合限价单执行）</td></tr>
     <tr><td><strong>净权利金要求</strong></td><td><strong>必须为正（Credit Roll）；绝不接受Debit Roll</strong></td></tr>
     <tr><td>新行权价要求</td><td>≥ 当前行权价×105%，且 ≥ 当前AAPL价格×110%</td></tr>
     <tr><td>若无法满足Credit Roll条件</td><td>接受被行权；按被行权流程处理（见下方）</td></tr>
+    </tbody>
   </table>
   </div>
 
@@ -627,47 +1455,44 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s9">
   <div class="section-header">
-      <span class="section-num">09</span>
-      <div>
-        <div class="section-title">三级熔断机制</div>
-      </div>
-    </div>
-
-  <div class="callout danger">
-    <span class="callout-icon">🚫</span>
-      <div><strong>熔断机制是整套策略中唯一优先于所有其他规则的模块</strong>
-    <p>一旦触发，无论市场状态、期权价格或主观判断如何，必须按规程执行，不得以任何理由延迟。</p></div>
+    <span class="section-num">§ 09</span>
+    <h2>三级熔断机制</h2>
   </div>
 
-  <div class="circuit-level l1">
-    <div class="circuit-header">
-      <div class="circuit-dot"></div>
+  <div class="callout danger">
+    <div class="callout-title">🚫 熔断机制是整套策略中唯一优先于所有其他规则的模块</div>
+    <p>一旦触发，无论市场状态、期权价格或主观判断如何，必须按规程执行，不得以任何理由延迟。</p>
+  </div>
+
+  <div class="breaker breaker-l1">
+    <div class="breaker-head">
+      <div class="breaker-dot"></div>
       L1 黄色警戒——触发任意一条即生效
     </div>
-    <div class="circuit-body">
+    <div class="breaker-body">
       <p><strong>触发条件：</strong>AAPL单日跌 &gt; 4% / VIX单日涨 &gt; 25% / 账户浮亏 &gt; 净值6% / 保证金使用率 &gt; 55%</p>
       <p><strong>强制动作：</strong>停止所有新开仓；检查所有Put价差与行权价距离；24小时后若触发条件不再满足，自动解除（需重新运行状态判定引擎）。</p>
     </div>
   </div>
 
-  <div class="circuit-level l2">
-    <div class="circuit-header">
-      <div class="circuit-dot"></div>
+  <div class="breaker breaker-l2">
+    <div class="breaker-head">
+      <div class="breaker-dot"></div>
       L2 橙色减仓——触发任意一条即生效
     </div>
-    <div class="circuit-body">
+    <div class="breaker-body">
       <p><strong>触发条件：</strong>AAPL 3日累计跌 &gt; 8% / 保证金使用率 &gt; 65% / 任意Put价差进入<span class="term" data-tip="价内（In-The-Money, ITM）：对于卖出Put而言，当AAPL价格跌破行权价，则Put进入价内，被行权风险大幅升高，此时需优先平仓止损。">价内</span> / 浮亏 &gt; 净值10%</p>
       <p><strong>强制动作（24小时内完成）：</strong>平仓50%备兑Call；平仓所有价内Put价差；保证金率压至50%以下。</p>
       <p><strong>解除条件：</strong>所有平仓操作完成，保证金率降至50%以下，且AAPL连续3日无新低，方可申请解除。</p>
     </div>
   </div>
 
-  <div class="circuit-level l3">
-    <div class="circuit-header">
-      <div class="circuit-dot"></div>
+  <div class="breaker breaker-l3">
+    <div class="breaker-head">
+      <div class="breaker-dot"></div>
       L3 红色清仓——触发任意一条即生效
     </div>
-    <div class="circuit-body">
+    <div class="breaker-body">
       <p><strong>触发条件：</strong>AAPL 5日跌 &gt; 15% / 收到<span class="term" data-tip="追加保证金通知（Margin Call）：当账户保证金不足时，券商发出的强制补充资金通知。若不在规定时间内补充，券商将强制平仓部分或全部仓位。L3熔断在收到Margin Call前主动清仓，是防止强平的关键。">Margin Call</span> / VIX &gt; 40 且AAPL &lt; MA200×80% / 浮亏 &gt; 净值15%</p>
       <p><strong>强制动作：</strong>立即市价平仓所有期权仓位；资金全部转入SGOV；暂停交易30个日历日。</p>
       <p><strong>解除条件：</strong>暂停满30日；提交书面复盘报告（含亏损归因分析）；重新评估资金分配；从L1状态重新起步，不可直接恢复至满仓。</p>
@@ -675,12 +1500,14 @@
   </div>
 
   <h3>压力情景参考（历史回测）</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>历史情景</th><th>AAPL最大回撤</th><th>策略预期最大回撤</th><th>关键保护机制</th></tr>
+    <thead><tr><th>历史情景</th><th>AAPL最大回撤</th><th>策略预期最大回撤</th><th>关键保护机制</th></tr></thead>
+    <tbody>
     <tr><td>2022年科技股熊市</td><td>约 −30%</td><td>约 −12%–15%</td><td>价差结构有限亏损 + L2熔断</td></tr>
     <tr><td>2020年3月流动性危机</td><td>约 −35%（短期）</td><td>约 −10%–18%</td><td>30%现金底仓保证不被强平</td></tr>
     <tr><td>财报日单日 ±10%跳空</td><td>—</td><td>取决于行权价距离</td><td>10%缓冲 + 财报静默期规避</td></tr>
+    </tbody>
   </table>
   </div>
 </section>
@@ -691,32 +1518,32 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s10">
   <div class="section-header">
-      <span class="section-num">10</span>
-      <div>
-        <div class="section-title">绩效追踪与台账</div>
-      </div>
-    </div>
+    <span class="section-num">§ 10</span>
+    <h2>绩效追踪与台账</h2>
+  </div>
 
   <h3>每笔期权交易必填台账</h3>
-  <div class="table-wrap">
+  <div class="tbl-wrap">
   <table>
-    <tr><th>字段</th><th>示例</th><th>用途</th></tr>
-    <tr><td>开仓日期</td><td>2026-04-15</td><td>时间归因</td></tr>
-    <tr><td>策略层级</td><td>核心层 / 备兑层</td><td>分类归因</td></tr>
-    <tr><td>合约标识</td><td>AAPL 260516P 230/220</td><td>精确记录</td></tr>
-    <tr><td>张数 / 净权利金/张</td><td>5张 / $1.85</td><td>收益计算</td></tr>
-    <tr><td>Delta（开仓时）/ DTE</td><td>−0.16 / 38天</td><td>风险参数</td></tr>
-    <tr><td>EV合格确认</td><td>EV = $152（22.1%）✓</td><td>合规记录</td></tr>
-    <tr><td>IVR开仓时 / AAPL IV</td><td>52% / 28.3%</td><td>市场环境归因</td></tr>
-    <tr><td>财报日标记</td><td>财报前 / 财报后 / 非财报期</td><td>风险分类</td></tr>
-    <tr><td>平仓日期/价格/原因</td><td>2026-05-02 / $0.90 / GTC止盈</td><td>结果追踪</td></tr>
-    <tr><td>净收益（USD / CNY）</td><td>$475 / ¥3,420（汇率7.20）</td><td>中国税务申报</td></tr>
+    <thead><tr><th>字段</th><th>示例</th><th>用途</th></tr></thead>
+    <tbody>
+    <tr><td><span class="log-field">开仓日期</span></td><td>2026-04-15</td><td>时间归因</td></tr>
+    <tr><td><span class="log-field">策略层级</span></td><td>核心层 / 备兑层</td><td>分类归因</td></tr>
+    <tr><td><span class="log-field">合约标识</span></td><td>AAPL 260516P 230/220</td><td>精确记录</td></tr>
+    <tr><td><span class="log-field">张数 / 净权利金/张</span></td><td>5张 / $1.85</td><td>收益计算</td></tr>
+    <tr><td><span class="log-field">Delta（开仓时）/ DTE</span></td><td>−0.16 / 38天</td><td>风险参数</td></tr>
+    <tr><td><span class="log-field">EV合格确认</span></td><td>EV = $152（22.1%）</td><td>合规记录</td></tr>
+    <tr><td><span class="log-field">IVR开仓时 / AAPL IV</span></td><td>52% / 28.3%</td><td>市场环境归因</td></tr>
+    <tr><td><span class="log-field">财报日标记</span></td><td>财报前 / 财报后 / 非财报期</td><td>风险分类</td></tr>
+    <tr><td><span class="log-field">平仓日期/价格/原因</span></td><td>2026-05-02 / $0.90 / GTC止盈</td><td>结果追踪</td></tr>
+    <tr><td><span class="log-field">净收益（USD / CNY）</span></td><td>$475 / ¥3,420（汇率7.20）</td><td>中国税务申报</td></tr>
+    </tbody>
   </table>
   </div>
 
   <h3>季度复盘指标与归因分析</h3>
   <p>每季度末进行一次系统性复盘，重点分析以下维度：</p>
-  <ul style="margin:10px 0 10px 20px;color:var(--text-secondary);font-size:13.5px;line-height:2;">
+  <ul class="bullets" style="margin:12px 0 16px;">
     <li>月度/季度权利金收益率 vs 目标（目标区间见§00）</li>
     <li>最大<span class="term" data-tip="最大回撤（Maximum Drawdown）：策略从峰值到谷底的最大亏损幅度。区分财报周与非财报周分别计算，能更准确识别风险来源。">回撤</span>（含日内；区分财报周与非财报周）</li>
     <li>收益归因：多少来自<span class="term" data-tip="Theta衰减收益：纯粹因时间流逝、期权时间价值自然消耗而产生的收益，是卖方策略的计划内收益，质量最高。">Theta衰减</span>（计划内）/ 多少来自<span class="term" data-tip="Vega（ν）：期权价格对隐含波动率变化的敏感度。当IV下降时，卖方仓位因Vega为负而盈利（即IV Crush收益）。">Vega</span>收缩（IV Crush）/ 多少来自方向性Delta收益</li>
@@ -725,6 +1552,24 @@
     <li>纪律红线违反次数（年度目标：0次）</li>
     <li><span class="term" data-tip="夏普比率（Sharpe Ratio）：(年化收益 − 无风险利率) / 年化波动率，衡量每单位风险获得的超额收益。目标 > 1.0，理想值1.2–1.8。">Sharpe Ratio</span>：目标 &gt; 1.0（收益/波动率比）</li>
   </ul>
+
+  <div class="card-grid-3">
+    <div class="stat-card">
+      <div class="stat-label">月度胜率目标</div>
+      <div class="stat-value">&gt; 70%</div>
+      <div class="stat-note">低于此值需检查EV过滤执行情况</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">平均盈亏比目标</div>
+      <div class="stat-value">&gt; 2.5</div>
+      <div class="stat-note">盈利笔均盈 / 亏损笔均亏</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">年化持仓成本降低</div>
+      <div class="stat-value">4–10%</div>
+      <div class="stat-note">权利金收入 / AAPL持仓市值</div>
+    </div>
+  </div>
 </section>
 
 
@@ -733,32 +1578,43 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s11">
   <div class="section-header">
-      <span class="section-num">11</span>
-      <div>
-        <div class="section-title">心理纪律与五条绝对红线</div>
-      </div>
-    </div>
+    <span class="section-num">§ 11</span>
+    <h2>心理纪律与五条绝对红线</h2>
+  </div>
 
   <div class="callout success">
-    <span class="callout-icon">💡</span>
-      <div><strong>策略核心心理定位</strong>
-    <p>您不是AAPL的方向性交易员，而是一家<strong>小型波动率保险公司的承保部门</strong>。收益来源是时间衰减和波动率溢价，不是预测股价涨跌。当市场大跌、账面浮亏时，第一反应不是"我是否应该加仓摊平"，而是"当前熔断状态是哪级？我的下一步规程是什么？"这一思维转变，是策略长期执行成功的核心。</p></div>
+    <div class="callout-title">✓ 策略核心心理定位</div>
+    <p>您不是AAPL的方向性交易员，而是一家<strong>小型波动率保险公司的承保部门</strong>。收益来源是时间衰减和波动率溢价，不是预测股价涨跌。当市场大跌、账面浮亏时，第一反应不是"我是否应该加仓摊平"，而是"当前熔断状态是哪级？我的下一步规程是什么？"这一思维转变，是策略长期执行成功的核心。</p>
   </div>
 
   <h3>五条绝对红线</h3>
   <p>违反任一条，须强制暂停操作2周并提交书面复盘。</p>
-  <ul class="redline-list">
-    <li><span class="rl-num">01</span><span>在市场状态D或VIX &gt; 35时，卖出任何形式的Put或Put价差。</span></li>
-    <li><span class="rl-num">02</span><span>在EV未达到20%门槛（三因子得分30–49时为30%）的情况下强行开仓。</span></li>
-    <li><span class="rl-num">03</span><span>为弥补已实现亏损，在规定系数上限之外加倍仓位（俗称"摊平"或"双倍加注"）。</span></li>
-    <li><span class="rl-num">04</span><span>AAPL正股市值超过$60,000后，未在24小时内采取处置行动。</span></li>
-    <li><span class="rl-num">05</span><span>在财报日前10个交易日区间内，开启任何跨越财报日的新仓位。</span></li>
-  </ul>
+  <div class="redlines">
+    <div class="redline-item">
+      <span class="redline-num">RL-01</span>
+      <span class="redline-text">在市场状态D或VIX &gt; 35时，卖出任何形式的Put或Put价差。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-02</span>
+      <span class="redline-text">在EV未达到20%门槛（三因子得分30–49时为30%）的情况下强行开仓。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-03</span>
+      <span class="redline-text">为弥补已实现亏损，在规定系数上限之外加倍仓位（俗称"摊平"或"双倍加注"）。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-04</span>
+      <span class="redline-text">AAPL正股市值超过$60,000后，未在24小时内采取处置行动。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-05</span>
+      <span class="redline-text">在财报日前10个交易日区间内，开启任何跨越财报日的新仓位。</span>
+    </div>
+  </div>
 
-  <div class="callout warning">
-    <span class="callout-icon">⚠</span>
-      <div><strong>关于纪律的最后提示</strong>
-    <p>本策略的成败，最终取决于对规则的执行纪律，而非市场判断能力。卖方期权策略的本质是概率游戏：单笔亏损不代表策略失败，<strong>违反规则才是真正的风险</strong>。您聘请的不仅是一套策略，更是一套帮助您在情绪面前保持理性的操作纪律。</p></div>
+  <div class="callout warning" style="margin-top:20px">
+    <div class="callout-title">⚠ 关于纪律的最后提示</div>
+    <p>本策略的成败，最终取决于对规则的执行纪律，而非市场判断能力。卖方期权策略的本质是概率游戏：单笔亏损不代表策略失败，<strong>违反规则才是真正的风险</strong>。您聘请的不仅是一套策略，更是一套帮助您在情绪面前保持理性的操作纪律。</p>
   </div>
 </section>
 
@@ -768,70 +1624,96 @@
 ══════════════════════════════════════════ -->
 <section class="section" id="s12">
   <div class="section-header">
-      <span class="section-num">12</span>
-      <div>
-        <div class="section-title">客户签署确认</div>
-      </div>
-    </div>
+    <span class="section-num">§ 12</span>
+    <h2>客户签署确认</h2>
+  </div>
 
   <p>本人已完整阅读并理解《AAPL期权增强策略客户操作手册》V3.0（共十二章）的全部内容，特别包括但不限于：</p>
   <ul class="checklist" style="margin:16px 0;">
-    <li>§01 税务红线：已知悉NRA遗产税$60,000硬约束，承诺在获得CPA书面确认前不执行卖方期权操作。</li>
-    <li>§02 资金约束：理解30%现金底仓和25%保证金上限的硬性限制，不以任何理由突破。</li>
-    <li>§04 财报静默期：理解财报前10个交易日禁止跨越财报日开仓的规程，并将定期核实财报日期。</li>
-    <li>§09 熔断机制：理解三级熔断的触发条件和强制执行义务，不以任何主观判断延迟执行。</li>
-    <li>§11 五条红线：理解并承诺遵守，违反任一条须主动暂停操作并提交书面复盘。</li>
-    <li>收益预期：理解年化税后净收益目标为4–10%（按资金规模），高于此预期的驱动行为可能导致不当仓位决策。</li>
-    <li>风险披露：理解期权卖方策略在极端单边下跌行情下仍存在本金损失风险，价差结构虽有限制但无法完全规避损失。</li>
+    <li><span class="ck-box"></span><span>§01 税务红线：已知悉NRA遗产税$60,000硬约束，承诺在获得CPA书面确认前不执行卖方期权操作。</span></li>
+    <li><span class="ck-box"></span><span>§02 资金约束：理解30%现金底仓和25%保证金上限的硬性限制，不以任何理由突破。</span></li>
+    <li><span class="ck-box"></span><span>§04 财报静默期：理解财报前10个交易日禁止跨越财报日开仓的规程，并将定期核实财报日期。</span></li>
+    <li><span class="ck-box"></span><span>§09 熔断机制：理解三级熔断的触发条件和强制执行义务，不以任何主观判断延迟执行。</span></li>
+    <li><span class="ck-box"></span><span>§11 五条红线：理解并承诺遵守，违反任一条须主动暂停操作并提交书面复盘。</span></li>
+    <li><span class="ck-box"></span><span>收益预期：理解年化税后净收益目标为4–10%（按资金规模），高于此预期的驱动行为可能导致不当仓位决策。</span></li>
+    <li><span class="ck-box"></span><span>风险披露：理解期权卖方策略在极端单边下跌行情下仍存在本金损失风险，价差结构虽有限制但无法完全规避损失。</span></li>
   </ul>
 
   <div class="sig-block">
     <div>
       <div class="sig-label">客户签字</div>
       <div class="sig-line"></div>
-      <div class="sig-label">姓名：__________________ 日期：__________</div>
+      <div class="sig-label" style="margin-top:4px">姓名：__________________ 日期：__________</div>
     </div>
     <div>
       <div class="sig-label">顾问签字</div>
       <div class="sig-line"></div>
-      <div class="sig-label">姓名：__________________ 日期：__________</div>
+      <div class="sig-label" style="margin-top:4px">姓名：__________________ 日期：__________</div>
     </div>
   </div>
-
-  <div class="disclaimer">
-    <strong>风险披露与免责声明</strong><br>
-    本手册基于专业交易分析与多项AI模型评估的综合最优实践构建，不构成投资建议、税务建议或法律建议。期权交易存在本金全部损失的风险。所有税务相关内容须经持牌CPA书面确认后方可执行。市场规则、税法可能随时变更，请以最新专业意见为准。NRA遗产税$60,000红线为美国联邦法律（IRC Section 2106），违反可能导致高额税负，务必严格执行持仓上限。过往绩效不代表未来收益。本手册所述收益预期为合理估算，实际收益受市场环境、执行纪律及税务处理方式影响，可能显著低于或高于预期区间。<br><br>
-    <strong>AAPL Option Enhancement Strategy · Client Operations Manual V3.0</strong> · 保密文件，仅供客户本人使用 · © 2026
-  </div>
 </section>
+
+<!-- 策略信条 -->
+<div class="card" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.04);text-align:center;padding:36px 40px;margin-bottom:32px">
+  <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">策略信条</div>
+  <p style="font-family:'Playfair Display',serif;font-size:19px;color:var(--text-primary);line-height:1.7;font-style:italic;max-width:640px;margin:0 auto">
+    "我们不是赌财报的投机客。我们是AAPL的长期股东，通过向市场出售保险，将持仓成本每年降低4%–10%。偶尔的股价大跌是我们低价加仓的机会，偶尔的大涨是我们阶段性盈利的兑现。坚持系统，让概率和时间为我们工作。"
+  </p>
+</div>
+
+<!-- 免责声明 -->
+<div class="disclaimer">
+  <strong>免责声明</strong><br>
+  本操作手册基于 Apple Inc. 历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。AAPL 受监管变化、业绩表现、行业竞争、技术迭代等因素影响，可能出现超出历史经验的极端波动。<br><br>
+  本手册所涉及的全部税务处理方式、遗产税规划、离岸公司架构，须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
+  <strong>版本：V3.0 · 综合优化版 · 2026 年 4 月 · 客户内部文件 · 禁止对外传阅</strong>
+</div>
 
 </main>
 </div>
 
 <script>
-  const sections = document.querySelectorAll('section[id], div[id]');
+  // ── Active nav highlighting ──
+  const sections = document.querySelectorAll('section[id]');
   const navItems = document.querySelectorAll('.nav-item');
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        navItems.forEach(item => {
-          item.style.borderLeftColor = 'transparent';
-          item.style.background = '';
-          item.style.color = '';
-        });
+        navItems.forEach(item => item.classList.remove('active'));
         const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
-        if (active) {
-          active.style.borderLeftColor = 'var(--gold)';
-          active.style.background = 'var(--gold-dim)';
-          active.style.color = 'var(--gold-light)';
-        }
+        if (active) active.classList.add('active');
       }
     });
   }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
 
   sections.forEach(s => observer.observe(s));
+
+  // ── Mobile menu ──
+  const toggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  // ── Smooth scroll for nav links ──
+  navItems.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  });
 </script>
-<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

@@ -1,1404 +1,2024 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NVDA 波动率增强收益策略 · 专业操作手册</title>
-<link rel="stylesheet" href="css/strategy.css">
+<title>NVDA 波动率增强收益策略 — 机构级操作手册 V3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+  .term:hover::after { opacity: 1; }
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+  .nav-item.active {
+    border-left-color: var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold-light);
+  }
+  .nav-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: rgba(36,59,85,0.8);
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .hero::before {
+    content: 'NVDA';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--gold-light); }
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+  .hero-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     CHAPTER (SECTION) STYLES
+  ═══════════════════════════════════════════ */
+  .chapter {
+    margin-bottom: 64px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(36,59,85,0.5);
+  }
+  .chapter:last-child { border-bottom: none; }
+
+  .chapter-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .chapter-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    flex-shrink: 0;
+    margin-top: 5px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .chapter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .section { margin-bottom: 40px; }
+
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 24px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat-card .stat-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-card .stat-value { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--gold-light); }
+  .stat-card .stat-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .callout-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .callout.danger { background: var(--red-dim); border: 1px solid rgba(224,92,92,0.3); color: #F0A0A0; }
+  .callout.danger .callout-title { color: var(--red); }
+  .callout.warning { background: var(--orange-dim); border: 1px solid rgba(224,123,60,0.3); color: #F0C0A0; }
+  .callout.warning .callout-title { color: var(--orange); }
+  .callout.info { background: var(--blue-dim); border: 1px solid rgba(91,141,200,0.3); color: #A0C0E0; }
+  .callout.info .callout-title { color: var(--blue); }
+  .callout.success { background: var(--green-dim); border: 1px solid rgba(92,184,122,0.3); color: #A0D4B4; }
+  .callout.success .callout-title { color: var(--green); }
+  .callout.gold { background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3); color: var(--gold-light); }
+  .callout.gold .callout-title { color: var(--gold); }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: rgba(201,168,76,0.08); border-bottom: 1px solid var(--navy-border); }
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid rgba(36,59,85,0.6); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td { padding: 12px 16px; color: var(--text-secondary); vertical-align: top; line-height: 1.6; }
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  .td-label { color: var(--text-primary) !important; font-weight: 600 !important; }
+  .td-num { font-family: 'DM Mono', monospace; color: var(--text-secondary) !important; }
+
+  /* ═══════════════════════════════════════════
+     BADGES
+  ═══════════════════════════════════════════ */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-amber { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-navy { background: rgba(91,141,200,0.08); color: var(--blue); border: 1px solid rgba(91,141,200,0.2); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+  .checklist-box {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: 1.5px solid var(--navy-border);
+    border-radius: 3px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-left: 3px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2;
+    position: relative;
+  }
+  .formula-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .threshold {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--green);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ═══════════════════════════════════════════
+     STEPS (NUMBERED FLOW)
+  ═══════════════════════════════════════════ */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 16px 0;
+  }
+  .steps::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+  .step {
+    display: flex;
+    gap: 20px;
+    padding: 12px 0;
+    position: relative;
+  }
+  .step-num {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background: var(--navy-card);
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; padding-top: 6px; }
+  .step-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     LAYER STACK (Five-Layer Strategy)
+  ═══════════════════════════════════════════ */
+  .layer-stack {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .layer-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 1.2fr 100px 90px;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+  .layer-row:last-child { border-bottom: none; }
+  .layer-row > div {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .layer-header {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .layer-header > div {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    padding: 13px 14px;
+  }
+  .layer-row:not(.layer-header):hover { background: rgba(255,255,255,0.025); }
+  .layer-row:not(.layer-header) > div:nth-child(4) {
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+    color: var(--gold-light);
+  }
+
+  .layer-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .l1-tag { background: rgba(92,184,122,0.15); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .l2-tag { background: rgba(91,141,200,0.15); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .l3-tag { background: rgba(201,168,76,0.15); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .l4-tag { background: rgba(224,123,60,0.15); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .l5-tag { background: rgba(224,92,92,0.12); color: var(--red); border: 1px solid rgba(224,92,92,0.25); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER GRID
+  ═══════════════════════════════════════════ */
+  .cb-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .cb-card {
+    border-radius: var(--radius);
+    border: 1px solid;
+    overflow: hidden;
+  }
+  .cb-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .cb-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cb-card-body {
+    padding: 16px 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cb-trigger-label, .cb-action-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    margin-bottom: 2px;
+    font-weight: 700;
+  }
+  .cb-card.cb-l1 { background: var(--yellow-dim); border-color: rgba(212,184,74,0.3); }
+  .cb-card.cb-l1 .cb-card-header { background: rgba(212,184,74,0.08); color: var(--yellow); }
+  .cb-card.cb-l1 .cb-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .cb-card.cb-l1 .cb-trigger-label { color: var(--yellow); }
+  .cb-card.cb-l1 .cb-action-label { color: var(--gold); }
+
+  .cb-card.cb-l2 { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .cb-card.cb-l2 .cb-card-header { background: rgba(224,123,60,0.08); color: var(--orange); }
+  .cb-card.cb-l2 .cb-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .cb-card.cb-l2 .cb-trigger-label { color: var(--orange); }
+  .cb-card.cb-l2 .cb-action-label { color: var(--gold); }
+
+  .cb-card.cb-l3 { background: var(--red-dim); border-color: rgba(224,92,92,0.35); }
+  .cb-card.cb-l3 .cb-card-header { background: rgba(224,92,92,0.1); color: var(--red); }
+  .cb-card.cb-l3 .cb-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .cb-card.cb-l3 .cb-trigger-label { color: var(--red); }
+  .cb-card.cb-l3 .cb-action-label { color: #F0A0A0; }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines { display: flex; flex-direction: column; gap: 10px; }
+  .redline-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+  }
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .redline-text { font-size: 13.5px; color: #F0A0A0; line-height: 1.6; }
+
+  /* ═══════════════════════════════════════════
+     UTILITIES
+  ═══════════════════════════════════════════ */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+  strong { color: var(--text-primary); }
+  .text-gold { color: var(--gold-light); }
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 7px; }
+  ul.bullets li { padding-left: 16px; position: relative; color: var(--text-secondary); font-size: 14px; }
+  ul.bullets li::before { content: '—'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 3px; }
+
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+  .disclaimer strong { color: var(--text-secondary); }
+
+  .credo {
+    border: 1px solid rgba(201,168,76,0.3);
+    background: rgba(201,168,76,0.04);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+  }
+  .credo-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .credo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-style: italic;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+  @media (max-width: 768px) {
+    .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+    .cb-grid { grid-template-columns: 1fr; }
+    .layer-row { grid-template-columns: 50px 1fr; }
+    .layer-row > div:nth-child(n+3) { display: none; }
+  }
+  @media print {
+    .sidebar { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+</style>
 </head>
 <body>
+<div class="layout">
 
-<div class="layout-wrapper">
-
-<!-- ─── SIDEBAR ─── -->
-<nav class="sidebar" id="sidebar">
+<!-- ══════════════════════════════════════════
+     SIDEBAR NAVIGATION
+══════════════════════════════════════════ -->
+<nav class="sidebar">
   <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
+    <span class="logo-tag">Vol Income Strategy</span>
     <div class="logo-title">NVDA 期权增强<br>操作手册</div>
-    <div class="logo-ver">V3.0 · 2026 年 4 月</div>
+    <div class="logo-ver">V3.0 · NRA专属版 · 2026年4月</div>
   </div>
 
   <div class="nav-section-label">策略基础</div>
-  <a class="nav-item" href="#ch00">00 · 策略总览与哲学</a>
-  <a class="nav-item" href="#ch01">01 · 税务合规（NRA）</a>
-  <a class="nav-item" href="#ch02">02 · 账户架构与资金</a>
+  <a class="nav-item" href="#ch00"><span class="nav-num">00</span>策略总览与哲学</a>
+  <a class="nav-item" href="#ch01"><span class="nav-num">01</span>税务合规（NRA）</a>
+  <a class="nav-item" href="#ch02"><span class="nav-num">02</span>账户架构与资金</a>
 
   <div class="nav-section-label">决策引擎</div>
-  <a class="nav-item" href="#ch03">03 · 市场状态引擎</a>
-  <a class="nav-item" href="#ch04">04 · 财报事件专属协议</a>
-  <a class="nav-item" href="#ch05">05 · 三因子量化模型</a>
-  <a class="nav-item" href="#ch06">06 · EV门槛与Delta矩阵</a>
+  <a class="nav-item" href="#ch03"><span class="nav-num">03</span>市场状态引擎</a>
+  <a class="nav-item" href="#ch04"><span class="nav-num">04</span>财报事件专属协议</a>
+  <a class="nav-item" href="#ch05"><span class="nav-num">05</span>三因子量化模型</a>
+  <a class="nav-item" href="#ch06"><span class="nav-num">06</span>EV门槛与Delta矩阵</a>
 
   <div class="nav-section-label">执行手册</div>
-  <a class="nav-item" href="#ch07">07 · L1 卖Put价差</a>
-  <a class="nav-item" href="#ch08">08 · L3 备兑Call</a>
-  <a class="nav-item" href="#ch09">09 · L4 Vol Crush层</a>
-  <a class="nav-item" href="#ch10">10 · L5 尾部对冲</a>
+  <a class="nav-item" href="#ch07"><span class="nav-num">07</span>L1 卖Put价差</a>
+  <a class="nav-item" href="#ch08"><span class="nav-num">08</span>L3 备兑Call</a>
+  <a class="nav-item" href="#ch09"><span class="nav-num">09</span>L4 Vol Crush层</a>
+  <a class="nav-item" href="#ch10"><span class="nav-num">10</span>L5 尾部对冲</a>
 
   <div class="nav-section-label">风控与纪律</div>
-  <a class="nav-item" href="#ch11">11 · 三级熔断机制</a>
-  <a class="nav-item" href="#ch12">12 · 月度操作SOP</a>
-  <a class="nav-item" href="#ch13">13 · 绩效追踪与台账</a>
-  <a class="nav-item" href="#ch14">14 · 心理纪律守则</a>
+  <a class="nav-item" href="#ch11"><span class="nav-num">11</span>三级熔断机制</a>
+  <a class="nav-item" href="#ch12"><span class="nav-num">12</span>月度操作SOP</a>
+  <a class="nav-item" href="#ch13"><span class="nav-num">13</span>绩效追踪与台账</a>
+  <a class="nav-item" href="#ch14"><span class="nav-num">14</span>心理纪律守则</a>
 </nav>
 
-<!-- ─── MAIN ─── -->
-<main class="main-content">
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<main class="main">
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-eyebrow">机构级 · 专业操作手册 · NRA专属版</div>
-  <h1>NVDA <span>波动率增强</span><br>收益策略</h1>
-  <p class="hero-sub">以英伟达高波动率溢价为核心收益来源，通过系统化卖方策略、动态风控与严格纪律，构建长期稳定现金流。你不是方向预测者，你是一家专注于 NVDA 的<strong>波动率保险公司</strong>。</p>
-  <div class="hero-meta">
-    <div class="hero-meta-item">
-      <span class="label">版本</span>
-      <span class="value">V3.0 · 综合优化版</span>
-    </div>
-    <div class="hero-meta-item">
-      <span class="label">发布日期</span>
-      <span class="value">2026年4月</span>
-    </div>
-    <div class="hero-meta-item">
-      <span class="label">适用对象</span>
-      <span class="value">NRA · 非美税务居民</span>
-    </div>
-    <div class="hero-meta-item">
-      <span class="label">目标年化（税后）</span>
-      <span class="value">12–16%（基础）</span>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">机构级 · 专业操作手册 · NRA专属版</div>
+    <h1>NVDA <span>波动率增强</span><br>收益策略</h1>
+    <p class="hero-sub">以英伟达高波动率溢价为核心收益来源，通过系统化卖方策略、动态风控与严格纪律，构建长期稳定现金流。你不是方向预测者，你是一家专注于 NVDA 的<strong class="text-gold">波动率保险公司</strong>。</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="label">版本</span><span class="value">V3.0 · 综合优化版</span></div>
+      <div class="hero-meta-item"><span class="label">发布日期</span><span class="value">2026年4月</span></div>
+      <div class="hero-meta-item"><span class="label">适用对象</span><span class="value">NRA · 非美税务居民</span></div>
+      <div class="hero-meta-item"><span class="label">目标年化（税后）</span><span class="value">12–16%（基础）</span></div>
     </div>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH00 策略总览 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch00">
-  <div class="section-header">
-    <span class="section-num">00</span>
-    <div><div class="section-title">策略总览与核心哲学</div></div>
-  </div>
+  <!-- ════════════════════════════════════════
+       CH00 策略总览
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch00">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 00</span>
+      <h2 class="chapter-title">策略总览与核心哲学</h2>
+    </div>
 
-  <div class="section">
-    <h3 class="section-title">核心定位</h3>
-    <p>本策略的核心定位是：你不是在预测 NVDA 的涨跌方向，你是一家<strong>专注于英伟达的波动率保险公司</strong>。收益来源不是方向判断，而是系统性收割市场对 NVDA 定价过高的
-    <span class="term" data-tip="波动率风险溢价（VRP）：隐含波动率（IV）与历史波动率（HV）之差所体现的溢价。市场倾向于高估未来波动率，期权卖方通过收取这个溢价获利。">波动率风险溢价（VRP）</span>
-    和
-    <span class="term" data-tip="时间价值衰减（Theta）：每过一天，期权因距到期日缩短而损失的时间价值。期权卖方是Theta的受益方——随时间流逝，期权价值向卖方流动。">时间价值（Theta）</span>。</p>
-    <p>NVDA 不是普通的高波动标的——它每季度发生一次"核爆级"财报事件（单日隐含波动±15–25%），并面临独有的监管与地缘政治黑天鹅风险。本手册在标准卖方框架之上，专项加固了这两个 NVDA 特有的风险维度。</p>
-
-    <div class="callout warning">
-  <span class="callout-icon">⚠</span>
-  <div><strong>重要认知：</strong>本策略的本质是<strong>长期承担有限尾部风险以换取稳定现金流</strong>。年化 12–16% 的目标需以接受偶尔10–20% 的回撤为代价。若无法接受此风险收益结构，本策略不适合你。</div>
-</div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">五层收益结构</h3>
-    <div class="layer-stack">
-      <div class="layer-row layer-header">
-        <div>层级</div><div>名称</div><div>工具</div><div>目标年化贡献</div><div>操作频率</div>
-      </div>
-      <div class="layer-row">
-        <div><span class="layer-tag l1-tag">L1</span></div>
-        <div><strong>核心层 · 卖Put价差</strong></div>
-        <div>NVDA <span class="term" data-tip="牛市看跌价差（Bull Put Spread）：同时卖出较高行权价的Put（收权利金）和买入较低行权价的Put（付权利金），形成有限风险的卖方结构。标的不大跌时盈利。">Bull Put Spread</span></div>
-        <div class="td-num">8–12%</div>
-        <div>每月滚动</div>
-      </div>
-      <div class="layer-row">
-        <div><span class="layer-tag l2-tag">L2</span></div>
-        <div><strong>利息层 · 短期国债</strong></div>
-        <div><span class="term" data-tip="SGOV/BIL：投资于0-3个月超短期美国国债的ETF。当前年化收益约4-5%，可作为期权保证金的抵押品，同时提供安全垫收益。">SGOV / BIL</span></div>
-        <div class="td-num">4.0–4.8%</div>
-        <div>长期持有</div>
-      </div>
-      <div class="layer-row">
-        <div><span class="layer-tag l3-tag">L3</span></div>
-        <div><strong>备兑层 · Covered Call</strong></div>
-        <div>NVDA 正股 + 卖Call（状态B/C）</div>
-        <div class="td-num">3–5%</div>
-        <div>每月滚动</div>
-      </div>
-      <div class="layer-row">
-        <div><span class="layer-tag l4-tag">L4</span></div>
-        <div><strong>溢价捕捉层 · Vol Crush</strong></div>
-        <div>财报后短期卖Put价差</div>
-        <div class="td-num">1–3%</div>
-        <div>季度触发</div>
-      </div>
-      <div class="layer-row">
-        <div><span class="layer-tag l5-tag">L5</span></div>
-        <div><strong>对冲层 · 尾部保护</strong></div>
-        <div>双层Put Spread（主层80-85%+辅层65-70%）</div>
-        <div class="td-num">−0.6 ~ −1.2%（成本）</div>
-        <div>月度/季度滚动</div>
+    <div class="section">
+      <div class="section-title">核心定位</div>
+      <p>本策略的核心定位是：你不是在预测 NVDA 的涨跌方向，你是一家<strong>专注于英伟达的波动率保险公司</strong>。收益来源不是方向判断，而是系统性收割市场对 NVDA 定价过高的
+        <span class="term" data-tip="波动率风险溢价（VRP）：隐含波动率（IV）与历史波动率（HV）之差所体现的溢价。市场倾向于高估未来波动率，期权卖方通过收取这个溢价获利。">波动率风险溢价（VRP）</span>
+        和
+        <span class="term" data-tip="时间价值衰减（Theta）：每过一天，期权因距到期日缩短而损失的时间价值。期权卖方是Theta的受益方——随时间流逝，期权价值向卖方流动。">时间价值（Theta）</span>。
+      </p>
+      <p>NVDA 不是普通的高波动标的——它每季度发生一次"核爆级"财报事件（单日隐含波动±15–25%），并面临独有的监管与地缘政治黑天鹅风险。本手册在标准卖方框架之上，专项加固了这两个 NVDA 特有的风险维度。</p>
+      <div class="callout warning">
+        <div class="callout-title">⚠ 重要认知</div>
+        本策略的本质是<strong>长期承担有限尾部风险以换取稳定现金流</strong>。年化 12–16% 的目标需以接受偶尔10–20% 的回撤为代价。若无法接受此风险收益结构，本策略不适合你。
       </div>
     </div>
-    <p>基础年化目标（税后）：<strong>12–16%</strong>。进阶目标（执行满12个月验证后）：16–22%。L3 在市场状态 A（强势上涨）时强制暂停，避免截断趋势行情的上行收益。</p>
-  </div>
 
-  <div class="section">
-    <h3 class="section-title">五大核心优势</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>优势</th><th>说明</th><th>对策略的意义</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">① 高IV溢价</td>
-            <td>NVDA 的<span class="term" data-tip="隐含波动率（Implied Volatility, IV）：从期权市价反推出的市场对未来波动幅度的预期。NVDA的IV长期显著高于其历史实际波动率。">IV</span>长期显著高于<span class="term" data-tip="历史波动率（Historical Volatility, HV）：标的资产过去一段时间内实际价格波动的年化标准差。通常取30日HV与IV对比。">HV</span>，提供丰厚的VRP</td>
-            <td>卖方策略历史胜率约 70–80%</td>
-          </tr>
-          <tr>
-            <td class="td-label">② 高流动性</td>
-            <td>NVDA 期权日均成交量位居全市场前五，买卖价差极窄</td>
-            <td>允许按中间价精确执行，大幅降低滑点</td>
-          </tr>
-          <tr>
-            <td class="td-label">③ NRA税务优势</td>
-            <td>资本利得在 <span class="term" data-tip="W-8BEN：外国人税务身份证明表格，向美国金融机构申报非美国税务居民身份。有效期3年，需定期更新。">W-8BEN</span> 下免美国联邦税（需CPA书面确认）</td>
-            <td>显著提升税后净收益约 15–30%</td>
-          </tr>
-          <tr>
-            <td class="td-label">④ 长期基本面支撑</td>
-            <td>AI基础设施核心受益标的，基本面提供接货后持仓信念</td>
-            <td>为卖Put接货后持有提供心理与逻辑锚定</td>
-          </tr>
-          <tr>
-            <td class="td-label">⑤ 财报节律</td>
-            <td>每季度财报创造高IV窗口，财报后必然出现<span class="term" data-tip="Vol Crush（波动率坍塌）：财报公布后，不确定性消除，隐含波动率在24–72小时内快速下降30–50%的现象。无论财报好坏，这一现象几乎必然发生。">Vol Crush</span>效应</td>
-            <td>L1 与 L4 层的系统性收益机会</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH01 税务合规 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch01">
-  <div class="section-header">
-    <span class="section-num">01</span>
-    <div><div class="section-title">税务合规框架（NRA强制前置）</div></div>
-  </div>
-
-  <div class="callout danger">
-  <span class="callout-icon">🔴</span>
-  <div><strong>强制前置条件：</strong>以下所有税务确认项须获得持牌CPA<strong>书面回复</strong>后，方可进入全量执行阶段。确认前仅允许持有SGOV/BIL短期国债，或执行NVDA正股市值≤$60,000的备兑Call。</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">六项核心税务确认清单</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>#</th><th>确认事项</th><th>核心要点</th><th>未确认时限制</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-num">1</td>
-            <td class="td-label">权利金预扣税</td>
-            <td>NVDA期权权利金在W-8BEN下是否属于<span class="term" data-tip="FDAP（Fixed, Determinable, Annual, or Periodical）：固定或确定年度定期所得。对NRA的FDAP收入，美国通常预扣30%联邦税。期权权利金是否属于FDAP需要CPA逐案确认。">FDAP</span>，是否触发30%预扣</td>
-            <td><span class="badge badge-red">禁止NVDA期权裸卖</span></td>
-          </tr>
-          <tr>
-            <td class="td-num">2</td>
-            <td class="td-label">备兑行权资本利得</td>
-            <td>备兑Call被行权后卖出正股，资本利得是否免联邦税（同时确认州税）</td>
-            <td><span class="badge badge-red">禁止NVDA备兑Call</span></td>
-          </tr>
-          <tr>
-            <td class="td-num">3</td>
-            <td class="td-label">卖Put接货成本认定</td>
-            <td>接货后股票税务成本价是否 = 行权价 − 已收权利金</td>
-            <td><span class="badge badge-yellow">暂停卖Put</span></td>
-          </tr>
-          <tr>
-            <td class="td-num">4</td>
-            <td class="td-label">Wash Sale适用性</td>
-            <td><span class="term" data-tip="Wash Sale Rule（洗售规则）：在亏损卖出证券前后30天内买入"实质相同"证券，则亏损不可税务抵扣。NRA是否适用此规则及期权与正股是否构成"实质相同"需CPA确认。">Wash Sale</span> 对NRA是否完整适用，期权与正股是否构成"实质相同"</td>
-            <td><span class="badge badge-yellow">亏损后30天隔离期</span></td>
-          </tr>
-          <tr>
-            <td class="td-num">5</td>
-            <td class="td-label">遗产税红线</td>
-            <td>NRA持有美国境内资产（U.S. situs）免税额仅<strong>$60,000</strong>，确认期权持仓是否计入</td>
-            <td><span class="badge badge-red">正股持仓≤$60,000/账户</span></td>
-          </tr>
-          <tr>
-            <td class="td-num">6</td>
-            <td class="td-label">中国税务申报</td>
-            <td>境外权利金收入及资本利得是否需向中国税务机关申报，确认中美税收协定适用条款</td>
-            <td><span class="badge badge-blue">台账保留人民币折算记录</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">W-8BEN 年度维护 SOP</h3>
-    <div class="flow-steps">
-      <div class="flow-step">
-        <div class="flow-step-num">1</div>
-        <div class="flow-step-body">
-          <div class="step-title">每年1月15日前 · 更新表格</div>
-          <p>IBKR 账户管理 → 税务表格 → 确认 W-8BEN 有效期（3年）。即将到期时提前30天重新提交，避免中断导致默认30%预扣。</p>
+    <div class="section">
+      <div class="section-title">五层收益结构</div>
+      <div class="layer-stack">
+        <div class="layer-row layer-header">
+          <div>层级</div><div>名称</div><div>工具</div><div>目标年化</div><div>操作频率</div>
+        </div>
+        <div class="layer-row">
+          <div><span class="layer-tag l1-tag">L1</span></div>
+          <div><strong>核心层 · 卖Put价差</strong></div>
+          <div>NVDA <span class="term" data-tip="牛市看跌价差（Bull Put Spread）：同时卖出较高行权价的Put（收权利金）和买入较低行权价的Put（付权利金），形成有限风险的卖方结构。标的不大跌时盈利。">Bull Put Spread</span></div>
+          <div>8–12%</div>
+          <div>每月滚动</div>
+        </div>
+        <div class="layer-row">
+          <div><span class="layer-tag l2-tag">L2</span></div>
+          <div><strong>利息层 · 短期国债</strong></div>
+          <div><span class="term" data-tip="SGOV/BIL：投资于0-3个月超短期美国国债的ETF。当前年化收益约4-5%，可作为期权保证金的抵押品，同时提供安全垫收益。">SGOV / BIL</span></div>
+          <div>4.0–4.8%</div>
+          <div>长期持有</div>
+        </div>
+        <div class="layer-row">
+          <div><span class="layer-tag l3-tag">L3</span></div>
+          <div><strong>备兑层 · Covered Call</strong></div>
+          <div>NVDA 正股 + 卖Call（状态B/C）</div>
+          <div>3–5%</div>
+          <div>每月滚动</div>
+        </div>
+        <div class="layer-row">
+          <div><span class="layer-tag l4-tag">L4</span></div>
+          <div><strong>溢价捕捉层 · Vol Crush</strong></div>
+          <div>财报后短期卖Put价差</div>
+          <div>1–3%</div>
+          <div>季度触发</div>
+        </div>
+        <div class="layer-row">
+          <div><span class="layer-tag l5-tag">L5</span></div>
+          <div><strong>对冲层 · 尾部保护</strong></div>
+          <div>双层Put Spread（主层80-85%+辅层65-70%）</div>
+          <div>−0.6~−1.2%</div>
+          <div>月/季滚动</div>
         </div>
       </div>
-      <div class="flow-step">
-        <div class="flow-step-num">2</div>
-        <div class="flow-step-body">
-          <div class="step-title">每笔交易 · 税务标记</div>
-          <p>区分并记录：权利金收入 / 接货成本调整 / 资本利得 / 对冲损失。记录交易当日中国人民银行中间汇率，备中国税务申报使用。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">3</div>
-        <div class="flow-step-body">
-          <div class="step-title">季度末 · 对账与申报</div>
-          <p>将 IBKR 交易记录转交国内税务师，评估中国申报义务。每年5–6月个税汇算清缴时主动申报境外所得，主动申报风险远低于被追查。</p>
-        </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">基础年化目标（税后）：<strong style="color:var(--text-secondary);">12–16%</strong>。进阶目标（执行满12个月验证后）：16–22%。L3 在市场状态 A（强势上涨）时强制暂停。</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">五大核心优势</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>优势</th><th>说明</th><th>对策略的意义</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">① 高IV溢价</td>
+              <td>NVDA 的<span class="term" data-tip="隐含波动率（Implied Volatility, IV）：从期权市价反推出的市场对未来波动幅度的预期。NVDA的IV长期显著高于其历史实际波动率。">IV</span>长期显著高于<span class="term" data-tip="历史波动率（Historical Volatility, HV）：标的资产过去一段时间内实际价格波动的年化标准差。通常取30日HV与IV对比。">HV</span>，提供丰厚的VRP</td>
+              <td>卖方策略历史胜率约 70–80%</td>
+            </tr>
+            <tr>
+              <td class="td-label">② 高流动性</td>
+              <td>NVDA 期权日均成交量位居全市场前五，买卖价差极窄</td>
+              <td>允许按中间价精确执行，大幅降低滑点</td>
+            </tr>
+            <tr>
+              <td class="td-label">③ NRA税务优势</td>
+              <td>资本利得在 <span class="term" data-tip="W-8BEN：外国人税务身份证明表格，向美国金融机构申报非美国税务居民身份。有效期3年，需定期更新。">W-8BEN</span> 下免美国联邦税（需CPA书面确认）</td>
+              <td>显著提升税后净收益约 15–30%</td>
+            </tr>
+            <tr>
+              <td class="td-label">④ 长期基本面支撑</td>
+              <td>AI基础设施核心受益标的，基本面提供接货后持仓信念</td>
+              <td>为卖Put接货后持有提供心理与逻辑锚定</td>
+            </tr>
+            <tr>
+              <td class="td-label">⑤ 财报节律</td>
+              <td>每季度财报创造高IV窗口，财报后必然出现<span class="term" data-tip="Vol Crush（波动率坍塌）：财报公布后，不确定性消除，隐含波动率在24–72小时内快速下降30–50%的现象。无论财报好坏，这一现象几乎必然发生。">Vol Crush</span>效应</td>
+              <td>L1 与 L4 层的系统性收益机会</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH02 账户与资金 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch02">
-  <div class="section-header">
-    <span class="section-num">02</span>
-    <div><div class="section-title">账户架构与资金分配</div></div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">双账户分工矩阵</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>账户</th><th>角色定位</th><th>必须开通权限</th><th>允许操作</th><th>严禁操作</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">IBKR主账户</td>
-            <td>核心策略全量执行</td>
-            <td>保证金账户、期权Level 2+、股票交易</td>
-            <td>NVDA正股（≤$60K市值）、卖Put价差、备兑Call、SGOV</td>
-            <td>保证金使用率超60%、裸卖空Call、融资买入</td>
-          </tr>
-          <tr>
-            <td class="td-label">BBAE备用账户</td>
-            <td>应急现金 + 简单备兑</td>
-            <td>期权Level 2</td>
-            <td>现金管理、NVDA备兑Call、SGOV持有</td>
-            <td>任何卖Put、NVDA正股市值超$60,000</td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- ════════════════════════════════════════
+       CH01 税务合规
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch01">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 01</span>
+      <h2 class="chapter-title">税务合规框架（NRA强制前置）</h2>
     </div>
-  </div>
 
-  <div class="section">
-    <h3 class="section-title">资金分配铁律（以净值100万美元为例）</h3>
     <div class="callout danger">
-  <span class="callout-icon">🔴</span>
-  <div><strong>遗产税铁律：</strong><strong>单账户NVDA正股市值永久≤$60,000</strong>。超过此限额须立即转移至备用账户或减持，不得拖延超过48小时。资产规模超过500万美元的投资者，强烈建议通过离岸信托/公司持有正股。</div>
-</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>资金用途</th><th>占比</th><th>金额（$100万示例）</th><th>工具</th><th>硬性约束</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">现金 + 短期国债（安全垫）</td>
-            <td><span class="badge badge-green">≥ 40%</span></td>
-            <td class="td-num">≥ $40万</td>
-            <td>SGOV / BIL</td>
-            <td>永不低于30%，作为保证金抵押品与应急缓冲</td>
-          </tr>
-          <tr>
-            <td class="td-label">NVDA卖Put价差保证金（核心引擎）</td>
-            <td><span class="badge badge-yellow">≤ 25%</span></td>
-            <td class="td-num">≤ $25万</td>
-            <td>保证金账户</td>
-            <td>名义敞口 ≤ 净值40%，单批≤净值10%×仓位系数</td>
-          </tr>
-          <tr>
-            <td class="td-label">NVDA正股底仓（备兑基础）</td>
-            <td><span class="badge badge-yellow">≤ 10%</span></td>
-            <td class="td-num">≤ $10万</td>
-            <td>NVDA正股</td>
-            <td><strong>单账户市值 ≤ $60,000（遗产税红线）</strong></td>
-          </tr>
-          <tr>
-            <td class="td-label">灵活缓冲（机动资金）</td>
-            <td><span class="badge badge-green">≥ 25%</span></td>
-            <td class="td-num">≥ $25万</td>
-            <td>SGOV或现金</td>
-            <td>不得挪用为期权保证金，用于应对追加保证金</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="callout-title">⛔ 强制前置条件</div>
+      以下所有税务确认项须获得持牌CPA<strong>书面回复</strong>后，方可进入全量执行阶段。确认前仅允许持有SGOV/BIL短期国债，或执行NVDA正股市值≤$60,000的备兑Call。
     </div>
-    <p>每季度再平衡：净值变动超过±20%时，重新按比例计算各层绝对金额并强制调整。</p>
-  </div>
 
-  <div class="section">
-    <h3 class="section-title">规模差异化执行参数</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>资金规模</th><th>单批张数上限</th><th>正股市值上限</th><th>保证金使用率上限</th><th>建议执行节奏</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">15–50万美元</td><td class="td-num">1–3张</td><td class="td-num">≤ $60,000</td><td class="td-num">≤ 40%</td><td>单一状态运行，优先L1</td></tr>
-          <tr><td class="td-label">50–200万美元</td><td class="td-num">3–10张</td><td class="td-num">≤ $60,000</td><td class="td-num">≤ 50%</td><td>可分批开仓，错开到期日</td></tr>
-          <tr><td class="td-label">200–500万美元</td><td class="td-num">10–25张</td><td class="td-num">≤ $60,000/主账户</td><td class="td-num">≤ 55%</td><td>双账户并行，多行权价梯次</td></tr>
-          <tr><td class="td-label">500万美元以上</td><td class="td-num">25–50张</td><td class="td-num">多账户各≤$60,000</td><td class="td-num">≤ 60%</td><td>多批次分散，考虑离岸架构</td></tr>
-        </tbody>
-      </table>
+    <div class="section">
+      <div class="section-title">六项核心税务确认清单</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>确认事项</th><th>核心要点</th><th>未确认时限制</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-num">1</td>
+              <td class="td-label">权利金预扣税</td>
+              <td>NVDA期权权利金在W-8BEN下是否属于<span class="term" data-tip="FDAP（Fixed, Determinable, Annual, or Periodical）：固定或确定年度定期所得。对NRA的FDAP收入，美国通常预扣30%联邦税。期权权利金是否属于FDAP需要CPA逐案确认。">FDAP</span>，是否触发30%预扣</td>
+              <td><span class="badge badge-red">禁止NVDA期权裸卖</span></td>
+            </tr>
+            <tr>
+              <td class="td-num">2</td>
+              <td class="td-label">备兑行权资本利得</td>
+              <td>备兑Call被行权后卖出正股，资本利得是否免联邦税（同时确认州税）</td>
+              <td><span class="badge badge-red">禁止NVDA备兑Call</span></td>
+            </tr>
+            <tr>
+              <td class="td-num">3</td>
+              <td class="td-label">卖Put接货成本认定</td>
+              <td>接货后股票税务成本价是否 = 行权价 − 已收权利金</td>
+              <td><span class="badge badge-amber">暂停卖Put</span></td>
+            </tr>
+            <tr>
+              <td class="td-num">4</td>
+              <td class="td-label">Wash Sale适用性</td>
+              <td><span class="term" data-tip="Wash Sale Rule（洗售规则）：在亏损卖出证券前后30天内买入"实质相同"证券，则亏损不可税务抵扣。NRA是否适用此规则及期权与正股是否构成"实质相同"需CPA确认。">Wash Sale</span> 对NRA是否完整适用，期权与正股是否构成"实质相同"</td>
+              <td><span class="badge badge-amber">亏损后30天隔离期</span></td>
+            </tr>
+            <tr>
+              <td class="td-num">5</td>
+              <td class="td-label">遗产税红线</td>
+              <td>NRA持有美国境内资产（U.S. situs）免税额仅<strong>$60,000</strong>，确认期权持仓是否计入</td>
+              <td><span class="badge badge-red">正股持仓≤$60,000/账户</span></td>
+            </tr>
+            <tr>
+              <td class="td-num">6</td>
+              <td class="td-label">中国税务申报</td>
+              <td>境外权利金收入及资本利得是否需向中国税务机关申报，确认中美税收协定适用条款</td>
+              <td><span class="badge badge-navy">台账保留人民币折算记录</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-</section>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH03 市场状态引擎 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch03">
-  <div class="section-header">
-    <span class="section-num">03</span>
-    <div><div class="section-title">市场状态引擎</div></div>
-  </div>
+    <div class="section">
+      <div class="section-title">W-8BEN 年度维护 SOP</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">每年1月15日前 · 更新表格</div>
+            <p style="font-size:13.5px;margin:0;">IBKR 账户管理 → 税务表格 → 确认 W-8BEN 有效期（3年）。即将到期时提前30天重新提交，避免中断导致默认30%预扣。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">每笔交易 · 税务标记</div>
+            <p style="font-size:13.5px;margin:0;">区分并记录：权利金收入 / 接货成本调整 / 资本利得 / 对冲损失。记录交易当日中国人民银行中间汇率，备中国税务申报使用。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">季度末 · 对账与申报</div>
+            <p style="font-size:13.5px;margin:0;">将 IBKR 交易记录转交国内税务师，评估中国申报义务。每年5–6月个税汇算清缴时主动申报境外所得，主动申报风险远低于被追查。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <p>每周一美东时间9:00–9:30，根据以下矩阵判定<strong>唯一市场状态</strong>。所有开仓决策由此驱动。判断时以保守为原则，边界情形一律归入更低级状态。</p>
+  <!-- ════════════════════════════════════════
+       CH02 账户与资金
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch02">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 02</span>
+      <h2 class="chapter-title">账户架构与资金分配</h2>
+    </div>
 
-  <div class="section">
-    <h3 class="section-title">四状态定义矩阵</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>状态</th><th>技术判定条件（需同时满足）</th><th>IV30参考</th><th>策略基调</th><th>开仓系数</th><th>L3备兑</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="badge badge-green">A · 强势上涨</span></td>
-            <td>NVDA &gt; <span class="term" data-tip="MA20（20日移动平均线）：过去20个交易日收盘价的平均值，用于判断短期趋势方向。">MA20</span> &gt; <span class="term" data-tip="MA50（50日移动平均线）：过去50个交易日收盘价的平均值，用于判断中期趋势方向。">MA50</span>，MA20斜率向上</td>
-            <td class="td-num">&lt; 45%</td>
-            <td>积极卖方，行权价上移</td>
-            <td class="td-num"><strong>1.0×</strong></td>
-            <td><span class="badge badge-red">⚠ 强制暂停</span></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-blue">B · 震荡偏多</span></td>
-            <td>NVDA &gt; MA20，MA20走平或缓升，MA50向上</td>
-            <td class="td-num">45–65%</td>
-            <td>标准卖方，正常参数</td>
-            <td class="td-num"><strong>0.8×</strong></td>
-            <td><span class="badge badge-green">正常执行</span></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-yellow">C · 震荡偏空</span></td>
-            <td>NVDA &lt; MA20 但 &gt; MA50，或MA20走平转下</td>
-            <td class="td-num">65–85%</td>
-            <td>防御性操作，强制价差保护</td>
-            <td class="td-num"><strong>0.5×</strong></td>
-            <td><span class="badge badge-yellow">保守执行</span></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-red">D · 强势下跌</span></td>
-            <td>NVDA &lt; MA20 &lt; MA50，MA20斜率向下</td>
-            <td class="td-num">&gt; 85%</td>
-            <td>全面暂停卖方，等待右侧</td>
-            <td class="td-num"><strong>0×</strong></td>
-            <td><span class="badge badge-red">暂停</span></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="section">
+      <div class="section-title">双账户分工矩阵</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>账户</th><th>角色定位</th><th>必须开通权限</th><th>允许操作</th><th>严禁操作</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">IBKR主账户</td>
+              <td>核心策略全量执行</td>
+              <td>保证金账户、期权Level 2+、股票交易</td>
+              <td>NVDA正股（≤$60K市值）、卖Put价差、备兑Call、SGOV</td>
+              <td>保证金使用率超60%、裸卖空Call、融资买入</td>
+            </tr>
+            <tr>
+              <td class="td-label">BBAE备用账户</td>
+              <td>应急现金 + 简单备兑</td>
+              <td>期权Level 2</td>
+              <td>现金管理、NVDA备兑Call、SGOV持有</td>
+              <td>任何卖Put、NVDA正股市值超$60,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">资金分配铁律（以净值100万美元为例）</div>
+      <div class="callout danger">
+        <div class="callout-title">⛔ 遗产税铁律</div>
+        <strong>单账户NVDA正股市值永久≤$60,000</strong>。超过此限额须立即转移至备用账户或减持，不得拖延超过48小时。资产规模超过500万美元的投资者，强烈建议通过离岸信托/公司持有正股。
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>资金用途</th><th>占比</th><th>金额（$100万示例）</th><th>工具</th><th>硬性约束</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">现金 + 短期国债（安全垫）</td>
+              <td><span class="badge badge-green">≥ 40%</span></td>
+              <td class="td-num">≥ $40万</td>
+              <td>SGOV / BIL</td>
+              <td>永不低于30%，作为保证金抵押品与应急缓冲</td>
+            </tr>
+            <tr>
+              <td class="td-label">NVDA卖Put价差保证金（核心引擎）</td>
+              <td><span class="badge badge-amber">≤ 25%</span></td>
+              <td class="td-num">≤ $25万</td>
+              <td>保证金账户</td>
+              <td>名义敞口 ≤ 净值40%，单批≤净值10%×仓位系数</td>
+            </tr>
+            <tr>
+              <td class="td-label">NVDA正股底仓（备兑基础）</td>
+              <td><span class="badge badge-amber">≤ 10%</span></td>
+              <td class="td-num">≤ $10万</td>
+              <td>NVDA正股</td>
+              <td><strong>单账户市值 ≤ $60,000（遗产税红线）</strong></td>
+            </tr>
+            <tr>
+              <td class="td-label">灵活缓冲（机动资金）</td>
+              <td><span class="badge badge-green">≥ 25%</span></td>
+              <td class="td-num">≥ $25万</td>
+              <td>SGOV或现金</td>
+              <td>不得挪用为期权保证金，用于应对追加保证金</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">规模差异化执行参数</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>资金规模</th><th>单批张数上限</th><th>正股市值上限</th><th>保证金使用率上限</th><th>建议执行节奏</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">15–50万美元</td><td class="td-num">1–3张</td><td class="td-num">≤ $60,000</td><td class="td-num">≤ 40%</td><td>单一状态运行，优先L1</td></tr>
+            <tr><td class="td-label">50–200万美元</td><td class="td-num">3–10张</td><td class="td-num">≤ $60,000</td><td class="td-num">≤ 50%</td><td>可分批开仓，错开到期日</td></tr>
+            <tr><td class="td-label">200–500万美元</td><td class="td-num">10–25张</td><td class="td-num">≤ $60,000/主账户</td><td class="td-num">≤ 55%</td><td>双账户并行，多行权价梯次</td></tr>
+            <tr><td class="td-label">500万美元以上</td><td class="td-num">25–50张</td><td class="td-num">多账户各≤$60,000</td><td class="td-num">≤ 60%</td><td>多批次分散，考虑离岸架构</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH03 市场状态引擎
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch03">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 03</span>
+      <h2 class="chapter-title">市场状态引擎</h2>
+    </div>
+
+    <p>每周一美东时间9:00–9:30，根据以下矩阵判定<strong>唯一市场状态</strong>。所有开仓决策由此驱动。判断时以保守为原则，边界情形一律归入更低级状态。</p>
+
+    <div class="section">
+      <div class="section-title">四状态定义矩阵</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>状态</th><th>技术判定条件（需同时满足）</th><th>IV30参考</th><th>策略基调</th><th>开仓系数</th><th>L3备兑</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">A · 强势上涨</span></td>
+              <td>NVDA &gt; <span class="term" data-tip="MA20（20日移动平均线）：过去20个交易日收盘价的平均值，用于判断短期趋势方向。">MA20</span> &gt; <span class="term" data-tip="MA50（50日移动平均线）：过去50个交易日收盘价的平均值，用于判断中期趋势方向。">MA50</span>，MA20斜率向上</td>
+              <td class="td-num">&lt; 45%</td>
+              <td>积极卖方，行权价上移</td>
+              <td class="td-num"><strong>1.0×</strong></td>
+              <td><span class="badge badge-red">强制暂停</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-navy">B · 震荡偏多</span></td>
+              <td>NVDA &gt; MA20，MA20走平或缓升，MA50向上</td>
+              <td class="td-num">45–65%</td>
+              <td>标准卖方，正常参数</td>
+              <td class="td-num"><strong>0.8×</strong></td>
+              <td><span class="badge badge-green">正常执行</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">C · 震荡偏空</span></td>
+              <td>NVDA &lt; MA20 但 &gt; MA50，或MA20走平转下</td>
+              <td class="td-num">65–85%</td>
+              <td>防御性操作，强制价差保护</td>
+              <td class="td-num"><strong>0.5×</strong></td>
+              <td><span class="badge badge-amber">保守执行</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">D · 强势下跌</span></td>
+              <td>NVDA &lt; MA20 &lt; MA50，MA20斜率向下</td>
+              <td class="td-num">&gt; 85%</td>
+              <td>全面暂停卖方，等待右侧</td>
+              <td class="td-num"><strong>0×</strong></td>
+              <td><span class="badge badge-red">暂停</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <div class="callout-title">ℹ 状态A暂停L3的逻辑</div>
+        NVDA 具有强趋势特征（2023年涨240%，2024年H1涨170%）。强势上涨期间卖备兑Call，会在标的持续上涨时被反复行权，导致截断上行收益。趋势期的踏空机会成本远超备兑权利金，故状态A时强制暂停L3。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">IV30 独立硬约束（优先于状态判断）</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>IV30水平</th><th>执行动作</th><th>叠加系数</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">≤ 45%</td><td>按状态正常执行</td><td class="td-num"><strong>1.0×</strong></td></tr>
+            <tr><td class="td-num">45–65%</td><td>新仓规模减半，仅状态A/B可开仓</td><td class="td-num"><strong>0.5×</strong></td></tr>
+            <tr><td class="td-num">65–85%</td><td>新仓规模减至四分之一，仅状态A可开仓</td><td class="td-num"><strong>0.25×</strong></td></tr>
+            <tr><td class="td-num">&gt; 85%</td><td><span class="badge badge-red">全面停止新开卖方仓位，仅管理存量</span></td><td class="td-num"><strong>0×</strong></td></tr>
+            <tr><td>单日涨幅 &gt; 25%</td><td><span class="badge badge-red">立即启动L1熔断，当日禁止一切新开仓</span></td><td class="td-num">紧急</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH04 财报事件专属协议
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch04">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 04</span>
+      <h2 class="chapter-title">财报事件专属协议</h2>
+    </div>
+
+    <div class="callout danger">
+      <div class="callout-title">🔴 最高级风险警告</div>
+      NVDA 每季度发布财报，期权市场隐含的单日波动通常为 <strong>15–25%</strong>。这是全策略最大的单点风险，历史上 8% 的跳空缓冲完全不足以覆盖财报跳空。本章协议是强制性框架，不接受任何例外。
+    </div>
+
+    <div class="section">
+      <div class="section-title">财报时间轴与仓位管控</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>阶段</th><th>时间节点</th><th>必须执行的操作</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">财报前30日</td><td>D−30</td>
+              <td>停止开启 <span class="term" data-tip="DTE（Days to Expiration）：期权合约距到期日的剩余天数。DTE越小，Theta衰减越快，但Gamma风险也越大。">DTE</span> &lt; 50天的新L1仓位，避免跨越财报日期</td>
+            </tr>
+            <tr>
+              <td class="td-label">财报前10日</td><td>D−10</td>
+              <td>全面评估存量仓位。DTE &lt; 35天且距行权价 &lt; 15% 的L1仓位，<strong>强制平仓或Roll至财报后</strong></td>
+            </tr>
+            <tr>
+              <td class="td-label">财报前3日</td><td>D−3</td>
+              <td>所有DTE &lt; 20天的仓位必须平仓。确保保证金使用率 &lt; 40%（为隔夜跳空预留空间）</td>
+            </tr>
+            <tr>
+              <td class="td-label">财报日当天</td><td>D</td>
+              <td><strong>禁止一切新开仓</strong>。不干预存量仓位。仅执行已触发的GTC止盈单</td>
+            </tr>
+            <tr>
+              <td class="td-label">财报后1日</td><td>D+1</td>
+              <td>查看 <span class="term" data-tip="Vol Crush（波动率坍塌）：财报公布后，不确定性消除，隐含波动率快速下降30–50%的现象。无论财报结果好坏，这一现象在NVDA历史上几乎必然发生。">Vol Crush</span> 幅度。若IV坍塌 &gt; 25%，评估L4层短期卖方机会（见第09章）</td>
+            </tr>
+            <tr>
+              <td class="td-label">财报后3日</td><td>D+3</td>
+              <td>重新评估市场状态，恢复正常L1月度开仓节奏</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">财报后股价剧烈波动应急流程</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>情景</th><th>触发条件</th><th>执行动作</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">大涨 +15%以上</span></td>
+              <td>单日涨幅 &gt; 15%</td>
+              <td>①平仓所有DTE &lt; 30天的卖Put价差②评估L4 Vol Crush机会③状态确认为A，下月扩大L1规模</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-navy">小幅波动 ±8%以内</span></td>
+              <td>价格变动 &lt; 8%</td>
+              <td>正常持有所有仓位，等待GTC止盈单触发，继续标准月度节奏</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">中幅下跌 8–15%</span></td>
+              <td>单日跌幅8–15%</td>
+              <td>①立即检查所有L1行权价距离②距行权价 &lt; 5% 的仓位提前平仓③启动L3接货备兑模式</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">大跌 &gt; 15%</span></td>
+              <td>单日跌幅 &gt; 15%</td>
+              <td>①<strong>市价平仓</strong>所有DTE &lt; 30天的L1仓位②评估是否触发三级熔断③全面进入防御模式</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH05 三因子量化模型
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch05">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 05</span>
+      <h2 class="chapter-title">三因子量化决策模型</h2>
+    </div>
+
+    <p>每个交易日开盘后15分钟内，计算三因子加权得分，输出当日仓位系数。此系数与状态引擎（第03章）叠加使用，取两者中更保守的结果。</p>
+
+    <div class="formula">
+      <span class="formula-label">综合得分公式</span>
+      综合得分 = F₁（波动率溢价）× <strong>40%</strong> + F₂（波动率结构）× <strong>30%</strong> + F₃（趋势强度）× <strong>30%</strong>
+    </div>
+
+    <div class="section">
+      <div class="section-title">因子计算方法</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">F₁ 波动率溢价</td>
+              <td class="td-num">40%</td>
+              <td>IV30 / HV30</td>
+              <td>IV30−HV30差值在过去252日百分位：≥70%→100分；50–70%→60分；&lt;50%→20分</td>
+              <td>NVDA的IV长期高于HV，此因子通常偏高，是最核心的开仓驱动因子</td>
+            </tr>
+            <tr>
+              <td class="td-label">F₂ 波动率结构</td>
+              <td class="td-num">30%</td>
+              <td><span class="term" data-tip="Put Skew（认沽偏斜）：同到期日下，虚值Put的隐含波动率高于平值Put的程度。Skew越陡，说明市场越担忧下行风险，也意味着卖方可收取的溢价越高。">Put Skew</span>斜率</td>
+              <td>虚值Put IV（80%行权价）与平值Put IV之差：&gt;10%→80分；5–10%→50分；&lt;5%→20分</td>
+              <td><strong>已替代原版PE估值因子</strong>。NVDA长期高PE导致PE因子系统性失效，Put Skew直接反映期权定价结构</td>
+            </tr>
+            <tr>
+              <td class="td-label">F₃ 趋势强度</td>
+              <td class="td-num">30%</td>
+              <td><span class="term" data-tip="ADX（Average Directional Index，平均方向指数）：用于衡量趋势强度的技术指标。ADX>25表示趋势较强，但ADX本身不区分涨跌方向，需结合价格与均线判断方向。">ADX(20)</span> + 方向</td>
+              <td>ADX × 方向因子：股价&gt;MA20时+1，&lt;MA20时−1。强势下跌状态强制归零</td>
+              <td>双重修正：同时考虑趋势强度和方向，避免强势下跌时误判为高得分</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">综合得分 → 仓位系数映射</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">≥ 70分</td><td><span class="badge badge-green">1.0×</span></td><td>满仓按Delta矩阵开仓，优质时机全力执行</td></tr>
+            <tr><td class="td-num">50–69分</td><td><span class="badge badge-navy">0.5×</span></td><td>半仓开仓，优先保守行权价，避开IV边界区</td></tr>
+            <tr><td class="td-num">30–49分</td><td><span class="badge badge-amber">0.25×</span></td><td>仅开最高质量仓位（卖Put价差，状态B/C）</td></tr>
+            <tr><td class="td-num">&lt; 30分</td><td><span class="badge badge-red">0×</span></td><td>不开新仓，仅管理存量仓位</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH06 EV门槛与Delta矩阵
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch06">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 06</span>
+      <h2 class="chapter-title">EV门槛与Delta矩阵</h2>
+    </div>
+
+    <div class="section">
+      <div class="section-title">预期价值（EV）强制门槛</div>
+      <div class="callout danger">
+        <div class="callout-title">⛔ 铁律</div>
+        每笔卖出期权操作前必须计算EV，未达标禁止开仓。净权利金每张须 ≥ <strong>$0.80</strong>（防止小资金下滑点与手续费侵蚀实际EV）。
+      </div>
+      <div class="formula">
+        <span class="formula-label">EV计算公式</span>
+        EV = 权利金收入 × (1 − P<sub>被行权</sub>) − 最大亏损 × P<sub>被行权</sub>
+        <br>
+        其中：P<sub>被行权</sub> = <strong>Delta绝对值 × 1.15</strong>（NVDA个股跳空风险修正系数）
+        <br>
+        最大亏损 = （卖出行权价 − 买入行权价）× 100 × 张数 − 已收权利金
+        <span class="threshold">⟹ 门槛：EV &gt; 0 且 EV / 权利金收入 &gt; 20%，净权利金/张 ≥ $0.80</span>
+      </div>
+      <div class="callout info">
+        <div class="callout-title">ℹ 修正系数说明</div>
+        指数ETF（如SPX）跳空修正系数通常用1.0，而NVDA作为单只个股，历史上财报跳空可达15–25%，正态分布严重低估尾部概率。修正系数1.15是对跳空风险的保守近似补偿，不代表精确的统计模型。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">NVDA 卖Put价差 Delta矩阵（DTE 35–45天）</div>
+      <div class="callout warning">
+        <div class="callout-title">⚠ 强制前置</div>
+        卖出行权价须距当前NVDA价格 <strong>≥ 10%</strong>（跳空缓冲，财报后30天内可酌情降至8%）。财报前D-10至D+3期间禁止新开L1仓位（见第04章）。
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>NVDA位置（相对MA20）</th>
+              <th>状态A（IV&lt;45%）</th>
+              <th>状态B（IV 45–65%）</th>
+              <th>状态C（IV 65–85%）</th>
+              <th>状态D</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="td-label">高位区（&gt; MA20×1.10）</td><td class="td-num">0.08–0.13</td><td class="td-num">0.10–0.16</td><td><span class="badge badge-red">不开仓</span></td><td><span class="badge badge-red">不开仓</span></td></tr>
+            <tr><td class="td-label">中位区（MA20×0.92–1.10）</td><td class="td-num">0.10–0.16</td><td class="td-num">0.13–0.20</td><td class="td-num">0.16–0.23</td><td><span class="badge badge-red">不开仓</span></td></tr>
+            <tr><td class="td-label">低位区（MA20×0.82–0.92）</td><td class="td-num">0.13–0.18</td><td class="td-num">0.16–0.23</td><td class="td-num">0.20–0.26</td><td><span class="badge badge-red">不开仓</span></td></tr>
+            <tr><td class="td-label">极端区（&lt; MA20×0.82）</td><td><span class="badge badge-amber">暂停</span></td><td><span class="badge badge-amber">暂停</span></td><td>仅 <span class="term" data-tip="Delta：期权价格对标的价格变动1美元的敏感度。Delta 0.15的Put意味着标的每跌$1，Put价格约涨$0.15。Delta越小，期权越虚值，被行权的概率越低。">Delta</span> &lt; 0.15强制价差</td><td><span class="badge badge-red">不开仓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">价差宽度矩阵</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>IV30水平</th><th>建议价差宽度</th><th>最大亏损/张</th><th>目标权利金/张</th><th>权利金/亏损比</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">≤ 45%（低波动）</td><td class="td-num">$20–$30</td><td class="td-num">$2,000–$3,000</td><td class="td-num">$0.80–$1.00</td><td class="td-num">17–33%</td></tr>
+            <tr><td class="td-num">45–65%（正常）</td><td class="td-num">$30–$50</td><td class="td-num">$3,000–$5,000</td><td class="td-num">$1.00–$2.50</td><td class="td-num">20–40%</td></tr>
+            <tr><td class="td-num">65–85%（偏高）</td><td class="td-num">$50–$80</td><td class="td-num">$5,000–$8,000</td><td class="td-num">$1.80–$4.00</td><td class="td-num">22–40%</td></tr>
+            <tr><td class="td-num">&gt; 85%（危机）</td><td colspan="4"><span class="badge badge-red">IV硬约束：全面禁止开仓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH07 L1 Bull Put Spread
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch07">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 07</span>
+      <h2 class="chapter-title">L1 核心层 · NVDA Bull Put Spread</h2>
+    </div>
+    <p>目标年化贡献8–12%，占策略总收益约60%。利用NVDA高IV优势，系统性收割波动率溢价，用价差结构将最大亏损锁定在有限范围内。</p>
+
+    <div class="section">
+      <div class="section-title">开仓标准检查清单（全部满足方可执行）</div>
+      <ul class="checklist">
+        <li><div class="checklist-box"></div><span>三因子综合得分 <strong>≥ 50分</strong>，仓位系数 ≥ 0.5×</span></li>
+        <li><div class="checklist-box"></div><span>市场状态为 <strong>A、B 或 C</strong>（非D）</span></li>
+        <li><div class="checklist-box"></div><span>IV30 <strong>≤ 85%</strong>（IV硬约束）</span></li>
+        <li><div class="checklist-box"></div><span>非财报保护窗口：<strong>财报前D-10至财报后D+3期间禁止开仓</strong>（见第04章）</span></li>
+        <li><div class="checklist-box"></div><span>卖出行权价距当前NVDA价格 <strong>≥ 10%</strong>（跳空缓冲）</span></li>
+        <li><div class="checklist-box"></div><span>EV计算完成并达标：<strong>EV &gt; 0 且 EV/权利金 &gt; 20%，净权利金/张 ≥ $0.80</strong></span></li>
+        <li><div class="checklist-box"></div><span>加入本批后，总卖Put名义敞口 <strong>≤ 净值40%</strong></span></li>
+        <li><div class="checklist-box"></div><span>价差宽度符合IV矩阵（见第06章）</span></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">逐步开仓流程</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">选择到期日（DTE 35–45天）</div>
+            <p style="font-size:13.5px;margin:0;">IBKR → OptionTrader → 筛选距到期35–45天合约，<strong>优先选择周五到期</strong>（流动性最佳）。确认到期日不跨越财报日±10个交易日。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">按Delta矩阵选定K₁（卖出行权价）</div>
+            <p style="font-size:13.5px;margin:0;">根据NVDA相对MA20位置和市场状态，从第06章矩阵查取目标Delta范围，确定K₁。验证跳空缓冲≥10%（即K₁ ≤ 当前价×0.90），否则上移K₁。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">选定K₂（保护腿行权价）</div>
+            <p style="font-size:13.5px;margin:0;">K₂ = K₁ − 价差宽度（参考第06章价差宽度矩阵）。确认K₂的买入成本，计算净权利金 = K₁权利金 − K₂权利金。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">计算EV并验证</div>
+            <p style="font-size:13.5px;margin:0;">EV/张 = 净权利金×100×(1−P) − 最大亏损×P，其中 P = K₁的Delta绝对值×1.15。EV/（净权利金×100）须 &gt; 20%，且净权利金 ≥ $0.80。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">确定张数（含仓位系数）</div>
+            <p style="font-size:13.5px;margin:0;">单批名义敞口上限 = 净值 × 10% × 仓位系数。张数 = 上限 ÷ (K₁ × 100)，向下取整。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-title">分批执行（严禁市价单）</div>
+            <p style="font-size:13.5px;margin:0;"><strong>第一批60%</strong>：当日以买卖价差中间价挂限价组合单（Vertical Spread）。<strong>第二批40%</strong>：次日执行，争取更优成交价。绝对禁止市价单（Market Order）。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">7</div>
+          <div class="step-content">
+            <div class="step-title">同步挂GTC止盈单</div>
+            <p style="font-size:13.5px;margin:0;">开仓同时在IBKR设置 <span class="term" data-tip="GTC（Good Till Cancelled）：有效期至取消。挂单在成交或手动取消前持续有效，无需每天重新挂单。常用于设置自动止盈止损。">GTC</span> 限价平仓单，价格 = 开仓净权利金 × 50%。同时设置价格告警：NVDA触及 K₁ × 105% 时推送提醒。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">持仓管理规则</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>场景</th><th>触发条件</th><th>执行动作</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">正常止盈</td><td>GTC单自动触发（权利金衰减50%）</td><td>自动平仓，不追求最后50%价值——最后阶段风险收益比急剧恶化</td></tr>
+            <tr><td class="td-label">时间止损</td><td>持仓超21天，盈利 &lt; 50%</td><td>评估Roll（仅允许1次，新权利金须≥原60%），否则直接平仓</td></tr>
+            <tr><td class="td-label">行权预警</td><td>NVDA接近K₁（距离 &lt; 5%）</td><td>启动每日监控；跌破K₁立即评估提前平仓，不拖延</td></tr>
+            <tr><td class="td-label">紧急平仓</td><td>状态恶化为D，或IV30&gt;85%，或触发L2/L3熔断</td><td>不论盈亏，<strong>立即市价平仓</strong>所有卖Put价差</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH08 L3 Covered Call
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch08">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 08</span>
+      <h2 class="chapter-title">L3 备兑层 · Covered Call</h2>
+    </div>
+
+    <div class="callout danger">
+      <div class="callout-title">⛔ 遗产税红线</div>
+      NVDA正股为美国境内资产（U.S. situs），单账户持仓市值<strong>永久严格控制在$60,000以内</strong>。超出部分须立即处理，不得超过48小时。
+    </div>
+    <div class="callout warning">
+      <div class="callout-title">⚠ 状态A强制暂停</div>
+      当市场状态为A（强势上涨）时，<strong>L3层强制暂停</strong>。NVDA在强势趋势期间备兑Call将系统性截断上行收益，机会成本远超权利金收入。
+    </div>
+
+    <div class="section">
+      <div class="section-title">NVDA备兑Call Delta矩阵（DTE 30–40天）</div>
+      <p style="font-size:13px;color:var(--text-muted);">强制前置：行权价必须高于当前NVDA价格 ≥ 8%。状态A时此表不适用（强制暂停）。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>NVDA位置（相对MA20）</th><th>状态B（正常执行）</th><th>状态C（保守执行）</th><th>接货后（快速降本）</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">高位（&gt; MA20 + 12%）</td><td class="td-num">Delta 0.12–0.18</td><td class="td-num">Delta 0.15–0.22</td><td rowspan="3" style="vertical-align:middle;text-align:center;"><strong>1–3日内开仓</strong><br>Delta 0.25–0.35<br><span style="font-size:11px;color:var(--text-muted)">不受状态A限制</span></td></tr>
+            <tr><td class="td-label">正常区（MA20 ± 12%）</td><td class="td-num">Delta 0.15–0.20</td><td class="td-num">Delta 0.18–0.25</td></tr>
+            <tr><td class="td-label">低位（&lt; MA20 − 12%）</td><td class="td-num">Delta 0.18–0.25</td><td class="td-num">Delta 0.22–0.30</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">向上滚动（Credit Roll）规则</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>项目</th><th>要求</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">触发条件</td><td>NVDA上涨至距备兑行权价 &lt; 5%，且状态B或C</td></tr>
+            <tr><td class="td-label">操作</td><td>买入平仓当前Call + 卖出更高行权价/更远到期日新Call（<strong>组合限价单</strong>）</td></tr>
+            <tr><td class="td-label">净权利金要求</td><td><strong>必须为正（<span class="term" data-tip="Credit Roll（收权利金滚动）：将即将到期的期权展期至更远到期日时，净收取权利金的操作。这是备兑Call管理的基本原则，确保每次滚动都能为账户增加现金流。">Credit Roll</span>）</strong>——净收权利金，绝不接受<span class="term" data-tip="Debit Roll（付权利金滚动）：展期时需净支付权利金的操作。这意味着你在亏损的同时还在支出现金，严格禁止。">Debit Roll</span></td></tr>
+            <tr><td class="td-label">新行权价要求</td><td>≥ 当前行权价×105%，且 ≥ 当前NVDA价格×108%</td></tr>
+            <tr><td class="td-label">Credit Roll不可行时</td><td>接受被行权，按被行权处理流程操作</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH09 L4 Vol Crush
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch09">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 09</span>
+      <h2 class="chapter-title">L4 溢价捕捉层 · Vol Crush 与 Skew 策略</h2>
     </div>
 
     <div class="callout info">
-  <span class="callout-icon">💡</span>
-  <div><strong>状态A暂停L3的逻辑：</strong>NVDA 具有强趋势特征（2023年涨240%，2024年H1涨170%）。强势上涨期间卖备兑Call，会在标的持续上涨时被反复行权，导致截断上行收益。趋势期的踏空机会成本远超备兑权利金，故状态A时强制暂停L3。</div>
-</div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">IV30 独立硬约束（优先于状态判断）</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>IV30水平</th><th>执行动作</th><th>叠加系数</th></tr></thead>
-        <tbody>
-          <tr><td class="td-num">≤ 45%</td><td>按状态正常执行</td><td class="td-num"><strong>1.0×</strong></td></tr>
-          <tr><td class="td-num">45–65%</td><td>新仓规模减半，仅状态A/B可开仓</td><td class="td-num"><strong>0.5×</strong></td></tr>
-          <tr><td class="td-num">65–85%</td><td>新仓规模减至四分之一，仅状态A可开仓</td><td class="td-num"><strong>0.25×</strong></td></tr>
-          <tr><td class="td-num">&gt; 85%</td><td><span class="badge badge-red">全面停止新开卖方仓位，仅管理存量</span></td><td class="td-num"><strong>0×</strong></td></tr>
-          <tr><td>单日涨幅 &gt; 25%</td><td><span class="badge badge-red">立即启动L1熔断，当日禁止一切新开仓</span></td><td class="td-num">紧急</td></tr>
-        </tbody>
-      </table>
+      <div class="callout-title">ℹ 命名说明</div>
+      本层实质是在两种特定市场情景下，系统性捕捉阶段性高溢价：财报后的Vol Crush窗口，以及异常的Skew扭曲。年度贡献约1–3%，操作频率季度级。这不是需要复杂定价模型的专业套利，而是可量化、可规则化的机会捕捉。
     </div>
-    <p>
-      <span class="term" data-tip="IV30（30日隐含波动率）：根据近30日到期期权的价格反推出的市场对未来30天波动幅度的预期。高IV30通常意味着高权利金，但也意味着更大的标的价格实际风险。">IV30</span>
-      约束独立于技术状态运行，两者取更保守者作为最终开仓依据。当IV30与技术状态发出矛盾信号时，以更低的开仓系数为准。
+
+    <div class="section">
+      <div class="section-title">触发情景一：财报后Vol Crush窗口（每季度）</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参数项</th><th>规格</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">触发条件</td><td>财报公布后盘中，IV较财报前高位坍塌 &gt; 25%，且股价方向已明确（涨或跌 &gt; 5%）</td></tr>
+            <tr><td class="td-label">最佳买入窗口</td><td>财报公布后<strong>0–2小时内</strong>（此时IV仍高于正常水平20–30%，但股价方向已明确）</td></tr>
+            <tr><td class="td-label">开仓工具</td><td>卖出 <strong>7–14 DTE</strong> Put价差，行权价距当前价 ≥ 8%</td></tr>
+            <tr><td class="td-label">仓位上限</td><td>≤ 净值2%名义敞口</td></tr>
+            <tr><td class="td-label">止盈目标</td><td>权利金衰减<strong>60%</strong>（时间窗口短，止盈目标更高）</td></tr>
+            <tr><td class="td-label">注意事项</td><td>若财报后出现二次下跌，立即平仓。此策略持续时间仅7–14天，不做展期</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">触发情景二：异常Put Skew扭曲</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>触发信号</th><th>触发条件</th><th>操作结构</th><th>仓位上限</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">Skew过陡</td>
+              <td>IV30 &gt; 65%，虚值Put IV（80%行权价）比平值Put高 &gt; 15%</td>
+              <td>卖Put Spread（−10%/−18%），Delta中性</td>
+              <td rowspan="2" style="vertical-align:middle;text-align:center;">≤ 净值2%<br>持仓15–25天<br>盈利40%平仓</td>
+            </tr>
+            <tr>
+              <td class="td-label">Skew过平</td>
+              <td>IV30 &gt; 65%，虚值Call IV明显高于虚值Put</td>
+              <td>卖Call Spread（+10%/+18%），Delta中性</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH10 L5 尾部对冲
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch10">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 10</span>
+      <h2 class="chapter-title">L5 动态尾部对冲（双层结构）</h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">ℹ 设计理念升级</div>
+      原版L5仅覆盖65–70%行权价（对应30–35%大跌），但NVDA最频繁的实际风险区间是<strong>10–25%的中等幅度回调</strong>，原方案对此完全没有保护。升级版采用双层结构：主层覆盖常见的中等回调，辅层覆盖黑天鹅尾部风险。
+    </div>
+
+    <div class="section">
+      <div class="section-title">双层对冲结构</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>层次</th><th>工具</th><th>行权价区间</th><th>到期日</th><th>覆盖范围</th><th>年化成本目标</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">主层（中程保护）</td>
+              <td>Put Spread</td>
+              <td>买入：当前价×80–85%<br>卖出：当前价×70–75%</td>
+              <td>45–60天，月度滚动</td>
+              <td>覆盖15–20%回调</td>
+              <td class="td-num">约0.5–0.8%</td>
+            </tr>
+            <tr>
+              <td class="td-label">辅层（尾部保护）</td>
+              <td>深度虚值Put</td>
+              <td>当前价×65–70%</td>
+              <td>3–4个月，季度滚动</td>
+              <td>覆盖30–35%崩盘</td>
+              <td class="td-num">约0.2–0.4%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">买入时机（低成本窗口原则）</div>
+      <div class="callout warning">
+        <div class="callout-title">⚠ 关键原则</div>
+        对冲在<strong>IV低时买入成本最低</strong>。IV &gt; 65% 时买入保护Put，成本比低IV环境高80–120%——此时用最贵的成本买最需要的保护，非常不经济。
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>买入时机</th><th>条件</th><th>操作建议</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">最优窗口</td><td>状态A/B，IV30 &lt; 45%（市场平静期）</td><td>全量买入主层Put Spread + 辅层深虚值Put</td></tr>
+            <tr><td class="td-label">次优窗口</td><td>财报后72小时内，Vol Crush完成，IV Rank &lt; 35%</td><td>主要建仓窗口，利用IV坍塌后的低成本</td></tr>
+            <tr><td class="td-label">谨慎买入</td><td>状态B，IV30在45–55%</td><td>仅买主层Put Spread，辅层等待更低IV</td></tr>
+            <tr><td class="td-label">不建议买入</td><td>IV30 &gt; 65%</td><td>等待IV回落后再建仓，此时买保险最贵</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH11 三级熔断
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch11">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 11</span>
+      <h2 class="chapter-title">三级熔断机制 &amp; 25%下跌切换</h2>
+    </div>
+
+    <div class="section">
+      <div class="section-title">三级熔断（强制执行，无例外）</div>
+      <div class="cb-grid">
+        <div class="cb-card cb-l1">
+          <div class="cb-card-header"><div class="cb-dot"></div>L1 黄色预警</div>
+          <div class="cb-card-body">
+            <span class="cb-trigger-label">触发条件（任一）</span>
+            · NVDA单日跌 &gt; 5%<br>
+            · IV30单日涨 &gt; 20%<br>
+            · 账户浮亏超净值6%<br>
+            · 保证金使用率 &gt; 55%
+            <span class="cb-action-label">强制执行动作</span>
+            · 停止所有新开卖方仓位<br>
+            · 检查Put距行权价是否 &lt; 5%<br>
+            · 台账记录触发原因+时间戳
+            <span class="cb-action-label">解除条件</span>
+            24小时后自动解除（若无升级）
+          </div>
+        </div>
+
+        <div class="cb-card cb-l2">
+          <div class="cb-card-header"><div class="cb-dot"></div>L2 橙色警戒</div>
+          <div class="cb-card-body">
+            <span class="cb-trigger-label">触发条件（任一）</span>
+            · NVDA 3日累计跌 &gt; 10%<br>
+            · 保证金使用率 &gt; 65%<br>
+            · 任意Put价差保护腿接近价内<br>
+            · 账户浮亏超净值10%
+            <span class="cb-action-label">强制执行动作（24小时内）</span>
+            · 平仓50%备兑Call仓位<br>
+            · 止损所有价内Put价差<br>
+            · 买入L5主层保护（若未持有）<br>
+            · 保证金使用率压至50%以下
+            <span class="cb-action-label">解除条件</span>
+            24小时后由状态评估，人工解除
+          </div>
+        </div>
+
+        <div class="cb-card cb-l3">
+          <div class="cb-card-header"><div class="cb-dot"></div>L3 红色紧急</div>
+          <div class="cb-card-body">
+            <span class="cb-trigger-label">触发条件（任一）</span>
+            · NVDA 5日累计跌 &gt; 18%<br>
+            · 收到<span class="term" data-tip="Margin Call（追加保证金通知）：账户保证金余额低于维持保证金要求时，券商发出的追加资金通知。若不及时补缴，券商有权强制平仓。">Margin Call</span><br>
+            · IV30 &gt; 100%<br>
+            · 账户浮亏超净值18%
+            <span class="cb-action-label">立即执行（市价单）</span>
+            · 市价平仓所有期权仓位<br>
+            · 资金全部转入SGOV/现金<br>
+            · <strong>暂停交易至少30个日历日</strong>
+            <span class="cb-action-label">解除条件</span>
+            30天后经系统状态审查恢复
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">25%下跌切换机制</div>
+      <p>当NVDA从近期高点下跌超过25%时，策略切换为"持有正股等待反弹"模式，停止所有卖方操作。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>触发类型</th><th>具体条件</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">绝对跌幅触发</td><td>NVDA较策略启动基准价下跌 ≥ 25%</td></tr>
+            <tr><td class="td-label">MA200触发</td><td>NVDA较<span class="term" data-tip="MA200（200日移动平均线）：过去200个交易日收盘价的均值，通常被视为长期趋势的分水岭。价格跌破MA200往往意味着进入熊市结构。">MA200</span>下跌 ≥ 25%</td></tr>
+            <tr><td class="td-label">崩盘速度触发</td><td>10个交易日内跌幅 &gt; 20%（实时监测，无需等待5日确认）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="steps" style="margin-top:16px;">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">T+1开盘：全部平仓卖方仓位</div>
+            <p style="font-size:13.5px;margin:0;">市价买入平仓所有NVDA卖Put价差，市价平仓所有备兑Call。接受亏损，不拖延，不侥幸。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">等待IV回落后建仓正股</div>
+            <p style="font-size:13.5px;margin:0;">不立即买入正股（避免接飞刀）。等待IV30从峰值回落 ≥ 20% 后，将50–60%资金转为NVDA正股（严格控制在$60,000/账户以内）。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">持有期：停止卖Put，仅做低Delta备兑</div>
+            <p style="font-size:13.5px;margin:0;">停止所有卖Put操作。对正股仓位执行低Delta（≤ 0.15）备兑Call，仅用于降低成本，不追求最大收益。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">恢复条件（三项全部满足）</div>
+            <p style="font-size:13.5px;margin:0;">① NVDA从最低点反弹 ≥ 20%&emsp;② 站上MA20并维持3天&emsp;③ IV30 &lt; 50%。三项全满足后，以<strong>25%仓位系数试仓1个月</strong>，观察系统稳定性再逐步恢复满仓。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH12 月度SOP
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch12">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 12</span>
+      <h2 class="chapter-title">月度操作SOP（标准执行日：每月第2个周二）</h2>
+    </div>
+
+    <div class="section">
+      <div class="section-title">第一步 · 环境分析（20分钟）</div>
+      <ul class="checklist">
+        <li><div class="checklist-box"></div><span>记录NVDA价格、MA20、MA50、MA20斜率方向，判定本周市场状态（A/B/C/D）</span></li>
+        <li><div class="checklist-box"></div><span>记录IV30值，查询 <span class="term" data-tip="IVR（Implied Volatility Rank / IV Rank）：当前IV在过去一年（或52周）IV区间中所处的百分位。IVR > 60% 表示IV处于相对高位，是开仓的理想时机。">IVR</span>（隐含波动率排名），IVR &gt; 40% 为理想开仓区间</span></li>
+        <li><div class="checklist-box"></div><span>运行三因子模型，计算综合得分和仓位系数</span></li>
+        <li><div class="checklist-box"></div><span>确认下次财报日期，检查是否进入财报保护窗口（D-30、D-10、D-3节点）</span></li>
+        <li><div class="checklist-box"></div><span>台账"月度状态表"填写所有数据，确认本月操作权限</span></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">第二步 · 制定方案（30分钟）</div>
+      <ul class="checklist">
+        <li><div class="checklist-box"></div><span><strong>L1核心层</strong>：仓位系数≥0.5 且 IV30≤85% 且非财报保护窗口 → 按Delta矩阵选行权价 → 计算EV → 确定张数</span></li>
+        <li><div class="checklist-box"></div><span><strong>L3备兑层</strong>：状态B或C 且持有NVDA正股 → 按矩阵选备兑Call参数 → EV验证（状态A强制跳过）</span></li>
+        <li><div class="checklist-box"></div><span><strong>L4溢价捕捉层</strong>：本月有财报且已发布 → 评估Vol Crush窗口；若Skew触发 → 构建价差组合（≤净值2%）</span></li>
+        <li><div class="checklist-box"></div><span><strong>L5对冲层</strong>：IV30 &lt; 50%（低成本窗口）且主层Put Spread未持有或已到期 → 重建对冲</span></li>
+        <li><div class="checklist-box"></div><span>汇总新增保证金占用，确认执行后总保证金使用率 &lt; 60%</span></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">第三步 · 执行交易（25分钟）</div>
+      <ul class="checklist">
+        <li><div class="checklist-box"></div><span>L1：第一批（60%）以买卖价差中间价挂限价组合单（Vertical Spread），禁用市价单</span></li>
+        <li><div class="checklist-box"></div><span>L3备兑Call：限价单，挂中间价</span></li>
+        <li><div class="checklist-box"></div><span>L5对冲Put Spread：限价单，不追价</span></li>
+        <li><div class="checklist-box"></div><span>为所有新仓位设GTC止盈单（L1权利金衰减50%；L4衰减60%）</span></li>
+        <li><div class="checklist-box"></div><span>次日：L1第二批（40%）按计划执行</span></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">第四步 · 风控检查（10分钟）</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">总卖Put名义敞口</td><td>≤ 净值40%</td><td>超过则立即平仓至满足</td></tr>
+            <tr><td class="td-label">现金+SGOV余额</td><td>≥ 净值35%</td><td>不足则停止所有新开仓</td></tr>
+            <tr><td class="td-label">保证金使用率</td><td>&lt; 60%</td><td>&gt;65%触发L2熔断</td></tr>
+            <tr><td class="td-label">NVDA正股市值</td><td>≤ $60,000/账户</td><td>超过立即转移或减持，不超过48小时</td></tr>
+            <tr><td class="td-label">熔断状态</td><td>无L1/L2/L3触发</td><td>有触发则禁止一切新开仓</td></tr>
+            <tr><td class="td-label">财报保护窗口</td><td>确认下月财报日期</td><td>提前在日历标注D-30、D-10、D-3节点</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH13 绩效追踪
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch13">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 13</span>
+      <h2 class="chapter-title">绩效追踪与台账</h2>
+    </div>
+
+    <div class="section">
+      <div class="section-title">核心收益计算公式</div>
+      <div class="formula">
+        <span class="formula-label">月度绩效公式</span>
+        月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%<br>
+        年化收益率 = (1 + 月化收益率)^12 − 1<br>
+        NVDA综合成本 = (原成本 × 持仓量 − 本月净权利金) ÷ 当前持仓量
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">台账必填字段（每笔期权）</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>字段名称</th><th>填写示例</th><th>用途说明</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">开仓日期</td><td>2026-04-15</td><td>时间记录</td></tr>
+            <tr><td class="td-label">账户</td><td>IBKR / BBAE</td><td>1042-S税单归属</td></tr>
+            <tr><td class="td-label">策略层级</td><td>L1 / L3 / L4 / L5</td><td>收益归因分析</td></tr>
+            <tr><td class="td-label">合约标识</td><td>NVDA 250516 P 140/135</td><td>唯一识别</td></tr>
+            <tr><td class="td-label">张数</td><td>5</td><td>规模记录</td></tr>
+            <tr><td class="td-label">开仓权利金/张（净）</td><td>$2.80</td><td>收益确认基础</td></tr>
+            <tr><td class="td-label">Delta（开仓时，K₁）</td><td>−0.18</td><td>风险评估</td></tr>
+            <tr><td class="td-label">DTE（开仓时）</td><td>38天</td><td>时间管理</td></tr>
+            <tr><td class="td-label">IV30 / IVR（开仓时）</td><td>52% / 65%ile</td><td>质量评估</td></tr>
+            <tr><td class="td-label">市场状态</td><td>B</td><td>归因分析</td></tr>
+            <tr><td class="td-label">三因子得分/仓位系数</td><td>63分 → 0.5×</td><td>质量审计</td></tr>
+            <tr><td class="td-label">EV合格确认</td><td>EV=$210 / EV率=28% ✓</td><td>纪律记录</td></tr>
+            <tr><td class="td-label">财报窗口标记</td><td>非财报期 ✓ / 财报后D+2 ✓</td><td>风险审计</td></tr>
+            <tr><td class="td-label">平仓日期/价格</td><td>2026-05-02 / $1.35</td><td>收益计算</td></tr>
+            <tr><td class="td-label">净收益</td><td>$725</td><td>业绩记录</td></tr>
+            <tr><td class="td-label">税务事件标记</td><td>权利金收入 / 资本利得</td><td>CPA申报必需</td></tr>
+            <tr><td class="td-label">CNY折算金额</td><td>¥5,220（汇率7.20）</td><td>中国税务申报备用</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">季度绩效复盘模板</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>复盘维度</th><th>目标指标</th></tr></thead>
+          <tbody>
+            <tr><td class="td-label">月度胜率</td><td>目标 ≥ 70%（胜率下降至65%以下连续两季度，需暂停新仓并重新审查Delta矩阵）</td></tr>
+            <tr><td class="td-label">平均盈亏比</td><td>目标 ≥ 2.5（单次最大亏损 ÷ 单次平均盈利 ≤ 0.4）</td></tr>
+            <tr><td class="td-label">最大回撤</td><td>目标 ≤ 20%。超过20%须审查策略参数；超过25%须启动全面策略复盘</td></tr>
+            <tr><td class="td-label">EV实现率</td><td>实际收益 ÷ 开仓时预期EV × 100%，目标 ≥ 80%</td></tr>
+            <tr><td class="td-label">纪律红线违反次数</td><td>目标 = 0。每次违规须书面记录原因并追责</td></tr>
+            <tr><td class="td-label">财报专项复盘</td><td>财报前保护操作是否到位；Vol Crush是否成功捕捉；财报期最大未实现损失</td></tr>
+            <tr><td class="td-label">年度回测（每年4月）</td><td>使用过去24个月完整执行记录，计算实际胜率、最大回撤、EV实现率</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CH14 心理纪律
+  ═════════════════════════════════════════ -->
+  <section class="chapter" id="ch14">
+    <div class="chapter-header">
+      <span class="chapter-num">CHAPTER 14</span>
+      <h2 class="chapter-title">心理纪律守则</h2>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-title">◆ 策略信条</div>
+      "你是一家专注于NVDA的波动率保险公司。你的收益来源是Theta衰减和VRP，不是方向性预测。坚持系统，让时间和概率持续为你工作。保险公司的价值不在于单次赔付，而在于<strong>长期活着并持续收保费</strong>。"
+    </div>
+
+    <div class="section">
+      <div class="section-title">六大心理陷阱与应对SOP</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>心理陷阱</th><th>症状识别</th><th>正确认知</th><th>纪律SOP</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-label">踏空懊悔</td>
+              <td>备兑Call被行权后NVDA大涨，后悔"卖飞了"</td>
+              <td>行权价高于成本就是策略盈利，这是正常结果</td>
+              <td>立即按第08章流程处理，禁止在更高价追涨建仓</td>
+            </tr>
+            <tr>
+              <td class="td-label">接货恐慌</td>
+              <td>Put被行权后股价继续下跌，想割肉止损</td>
+              <td>行权价已在支撑位下方，接货后立即备兑，时间是最大盟友</td>
+              <td>1–3日内强制开始备兑Call，禁止裸持正股超过72小时</td>
+            </tr>
+            <tr>
+              <td class="td-label">低IV焦虑</td>
+              <td>IV30 &lt; 40% 时权利金太少，想降低EV标准强行开仓</td>
+              <td>低IV = 市场认为风险低。此时最优操作是在低成本窗口买入L5对冲</td>
+              <td>坚持EV门槛，看滚动12个月均值，接受合理年化8–12%</td>
+            </tr>
+            <tr>
+              <td class="td-label">赌徒谬误</td>
+              <td>连续亏损后，想"加倍下注赚回来"</td>
+              <td>亏损后加仓是期权卖方爆仓的最直接原因，无任何例外</td>
+              <td>触发L1熔断，强制24小时冷静期，违规视同红线触发</td>
+            </tr>
+            <tr>
+              <td class="td-label">财报侥幸</td>
+              <td>财报前觉得"这次结果一定好"，保留高Delta仓位或追加开仓</td>
+              <td>NVDA每次财报都有15–25%跳空可能，无论方向，这是系统性风险</td>
+              <td>严格执行第04章财报时间轴，无例外，无争议</td>
+            </tr>
+            <tr>
+              <td class="td-label">过度对冲</td>
+              <td>担心黑天鹅，买入远超预算的保护Put，侵蚀策略收益</td>
+              <td>对冲是运营成本，纳入年度预算（0.6–1.2%/年），超预算的对冲是在用保险赌方向</td>
+              <td>严格执行L5成本预算上限，超支必须有书面批准</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">五条绝对红线（违反则强制停止操作2周）</div>
+      <div class="redlines">
+        <div class="redline-item">
+          <span class="redline-num">RL-01</span>
+          <span class="redline-text"><strong>状态D或IV30 &gt; 85%时卖任何Put。</strong><br>此环境下卖方策略的统计优势已不存在，每一张都在用运气对抗概率。</span>
+        </div>
+        <div class="redline-item">
+          <span class="redline-num">RL-02</span>
+          <span class="redline-text"><strong>EV未达标或净权利金/张 &lt; $0.80 时强行开仓。</strong><br>EV门槛是客观保护机制，跳过它等于放弃这个策略的核心逻辑。</span>
+        </div>
+        <div class="redline-item">
+          <span class="redline-num">RL-03</span>
+          <span class="redline-text"><strong>为弥补亏损而超系数上限加倍仓位。</strong><br>亏损后加仓是期权卖方爆仓的直接原因，无任何场景例外。</span>
+        </div>
+        <div class="redline-item">
+          <span class="redline-num">RL-04</span>
+          <span class="redline-text"><strong>NVDA正股市值超$60,000未在48小时内处理。</strong><br>遗产税风险不可接受，超额部分存在致命法律与财务风险。</span>
+        </div>
+        <div class="redline-item">
+          <span class="redline-num">RL-05</span>
+          <span class="redline-text"><strong>在财报保护窗口内（D-10至D+3）新开L1仓位。</strong><br>NVDA财报跳空可以在2小时内将所有卖方仓位变为亏损。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 策略信条 -->
+  <div class="credo">
+    <div class="credo-label">策略信条</div>
+    <p class="credo-text">
+      "你不是赌财报的投机客。你是 NVDA 的长期受益者，通过向市场出售保险，将每年的持仓成本降低 12%–16%。偶尔的股价大跌是你低价接货的机会，偶尔的大涨是你止盈备兑的窗口。坚持系统，让概率和时间为你工作。"
     </p>
   </div>
-</section>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH04 财报事件专属协议 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch04">
-  <div class="section-header">
-    <span class="section-num">04</span>
-    <div><div class="section-title">财报事件专属协议</div></div>
+  <!-- 免责声明 -->
+  <div class="disclaimer">
+    <strong>免责声明</strong><br>
+    本操作手册基于 NVIDIA Corporation 历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。NVDA 受监管变化、业绩表现、AI行业竞争、地缘政治等因素影响，可能出现超出历史经验的极端波动。<br><br>
+    本手册所涉及的全部税务处理方式须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
+    <strong>版本：V3.0 · 综合优化版 · 2026 年 4 月 · 客户内部文件 · 禁止对外传阅</strong>
   </div>
-
-  <div class="callout danger">
-  <span class="callout-icon">🔴</span>
-  <div><strong>最高级风险警告：</strong>NVDA 每季度发布财报，期权市场隐含的单日波动通常为 <strong>15–25%</strong>。这是全策略最大的单点风险，历史上 8% 的跳空缓冲完全不足以覆盖财报跳空。本章协议是强制性框架，不接受任何例外。</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">财报时间轴与仓位管控</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>阶段</th><th>时间节点</th><th>必须执行的操作</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">财报前30日</td>
-            <td>D−30</td>
-            <td>停止开启 <span class="term" data-tip="DTE（Days to Expiration）：期权合约距到期日的剩余天数。DTE越小，Theta衰减越快，但Gamma风险也越大。">DTE</span> &lt; 50天的新L1仓位，避免跨越财报日期</td>
-          </tr>
-          <tr>
-            <td class="td-label">财报前10日</td>
-            <td>D−10</td>
-            <td>全面评估存量仓位。DTE &lt; 35天且距行权价 &lt; 15% 的L1仓位，<strong>强制平仓或Roll至财报后</strong></td>
-          </tr>
-          <tr>
-            <td class="td-label">财报前3日</td>
-            <td>D−3</td>
-            <td>所有DTE &lt; 20天的仓位必须平仓。确保保证金使用率 &lt; 40%（为隔夜跳空预留空间）</td>
-          </tr>
-          <tr>
-            <td class="td-label">财报日当天</td>
-            <td>D</td>
-            <td><strong>禁止一切新开仓</strong>。不干预存量仓位。仅执行已触发的GTC止盈单</td>
-          </tr>
-          <tr>
-            <td class="td-label">财报后1日</td>
-            <td>D+1</td>
-            <td>查看 <span class="term" data-tip="Vol Crush（波动率坍塌）：财报公布后，不确定性消除，隐含波动率快速下降30–50%的现象。无论财报结果好坏，这一现象在NVDA历史上几乎必然发生。">Vol Crush</span> 幅度。若IV坍塌 &gt; 25%，评估L4层短期卖方机会（见第09章）</td>
-          </tr>
-          <tr>
-            <td class="td-label">财报后3日</td>
-            <td>D+3</td>
-            <td>重新评估市场状态，恢复正常L1月度开仓节奏</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">财报后股价剧烈波动应急流程</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>情景</th><th>触发条件</th><th>执行动作</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="badge badge-green">大涨 +15%以上</span></td>
-            <td>单日涨幅 &gt; 15%</td>
-            <td>①平仓所有DTE &lt; 30天的卖Put价差（盈利丰厚，提前锁定）②评估L4 Vol Crush机会③状态确认为A，下月扩大L1规模</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-blue">小幅波动 ±8%以内</span></td>
-            <td>价格变动 &lt; 8%</td>
-            <td>正常持有所有仓位，等待GTC止盈单触发，继续标准月度节奏</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-yellow">中幅下跌 8–15%</span></td>
-            <td>单日跌幅8–15%</td>
-            <td>①立即检查所有L1行权价距离②距行权价 &lt; 5% 的仓位提前平仓③启动L3接货备兑模式</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-red">大跌 &gt; 15%</span></td>
-            <td>单日跌幅 &gt; 15%</td>
-            <td>①<strong>市价平仓</strong>所有DTE &lt; 30天的L1仓位②评估是否触发三级熔断③全面进入防御模式</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH05 三因子模型 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch05">
-  <div class="section-header">
-    <span class="section-num">05</span>
-    <div><div class="section-title">三因子量化决策模型</div></div>
-  </div>
-
-  <p>每个交易日开盘后15分钟内，计算三因子加权得分，输出当日仓位系数。此系数与状态引擎（第03章）叠加使用，取两者中更保守的结果。</p>
-
-  <div class="formula">
-    <span class="formula-label">综合得分公式</span>
-    综合得分 = F₁（波动率溢价）× <strong>40%</strong> + F₂（波动率结构）× <strong>30%</strong> + F₃（趋势强度）× <strong>30%</strong>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">因子计算方法</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>因子</th><th>权重</th><th>数据来源</th><th>计算逻辑</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">F₁ 波动率溢价</td>
-            <td class="td-num">40%</td>
-            <td>IV30 / HV30</td>
-            <td>IV30−HV30差值在过去252日百分位：≥70%→100分；50–70%→60分；&lt;50%→20分</td>
-            <td>NVDA的IV长期高于HV，此因子通常偏高，是最核心的开仓驱动因子</td>
-          </tr>
-          <tr>
-            <td class="td-label">F₂ 波动率结构</td>
-            <td class="td-num">30%</td>
-            <td><span class="term" data-tip="Put Skew（认沽偏斜）：同到期日下，虚值Put的隐含波动率高于平值Put的程度。Skew越陡，说明市场越担忧下行风险，也意味着卖方可收取的溢价越高。">Put Skew</span>斜率</td>
-            <td>虚值Put IV（80%行权价）与平值Put IV之差：&gt;10%→80分；5–10%→50分；&lt;5%→20分</td>
-            <td><strong>已替代原版PE估值因子</strong>。NVDA长期高PE导致PE因子系统性失效，Put Skew直接反映期权定价结构，逻辑更严谨</td>
-          </tr>
-          <tr>
-            <td class="td-label">F₃ 趋势强度</td>
-            <td class="td-num">30%</td>
-            <td><span class="term" data-tip="ADX（Average Directional Index，平均方向指数）：用于衡量趋势强度的技术指标。ADX>25表示趋势较强，但ADX本身不区分涨跌方向，需结合价格与均线判断方向。">ADX(20)</span> + 方向</td>
-            <td>ADX × 方向因子：股价&gt;MA20时+1，&lt;MA20时−1。强势下跌状态强制归零</td>
-            <td>双重修正：同时考虑趋势强度和方向，避免强势下跌时误判为高得分</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">综合得分 → 仓位系数映射</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>综合得分</th><th>仓位系数</th><th>执行动作</th></tr></thead>
-        <tbody>
-          <tr><td class="td-num">≥ 70分</td><td><span class="badge badge-green">1.0×</span></td><td>满仓按Delta矩阵开仓，优质时机全力执行</td></tr>
-          <tr><td class="td-num">50–69分</td><td><span class="badge badge-blue">0.5×</span></td><td>半仓开仓，优先保守行权价，避开IV边界区</td></tr>
-          <tr><td class="td-num">30–49分</td><td><span class="badge badge-yellow">0.25×</span></td><td>仅开最高质量仓位（卖Put价差，状态B/C）</td></tr>
-          <tr><td class="td-num">&lt; 30分</td><td><span class="badge badge-red">0×</span></td><td>不开新仓，仅管理存量仓位</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH06 EV门槛与Delta矩阵 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch06">
-  <div class="section-header">
-    <span class="section-num">06</span>
-    <div><div class="section-title">EV门槛与Delta矩阵</div></div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">预期价值（EV）强制门槛</h3>
-    <div class="callout danger">
-  <span class="callout-icon">🔴</span>
-  <div><strong>铁律：</strong>每笔卖出期权操作前必须计算EV，未达标禁止开仓。净权利金每张须 ≥ <strong>$0.80</strong>（防止小资金下滑点与手续费侵蚀实际EV）。</div>
-</div>
-
-    <div class="formula">
-      <span class="formula-label">EV计算公式</span>
-      EV = 权利金收入 × (1 − P<sub>被行权</sub>) − 最大亏损 × P<sub>被行权</sub>
-      <br>
-      其中：P<sub>被行权</sub> = <strong>Delta绝对值 × 1.15</strong>（NVDA个股跳空风险修正系数）
-      <br>
-      最大亏损 = （卖出行权价 − 买入行权价）× 100 × 张数 − 已收权利金
-      <span class="threshold">⟹ 门槛：EV &gt; 0 且 EV / 权利金收入 &gt; 20%，净权利金/张 ≥ $0.80</span>
-    </div>
-
-    <div class="callout info">
-  <span class="callout-icon">💡</span>
-  <div><strong>修正系数说明：</strong>指数ETF（如SPX）跳空修正系数通常用1.0，而NVDA作为单只个股，历史上财报跳空可达15–25%，正态分布严重低估尾部概率。修正系数1.15是对跳空风险的保守近似补偿，不代表精确的统计模型。</div>
-</div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">NVDA 卖Put价差 Delta矩阵（DTE 35–45天）</h3>
-    <div class="callout warning">
-  <span class="callout-icon">⚠</span>
-  <div><strong>强制前置：</strong>卖出行权价须距当前NVDA价格 <strong>≥ 10%</strong>（跳空缓冲，财报后30天内可酌情降至8%）。财报前D-10至D+3期间禁止新开L1仓位（见第04章）。</div>
-</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>NVDA位置（相对MA20）</th>
-            <th>状态A（IV&lt;45%）</th>
-            <th>状态B（IV 45–65%）</th>
-            <th>状态C（IV 65–85%）</th>
-            <th>状态D</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="td-label">高位区（&gt; MA20×1.10）</td><td class="td-num">0.08–0.13</td><td class="td-num">0.10–0.16</td><td><span class="badge badge-red">不开仓</span></td><td><span class="badge badge-red">不开仓</span></td></tr>
-          <tr><td class="td-label">中位区（MA20×0.92–1.10）</td><td class="td-num">0.10–0.16</td><td class="td-num">0.13–0.20</td><td class="td-num">0.16–0.23</td><td><span class="badge badge-red">不开仓</span></td></tr>
-          <tr><td class="td-label">低位区（MA20×0.82–0.92）</td><td class="td-num">0.13–0.18</td><td class="td-num">0.16–0.23</td><td class="td-num">0.20–0.26</td><td><span class="badge badge-red">不开仓</span></td></tr>
-          <tr><td class="td-label">极端区（&lt; MA20×0.82）</td><td><span class="badge badge-yellow">暂停</span></td><td><span class="badge badge-yellow">暂停</span></td><td>仅 <span class="term" data-tip="Delta：期权价格对标的价格变动1美元的敏感度。Delta 0.15的Put意味着标的每跌$1，Put价格约涨$0.15。Delta越小，期权越虚值，被行权的概率越低。">Delta</span> &lt; 0.15强制价差</td><td><span class="badge badge-red">不开仓</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">价差宽度矩阵</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>IV30水平</th><th>建议价差宽度</th><th>最大亏损/张</th><th>目标权利金/张</th><th>权利金/亏损比</th></tr></thead>
-        <tbody>
-          <tr><td class="td-num">≤ 45%（低波动）</td><td class="td-num">$20–$30</td><td class="td-num">$2,000–$3,000</td><td class="td-num">$0.80–$1.00</td><td class="td-num">17–33%</td></tr>
-          <tr><td class="td-num">45–65%（正常）</td><td class="td-num">$30–$50</td><td class="td-num">$3,000–$5,000</td><td class="td-num">$1.00–$2.50</td><td class="td-num">20–40%</td></tr>
-          <tr><td class="td-num">65–85%（偏高）</td><td class="td-num">$50–$80</td><td class="td-num">$5,000–$8,000</td><td class="td-num">$1.80–$4.00</td><td class="td-num">22–40%</td></tr>
-          <tr><td class="td-num">&gt; 85%（危机）</td><td colspan="4"><span class="badge badge-red">IV硬约束：全面禁止开仓</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH07 L1 Bull Put Spread -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch07">
-  <div class="section-header">
-    <span class="section-num">07</span>
-    <div><div class="section-title">L1 核心层 · NVDA Bull Put Spread</div></div>
-  </div>
-  <p>目标年化贡献8–12%，占策略总收益约60%。利用NVDA高IV优势，系统性收割波动率溢价，用价差结构将最大亏损锁定在有限范围内。</p>
-
-  <div class="section">
-    <h3 class="section-title">开仓标准检查清单（全部满足方可执行）</h3>
-    <ul class="checklist">
-      <li><div class="checklist-box"></div><span>三因子综合得分 <strong>≥ 50分</strong>，仓位系数 ≥ 0.5×</span></li>
-      <li><div class="checklist-box"></div><span>市场状态为 <strong>A、B 或 C</strong>（非D）</span></li>
-      <li><div class="checklist-box"></div><span>IV30 <strong>≤ 85%</strong>（IV硬约束）</span></li>
-      <li><div class="checklist-box"></div><span>非财报保护窗口：<strong>财报前D-10至财报后D+3期间禁止开仓</strong>（见第04章）</span></li>
-      <li><div class="checklist-box"></div><span>卖出行权价距当前NVDA价格 <strong>≥ 10%</strong>（跳空缓冲）</span></li>
-      <li><div class="checklist-box"></div><span>EV计算完成并达标：<strong>EV &gt; 0 且 EV/权利金 &gt; 20%，净权利金/张 ≥ $0.80</strong></span></li>
-      <li><div class="checklist-box"></div><span>加入本批后，总卖Put名义敞口 <strong>≤ 净值40%</strong></span></li>
-      <li><div class="checklist-box"></div><span>价差宽度符合IV矩阵（见第06章）</span></li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">逐步开仓流程</h3>
-    <div class="flow-steps">
-      <div class="flow-step">
-        <div class="flow-step-num">1</div>
-        <div class="flow-step-body">
-          <div class="step-title">选择到期日（DTE 35–45天）</div>
-          <p>IBKR → OptionTrader → 筛选距到期35–45天合约，<strong>优先选择周五到期</strong>（流动性最佳）。确认到期日不跨越财报日±10个交易日。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">2</div>
-        <div class="flow-step-body">
-          <div class="step-title">按Delta矩阵选定K₁（卖出行权价）</div>
-          <p>根据NVDA相对MA20位置和市场状态，从第06章矩阵查取目标Delta范围，确定K₁。验证跳空缓冲≥10%（即K₁ ≤ 当前价×0.90），否则上移K₁。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">3</div>
-        <div class="flow-step-body">
-          <div class="step-title">选定K₂（保护腿行权价）</div>
-          <p>K₂ = K₁ − 价差宽度（参考第06章价差宽度矩阵）。确认K₂的买入成本，计算净权利金 = K₁权利金 − K₂权利金。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">4</div>
-        <div class="flow-step-body">
-          <div class="step-title">计算EV并验证</div>
-          <p>EV/张 = 净权利金×100×(1−P) − 最大亏损×P，其中 P = K₁的Delta绝对值×1.15。EV/（净权利金×100）须 &gt; 20%，且净权利金 ≥ $0.80。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">5</div>
-        <div class="flow-step-body">
-          <div class="step-title">确定张数（含仓位系数）</div>
-          <p>单批名义敞口上限 = 净值 × 10% × 仓位系数。张数 = 上限 ÷ (K₁ × 100)，向下取整。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">6</div>
-        <div class="flow-step-body">
-          <div class="step-title">分批执行（严禁市价单）</div>
-          <p><strong>第一批60%</strong>：当日以买卖价差中间价挂限价组合单（Vertical Spread）。<strong>第二批40%</strong>：次日执行，争取更优成交价。绝对禁止市价单（Market Order），避免滑点侵蚀权利金。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">7</div>
-        <div class="flow-step-body">
-          <div class="step-title">同步挂GTC止盈单</div>
-          <p>开仓同时在IBKR设置 <span class="term" data-tip="GTC（Good Till Cancelled）：有效期至取消。挂单在成交或手动取消前持续有效，无需每天重新挂单。常用于设置自动止盈止损。">GTC</span> 限价平仓单，价格 = 开仓净权利金 × 50%（权利金衰减50%时自动止盈）。同时设置价格告警：NVDA触及 K₁ × 105% 时推送提醒。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">持仓管理规则</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>场景</th><th>触发条件</th><th>执行动作</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">正常止盈</td>
-            <td>GTC单自动触发（权利金衰减50%）</td>
-            <td>自动平仓，不追求最后50%价值——最后阶段风险收益比急剧恶化</td>
-          </tr>
-          <tr>
-            <td class="td-label">时间止损</td>
-            <td>持仓超21天，盈利 &lt; 50%</td>
-            <td>评估Roll（仅允许1次，新权利金须≥原60%），否则直接平仓</td>
-          </tr>
-          <tr>
-            <td class="td-label">行权预警</td>
-            <td>NVDA接近K₁（距离 &lt; 5%）</td>
-            <td>启动每日监控；跌破K₁立即评估提前平仓，不拖延</td>
-          </tr>
-          <tr>
-            <td class="td-label">紧急平仓</td>
-            <td>状态恶化为D，或IV30&gt;85%，或触发L2/L3熔断</td>
-            <td>不论盈亏，<strong>立即市价平仓</strong>所有卖Put价差</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH08 L3 Covered Call -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch08">
-  <div class="section-header">
-    <span class="section-num">08</span>
-    <div><div class="section-title">L3 备兑层 · Covered Call</div></div>
-  </div>
-
-  <div class="callout danger">
-  <span class="callout-icon">🔴</span>
-  <div><strong>遗产税红线：</strong>NVDA正股为美国境内资产（U.S. situs），单账户持仓市值<strong>永久严格控制在$60,000以内</strong>。超出部分须立即处理，不得超过48小时。</div>
-</div>
-
-  <div class="callout warning">
-  <span class="callout-icon">⚠</span>
-  <div><strong>状态A强制暂停：</strong>当市场状态为A（强势上涨）时，<strong>L3层强制暂停</strong>。NVDA在强势趋势期间备兑Call将系统性截断上行收益，机会成本远超权利金收入。</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">持仓来源</h3>
-    <p>备兑Call只能在<strong>持有NVDA正股底仓</strong>的基础上操作，来源有二：</p>
-    <ul>
-      <li>卖Put被行权后接货</li>
-      <li>主动买入的长期底仓（≤净值10%，且单账户市值≤$60,000）</li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">NVDA备兑Call Delta矩阵（DTE 30–40天）</h3>
-    <p>强制前置：行权价必须高于当前NVDA价格 ≥ 8%。状态A时此表不适用（强制暂停）。</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>NVDA位置（相对MA20）</th><th>状态B（正常执行）</th><th>状态C（保守执行）</th><th>接货后（快速降本）</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">高位（&gt; MA20 + 12%）</td><td class="td-num">Delta 0.12–0.18</td><td class="td-num">Delta 0.15–0.22</td><td rowspan="3"><strong>1–3日内开仓</strong><br>Delta 0.25–0.35<br><span>不受状态A限制</span></td></tr>
-          <tr><td class="td-label">正常区（MA20 ± 12%）</td><td class="td-num">Delta 0.15–0.20</td><td class="td-num">Delta 0.18–0.25</td></tr>
-          <tr><td class="td-label">低位（&lt; MA20 − 12%）</td><td class="td-num">Delta 0.18–0.25</td><td class="td-num">Delta 0.22–0.30</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">向上滚动（Credit Roll）规则</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>项目</th><th>要求</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">触发条件</td><td>NVDA上涨至距备兑行权价 &lt; 5%，且状态B或C</td></tr>
-          <tr><td class="td-label">操作</td><td>买入平仓当前Call + 卖出更高行权价/更远到期日新Call（<strong>组合限价单</strong>）</td></tr>
-          <tr><td class="td-label">净权利金要求</td><td><strong>必须为正（<span class="term" data-tip="Credit Roll（收权利金滚动）：将即将到期的期权展期至更远到期日时，净收取权利金的操作。这是备兑Call管理的基本原则，确保每次滚动都能为账户增加现金流。">Credit Roll</span>）</strong>——净收权利金，绝不接受<span class="term" data-tip="Debit Roll（付权利金滚动）：展期时需净支付权利金的操作。这意味着你在亏损的同时还在支出现金，严格禁止。">Debit Roll</span></td></tr>
-          <tr><td class="td-label">新行权价要求</td><td>≥ 当前行权价×105%，且 ≥ 当前NVDA价格×108%（维持跳空缓冲）</td></tr>
-          <tr><td class="td-label">Credit Roll不可行时</td><td>接受被行权，按被行权处理流程操作</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">被行权后标准化处理流程</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>情景</th><th>判定条件</th><th>执行流程</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="badge badge-green">情景A · 盈利接货</span></td>
-            <td>行权价 &gt; 综合持仓成本</td>
-            <td>①50%仓位次日开盘买回等量NVDA，维持底仓②50%保留现金用于L1卖Put价差③次月在新底仓上继续备兑Call（状态B/C）</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-yellow">情景B · 亏损接货</span></td>
-            <td>行权价 &lt; 综合持仓成本</td>
-            <td>①全部仓位次日市价买回等量NVDA，接货价为新成本基础②1–3日内立即开新一轮备兑（Delta 0.25–0.35，快速降本模式）③<strong>禁止恐慌卖出正股</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH09 L4 Vol Crush -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch09">
-  <div class="section-header">
-    <span class="section-num">09</span>
-    <div><div class="section-title">L4 溢价捕捉层 · Vol Crush 与 Skew 策略</div></div>
-  </div>
-
-  <div class="callout info">
-  <span class="callout-icon">💡</span>
-  <div><strong>命名说明：</strong>本层实质是在两种特定市场情景下，系统性捕捉阶段性高溢价：财报后的Vol Crush窗口，以及异常的Skew扭曲。年度贡献约1–3%，操作频率季度级。这不是需要复杂定价模型的专业套利，而是可量化、可规则化的机会捕捉。</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">触发情景一：财报后Vol Crush窗口（每季度）</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>参数项</th><th>规格</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">触发条件</td><td>财报公布后盘中，IV较财报前高位坍塌 &gt; 25%，且股价方向已明确（涨或跌 &gt; 5%）</td></tr>
-          <tr><td class="td-label">最佳买入窗口</td><td>财报公布后<strong>0–2小时内</strong>（此时IV仍高于正常水平20–30%，但股价方向已明确，不确定性大幅降低）</td></tr>
-          <tr><td class="td-label">开仓工具</td><td>卖出 <strong>7–14 DTE</strong> Put价差，行权价距当前价 ≥ 8%</td></tr>
-          <tr><td class="td-label">仓位上限</td><td>≤ 净值2%名义敞口</td></tr>
-          <tr><td class="td-label">止盈目标</td><td>权利金衰减<strong>60%</strong>（时间窗口短，止盈目标更高）</td></tr>
-          <tr><td class="td-label">注意事项</td><td>若财报后出现二次下跌，立即平仓。此策略持续时间仅7–14天，不做展期</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">触发情景二：异常Put Skew扭曲</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>触发信号</th><th>触发条件</th><th>操作结构</th><th>仓位上限</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">Skew过陡</td>
-            <td>IV30 &gt; 65%，虚值Put IV（80%行权价）比平值Put高 &gt; 15%</td>
-            <td>卖Put Spread（−10%/−18%），Delta中性</td>
-            <td rowspan="2">≤ 净值2%<br>持仓15–25天<br>盈利40%平仓</td>
-          </tr>
-          <tr>
-            <td class="td-label">Skew过平</td>
-            <td>IV30 &gt; 65%，虚值Call IV明显高于虚值Put</td>
-            <td>卖Call Spread（+10%/+18%），Delta中性</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p>年度操作频率约3–5次（含季度财报4次+偶发Skew扭曲1次）。Skew扭曲信号较少，不应强制触发。</p>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH10 L5 尾部对冲 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch10">
-  <div class="section-header">
-    <span class="section-num">10</span>
-    <div><div class="section-title">L5 动态尾部对冲（双层结构）</div></div>
-  </div>
-
-  <div class="callout info">
-  <span class="callout-icon">💡</span>
-  <div><strong>设计理念升级：</strong>原版L5仅覆盖65–70%行权价（对应30–35%大跌），但NVDA最频繁的实际风险区间是<strong>10–25%的中等幅度回调</strong>，原方案对此完全没有保护。升级版采用双层结构：主层覆盖常见的中等回调，辅层覆盖黑天鹅尾部风险。</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">双层对冲结构</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>层次</th><th>工具</th><th>行权价区间</th><th>到期日</th><th>覆盖范围</th><th>年化成本目标</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">主层（中程保护）</td>
-            <td>Put Spread</td>
-            <td>买入：当前价×80–85%<br>卖出：当前价×70–75%</td>
-            <td>45–60天，月度滚动</td>
-            <td>覆盖15–20%回调</td>
-            <td class="td-num">约0.5–0.8%</td>
-          </tr>
-          <tr>
-            <td class="td-label">辅层（尾部保护）</td>
-            <td>深度虚值Put</td>
-            <td>当前价×65–70%</td>
-            <td>3–4个月，季度滚动</td>
-            <td>覆盖30–35%崩盘</td>
-            <td class="td-num">约0.2–0.4%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">买入时机（低成本窗口原则）</h3>
-    <div class="callout warning">
-  <span class="callout-icon">⚠</span>
-  <div><strong>关键原则：</strong>对冲在<strong>IV低时买入成本最低</strong>。IV &gt; 65% 时买入保护Put，成本比低IV环境高80–120%——此时用最贵的成本买最需要的保护，非常不经济。</div>
-</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>买入时机</th><th>条件</th><th>操作建议</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">最优窗口</td><td>状态A/B，IV30 &lt; 45%（市场平静期）</td><td>全量买入主层Put Spread + 辅层深虚值Put</td></tr>
-          <tr><td class="td-label">次优窗口</td><td>财报后72小时内，Vol Crush完成，IV Rank &lt; 35%</td><td>主要建仓窗口，利用IV坍塌后的低成本</td></tr>
-          <tr><td class="td-label">次优窗口</td><td>状态B，IV30在45–55%</td><td>仅买主层Put Spread，辅层等待更低IV</td></tr>
-          <tr><td class="td-label">不建议买入</td><td>IV30 &gt; 65%</td><td>等待IV回落后再建仓，此时买保险最贵</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">对冲覆盖规模与成本预算</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>参数</th><th>设定</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">主层Put Spread覆盖规模</td><td>L1核心层名义敞口的 40–60%</td></tr>
-          <tr><td class="td-label">辅层深虚值Put覆盖规模</td><td>L1核心层名义敞口的 15–25%</td></tr>
-          <tr><td class="td-label">总对冲成本预算</td><td>净值的 <strong>0.6–1.2% / 年</strong>（视为必要运营支出）</td></tr>
-          <tr><td class="td-label">到期后处理</td><td>主层每月检查：盈利 &gt; 60% 则提前止盈；亏损则等到期，用新低IV窗口重建</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH11 三级熔断 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch11">
-  <div class="section-header">
-    <span class="section-num">11</span>
-    <div><div class="section-title">三级熔断机制 &amp; 25%下跌切换</div></div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">三级熔断（强制执行，无例外）</h3>
-    <div class="circuit-level l1">
-      <div class="circuit-header"><div class="circuit-dot"></div>L1 黄色预警</div>
-      <div class="circuit-body">
-        <div class="trigger-list">
-          <span class="label">触发条件（任一）</span>
-          · NVDA单日跌 &gt; 5%<br>
-          · IV30单日涨 &gt; 20%<br>
-          · 账户浮亏超净值6%<br>
-          · 保证金使用率 &gt; 55%
-        </div>
-        <div class="action-list">
-          <span class="label">强制执行动作</span>
-          · 停止所有新开卖方仓位<br>
-          · 检查Put距行权价是否 &lt; 5%<br>
-          · 台账记录触发原因+时间戳
-        </div>
-        <div class="action-list">
-          <span class="label">解除条件</span>
-          24小时后自动解除（若无升级）
-        </div>
-      </div>
-    </div>
-
-    <div class="circuit-level l2">
-      <div class="circuit-header"><div class="circuit-dot"></div>L2 橙色警戒</div>
-      <div class="circuit-body">
-        <div class="trigger-list">
-          <span class="label">触发条件（任一）</span>
-          · NVDA 3日累计跌 &gt; 10%<br>
-          · 保证金使用率 &gt; 65%<br>
-          · 任意Put价差保护腿接近价内<br>
-          · 账户浮亏超净值10%
-        </div>
-        <div class="action-list">
-          <span class="label">强制执行动作（24小时内完成）</span>
-          · 平仓50%备兑Call仓位<br>
-          · 止损所有价内Put价差<br>
-          · 买入L5主层保护（若未持有）<br>
-          · 保证金使用率压至50%以下
-        </div>
-        <div class="action-list">
-          <span class="label">解除条件</span>
-          24小时后由状态评估，人工解除
-        </div>
-      </div>
-    </div>
-
-    <div class="circuit-level l3">
-      <div class="circuit-header"><div class="circuit-dot"></div>L3 红色紧急</div>
-      <div class="circuit-body">
-        <div class="trigger-list">
-          <span class="label">触发条件（任一）</span>
-          · NVDA 5日累计跌 &gt; 18%<br>
-          · 收到<span class="term" data-tip="Margin Call（追加保证金通知）：账户保证金余额低于维持保证金要求时，券商发出的追加资金通知。若不及时补缴，券商有权强制平仓。">Margin Call</span><br>
-          · IV30 &gt; 100%<br>
-          · 账户浮亏超净值18%
-        </div>
-        <div class="action-list">
-          <span class="label">立即执行（市价单）</span>
-          · 市价平仓所有期权仓位<br>
-          · 资金全部转入SGOV/现金<br>
-          · <strong>暂停交易至少30个日历日</strong>
-        </div>
-        <div class="action-list">
-          <span class="label">解除条件</span>
-          30天后经系统状态审查恢复
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">25%下跌切换机制</h3>
-    <p>当NVDA从近期高点下跌超过25%时，策略切换为"持有正股等待反弹"模式，停止所有卖方操作。</p>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>触发类型</th><th>具体条件</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">绝对跌幅触发</td><td>NVDA较策略启动基准价下跌 ≥ 25%</td></tr>
-          <tr><td class="td-label">MA200触发</td><td>NVDA较<span class="term" data-tip="MA200（200日移动平均线）：过去200个交易日收盘价的均值，通常被视为长期趋势的分水岭。价格跌破MA200往往意味着进入熊市结构。">MA200</span>下跌 ≥ 25%</td></tr>
-          <tr><td class="td-label">崩盘速度触发</td><td>10个交易日内跌幅 &gt; 20%（实时监测，无需等待5日确认）</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="flow-steps">
-      <div class="flow-step">
-        <div class="flow-step-num">1</div>
-        <div class="flow-step-body">
-          <div class="step-title">T+1开盘：全部平仓卖方仓位</div>
-          <p>市价买入平仓所有NVDA卖Put价差，市价平仓所有备兑Call。接受亏损，不拖延，不侥幸。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">2</div>
-        <div class="flow-step-body">
-          <div class="step-title">等待IV回落后建仓正股</div>
-          <p>不立即买入正股（避免接飞刀）。等待IV30从峰值回落 ≥ 20% 后，将50–60%资金转为NVDA正股（严格控制在$60,000/账户以内）。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">3</div>
-        <div class="flow-step-body">
-          <div class="step-title">持有期：停止卖Put，仅做低Delta备兑</div>
-          <p>停止所有卖Put操作。对正股仓位执行低Delta（≤ 0.15）备兑Call，仅用于降低成本，不追求最大收益。</p>
-        </div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-step-num">4</div>
-        <div class="flow-step-body">
-          <div class="step-title">恢复条件（三项全部满足）</div>
-          <p>① NVDA从最低点反弹 ≥ 20%&emsp;② 站上MA20并维持3天&emsp;③ IV30 &lt; 50%。三项全满足后，以<strong>25%仓位系数试仓1个月</strong>，观察系统稳定性再逐步恢复满仓。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH12 月度SOP -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch12">
-  <div class="section-header">
-    <span class="section-num">12</span>
-    <div><div class="section-title">月度操作SOP（标准执行日：每月第2个周二）</div></div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">第一步 · 环境分析（20分钟）</h3>
-    <ul class="checklist">
-      <li><div class="checklist-box"></div><span>记录NVDA价格、MA20、MA50、MA20斜率方向，判定本周市场状态（A/B/C/D）</span></li>
-      <li><div class="checklist-box"></div><span>记录IV30值，查询 <span class="term" data-tip="IVR（Implied Volatility Rank / IV Rank）：当前IV在过去一年（或52周）IV区间中所处的百分位。IVR > 60% 表示IV处于相对高位，是开仓的理想时机。">IVR</span>（隐含波动率排名），IVR &gt; 40% 为理想开仓区间</span></li>
-      <li><div class="checklist-box"></div><span>运行三因子模型，计算综合得分和仓位系数</span></li>
-      <li><div class="checklist-box"></div><span>确认下次财报日期，检查是否进入财报保护窗口（D-30、D-10、D-3节点）</span></li>
-      <li><div class="checklist-box"></div><span>台账"月度状态表"填写所有数据，确认本月操作权限</span></li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">第二步 · 制定方案（30分钟）</h3>
-    <ul class="checklist">
-      <li><div class="checklist-box"></div><span><strong>L1核心层</strong>：仓位系数≥0.5 且 IV30≤85% 且非财报保护窗口 → 按Delta矩阵选行权价 → 计算EV → 确定张数</span></li>
-      <li><div class="checklist-box"></div><span><strong>L3备兑层</strong>：状态B或C 且持有NVDA正股 → 按矩阵选备兑Call参数 → EV验证（状态A强制跳过）</span></li>
-      <li><div class="checklist-box"></div><span><strong>L4溢价捕捉层</strong>：本月有财报且已发布 → 评估Vol Crush窗口；若Skew触发 → 构建价差组合（≤净值2%）</span></li>
-      <li><div class="checklist-box"></div><span><strong>L5对冲层</strong>：IV30 &lt; 50%（低成本窗口）且主层Put Spread未持有或已到期 → 重建对冲</span></li>
-      <li><div class="checklist-box"></div><span>汇总新增保证金占用，确认执行后总保证金使用率 &lt; 60%</span></li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">第三步 · 执行交易（25分钟）</h3>
-    <ul class="checklist">
-      <li><div class="checklist-box"></div><span>L1：第一批（60%）以买卖价差中间价挂限价组合单（Vertical Spread），禁用市价单</span></li>
-      <li><div class="checklist-box"></div><span>L3备兑Call：限价单，挂中间价</span></li>
-      <li><div class="checklist-box"></div><span>L5对冲Put Spread：限价单，不追价</span></li>
-      <li><div class="checklist-box"></div><span>为所有新仓位设GTC止盈单（L1权利金衰减50%；L4衰减60%）</span></li>
-      <li><div class="checklist-box"></div><span>设置价格告警：NVDA备兑行权价×95%（触发向上滚动评估）；各L1行权价×105%（触发行权监控）</span></li>
-      <li><div class="checklist-box"></div><span>次日：L1第二批（40%）按计划执行</span></li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">第四步 · 风控检查（10分钟）</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>检查项</th><th>合格标准</th><th>触发动作</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">总卖Put名义敞口</td><td>≤ 净值40%</td><td>超过则立即平仓至满足</td></tr>
-          <tr><td class="td-label">现金+SGOV余额</td><td>≥ 净值35%</td><td>不足则停止所有新开仓</td></tr>
-          <tr><td class="td-label">保证金使用率</td><td>&lt; 60%</td><td>&gt;65%触发L2熔断</td></tr>
-          <tr><td class="td-label">NVDA正股市值</td><td>≤ $60,000/账户</td><td>超过立即转移或减持，不超过48小时</td></tr>
-          <tr><td class="td-label">熔断状态</td><td>无L1/L2/L3触发</td><td>有触发则禁止一切新开仓</td></tr>
-          <tr><td class="td-label">财报保护窗口</td><td>确认下月财报日期</td><td>提前在日历标注D-30、D-10、D-3节点</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">第五步 · 台账更新（10分钟）</h3>
-    <ul class="checklist">
-      <li><div class="checklist-box"></div><span>录入每笔新仓位全部必填字段（见第13章）</span></li>
-      <li><div class="checklist-box"></div><span>计算本月净权利金，更新累计收益追踪表</span></li>
-      <li><div class="checklist-box"></div><span>CNY折算：按平仓日中国人民银行中间汇率记录人民币等值</span></li>
-      <li><div class="checklist-box"></div><span>设置下月操作日日历提醒，标注财报保护窗口节点</span></li>
-    </ul>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH13 绩效追踪 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch13">
-  <div class="section-header">
-    <span class="section-num">13</span>
-    <div><div class="section-title">绩效追踪与台账</div></div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">核心收益计算公式</h3>
-    <div class="formula">
-      <span class="formula-label">月度绩效公式</span>
-      月化权利金收益率 = 当月净权利金 ÷ 月初净值 × 100%<br>
-      年化收益率 = (1 + 月化收益率)^12 − 1<br>
-      NVDA综合成本 = (原成本 × 持仓量 − 本月净权利金) ÷ 当前持仓量
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">台账必填字段（每笔期权）</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>字段名称</th><th>填写示例</th><th>用途说明</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">开仓日期</td><td>2026-04-15</td><td>时间记录</td></tr>
-          <tr><td class="td-label">账户</td><td>IBKR / BBAE</td><td>1042-S税单归属</td></tr>
-          <tr><td class="td-label">策略层级</td><td>L1 / L3 / L4 / L5</td><td>收益归因分析</td></tr>
-          <tr><td class="td-label">合约标识</td><td>NVDA 250516 P 140/135</td><td>唯一识别</td></tr>
-          <tr><td class="td-label">张数</td><td>5</td><td>规模记录</td></tr>
-          <tr><td class="td-label">开仓权利金/张（净）</td><td>$2.80</td><td>收益确认基础</td></tr>
-          <tr><td class="td-label">Delta（开仓时，K₁）</td><td>−0.18</td><td>风险评估</td></tr>
-          <tr><td class="td-label">DTE（开仓时）</td><td>38天</td><td>时间管理</td></tr>
-          <tr><td class="td-label">IV30 / IVR（开仓时）</td><td>52% / 65%ile</td><td>质量评估</td></tr>
-          <tr><td class="td-label">市场状态</td><td>B</td><td>归因分析</td></tr>
-          <tr><td class="td-label">三因子得分/仓位系数</td><td>63分 → 0.5×</td><td>质量审计</td></tr>
-          <tr><td class="td-label">EV合格确认</td><td>EV=$210 / EV率=28% ✓</td><td>纪律记录</td></tr>
-          <tr><td class="td-label">财报窗口标记</td><td>非财报期 ✓ / 财报后D+2 ✓</td><td>风险审计</td></tr>
-          <tr><td class="td-label">平仓日期/价格</td><td>2026-05-02 / $1.35</td><td>收益计算</td></tr>
-          <tr><td class="td-label">净收益</td><td>$725</td><td>业绩记录</td></tr>
-          <tr><td class="td-label">税务事件标记</td><td>权利金收入 / 资本利得</td><td>CPA申报必需</td></tr>
-          <tr><td class="td-label">CNY折算金额</td><td>¥5,220（汇率7.20）</td><td>中国税务申报备用</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">季度绩效复盘模板</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>复盘维度</th><th>目标指标</th></tr></thead>
-        <tbody>
-          <tr><td class="td-label">月度胜率</td><td>目标 ≥ 70%（胜率下降至65%以下连续两季度，需暂停新仓并重新审查Delta矩阵）</td></tr>
-          <tr><td class="td-label">平均盈亏比</td><td>目标 ≥ 2.5（单次最大亏损 ÷ 单次平均盈利 ≤ 0.4）</td></tr>
-          <tr><td class="td-label">最大回撤</td><td>目标 ≤ 20%。超过20%须审查策略参数；超过25%须启动全面策略复盘</td></tr>
-          <tr><td class="td-label">EV实现率</td><td>实际收益 ÷ 开仓时预期EV × 100%，目标 ≥ 80%</td></tr>
-          <tr><td class="td-label">纪律红线违反次数</td><td>目标 = 0。每次违规须书面记录原因并追责</td></tr>
-          <tr><td class="td-label">财报专项复盘</td><td>财报前保护操作是否到位；Vol Crush是否成功捕捉；财报期最大未实现损失</td></tr>
-          <tr><td class="td-label">年度回测（每年4月）</td><td>使用过去24个月完整执行记录，计算实际胜率、最大回撤、EV实现率。若胜率&lt;68%或回撤&gt;18%，必须暂停新仓优化参数</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- CH14 心理纪律 -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<section class="section" id="ch14">
-  <div class="section-header">
-    <span class="section-num">14</span>
-    <div><div class="section-title">心理纪律守则</div></div>
-  </div>
-
-  <div class="callout gold">
-  <span class="callout-icon"></span>
-  <div><strong>策略信条：</strong>"你是一家专注于NVDA的波动率保险公司。你的收益来源是Theta衰减和VRP，不是方向性预测。坚持系统，让时间和概率持续为你工作。保险公司的价值不在于单次赔付，而在于<strong>长期活着并持续收保费</strong>。"</div>
-</div>
-
-  <div class="section">
-    <h3 class="section-title">六大心理陷阱与应对SOP</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>心理陷阱</th><th>症状识别</th><th>正确认知</th><th>纪律SOP</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-label">踏空懊悔</td>
-            <td>备兑Call被行权后NVDA大涨，后悔"卖飞了"</td>
-            <td>行权价高于成本就是策略盈利，这是正常结果</td>
-            <td>立即按第08章流程处理，禁止在更高价追涨建仓</td>
-          </tr>
-          <tr>
-            <td class="td-label">接货恐慌</td>
-            <td>Put被行权后股价继续下跌，想割肉止损</td>
-            <td>行权价已在支撑位下方，接货后立即备兑，时间是最大盟友</td>
-            <td>1–3日内强制开始备兑Call，禁止裸持正股超过72小时</td>
-          </tr>
-          <tr>
-            <td class="td-label">低IV焦虑</td>
-            <td>IV30 &lt; 40% 时权利金太少，想降低EV标准强行开仓</td>
-            <td>低IV = 市场认为风险低。此时最优操作是在低成本窗口买入L5对冲</td>
-            <td>坚持EV门槛，看滚动12个月均值，接受合理年化8–12%</td>
-          </tr>
-          <tr>
-            <td class="td-label">赌徒谬误</td>
-            <td>连续亏损后，想"加倍下注赚回来"</td>
-            <td>亏损后加仓是期权卖方爆仓的最直接原因，无任何例外</td>
-            <td>触发L1熔断，强制24小时冷静期，违规视同红线触发</td>
-          </tr>
-          <tr>
-            <td class="td-label">财报侥幸</td>
-            <td>财报前觉得"这次结果一定好"，保留高Delta仓位或追加开仓</td>
-            <td>NVDA每次财报都有15–25%跳空可能，无论方向，这是系统性风险</td>
-            <td>严格执行第04章财报时间轴，无例外，无争议</td>
-          </tr>
-          <tr>
-            <td class="td-label">过度对冲</td>
-            <td>担心黑天鹅，买入远超预算的保护Put，侵蚀策略收益</td>
-            <td>对冲是运营成本，纳入年度预算（0.6–1.2%/年），超预算的对冲是在用保险赌方向</td>
-            <td>严格执行L5成本预算上限，超支必须有书面批准</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3 class="section-title">五条绝对红线（违反则强制停止操作2周）</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>#</th><th>红线描述</th><th>说明</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="td-num">①</td>
-            <td class="td-label">状态D或IV30 &gt; 85%时卖任何Put</td>
-            <td>此环境下卖方策略的统计优势已不存在，每一张都在用运气对抗概率</td>
-          </tr>
-          <tr>
-            <td class="td-num">②</td>
-            <td class="td-label">EV未达标或净权利金/张 &lt; $0.80 时强行开仓</td>
-            <td>EV门槛是客观保护机制，跳过它等于放弃这个策略的核心逻辑</td>
-          </tr>
-          <tr>
-            <td class="td-num">③</td>
-            <td class="td-label">为弥补亏损而超系数上限加倍仓位</td>
-            <td>亏损后加仓是期权卖方爆仓的直接原因，无任何场景例外</td>
-          </tr>
-          <tr>
-            <td class="td-num">④</td>
-            <td class="td-label">NVDA正股市值超$60,000未在48小时内处理</td>
-            <td>遗产税风险不可接受，超额部分存在致命法律与财务风险</td>
-          </tr>
-          <tr>
-            <td class="td-num">⑤</td>
-            <td class="td-label">在财报保护窗口内（D-10至D+3）新开L1仓位</td>
-            <td>NVDA财报跳空可以在2小时内将所有卖方仓位变为亏损</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- DISCLAIMER -->
-<div class="disclaimer">
-  <strong>免责声明：</strong>本手册基于历史数据、量化模型与综合分析制定，<strong>不构成投资建议、税务建议或法律建议</strong>。期权交易存在导致本金全部损失的重大风险。NVDA为高波动个股（历史Beta约2.3–2.5），最大回撤可能远超指数策略（2022年NVDA跌幅达66%）。过往绩效不代表未来收益，年化收益目标为合理预期而非保证。所有税务相关内容须经持牌CPA及中国税务师书面确认后方可执行。市场规则、税法可能随时变更，请以最新专业意见为准。所有交易决策和税务后果由投资者本人承担。
-  <br><br>
-  <strong>适用声明：</strong>本手册仅适用于具备期权交易经验、已通过券商期权Level 2+权限审核、且资金状况符合高风险投资要求的投资者。建议在实盘前完整运行模拟盘至少3个月，验证执行能力。
-</div>
 
 </main>
 </div>
 
-<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
-
 <script>
-// Back to top visibility
-window.addEventListener('scroll', function() {
-  document.getElementById('back-top').classList.toggle('visible', window.scrollY > 400);
-});
+  // Active nav highlighting on scroll
+  const chapters = document.querySelectorAll('.chapter[id]');
+  const navItems = document.querySelectorAll('.nav-item');
 
-// Active nav tracking
-const chapters = document.querySelectorAll('.section[id]');
-const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => item.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
 
-function updateActiveNav() {
-  let current = '';
-  chapters.forEach(ch => {
-    if (window.scrollY >= ch.offsetTop - 100) current = ch.id;
+  chapters.forEach(s => observer.observe(s));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (!target) return;
+      e.preventDefault();
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 24, behavior: 'smooth' });
+    });
   });
-  navItems.forEach(item => {
-    const href = item.getAttribute('href');
-    item.classList.toggle('active', href && href.slice(1) === current);
-  });
-}
-
-window.addEventListener('scroll', updateActiveNav);
-updateActiveNav();
-
-// Tooltip positioning fix for edge items
-document.querySelectorAll('.term').forEach(el => {
-  el.addEventListener('mouseenter', function(e) {
-    const rect = el.getBoundingClientRect();
-    // If near left edge, adjust tooltip
-    if (rect.left < 180) {
-      el.style.setProperty('--tip-offset', '0');
-    }
-  });
-});
 </script>
-<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

@@ -1,75 +1,664 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>期权策略作战手册 · 机构级</title>
-<link rel="stylesheet" href="css/strategy.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b12;
+  --bg2: #0d1117;
+  --surface: #111620;
+  --surface2: #161d2e;
+  --surface3: #1c2540;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --muted2: #8892a4;
+  --green: #22c55e;
+  --green2: #4ade80;
+  --red: #f87171;
+  --red2: #fca5a5;
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --blue3: #93c5fd;
+  --yellow: #fbbf24;
+  --yellow2: #fde68a;
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --acc: #1479FF;
+  
+  --g-bull: rgba(34,197,94,0.1);
+  --g-bear: rgba(248,113,113,0.1);
+  --g-blue: rgba(59,130,246,0.1);
+  --g-yel: rgba(251,191,36,0.1);
+  --g-pur: rgba(167,139,250,0.1);
+  --g-cyan: rgba(34,211,238,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: linear-gradient(180deg, #0d1420 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+.header-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue2);
+  letter-spacing: 1px;
+}
+.header-nav {
+  display: flex;
+  gap: 24px;
+}
+.header-nav a {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.header-nav a:hover { color: var(--text); }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 56px 28px 48px;
+  background: radial-gradient(ellipse 80% 300px at 50% 0%, rgba(20,121,255,0.08) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,121,255,0.12);
+  border: 1px solid rgba(20,121,255,0.3);
+  color: var(--blue2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #e2e8f0 40%, #60a5fa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  color: var(--muted2);
+  font-size: 13px;
+  max-width: 600px;
+  margin: 0 auto 28px;
+}
+.watchlist-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.pill-tech { background: var(--g-blue); color: var(--blue2); border: 1px solid rgba(96,165,250,0.2); }
+.pill-crypto { background: var(--g-yel); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.pill-finance { background: var(--g-bull); color: var(--green2); border: 1px solid rgba(74,222,128,0.2); }
+.pill-etf { background: var(--g-pur); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.pill-pharma { background: var(--g-cyan); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
+.pill-semi { background: rgba(251,146,60,0.1); color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+
+/* ─── LAYOUT ─── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ─── SECTION ─── */
+.section { margin-bottom: 60px; }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border2);
+}
+.section-title h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--acc);
+  background: rgba(20,121,255,0.1);
+  border: 1px solid rgba(20,121,255,0.25);
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+}
+.card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 700px) { .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; } }
+
+/* ─── VIX TABLE ─── */
+.vix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.vix-table th {
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+}
+.vix-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.65;
+}
+.vix-table tr:last-child td { border-bottom: none; }
+.vix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.vix-level {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vl-calm { color: var(--green); }
+.vl-normal { color: var(--blue2); }
+.vl-elevated { color: var(--yellow); }
+.vl-fear { color: var(--orange); }
+.vl-panic { color: var(--red); }
+
+.badge-sm {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin: 2px 2px 2px 0;
+  font-weight: 600;
+}
+.bs-green { background: var(--g-bull); color: var(--green2); }
+.bs-red { background: var(--g-bear); color: var(--red2); }
+.bs-blue { background: var(--g-blue); color: var(--blue3); }
+.bs-yellow { background: var(--g-yel); color: var(--yellow2); }
+.bs-purple { background: var(--g-pur); color: var(--purple); }
+.bs-orange { background: rgba(251,146,60,0.1); color: var(--orange); }
+
+/* ─── IV BANDS ─── */
+.iv-band {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.iv-band-label {
+  min-width: 120px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.iv-band-body {
+  flex: 1;
+  padding: 14px 16px;
+  border-left: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+.iv-band-body strong { color: var(--text); }
+.iv-low { background: rgba(34,197,94,0.06); }
+.iv-low .iv-band-label { color: var(--green); }
+.iv-med { background: rgba(59,130,246,0.06); }
+.iv-med .iv-band-label { color: var(--blue2); }
+.iv-high { background: rgba(251,191,36,0.06); }
+.iv-high .iv-band-label { color: var(--yellow); }
+.iv-extreme { background: rgba(248,113,113,0.06); }
+.iv-extreme .iv-band-label { color: var(--red); }
+.iv-range { font-size: 18px; font-weight: 700; }
+.iv-name { font-size: 9px; opacity: 0.7; letter-spacing: 1px; }
+
+/* ─── GREEK MATRIX ─── */
+.greek-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) { .greek-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.greek-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 14px;
+}
+.greek-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.greek-name { font-size: 11px; color: var(--muted); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+.greek-desc { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+.greek-thresholds { margin-top: 10px; }
+.thresh-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+}
+.thresh-label { color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.thresh-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.tv-green { color: var(--green); }
+.tv-red { color: var(--red); }
+.tv-yellow { color: var(--yellow); }
+.tv-blue { color: var(--blue2); }
+
+/* ─── STRATEGY DECISION MATRIX ─── */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.decision-table th {
+  background: var(--surface3);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--border2);
+  white-space: nowrap;
+}
+.decision-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.6;
+  color: var(--muted2);
+}
+.decision-table td strong { color: var(--text); display: block; margin-bottom: 3px; }
+.condition-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--blue2);
+  white-space: nowrap;
+}
+.strategy-name {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text) !important;
+}
+
+/* ─── TICKER PROFILES ─── */
+.ticker-section { margin-bottom: 32px; }
+.ticker-group-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+.ticker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.ticker-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.2s;
+}
+.ticker-card:hover { border-color: var(--border2); }
+.tc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tc-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.tc-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.tc-body { font-size: 11px; color: var(--muted2); line-height: 1.65; }
+.tc-body .label { color: var(--muted); font-size: 10px; margin-top: 7px; margin-bottom: 2px; font-family: 'JetBrains Mono', monospace; }
+.tc-body .val { color: var(--text); font-size: 11px; }
+
+/* ─── SIGNAL RULES ─── */
+.signal-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.signal-header {
+  background: var(--surface2);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.signal-title { font-size: 13px; font-weight: 700; }
+.signal-body { padding: 16px 18px; }
+.signal-conditions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) { .signal-conditions { grid-template-columns: 1fr; } }
+.condition-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.cbox-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.cbox-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cval-green { color: var(--green); }
+.cval-red { color: var(--red); }
+.cval-blue { color: var(--blue2); }
+.cval-yellow { color: var(--yellow); }
+
+.signal-action {
+  background: rgba(20,121,255,0.08);
+  border: 1px solid rgba(20,121,255,0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.signal-action .action-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue2);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+}
+.action-steps { list-style: none; }
+.action-steps li {
+  font-size: 12px;
+  color: var(--muted2);
+  padding: 4px 0;
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.6;
+}
+.action-steps li::before {
+  content: '›';
+  position: absolute;
+  left: 4px;
+  color: var(--acc);
+  font-weight: 700;
+}
+.action-steps li strong { color: var(--text); }
+
+/* ─── STOP LOSS ─── */
+.sl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 600px) { .sl-grid { grid-template-columns: 1fr; } }
+.sl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.sl-metric {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.sl-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.sl-desc { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+
+/* ─── MONITORING CHECKLIST ─── */
+.check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) { .check-grid { grid-template-columns: 1fr; } }
+
+.check-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.check-block h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-block ul { list-style: none; }
+.check-block li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+.check-block li:last-child { border-bottom: none; }
+.cb-num {
+  min-width: 18px; height: 18px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--acc);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ─── ALERT BOX ─── */
+.alert {
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 10px;
+}
+.alert-warn { background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.2); color: #fde68a; }
+.alert-info { background: var(--g-blue); border: 1px solid rgba(96,165,250,0.2); color: var(--blue3); }
+.alert-good { background: var(--g-bull); border: 1px solid rgba(34,197,94,0.2); color: #bbf7d0; }
+.alert-danger { background: var(--g-bear); border: 1px solid rgba(248,113,113,0.2); color: var(--red2); }
+
+/* ─── FOOTER ─── */
+.footer {
+  text-align: center;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 28px;
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+/* ─── TABS ─── */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 7px 14px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  background: var(--surface3);
+  color: var(--blue2);
+  border: 1px solid rgba(96,165,250,0.2);
+}
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
 </head>
 <body>
-<div class="layout-wrapper">
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
-    <div class="logo-title">期权策略 期权增强<br>操作手册</div>
-    <div class="logo-ver">机构级 · 2026 年</div>
-  </div>
-  <div class="nav-section-label">核心参考</div>
-  <a href="#indicators" class="nav-item">01 · 指标阈值</a>
-  <a href="#matrix" class="nav-item">02 · 策略矩阵</a>
-  <a href="#signals" class="nav-item">03 · 信号规则</a>
-  <div class="nav-section-label">标的与风控</div>
-  <a href="#tickers" class="nav-item">04 · 股票档案</a>
-  <a href="#risk" class="nav-item">05 · 风险管理</a>
-</nav>
-<main class="main-content">
-<div class="hero">
-  <div class="hero-eyebrow">机构级 · 期权策略作战手册</div>
-  <h1>期权策略监控<br>作战手册</h1>
-  <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系，覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
-  <div class="hero-meta">
-    <div class="hero-meta-item"><span class="label">标的池</span><span class="value">20只</span></div>
-    <div class="hero-meta-item"><span class="label">指标维度</span><span class="value">6维</span></div>
-    <div class="hero-meta-item"><span class="label">版本</span><span class="value">机构级</span></div>
-    <div class="hero-meta-item"><span class="label">适用账户</span><span class="value">NRA · IBKR</span></div>
-  </div>
+
+<div class="header">
+  <div class="header-logo">⬡ OPTIONS PLAYBOOK · PRO</div>
+  <nav class="header-nav">
+    <a href="#indicators">指标阈值</a>
+    <a href="#matrix">策略矩阵</a>
+    <a href="#signals">信号规则</a>
+    <a href="#tickers">股票档案</a>
+    <a href="#risk">风险管理</a>
+  </nav>
 </div>
 
-<h1>期权策略监控<br>作战手册</h1>
+<div class="hero">
+  <div class="hero-tag">● LEVEL 4 · INSTITUTIONAL GRADE · 机构级作战手册</div>
+  <h1>期权策略监控<br>作战手册</h1>
   <p class="hero-sub">基于 VIX · IV百分位 · Delta · Theta · Vega · Gamma 六维指标体系<br>覆盖20只标的的入场信号、策略选择与风险管控全流程</p>
   <div class="watchlist-pills">
-    <span class="badge badge-gray">AAPL</span>
-    <span class="badge badge-gray">META</span>
-    <span class="badge badge-gray">NVDA</span>
-    <span class="badge badge-gray">TSLA</span>
-    <span class="badge badge-gray">MSTR</span>
-    <span class="badge badge-gray">HOOD</span>
-    <span class="badge badge-gray">COIN</span>
-    <span class="badge badge-gray">TSM</span>
-    <span class="badge badge-gray">ASML</span>
-    <span class="badge badge-gray">MA</span>
-    <span class="badge badge-gray">V</span>
-    <span class="badge badge-gray">NVO</span>
-    <span class="badge badge-gray">CRCL</span>
-    <span class="badge badge-gray">QQQ</span>
-    <span class="badge badge-gray">SPX</span>
-    <span class="badge badge-gray">IBIT</span>
-    <span class="badge badge-gray">GLD</span>
-    <span class="badge badge-gray">XLU</span>
-    <span class="badge badge-gray">EWJ</span>
-    <span class="badge badge-gray">OESX</span>
+    <span class="pill pill-tech">AAPL</span>
+    <span class="pill pill-tech">META</span>
+    <span class="pill pill-semi">NVDA</span>
+    <span class="pill pill-tech">TSLA</span>
+    <span class="pill pill-crypto">MSTR</span>
+    <span class="pill pill-finance">HOOD</span>
+    <span class="pill pill-crypto">COIN</span>
+    <span class="pill pill-semi">TSM</span>
+    <span class="pill pill-semi">ASML</span>
+    <span class="pill pill-finance">MA</span>
+    <span class="pill pill-finance">V</span>
+    <span class="pill pill-pharma">NVO</span>
+    <span class="pill pill-crypto">CRCL</span>
+    <span class="pill pill-etf">QQQ</span>
+    <span class="pill pill-etf">SPX</span>
+    <span class="pill pill-etf">IBIT</span>
+    <span class="pill pill-etf">GLD</span>
+    <span class="pill pill-etf">XLU</span>
+    <span class="pill pill-etf">EWJ</span>
+    <span class="pill pill-etf">OESX</span>
   </div>
 </div>
 
-<div >
+<div class="main">
 
 <!-- ═══════════════════════════════════════
      SECTION 1: 指标体系
 ═══════════════════════════════════════ -->
 <div class="section" id="indicators">
-  <div class="section-header">
-    <span class="section-num">01</span>
-    <div><div class="section-title">六维指标体系 · 阈值定义与交易含义</div></div>
+  <div class="section-title">
+    <span class="section-badge">01</span>
+    <h2>六维指标体系 · 阈值定义与交易含义</h2>
   </div>
 
   <!-- VIX -->
@@ -148,7 +737,7 @@
   <!-- IV Percentile -->
   <div style="margin-bottom:28px;">
     <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">IV PERCENTILE — 隐含波动率百分位（单股核心决策指标）</div>
-    <div class="callout info" style="margin-bottom:12px;">💡 <strong>IV百分位 vs IV本身：</strong>IV百分位是过去252个交易日中，当前IV高于多少天的百分比。比 IV 绝对值更重要——高 IV 的股票百分位低意味着相对便宜。</div>
+    <div class="alert alert-info" style="margin-bottom:12px;">💡 <strong>IV百分位 vs IV本身：</strong>IV百分位是过去252个交易日中，当前IV高于多少天的百分比。比 IV 绝对值更重要——高 IV 的股票百分位低意味着相对便宜。</div>
     
     <div class="iv-band iv-low">
       <div class="iv-band-label"><div class="iv-range">0–30%</div><div class="iv-name">LOW IV · 便宜区</div></div>
@@ -245,12 +834,12 @@
      SECTION 2: 策略决策矩阵
 ═══════════════════════════════════════ -->
 <div class="section" id="matrix">
-  <div class="section-header">
-    <span class="section-num">02</span>
-    <div><div class="section-title">策略决策矩阵 · 条件组合 → 策略映射</div></div>
+  <div class="section-title">
+    <span class="section-badge">02</span>
+    <h2>策略决策矩阵 · 条件组合 → 策略映射</h2>
   </div>
 
-  <div class="callout info" style="margin-bottom:18px;">📊 以下矩阵按「市场方向 × IV百分位 × VIX」三维条件匹配最优策略。监控软件扫描出指标后，对应查表即可。</div>
+  <div class="alert alert-info" style="margin-bottom:18px;">📊 以下矩阵按「市场方向 × IV百分位 × VIX」三维条件匹配最优策略。监控软件扫描出指标后，对应查表即可。</div>
 
   <table class="decision-table">
     <thead>
@@ -364,9 +953,9 @@
      SECTION 3: 具体信号触发规则
 ═══════════════════════════════════════ -->
 <div class="section" id="signals">
-  <div class="section-header">
-    <span class="section-num">03</span>
-    <div><div class="section-title">监控信号触发规则 · 看到什么数字做什么</div></div>
+  <div class="section-title">
+    <span class="section-badge">03</span>
+    <h2>监控信号触发规则 · 看到什么数字做什么</h2>
   </div>
 
   <div class="tab-nav">
@@ -405,7 +994,7 @@
             <li>目标盈利：权利金翻倍（+100%）时可兑现 50% 仓位</li>
           </ul>
         </div>
-        <div class="callout warning">⚠️ <strong>适合标的：</strong>AAPL、META、NVDA、TSM、ASML（低Beta，趋势清晰）。TSLA、MSTR、COIN 因波动极大，IV 基本长期偏高，买 Call 成本贵，需更严格的 IV 筛选。</div>
+        <div class="alert alert-warn">⚠️ <strong>适合标的：</strong>AAPL、META、NVDA、TSM、ASML（低Beta，趋势清晰）。TSLA、MSTR、COIN 因波动极大，IV 基本长期偏高，买 Call 成本贵，需更严格的 IV 筛选。</div>
       </div>
     </div>
   </div>
@@ -435,7 +1024,7 @@
             <li>止损：权利金亏损 40% 时离场；或股价反向穿越均线</li>
           </ul>
         </div>
-        <div class="callout warning">⚠️ <strong>高风险标的的 Put 策略：</strong>TSLA、MSTR、COIN 下跌时 IV 飙升，Put 价格会快速上涨（对你有利），但反弹时 IV 暴跌导致 Put 损失惨重。这类标的的 Put 需要更快的兑现决策。</div>
+        <div class="alert alert-warn">⚠️ <strong>高风险标的的 Put 策略：</strong>TSLA、MSTR、COIN 下跌时 IV 飙升，Put 价格会快速上涨（对你有利），但反弹时 IV 暴跌导致 Put 损失惨重。这类标的的 Put 需要更快的兑现决策。</div>
       </div>
     </div>
   </div>
@@ -466,7 +1055,7 @@
             <li>若股价快速上涨逼近行权价：买回旧 Call（可能亏损），滚到更高行权价或更远到期日</li>
           </ul>
         </div>
-        <div class="callout info">✅ <strong>最适合标的：</strong>AAPL、MA、V、QQQ、NVO（走势稳健，IV 适中，趋势明确）。这类股票 Covered Call 可以每月稳定贡献 1~2% 的额外收益。</div>
+        <div class="alert alert-good">✅ <strong>最适合标的：</strong>AAPL、MA、V、QQQ、NVO（走势稳健，IV 适中，趋势明确）。这类股票 Covered Call 可以每月稳定贡献 1~2% 的额外收益。</div>
       </div>
     </div>
   </div>
@@ -498,8 +1087,8 @@
             <li>收取净权利金 = 4 腿合计收入；目标在 50% 盈利时平仓</li>
           </ul>
         </div>
-        <div class="callout danger">🚨 <strong>突破警报规则：</strong>任意卖腿 Δ 超过 ±0.35（说明股价已逼近行权价），立即处理亏损侧：买回该侧两腿，或将卖腿 Roll 到更远价格/更晚日期。不要等待"回来"。</div>
-        <div class="callout info" style="margin-top:8px;">✅ <strong>最适合标的：</strong>QQQ、SPX（流动性最好，价差最小）、GLD、XLU（低波动 ETF）。单只股票（尤其 TSLA、MSTR）做 Iron Condor 风险较大，慎用。</div>
+        <div class="alert alert-danger">🚨 <strong>突破警报规则：</strong>任意卖腿 Δ 超过 ±0.35（说明股价已逼近行权价），立即处理亏损侧：买回该侧两腿，或将卖腿 Roll 到更远价格/更晚日期。不要等待"回来"。</div>
+        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>QQQ、SPX（流动性最好，价差最小）、GLD、XLU（低波动 ETF）。单只股票（尤其 TSLA、MSTR）做 Iron Condor 风险较大，慎用。</div>
       </div>
     </div>
   </div>
@@ -530,8 +1119,8 @@
             <li>计算公式：需要的最小波动 = 总权利金 ÷ 当前股价 × 100%</li>
           </ul>
         </div>
-        <div class="callout warning">⚠️ <strong>IV Crush 陷阱：</strong>如果你在财报前 2 天才买跨式，IV 已经极高，财报后 IV 暴跌（即使方向对），两腿都会贬值。最佳布局时间是财报前 10~14 天，IV 还未完全上升时。</div>
-        <div class="callout info" style="margin-top:8px;">✅ <strong>最适合标的：</strong>NVDA、META、AAPL（大盘股财报往往有 5~10% 以上波动）、TSLA（波动更大，但权利金也更贵）。</div>
+        <div class="alert alert-warn">⚠️ <strong>IV Crush 陷阱：</strong>如果你在财报前 2 天才买跨式，IV 已经极高，财报后 IV 暴跌（即使方向对），两腿都会贬值。最佳布局时间是财报前 10~14 天，IV 还未完全上升时。</div>
+        <div class="alert alert-good" style="margin-top:8px;">✅ <strong>最适合标的：</strong>NVDA、META、AAPL（大盘股财报往往有 5~10% 以上波动）、TSLA（波动更大，但权利金也更贵）。</div>
       </div>
     </div>
   </div>
@@ -570,9 +1159,9 @@
      SECTION 4: 股票档案
 ═══════════════════════════════════════ -->
 <div class="section" id="tickers">
-  <div class="section-header">
-    <span class="section-num">04</span>
-    <div><div class="section-title">标的监控档案 · 特征 & 适用策略</div></div>
+  <div class="section-title">
+    <span class="section-badge">04</span>
+    <h2>标的监控档案 · 特征 & 适用策略</h2>
   </div>
 
   <!-- 科技巨头 -->
@@ -772,9 +1361,9 @@
      SECTION 5: 风险管理
 ═══════════════════════════════════════ -->
 <div class="section" id="risk">
-  <div class="section-header">
-    <span class="section-num">05</span>
-    <div><div class="section-title">风险管理框架 · 仓位 · 止损 · 监控频率</div></div>
+  <div class="section-title">
+    <span class="section-badge">05</span>
+    <h2>风险管理框架 · 仓位 · 止损 · 监控频率</h2>
   </div>
 
   <!-- Position sizing -->
@@ -891,8 +1480,5 @@ function showTab(id) {
   event.target.classList.add('active');
 }
 </script>
-</main>
-</div>
-<script src="js/disclaimer.js" defer></script>
 </body>
 </html>

@@ -1,93 +1,660 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRCL · 机构级期权套利策略手册 · </title>
-<link rel="stylesheet" href="css/strategy.css">
+<title>CRCL · 机构级期权套利策略手册</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET  (demo design system)
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --cyan: #4DBFD8;
+    --cyan-dim: rgba(77,191,216,0.12);
+    --purple: #9B7ED8;
+    --purple-dim: rgba(155,126,216,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM  (.tt alias of .term)
+  ═══════════════════════════════════════════ */
+  .term, .tt {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline;
+    font-weight: 500;
+  }
+  .term::after, .tt::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+  .term:hover::after, .tt:hover::after { opacity: 1; }
+  .term::before, .tt::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before, .tt:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo .logo-tag {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 6px;
+  }
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; color: var(--text-primary); line-height: 1.3;
+  }
+  .sidebar-logo .logo-ver { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .nav-section-label {
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--text-muted); padding: 12px 24px 6px;
+  }
+  .nav-item {
+    display: block; padding: 9px 24px;
+    color: var(--text-secondary); text-decoration: none;
+    font-size: 13.5px; transition: all 0.15s;
+    border-left: 3px solid transparent; line-height: 1.4;
+  }
+  .nav-item:hover { color: var(--gold-light); background: var(--gold-dim); border-left-color: var(--gold); }
+  .nav-item.sub { padding-left: 38px; font-size: 12.5px; color: var(--text-muted); }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .hero::before {
+    content: 'CRCL';
+    position: absolute; right: -10px; top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 120px; font-weight: 700;
+    color: rgba(201,168,76,0.04); line-height: 1;
+    pointer-events: none; user-select: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; line-height: 1.25;
+    color: var(--text-primary); margin-bottom: 6px;
+  }
+  .hero h1 .accent { color: var(--gold-light); }
+  .hero-sub { color: var(--text-secondary); font-size: 14px; max-width: 620px; margin: 12px 0 28px; line-height: 1.7; }
+
+  .hero-metrics {
+    display: flex; gap: 0; flex-wrap: wrap;
+    border: 1px solid var(--navy-border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .hm {
+    flex: 1; min-width: 120px;
+    padding: 16px 18px;
+    border-right: 1px solid var(--navy-border);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .hm:last-child { border-right: none; }
+  .hm-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+  .hm-val {
+    font-family: 'DM Mono', monospace; font-size: 15px;
+    font-weight: 500; color: var(--text-primary);
+  }
+  .hm-val.good { color: var(--green); }
+  .hm-val.info { color: var(--blue); }
+
+  /* ═══════════════════════════════════════════
+     SECTIONS
+  ═══════════════════════════════════════════ */
+  .section { margin-bottom: 56px; }
+
+  .section-header {
+    display: flex; align-items: flex-start; gap: 16px;
+    margin-bottom: 28px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--gold); background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px; padding: 4px 9px; flex-shrink: 0; margin-top: 4px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 600;
+    color: var(--text-primary); line-height: 1.3;
+  }
+  .section-title .en {
+    display: block; font-family: 'DM Sans', sans-serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 400; margin-bottom: 4px;
+    font-style: normal;
+  }
+  .section-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    color: var(--gold-light); margin: 28px 0 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 20px 0 8px; }
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+  strong { color: var(--text-primary); }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius); padding: 16px 20px;
+    margin: 16px 0; font-size: 14px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+    line-height: 1.7;
+  }
+  .callout .callout-lbl {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 8px;
+    display: block;
+  }
+  .callout.danger {
+    background: var(--red-dim); border-color: rgba(224,92,92,0.3); color: #F0A0A0;
+  }
+  .callout.danger .callout-lbl { color: var(--red); }
+  .callout.info {
+    background: var(--blue-dim); border-color: rgba(91,141,200,0.3); color: #A0C0E0;
+  }
+  .callout.info .callout-lbl { color: var(--blue); }
+  .callout.green {
+    background: var(--green-dim); border-color: rgba(92,184,122,0.3); color: #A0D4B4;
+  }
+  .callout.green .callout-lbl { color: var(--green); }
+
+  /* ═══════════════════════════════════════════
+     CHIP / BADGE
+  ═══════════════════════════════════════════ */
+  .chip, .badge {
+    display: inline-block; padding: 2px 9px;
+    border-radius: 100px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .chip-green, .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.35); }
+  .chip-red, .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.35); }
+  .chip-orange, .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.35); }
+  .chip-gold, .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.35); }
+  .chip-cyan { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(77,191,216,0.35); }
+  .chip-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(155,126,216,0.35); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.35); }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .tbl-wrap { margin: 16px 0; }
+  .table-wrap {
+    overflow-x: auto; border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: rgba(201,168,76,0.08); border-bottom: 1px solid var(--navy-border); }
+  thead th {
+    padding: 13px 16px; text-align: left; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid rgba(36,59,85,0.6); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td { padding: 12px 16px; color: var(--text-secondary); vertical-align: top; line-height: 1.6; }
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+  .mono { font-family: 'DM Mono', monospace; font-size: 13px; }
+
+  /* fuse level rows */
+  .fuse-L0 td { background: rgba(212,184,74,0.05); }
+  .fuse-L1 td { background: rgba(212,184,74,0.07); }
+  .fuse-L1 td:first-child { color: var(--yellow); }
+  .fuse-L2 td { background: rgba(224,123,60,0.07); }
+  .fuse-L2 td:first-child { color: var(--orange); }
+  .fuse-L3 td { background: rgba(224,92,92,0.09); }
+  .fuse-L3 td:first-child { color: var(--red); }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 22px 26px; margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; line-height: 2;
+    color: var(--gold-light);
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .formula .cm { color: var(--text-muted); font-style: italic; }
+  .formula .k  { color: var(--gold-light); font-weight: 600; }
+  .formula .v  { color: var(--green); }
+  .formula .op { color: var(--blue); }
+  .formula .hl { color: var(--red); font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     STRATEGY CARDS GRID
+  ═══════════════════════════════════════════ */
+  .strat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px; margin: 16px 0;
+  }
+  .strat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .strat-card:hover { border-color: rgba(201,168,76,0.35); }
+  .strat-tier {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 4px; width: fit-content;
+  }
+  .strat-card.t1 .strat-tier, .strat-card.t2 .strat-tier {
+    background: var(--gold-dim); color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .strat-card.t3 .strat-tier, .strat-card.t4 .strat-tier {
+    background: var(--blue-dim); color: var(--blue);
+    border: 1px solid rgba(91,141,200,0.3);
+  }
+  .strat-card.t5 .strat-tier {
+    background: var(--cyan-dim); color: var(--cyan);
+    border: 1px solid rgba(77,191,216,0.3);
+  }
+  .strat-card.t6 .strat-tier {
+    background: var(--red-dim); color: var(--red);
+    border: 1px solid rgba(224,92,92,0.3);
+  }
+  .strat-card.t1 { border-top: 2px solid var(--gold); }
+  .strat-card.t2 { border-top: 2px solid var(--gold); }
+  .strat-card.t3 { border-top: 2px solid var(--blue); }
+  .strat-card.t4 { border-top: 2px solid var(--blue); }
+  .strat-card.t5 { border-top: 2px solid var(--cyan); }
+  .strat-card.t6 { border-top: 2px solid var(--red); }
+  .strat-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 600; color: var(--text-primary); line-height: 1.3;
+  }
+  .strat-en { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+  .strat-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; }
+  .strat-params { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .sp { display: flex; gap: 8px; font-size: 12.5px; align-items: baseline; }
+  .sp-l {
+    min-width: 100px; font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+  }
+  .sp-v { color: var(--text-secondary); font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  /* ═══════════════════════════════════════════
+     KPI GRID
+  ═══════════════════════════════════════════ */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin: 16px 0;
+  }
+  .kpi {
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); padding: 18px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .kpi-l { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  .kpi-v {
+    font-family: 'DM Mono', monospace; font-size: 20px;
+    font-weight: 500; color: var(--gold-light);
+  }
+  .kpi-v.good { color: var(--green); }
+  .kpi-v.info { color: var(--blue); }
+  .kpi-sub { font-size: 11.5px; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     HORIZONTAL FLOW
+  ═══════════════════════════════════════════ */
+  .flow {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 6px; margin: 20px 0; padding: 20px 24px;
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+  }
+  .flow-step {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; padding: 12px 14px;
+    background: var(--navy); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); min-width: 80px; text-align: center;
+    flex: 1;
+  }
+  .flow-step-n {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--gold); letter-spacing: 0.5px;
+  }
+  .flow-step-t { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .flow-arr { color: var(--navy-border); font-size: 18px; flex-shrink: 0; }
+
+  /* ═══════════════════════════════════════════
+     RISK MATRIX
+  ═══════════════════════════════════════════ */
+  .risk-matrix {
+    display: grid; grid-template-columns: 2fr 1fr 1.2fr 2fr;
+    border: 1px solid var(--navy-border); border-radius: var(--radius-lg);
+    overflow: hidden; margin: 16px 0;
+  }
+  .rm-cell {
+    padding: 12px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--navy-border);
+    border-right: 1px solid var(--navy-border); line-height: 1.5;
+  }
+  .rm-cell:nth-child(4n) { border-right: none; }
+  .rm-cell:nth-last-child(-n+4) { border-bottom: none; }
+  .rm-hd {
+    background: rgba(201,168,76,0.08); color: var(--gold);
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+  }
+  .rm-lo { background: rgba(92,184,122,0.05); color: var(--text-secondary); }
+  .rm-lo:first-of-type { color: var(--green); font-weight: 500; }
+  .rm-md { background: rgba(224,123,60,0.07); color: var(--text-secondary); }
+  .rm-hi { background: rgba(224,92,92,0.09); color: #F0A0A0; }
+
+  /* ═══════════════════════════════════════════
+     NUMBERED CHECKLIST
+  ═══════════════════════════════════════════ */
+  ul.checklist {
+    list-style: none; display: flex; flex-direction: column; gap: 10px;
+    padding: 0;
+  }
+  ul.checklist li {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 20px;
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); font-size: 14px; color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .cl-num {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    width: 28px; height: 28px; min-width: 28px;
+    background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: var(--gold); font-weight: 600; flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     GENERAL LIST STYLES
+  ═══════════════════════════════════════════ */
+  ul:not(.checklist) {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 12px 0;
+  }
+  ul:not(.checklist) li {
+    padding-left: 18px; position: relative;
+    color: var(--text-secondary); font-size: 14px; line-height: 1.65;
+  }
+  ul:not(.checklist) li::before {
+    content: '—'; position: absolute; left: 0;
+    color: var(--gold); font-size: 11px; top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     DIVIDER (text label)
+  ═══════════════════════════════════════════ */
+  .divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 36px 0 24px; color: var(--text-muted);
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--navy-border);
+  }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 20px;
+  }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 18px 20px; }
+  .stat-card .stat-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-card .stat-value { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--gold-light); }
+  .stat-card .stat-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  code {
+    font-family: 'DM Mono', monospace; font-size: 12.5px;
+    background: rgba(201,168,76,0.08); padding: 1px 6px;
+    border-radius: 3px; color: var(--gold-light);
+  }
+
+  /* ═══════════════════════════════════════════
+     REDLINES
+  ═══════════════════════════════════════════ */
+  .redlines { display: flex; flex-direction: column; gap: 10px; }
+  .redline-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 18px; background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red); border-radius: var(--radius);
+  }
+  .redline-num {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--red);
+    background: rgba(224,92,92,0.1); padding: 2px 7px; border-radius: 4px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .redline-text { font-size: 13.5px; color: #F0A0A0; line-height: 1.6; }
+
+  /* ═══════════════════════════════════════════
+     FOOTER
+  ═══════════════════════════════════════════ */
+  .disclaimer {
+    background: var(--navy-mid); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); padding: 20px 24px;
+    font-size: 12.5px; color: var(--text-muted); line-height: 1.8; margin-top: 48px;
+  }
+  .disclaimer strong { color: var(--text-secondary); }
+
+  .page-footer {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-top: 48px; padding: 28px 32px;
+    background: var(--navy-mid); border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg); gap: 24px;
+  }
+  .foot-l { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; }
+  .foot-r {
+    font-size: 13px; color: var(--text-secondary); text-align: right;
+    font-style: italic; white-space: nowrap;
+  }
+  .foot-r em { color: var(--gold); display: block; margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+    .strat-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .hero-metrics { flex-direction: column; }
+    .kpi-grid { grid-template-columns: 1fr; }
+    .risk-matrix { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
 <body>
-<div class="layout-wrapper">
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
-    <div class="logo-title">CRCL VIP 期权增强<br>操作手册</div>
-    <div class="logo-ver">V1.0 · 2026 年 4 月</div>
+    <span class="logo-tag">Institutional Options Alpha</span>
+    <div class="logo-title">CRCL 期权套利<br>策略手册</div>
+    <div class="logo-ver">2026-04-01 · IBKR Level IV</div>
   </div>
-  <div class="nav-section-label">前置条件</div>
-  <a href="#s00" class="nav-item">00 · 策略定位</a>
-  <a href="#s01" class="nav-item">01 · NRA 税务</a>
-  <a href="#s02" class="nav-item">02 · 账户架构</a>
-  <div class="nav-section-label">决策引擎</div>
-  <a href="#s03" class="nav-item">03 · 市场状态</a>
-  <a href="#s04" class="nav-item">04 · 波动率校准</a>
-  <a href="#s05" class="nav-item">05 · 流动性</a>
-  <a href="#s06" class="nav-item">06 · 策略架构</a>
-  <a href="#s07" class="nav-item">07 · EV 计算</a>
-  <div class="nav-section-label">执行与管理</div>
-  <a href="#s08" class="nav-item">08 · 执行流程</a>
-  <a href="#s09" class="nav-item">09 · 持仓管理</a>
-  <a href="#s10" class="nav-item">10 · 尾部风险</a>
-  <a href="#s11" class="nav-item">11 · 熔断机制</a>
-  <div class="nav-section-label">运营</div>
-  <a href="#s12" class="nav-item">12 · 月度清单</a>
-  <a href="#s13" class="nav-item">13 · 台账</a>
-  <a href="#s14" class="nav-item">14 · 纪律守则</a>
+
+  <div class="nav-section-label">基础框架</div>
+  <a href="#s1" class="nav-item">01 · CRCL 基础解构</a>
+  <a href="#s2" class="nav-item">02 · 四维波动率框架</a>
+  <a href="#s3" class="nav-item">03 · 六策略结构矩阵</a>
+
+  <div class="nav-section-label">事件与执行</div>
+  <a href="#s4" class="nav-item">04 · 事件驱动引擎</a>
+  <a href="#s5" class="nav-item">05 · Greeks 精确管理</a>
+  <a href="#s6" class="nav-item">06 · 逐笔执行手册</a>
+
+  <div class="nav-section-label">风控与合规</div>
+  <a href="#s7" class="nav-item">07 · 风险熔断机制</a>
+  <a href="#s8" class="nav-item">08 · 跨资产对冲</a>
+  <a href="#s9" class="nav-item">09 · NRA 税务合规</a>
+
+  <div class="nav-section-label">绩效追踪</div>
+  <a href="#s10" class="nav-item">10 · 绩效追踪与归因</a>
 </nav>
-<main class="main-content">
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="main">
+
 <!-- ══════════════ HERO ══════════════ -->
 <div class="hero">
-  <div ></div>
-  <div class="hero-corner"></div>
-  <div class="ver-badge">机构级 · CRCR期权套利策略 · 2026-04-01</div>
-
   <div class="hero-eyebrow">CRCL · Circle Internet Group · NYSE · Options Alpha Framework</div>
-
-  <h1 >
-    CRCL 期权<br>
-    <span class="accent">套利策略手册</span>
-  </h1>
-
+  <h1>CRCL 期权<br><span class="accent">套利策略手册</span></h1>
   <p class="hero-sub">
     事件驱动波动率套利 · 三维多策略架构 · Greeks 精确管理<br>
     适用于 NRA 专业投资者 · IBKR 机构保证金账户
   </p>
-
   <div class="hero-metrics">
-    <div class="hm">
-      <div class="hm-label">目标年化收益</div>
-      <div class="hm-val">30 – 50%</div>
-    </div>
-    <div class="hm">
-      <div class="hm-label">目标夏普比率</div>
-      <div class="hm-val good">> 2.0</div>
-    </div>
-    <div class="hm">
-      <div class="hm-label">最大可接受回撤</div>
-      <div class="hm-val info">≤ 10%</div>
-    </div>
-    <div class="hm">
-      <div class="hm-label">单标的总敞口上限</div>
-      <div class="hm-val">≤ 15%</div>
-    </div>
-    <div class="hm">
-      <div class="hm-label">策略层级</div>
-      <div class="hm-val">机构 · Level IV</div>
-    </div>
+    <div class="hm"><div class="hm-label">目标年化收益</div><div class="hm-val">30 – 50%</div></div>
+    <div class="hm"><div class="hm-label">目标夏普比率</div><div class="hm-val good">&gt; 2.0</div></div>
+    <div class="hm"><div class="hm-label">最大可接受回撤</div><div class="hm-val info">≤ 10%</div></div>
+    <div class="hm"><div class="hm-label">单标的敞口上限</div><div class="hm-val">≤ 15%</div></div>
+    <div class="hm"><div class="hm-label">策略层级</div><div class="hm-val">机构 · Level IV</div></div>
   </div>
-
-
-<!-- ══════════════ NAV ══════════════ -->
-
+</div>
 
 <!-- ══════════════ S1: CRCL解构 ══════════════ -->
-<section class="sec" id="s1">
-  <div class="sec-hd">
-    <span class="sec-n">01</span>
-    <h2 class="section-title">
-      <span class="en">Fundamental Deconstruction</span>
-      CRCL 基础定价解构
-    </h2>
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div>
+      <div class="section-title"><span class="en">Fundamental Deconstruction</span>CRCL 基础定价解构</div>
+    </div>
   </div>
 
   <div class="callout info">
@@ -100,12 +667,7 @@
     <table>
       <thead>
         <tr>
-          <th>驱动因子</th>
-          <th>方向</th>
-          <th>估值影响</th>
-          <th>IV 反应</th>
-          <th>期权策略含义</th>
-          <th>监控频率</th>
+          <th>驱动因子</th><th>方向</th><th>估值影响</th><th>IV 反应</th><th>期权策略含义</th><th>监控频率</th>
         </tr>
       </thead>
       <tbody>
@@ -114,7 +676,7 @@
           <td><span class="chip chip-green">+正相关</span></td>
           <td>储备金收益 × USDC 存量，FFR 每降 50bp → EPS 约 -15%</td>
           <td>降息预期 → IV 膨胀</td>
-          <td><span class="tt" data-tip="FOMC（联邦公开市场委员会）：美联储设定利率政策的决策机构，每年开会8次。">FOMC</span> 前后卖 <span class="tt" data-tip="价差期权（Spread）：同时买入和卖出不同行权价或到期日的期权，以限制最大亏损，降低保证金占用。">价差</span>，利率敏感期与 TLT 联动对冲</td>
+          <td><span class="tt" data-tip="FOMC（联邦公开市场委员会）：美联储设定利率政策的决策机构，每年开会8次。">FOMC</span> 前后卖<span class="tt" data-tip="价差期权（Spread）：同时买入和卖出不同行权价或到期日的期权，以限制最大亏损，降低保证金占用。">价差</span>，利率敏感期与 TLT 联动对冲</td>
           <td>每次 FOMC</td>
         </tr>
         <tr>
@@ -138,7 +700,7 @@
           <td><span class="chip chip-red">-尾部风险</span></td>
           <td>USDC 被认定证券：-50~80%（黑天鹅）</td>
           <td>瞬间跳升 +100pct 以上</td>
-          <td>强制持有深度虚值 <span class="tt" data-tip="保护性看跌期权（Protective Put）：持有正股的同时买入看跌期权，类似为股票购买保险，防范股价大幅下跌。">保护性 Put</span>，L3 熔断立即清仓</td>
+          <td>强制持有深度虚值<span class="tt" data-tip="保护性看跌期权（Protective Put）：持有正股的同时买入看跌期权，类似为股票购买保险，防范股价大幅下跌。">保护性 Put</span>，L3 熔断立即清仓</td>
           <td>实时</td>
         </tr>
         <tr>
@@ -219,13 +781,12 @@
 </section>
 
 <!-- ══════════════ S2: 波动率框架 ══════════════ -->
-<section class="sec" id="s2">
-  <div class="sec-hd">
-    <span class="sec-n">02</span>
-    <h2 class="section-title">
-      <span class="en">Volatility Architecture</span>
-      四维波动率分析框架
-    </h2>
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div>
+      <div class="section-title"><span class="en">Volatility Architecture</span>四维波动率分析框架</div>
+    </div>
   </div>
 
   <h3>2.1 四维同步监控体系（缺一不开仓）</h3>
@@ -239,32 +800,32 @@
           <td><strong>① IV 水平</strong></td>
           <td><span class="tt" data-tip="ATM IV（平值隐含波动率）：行权价最接近当前股价的期权的隐含波动率，代表市场对当前价格附近未来波动的预期。">ATM IV</span>（30 DTE）</td>
           <td>IBKR 期权链实时</td>
-          <td>ATM IV > 80%</td>
-          <td>ATM IV < 50%</td>
-          <td>CRCL vs COIN IV 溢价 > 25% 时为过热</td>
+          <td>ATM IV &gt; 80%</td>
+          <td>ATM IV &lt; 50%</td>
+          <td>CRCL vs COIN IV 溢价 &gt; 25% 时为过热</td>
         </tr>
         <tr>
           <td><strong>② 修正 IVR</strong></td>
           <td>COIN 校准 IVR</td>
           <td>TastyTrade / IBKR</td>
-          <td>> 75%</td>
-          <td>< 35%</td>
+          <td>&gt; 75%</td>
+          <td>&lt; 35%</td>
           <td>高于 80% 为强烈卖方信号，最佳执行窗口</td>
         </tr>
         <tr>
           <td><strong>③ VP Ratio</strong></td>
           <td><span class="tt" data-tip="VP Ratio（波动率溢价比）= 当前ATM IV ÷ HV30（30日历史实现波动率）。大于1.4表明期权市场对波动的定价显著高于实际波动，是卖方策略的统计优势来源。">VP Ratio</span> = IV ÷ HV30</td>
           <td>TradingView（手动计算）</td>
-          <td>> 1.5</td>
-          <td>< 1.1</td>
-          <td>> 1.7 为极强卖方信号；< 1.1 时买 Straddle</td>
+          <td>&gt; 1.5</td>
+          <td>&lt; 1.1</td>
+          <td>&gt; 1.7 为极强卖方信号；&lt; 1.1 时买 Straddle</td>
         </tr>
         <tr>
           <td><strong>④ 期限结构</strong></td>
           <td><span class="tt" data-tip="期限结构（Term Structure）：不同到期日期权的隐含波动率分布。近月IV > 远月IV称为Backwardation（反向）；远月IV > 近月IV称为Contango（正向）。事件前常见反向结构。">近月 IV vs. 远月 IV</span></td>
           <td>IBKR 期权链多到期日</td>
-          <td>近月 > 远月 +20%（Backwardation）</td>
-          <td>近月 < 远月 +20%（Contango）</td>
+          <td>近月 &gt; 远月 +20%（Backwardation）</td>
+          <td>近月 &lt; 远月 +20%（Contango）</td>
           <td>Backwardation 时触发日历价差套利机会</td>
         </tr>
       </tbody>
@@ -272,15 +833,14 @@
   </div>
 
   <h3>2.2 核心计算公式</h3>
-  <div class="formula-box">
-<span class="cm">// ─── 波动率溢价比（核心触发指标）</span>
+  <div class="formula"><span class="cm">// ─── 波动率溢价比（核心触发指标）</span>
 <span class="k">VP_Ratio</span> = <span class="v">CRCL_ATM_IV_30DTE</span> / <span class="v">HV30_realized</span>
 
 <span class="cm">// VP Ratio 行动矩阵</span>
-<span class="k">VP_Ratio</span> > <span class="v">1.7</span>   → 极强卖方信号，Bull Put Spread / Iron Condor 首选
+<span class="k">VP_Ratio</span> &gt; <span class="v">1.7</span>   → 极强卖方信号，Bull Put Spread / Iron Condor 首选
 <span class="k">VP_Ratio</span> <span class="op">1.4–1.7</span> → 标准卖方区间，搭配事件确认后执行
 <span class="k">VP_Ratio</span> <span class="op">1.1–1.4</span> → 中性区间，仅配合其他信号执行
-<span class="k">VP_Ratio</span> < <span class="v">1.1</span>   → 买方区间，考虑 Long Straddle（低成本窗口）
+<span class="k">VP_Ratio</span> &lt; <span class="v">1.1</span>   → 买方区间，考虑 Long Straddle（低成本窗口）
 
 <span class="cm">// ─── COIN 锚定修正 IVR（解决 CRCL 新股历史不足问题）</span>
 <span class="k">CRCL_IVR_adj</span> = (CRCL_IV - COIN_IV_52wLow) / (COIN_IV_52wHigh - COIN_IV_52wLow) × <span class="hl">β_scale</span>
@@ -288,9 +848,8 @@
 
 <span class="cm">// ─── 偏斜强度指数</span>
 <span class="k">Skew_Index</span> = <span class="v">IV_Put(Δ25)</span> - <span class="v">IV_Call(Δ25)</span>
-<span class="cm">// > 15pct → Put 严重超买，Bull Put Spread 额外 Alpha</span>
-<span class="cm">// > 30pct → 极端恐慌，Put 端套利优先级最高</span>
-  </div>
+<span class="cm">// &gt; 15pct → Put 严重超买，Bull Put Spread 额外 Alpha</span>
+<span class="cm">// &gt; 30pct → 极端恐慌，Put 端套利优先级最高</span></div>
 
   <h3>2.3 偏斜套利信号矩阵</h3>
   <div class="table-wrap">
@@ -301,35 +860,26 @@
       <tbody>
         <tr>
           <td>正常区间</td>
-          <td>ATM +15~25%</td>
-          <td>ATM +5~10%</td>
-          <td>10–20 pct</td>
-          <td>正常风险溢价</td>
-          <td>标准 Bull Put Spread</td>
+          <td>ATM +15~25%</td><td>ATM +5~10%</td>
+          <td>10–20 pct</td><td>正常风险溢价</td><td>标准 Bull Put Spread</td>
         </tr>
         <tr>
           <td><strong>Put 偏斜过陡</strong></td>
-          <td>ATM +35% 以上</td>
-          <td>ATM +5% 以下</td>
-          <td><span class="chip chip-gold">> 30 pct</span></td>
+          <td>ATM +35% 以上</td><td>ATM +5% 以下</td>
+          <td><span class="chip chip-gold">&gt; 30 pct</span></td>
           <td>监管恐慌，Put 严重高估</td>
           <td><span class="chip chip-gold">Bull Put Spread 超额 Alpha</span></td>
         </tr>
         <tr>
           <td>偏斜平坦</td>
-          <td>ATM +5% 以下</td>
-          <td>ATM +5% 以下</td>
-          <td>< 5 pct</td>
-          <td>市场低估尾部风险</td>
-          <td>配置 Tail Hedge Put</td>
+          <td>ATM +5% 以下</td><td>ATM +5% 以下</td>
+          <td>&lt; 5 pct</td><td>市场低估尾部风险</td><td>配置 Tail Hedge Put</td>
         </tr>
         <tr>
           <td>Call 偏斜突出</td>
-          <td>ATM +10%</td>
-          <td>ATM +20% 以上</td>
+          <td>ATM +10%</td><td>ATM +20% 以上</td>
           <td><span class="chip chip-cyan">Call 溢价</span></td>
-          <td>立法通过预期强烈</td>
-          <td>Bear Call Spread</td>
+          <td>立法通过预期强烈</td><td>Bear Call Spread</td>
         </tr>
       </tbody>
     </table>
@@ -344,35 +894,27 @@
       <tbody>
         <tr>
           <td><span class="chip chip-green">A · 强势</span></td>
-          <td>BTC > MA20 > MA50，MA20 向上</td>
-          <td>> 0.7</td>
-          <td>< 18</td>
-          <td>正常执行所有策略，可积极开仓</td>
-          <td>≤ 8%</td>
+          <td>BTC &gt; MA20 &gt; MA50，MA20 向上</td>
+          <td>&gt; 0.7</td><td>&lt; 18</td>
+          <td>正常执行所有策略，可积极开仓</td><td>≤ 8%</td>
         </tr>
         <tr>
           <td><span class="chip chip-cyan">B · 震荡偏多</span></td>
-          <td>BTC > MA20，MA20 走平</td>
-          <td>0.5–0.7</td>
-          <td>18–22</td>
-          <td>标准执行，Bull Put Spread 优先</td>
-          <td>≤ 6%</td>
+          <td>BTC &gt; MA20，MA20 走平</td>
+          <td>0.5–0.7</td><td>18–22</td>
+          <td>标准执行，Bull Put Spread 优先</td><td>≤ 6%</td>
         </tr>
         <tr>
           <td><span class="chip chip-orange">C · 震荡偏空</span></td>
-          <td>BTC < MA20 但 > MA50</td>
-          <td>0.3–0.5</td>
-          <td>22–30</td>
-          <td>强制使用价差结构，禁止裸卖 Put，仓位减半</td>
-          <td>≤ 4%</td>
+          <td>BTC &lt; MA20 但 &gt; MA50</td>
+          <td>0.3–0.5</td><td>22–30</td>
+          <td>强制使用价差结构，禁止裸卖 Put，仓位减半</td><td>≤ 4%</td>
         </tr>
         <tr>
           <td><span class="chip chip-red">D · 强势下跌</span></td>
-          <td>BTC < MA20 < MA50，MA20 向下</td>
-          <td>任意</td>
-          <td>> 30</td>
-          <td><strong>停止所有卖方操作</strong>，仅保留 Tail Hedge，等待 B/A 企稳信号</td>
-          <td>0%</td>
+          <td>BTC &lt; MA20 &lt; MA50，MA20 向下</td>
+          <td>任意</td><td>&gt; 30</td>
+          <td><strong>停止所有卖方操作</strong>，仅保留 Tail Hedge，等待 B/A 企稳信号</td><td>0%</td>
         </tr>
       </tbody>
     </table>
@@ -380,27 +922,25 @@
 </section>
 
 <!-- ══════════════ S3: 策略矩阵 ══════════════ -->
-<section class="sec" id="s3">
-  <div class="sec-hd">
-    <span class="sec-n">03</span>
-    <h2 class="section-title">
-      <span class="en">Multi-Strategy Matrix</span>
-      六策略结构化矩阵
-    </h2>
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div>
+      <div class="section-title"><span class="en">Multi-Strategy Matrix</span>六策略结构化矩阵</div>
+    </div>
   </div>
 
   <p>策略按市场状态、IV 水平、事件窗口动态切换。任何时刻只运行其中 1–3 个策略，总保证金占用不超过 25%。</p>
 
   <div class="strat-grid">
-
     <div class="strat-card t1">
       <div class="strat-tier">Tier-1 · 核心策略 · 高频执行</div>
       <div class="strat-name">事件 <span class="tt" data-tip="IV Crush（隐含波动率坍缩）：重大事件（财报/立法）结果公布后，市场不确定性消除，隐含波动率从高位快速回落的现象。卖方策略的核心获利时机。">IV Crush</span> 套利</div>
       <div class="strat-en">Event-Driven Implied Volatility Crush</div>
       <div class="strat-desc">在重大事件（GENIUS Act 投票、财报）前 3–5 天，IV 极端膨胀时，通过 Bull Put Spread 或 Iron Condor 卖出波动率。事件后 IV 快速坍缩，24 小时内平仓锁利。年化贡献约 55%。</div>
       <div class="strat-params">
-        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">修正 IVR > 75% + 距事件 ≤ 5 天</span></div>
-        <div class="sp"><span class="sp-l">VP Ratio</span><span class="sp-v">> 1.5</span></div>
+        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">修正 IVR &gt; 75% + 距事件 ≤ 5 天</span></div>
+        <div class="sp"><span class="sp-l">VP Ratio</span><span class="sp-v">&gt; 1.5</span></div>
         <div class="sp"><span class="sp-l">Delta 目标</span><span class="sp-v">-0.15 ~ -0.22</span></div>
         <div class="sp"><span class="sp-l">到期日</span><span class="sp-v">事件后第 1 个周五（3–7 天）</span></div>
         <div class="sp"><span class="sp-l">目标盈利</span><span class="sp-v">权利金的 50–70%</span></div>
@@ -414,9 +954,9 @@
       <div class="strat-tier">Tier-1 · 核心策略 · 月度执行</div>
       <div class="strat-name">增强型 <span class="tt" data-tip="Wheel策略：循环卖出现金担保Put → 被行权接货 → 卖出Covered Call的复利引擎。正股成本不断摊薄，适合非事件期间持续产生现金流。">Wheel</span> 策略</div>
       <div class="strat-en">Enhanced Cash-Secured Put Wheel</div>
-      <div class="strat-desc">非事件期间（距下个事件 > 2 周），持续卖现金担保 Put，被行权接货后转 Covered Call。严格限制接货比例不超过组合 15%，配合保护性 Put 对冲尾部风险。</div>
+      <div class="strat-desc">非事件期间（距下个事件 &gt; 2 周），持续卖现金担保 Put，被行权接货后转 Covered Call。严格限制接货比例不超过组合 15%，配合保护性 Put 对冲尾部风险。</div>
       <div class="strat-params">
-        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">非事件期 + 修正 IVR > 50%</span></div>
+        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">非事件期 + 修正 IVR &gt; 50%</span></div>
         <div class="sp"><span class="sp-l">Delta 目标</span><span class="sp-v">-0.18 ~ -0.25</span></div>
         <div class="sp"><span class="sp-l">到期日</span><span class="sp-v">21–45 DTE</span></div>
         <div class="sp"><span class="sp-l">行权价缓冲</span><span class="sp-v">距当前价 ≥ 18%</span></div>
@@ -429,11 +969,11 @@
 
     <div class="strat-card t3">
       <div class="strat-tier">Tier-2 · 结构套利 · 事件前介入</div>
-      <div class="strat-name"><span class="tt" data-tip="日历价差（Calendar Spread）：卖出近月期权 + 买入远月同行权价期权。利用近月IV高于远月、近月Theta衰减更快的特性套利。适合期限结构Backwardation时使用。">日历价差</span> 期限套利</div>
+      <div class="strat-name"><span class="tt" data-tip="日历价差（Calendar Spread）：卖出近月期权 + 买入远月同行权价期权。利用近月IV高于远月、近月Theta衰减更快的特性套利。适合期限结构Backwardation时使用。">日历价差</span>期限套利</div>
       <div class="strat-en">Calendar Spread · Term Structure Arbitrage</div>
       <div class="strat-desc">当近月 IV 高于远月 IV 超过 20%（Backwardation）时，卖出近月 ATM Put + 买入远月同行权价 Put。利用近月 IV 坍缩速度远快于远月的特性获利。最大亏损 = 净权利金支出（有限）。</div>
       <div class="strat-params">
-        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">近远月 IV 差 > 20%</span></div>
+        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">近远月 IV 差 &gt; 20%</span></div>
         <div class="sp"><span class="sp-l">行权价</span><span class="sp-v">ATM 或轻微虚值（Δ -0.40 ~ -0.50）</span></div>
         <div class="sp"><span class="sp-l">近月到期</span><span class="sp-v">事件后 3–7 天</span></div>
         <div class="sp"><span class="sp-l">远月到期</span><span class="sp-v">60–90 DTE</span></div>
@@ -448,12 +988,11 @@
       <div class="strat-tier">Tier-2 · 偏度套利 · 条件执行</div>
       <div class="strat-name"><span class="tt" data-tip="偏度套利（Skew Arbitrage）：利用Put端与Call端IV的不对称性，在Put IV过高时卖Put、买Call（Risk Reversal变体），赚取偏度回归收益，同时通过Delta对冲保持方向中性。">Put 偏斜</span>套利</div>
       <div class="strat-en">Put Skew Arbitrage · Risk Reversal</div>
-      <div class="strat-desc">当 Skew Index（Δ25 Put IV − Δ25 Call IV）超过 25pct 时，市场对下行的恐慌定价过度。卖出 OTM Put（Δ -0.20）+ 买入 OTM Call（Δ +0.15）构成 Risk Reversal 变体，通过正股动态对冲维持 Delta 中性，纯赚偏度回归。</div>
+      <div class="strat-desc">当 Skew Index 超过 25pct 时，市场对下行的恐慌定价过度。卖出 OTM Put（Δ -0.20）+ 买入 OTM Call（Δ +0.15）构成 Risk Reversal 变体，通过正股动态对冲维持 Delta 中性，纯赚偏度回归。</div>
       <div class="strat-params">
-        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">Skew Index > 25 pct</span></div>
+        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">Skew Index &gt; 25 pct</span></div>
         <div class="sp"><span class="sp-l">卖出</span><span class="sp-v">OTM Put，Δ ≈ -0.20</span></div>
         <div class="sp"><span class="sp-l">买入</span><span class="sp-v">OTM Call，Δ ≈ +0.15（数量减半）</span></div>
-        <div class="sp"><span class="sp-l">目的</span><span class="sp-v">部分 Delta 对冲 + 黑天鹅上涨保护</span></div>
         <div class="sp"><span class="sp-l">平仓条件</span><span class="sp-v">Skew Index 回落至 10pct 以下</span></div>
         <div class="sp"><span class="sp-l">Delta 管理</span><span class="sp-v">每日对冲归零，正股补位</span></div>
         <div class="sp"><span class="sp-l">市场状态</span><span class="sp-v">仅 A/B 状态执行</span></div>
@@ -465,16 +1004,15 @@
       <div class="strat-tier">Tier-2 · 事件买方 · 特定低IV窗口</div>
       <div class="strat-name">事件前 <span class="tt" data-tip="跨式期权（Straddle）：同时买入相同行权价、相同到期日的Call和Put，做多波动率。当实际价格移动幅度超过两腿权利金之和时盈利，方向无关。">Long Straddle</span></div>
       <div class="strat-en">Pre-Event Long Straddle · Vol Long</div>
-      <div class="strat-desc">当 VP Ratio < 1.1（IV 被压制）且距重大事件 7–10 天时，买入 ATM Straddle，做多波动率。预期无论立法通过或失败，价格移动幅度都将超过权利金成本。<strong>注意：此策略是买方，与其他卖方策略方向相反，需单独核算仓位。</strong></div>
+      <div class="strat-desc">当 VP Ratio &lt; 1.1（IV 被压制）且距重大事件 7–10 天时，买入 ATM Straddle，做多波动率。预期无论立法通过或失败，价格移动幅度都将超过权利金成本。<strong>注意：此策略是买方，与其他卖方策略方向相反，需单独核算仓位。</strong></div>
       <div class="strat-params">
-        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">VP Ratio < 1.1 + 距事件 7–10 天</span></div>
+        <div class="sp"><span class="sp-l">触发条件</span><span class="sp-v">VP Ratio &lt; 1.1 + 距事件 7–10 天</span></div>
         <div class="sp"><span class="sp-l">行权价</span><span class="sp-v">ATM（Δ Call ≈ +0.50, Put ≈ -0.50）</span></div>
-        <div class="sp"><span class="sp-l">盈亏平衡</span><span class="sp-v">价格移动 > 两腿权利金之和</span></div>
+        <div class="sp"><span class="sp-l">盈亏平衡</span><span class="sp-v">价格移动 &gt; 两腿权利金之和</span></div>
         <div class="sp"><span class="sp-l">平仓条件</span><span class="sp-v">事件前 1 天卖出（锁定 IV 膨胀收益）</span></div>
         <div class="sp"><span class="sp-l">最大亏损</span><span class="sp-v">全部权利金支出</span></div>
         <div class="sp"><span class="sp-l">仓位上限</span><span class="sp-v">≤ 总资金 1%（轻仓，买方损耗快）</span></div>
         <div class="sp"><span class="sp-l">频率</span><span class="sp-v">罕见，每季度 0–2 次</span></div>
-        <div class="sp"><span class="sp-l">市场状态</span><span class="sp-v">任意状态均可（买方）</span></div>
       </div>
     </div>
 
@@ -491,10 +1029,8 @@
         <div class="sp"><span class="sp-l">覆盖比例</span><span class="sp-v">正股市值 100%</span></div>
         <div class="sp"><span class="sp-l">年化保险成本</span><span class="sp-v">正股市值 3–5%</span></div>
         <div class="sp"><span class="sp-l">激活条件</span><span class="sp-v">L3 熔断时该 Put 获利抵消正股亏损</span></div>
-        <div class="sp"><span class="sp-l">停止条件</span><span class="sp-v">正股全部清仓后撤销</span></div>
       </div>
     </div>
-
   </div>
 
   <h3>3.1 策略选择决策树</h3>
@@ -504,27 +1040,26 @@
         <tr><th>市场状态</th><th>距事件天数</th><th>修正 IVR</th><th>VP Ratio</th><th>首选策略</th><th>仓位上限</th></tr>
       </thead>
       <tbody>
-        <tr><td>A / B</td><td>≤ 5 天</td><td>> 80%</td><td>> 1.5</td><td><span class="chip chip-gold">Bull Put Spread + Iron Condor</span></td><td>5% / 事件</td></tr>
+        <tr><td>A / B</td><td>≤ 5 天</td><td>&gt; 80%</td><td>&gt; 1.5</td><td><span class="chip chip-gold">Bull Put Spread + Iron Condor</span></td><td>5% / 事件</td></tr>
         <tr><td>A / B</td><td>6–10 天</td><td>50–80%</td><td>1.3–1.5</td><td><span class="chip chip-cyan">日历价差 + 小仓 Bull Put</span></td><td>3% / 事件</td></tr>
-        <tr><td>A / B</td><td>> 10 天</td><td>< 50%</td><td>< 1.3</td><td><span class="chip chip-cyan">Wheel 策略 + 偏度套利观察</span></td><td>2% / 单位</td></tr>
-        <tr><td>A / B</td><td>7–10 天</td><td>< 35%</td><td>< 1.1</td><td><span class="chip chip-purple">Long Straddle（轻仓，极罕见）</span></td><td>1%</td></tr>
-        <tr><td>C（偏空）</td><td>≤ 5 天</td><td>> 80%</td><td>> 1.5</td><td><span class="chip chip-orange">Bull Put Spread（强制，缩仓 50%）</span></td><td>2.5%</td></tr>
+        <tr><td>A / B</td><td>&gt; 10 天</td><td>&lt; 50%</td><td>&lt; 1.3</td><td><span class="chip chip-cyan">Wheel 策略 + 偏度套利观察</span></td><td>2% / 单位</td></tr>
+        <tr><td>A / B</td><td>7–10 天</td><td>&lt; 35%</td><td>&lt; 1.1</td><td><span class="chip chip-purple">Long Straddle（轻仓，极罕见）</span></td><td>1%</td></tr>
+        <tr><td>C（偏空）</td><td>≤ 5 天</td><td>&gt; 80%</td><td>&gt; 1.5</td><td><span class="chip chip-orange">Bull Put Spread（强制，缩仓 50%）</span></td><td>2.5%</td></tr>
         <tr><td>C（偏空）</td><td>任意</td><td>任意</td><td>任意</td><td><span class="chip chip-orange">禁裸卖 Put；仅价差；敞口减半</span></td><td>≤ 2%</td></tr>
         <tr><td>D（强跌）</td><td>任意</td><td>任意</td><td>任意</td><td><span class="chip chip-red">停止所有新开仓；仅保留 Tail Hedge</span></td><td>0%</td></tr>
-        <tr><td>任意</td><td>任意</td><td>任意</td><td>偏度 > 25pct</td><td><span class="chip chip-cyan">Put 偏斜套利（A/B 状态）</span></td><td>2%</td></tr>
+        <tr><td>任意</td><td>任意</td><td>任意</td><td>偏度 &gt; 25pct</td><td><span class="chip chip-cyan">Put 偏斜套利（A/B 状态）</span></td><td>2%</td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
 <!-- ══════════════ S4: 事件引擎 ══════════════ -->
-<section class="sec" id="s4">
-  <div class="sec-hd">
-    <span class="sec-n">04</span>
-    <h2 class="section-title">
-      <span class="en">Event-Driven Alpha Engine</span>
-      事件驱动 Alpha 引擎
-    </h2>
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div>
+      <div class="section-title"><span class="en">Event-Driven Alpha Engine</span>事件驱动 Alpha 引擎</div>
+    </div>
   </div>
 
   <h3>4.1 CRCL 事件日历与 IV 影响量化</h3>
@@ -538,8 +1073,7 @@
           <td><strong>稳定币立法投票</strong>（GENIUS Act 等）</td>
           <td>季度级</td>
           <td><span class="chip chip-red">+60–100 pct</span></td>
-          <td>事件后 24–48h</td>
-          <td>±25–50%</td>
+          <td>事件后 24–48h</td><td>±25–50%</td>
           <td>Bull Put Spread（主）+ Iron Condor（中性）</td>
           <td>事件前 3–5 天</td>
         </tr>
@@ -547,8 +1081,7 @@
           <td><strong>季度财报</strong></td>
           <td>季度</td>
           <td><span class="chip chip-orange">+30–60 pct</span></td>
-          <td>事件后 24h</td>
-          <td>±10–25%</td>
+          <td>事件后 24h</td><td>±10–25%</td>
           <td>Iron Condor（±20% 宽度）</td>
           <td>财报前 5–7 天</td>
         </tr>
@@ -556,8 +1089,7 @@
           <td><strong>FOMC 利率决议</strong></td>
           <td>6–8 周</td>
           <td><span class="chip chip-orange">+20–40 pct</span></td>
-          <td>决议后 12–24h</td>
-          <td>±5–15%</td>
+          <td>决议后 12–24h</td><td>±5–15%</td>
           <td>Bull Put Spread（轻仓）</td>
           <td>FOMC 前 3 天</td>
         </tr>
@@ -565,8 +1097,7 @@
           <td><strong>SEC 监管声明</strong></td>
           <td>不定期</td>
           <td><span class="chip chip-red">+50–120 pct</span></td>
-          <td>不确定（黑天鹅）</td>
-          <td>±20–80%</td>
+          <td>不确定（黑天鹅）</td><td>±20–80%</td>
           <td>停止卖方；激活 Tail Hedge；等待稳定</td>
           <td>不可预测，实时响应</td>
         </tr>
@@ -574,8 +1105,7 @@
           <td><strong>USDC 锁仓解禁</strong></td>
           <td>批次性</td>
           <td><span class="chip chip-orange">+20–40 pct</span></td>
-          <td>解禁后 3–5 天</td>
-          <td>±10–20%</td>
+          <td>解禁后 3–5 天</td><td>±10–20%</td>
           <td>解禁前卖 OTM Put（-25% 行权价）</td>
           <td>解禁日前 5 天</td>
         </tr>
@@ -583,8 +1113,7 @@
           <td><strong>USDC 链上大额流动</strong></td>
           <td>随机</td>
           <td><span class="chip chip-cyan">+10–25 pct</span></td>
-          <td>数小时</td>
-          <td>±5–15%</td>
+          <td>数小时</td><td>±5–15%</td>
           <td>领先市场 2–3 天的早期信号，调整 Wheel 行权价</td>
           <td>链上数据触发</td>
         </tr>
@@ -595,10 +1124,9 @@
   <div class="divider">EV 计算框架</div>
 
   <h3>4.2 三情景期望价值（EV）模型</h3>
-  <p>机构级 EV 计算不使用"二元被行权概率"（Delta × 修正系数会导致 EV 长期为负），改用三情景加权模型。<strong>EV > 0 且 EV / 权利金收入 > 20% 才可执行；> 35% 为优选。</strong></p>
+  <p>机构级 EV 计算不使用"二元被行权概率"，改用三情景加权模型。<strong>EV &gt; 0 且 EV / 权利金收入 &gt; 20% 才可执行；&gt; 35% 为优选。</strong></p>
 
-  <div class="formula-box">
-<span class="cm">// ─── 三情景加权 EV 模型（Bull Put Spread 版本）</span>
+  <div class="formula"><span class="cm">// ─── 三情景加权 EV 模型（Bull Put Spread 版本）</span>
 <span class="cm">// 以"GENIUS Act 投票，当前价 $95，卖 $78P / 买 $65P，净权利金 $1.80"为例</span>
 
 <span class="k">情景 Bull（立法通过 / 中性）</span>  P = <span class="v">0.35</span>
@@ -610,7 +1138,7 @@
   <span class="op">Payoff_Base</span> ≈ 权利金的 <span class="v">40–60%</span> = <span class="v">$80 / 张</span>
 
 <span class="k">情景 Bear（立法失败 / 市场恐慌）</span>  P = <span class="v">0.20</span>
-  CRCL < $65，价差完全行权
+  CRCL &lt; $65，价差完全行权
   <span class="op">Payoff_Bear</span> = -(价差宽度 - 净权利金) = -(13×100 - 180) = <span class="hl">-$1,120 / 张</span>
 
 <span class="cm">// ─── EV 计算</span>
@@ -620,12 +1148,7 @@
 <span class="cm">// 调整：将价差宽度缩至 $78P / 买 $70P，净权利金 $2.40</span>
 <span class="op">Payoff_Bear_adj</span> = -(8×100 - 240) = -$560 / 张
 <span class="k">EV_adj</span> = (0.35 × $240) + (0.45 × $120) + (0.20 × -$560)
-       = $84 + $54 - $112 = <span class="v">+$26 / 张（EV/权利金 = 10.8%，勉强达标）</span>
-
-<span class="cm">// ─── 蒙特卡洛增强版（Python 脚本辅助，5000 次模拟）</span>
-<span class="cm">// 对尾部事件赋予额外权重：情景 Bear 中 CRCL -50% 以上，权重 10%</span>
-<span class="cm">// 若任何情景下 EV < 0，直接放弃；不以"感觉"替代计算</span>
-  </div>
+       = $84 + $54 - $112 = <span class="v">+$26 / 张（EV/权利金 = 10.8%，勉强达标）</span></div>
 
   <div class="callout danger">
     <div class="callout-lbl">EV 计算最重要的原则</div>
@@ -634,56 +1157,31 @@
 
   <h3>4.3 完整事件执行时间线</h3>
   <div class="flow">
-    <div class="flow-step">
-      <div class="flow-step-n">T−10 天</div>
-      <div class="flow-step-t">扫描事件日历<br>标记目标窗口</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T−10 天</div><div class="flow-step-t">扫描事件日历<br>标记目标窗口</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T−7 天</div>
-      <div class="flow-step-t">开始监控 IV<br>建立基准水位</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T−7 天</div><div class="flow-step-t">开始监控 IV<br>建立基准水位</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T−5 天</div>
-      <div class="flow-step-t">修正 IVR > 75%？<br>执行 EV 计算</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T−5 天</div><div class="flow-step-t">修正 IVR&gt;75%？<br>执行 EV 计算</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T−3 天</div>
-      <div class="flow-step-t">EV > 20%？<br>限价开仓</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T−3 天</div><div class="flow-step-t">EV&gt;20%？<br>限价开仓</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T−1 天</div>
-      <div class="flow-step-t">Greeks 检查<br>Delta 中性化</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T−1 天</div><div class="flow-step-t">Greeks 检查<br>Delta 中性化</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T = 事件日</div>
-      <div class="flow-step-t">不操作<br>仅监控</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T = 事件日</div><div class="flow-step-t">不操作<br>仅监控</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T+1 天</div>
-      <div class="flow-step-t">IV 已坍缩<br>Buy to Close</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T+1 天</div><div class="flow-step-t">IV 已坍缩<br>Buy to Close</div></div>
     <div class="flow-arr">→</div>
-    <div class="flow-step">
-      <div class="flow-step-n">T+1 天内</div>
-      <div class="flow-step-t">全部平仓<br>记录台账</div>
-    </div>
+    <div class="flow-step"><div class="flow-step-n">T+1 天内</div><div class="flow-step-t">全部平仓<br>记录台账</div></div>
   </div>
 </section>
 
 <!-- ══════════════ S5: Greeks管理 ══════════════ -->
-<section class="sec" id="s5">
-  <div class="sec-hd">
-    <span class="sec-n">05</span>
-    <h2 class="section-title">
-      <span class="en">Greeks Portfolio Management</span>
-      组合 Greeks 精确管理
-    </h2>
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div>
+      <div class="section-title"><span class="en">Greeks Portfolio Management</span>组合 Greeks 精确管理</div>
+    </div>
   </div>
 
   <p>机构级期权管理的核心在于<strong>组合层面的 Greeks 监控</strong>，而非单笔交易的孤立分析。以下目标区间每周一固定检查，事件前 3 天每日检查。</p>
@@ -699,14 +1197,14 @@
           <td><strong><span class="tt" data-tip="Delta (Δ)：期权价格对标的资产价格变动的敏感度。Delta=0.20意味着标的每涨$1，期权涨$0.20。组合Delta衡量整体方向性暴露，接近0意味着Delta中性。">Delta (Δ)</span></strong></td>
           <td class="mono">-0.10 ~ +0.10（中性）</td>
           <td class="mono">-0.05 ~ +0.05（更严格）</td>
-          <td>绝对值 > 0.15</td>
+          <td>绝对值 &gt; 0.15</td>
           <td>增减正股或调整期权腿</td>
         </tr>
         <tr>
           <td><strong><span class="tt" data-tip="Gamma (Γ)：Delta对标的价格变动的变化率，衡量Delta的不稳定性。卖方持有负Gamma，股价快速大幅移动时风险最大；买方持有正Gamma，从剧烈波动中获益。">Gamma (Γ)</span></strong></td>
-          <td class="mono">负 Gamma（卖方）< -0.015/张</td>
+          <td class="mono">负 Gamma（卖方）&lt; -0.015/张</td>
           <td class="mono">减少 Gamma 暴露（事件前风险大）</td>
-          <td>负 Gamma 绝对值 > 0.03</td>
+          <td>负 Gamma 绝对值 &gt; 0.03</td>
           <td>平掉部分近月短腿，移至远月</td>
         </tr>
         <tr>
@@ -766,7 +1264,7 @@
           <td><span class="chip chip-green">正 Vega（净）</span></td>
           <td><span class="chip chip-gold">正（近月快）</span></td>
           <td>股价大幅移动脱离行权价</td>
-          <td>近月 IV >> 远月 IV</td>
+          <td>近月 IV &gt;&gt; 远月 IV</td>
         </tr>
         <tr>
           <td>Long Straddle</td>
@@ -791,11 +1289,10 @@
   </div>
 
   <h3>5.3 Delta 对冲执行协议</h3>
-  <div class="formula-box">
-<span class="cm">// ─── Delta 中性化执行规则</span>
+  <div class="formula"><span class="cm">// ─── Delta 中性化执行规则</span>
 
 <span class="k">检查频率</span>：每周一开盘后 30 分钟；事件前 3 天改为每日检查
-<span class="k">触发阈值</span>：组合净 Delta 绝对值 > <span class="v">0.15</span>（CRCL 期权合约当量）
+<span class="k">触发阈值</span>：组合净 Delta 绝对值 &gt; <span class="v">0.15</span>（CRCL 期权合约当量）
 
 <span class="k">对冲工具优先级</span>：
   <span class="v">① 调整期权腿数量</span>（首选，不新增正股持仓）
@@ -807,21 +1304,19 @@
 
 <span class="cm">// ─── 事件日特殊规则</span>
 <span class="cm">// 事件公布前 2 小时内：不执行任何 Delta 对冲（避免 Gamma 环境下过度交易）</span>
-<span class="cm">// 事件后 IV 快速坍缩时：优先平仓，而非维持 Delta 中性</span>
-  </div>
+<span class="cm">// 事件后 IV 快速坍缩时：优先平仓，而非维持 Delta 中性</span></div>
 </section>
 
 <!-- ══════════════ S6: 执行手册 ══════════════ -->
-<section class="sec" id="s6">
-  <div class="sec-hd">
-    <span class="sec-n">06</span>
-    <h2 class="section-title">
-      <span class="en">Execution Playbook</span>
-      逐笔执行手册
-    </h2>
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div>
+      <div class="section-title"><span class="en">Execution Playbook</span>逐笔执行手册</div>
+    </div>
   </div>
 
-  <h3>6.1 流动性评分体系（开仓前必查，< 7 分禁止执行）</h3>
+  <h3>6.1 流动性评分体系（开仓前必查，&lt; 7 分禁止执行）</h3>
   <div class="table-wrap">
     <table>
       <thead>
@@ -830,40 +1325,24 @@
       <tbody>
         <tr>
           <td><strong>日成交量</strong></td>
-          <td>40%</td>
-          <td>> 500 张</td>
-          <td>200–500 张</td>
-          <td>50–200 张</td>
-          <td>< 50 张</td>
+          <td>40%</td><td>&gt; 500 张</td><td>200–500 张</td><td>50–200 张</td><td>&lt; 50 张</td>
         </tr>
         <tr>
           <td><strong><span class="tt" data-tip="买卖价差（Bid-Ask Spread）：期权的买入报价与卖出报价之间的差值。价差越小，流动性越好，成交成本越低。新股期权初期价差通常较大。">买卖价差</span></strong></td>
-          <td>30%</td>
-          <td>< $0.08</td>
-          <td>$0.08–$0.20</td>
-          <td>$0.20–$0.40</td>
-          <td>> $0.40</td>
+          <td>30%</td><td>&lt; $0.08</td><td>$0.08–$0.20</td><td>$0.20–$0.40</td><td>&gt; $0.40</td>
         </tr>
         <tr>
           <td><strong><span class="tt" data-tip="未平仓合约（Open Interest, OI）：市场上尚未平仓的期权合约总数。OI越高，说明该行权价有更多市场参与者，流动性和价格发现越好。">未平仓合约</span></strong></td>
-          <td>20%</td>
-          <td>> 2,000 张</td>
-          <td>500–2,000 张</td>
-          <td>100–500 张</td>
-          <td>< 100 张</td>
+          <td>20%</td><td>&gt; 2,000 张</td><td>500–2,000 张</td><td>100–500 张</td><td>&lt; 100 张</td>
         </tr>
         <tr>
           <td><strong>做市商数量</strong></td>
-          <td>10%</td>
-          <td>≥ 4 家</td>
-          <td>2–3 家</td>
-          <td>1 家</td>
-          <td>0 家</td>
+          <td>10%</td><td>≥ 4 家</td><td>2–3 家</td><td>1 家</td><td>0 家</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <p style="margin-top:-10px;font-size:11px;color:var(--text3);">加权评分 = 各维度得分 × 权重之和。≥ 7 分：正常执行；4–6 分：仅限价中间价，权利金打九折预期；≤ 3 分：禁止开仓。</p>
+  <p style="font-size:12px;color:var(--text-muted);margin-top:-8px;">加权评分 = 各维度得分 × 权重之和。≥ 7 分：正常执行；4–6 分：仅限价中间价，权利金打九折预期；≤ 3 分：禁止开仓。</p>
 
   <h3>6.2 Bull Put Spread 完整执行示例</h3>
   <div class="callout info">
@@ -877,76 +1356,16 @@
         <tr><th>步骤</th><th>操作</th><th>具体数值</th><th>验证标准</th><th>结果</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>①</td>
-          <td>市场状态确认</td>
-          <td>BTC > MA20 > MA50，MA20 微升</td>
-          <td>状态 B</td>
-          <td><span class="chip chip-green">✓ 允许执行</span></td>
-        </tr>
-        <tr>
-          <td>②</td>
-          <td>选行权价</td>
-          <td>目标 Delta -0.18~-0.22，查期权链找 $78P（Delta -0.20），跳空缓冲 = ($95-$78)/$95 = 17.9%</td>
-          <td>缓冲 ≥ 18%</td>
-          <td><span class="chip chip-orange">⚠ 微不足，上移至 $76P（缓冲 20%，Delta -0.17）</span></td>
-        </tr>
-        <tr>
-          <td>③</td>
-          <td>买入保护腿</td>
-          <td>买 $65P（Delta -0.07）形成价差，价差宽度 = $11</td>
-          <td>宽度覆盖 ≥ 11%</td>
-          <td><span class="chip chip-green">✓ 价差宽度 11.6%</span></td>
-        </tr>
-        <tr>
-          <td>④</td>
-          <td>流动性评分</td>
-          <td>$76P：成交 320 张，价差 $0.12，OI 1,400 张，3 家做市商</td>
-          <td>≥ 7 分</td>
-          <td><span class="chip chip-green">✓ 评分 7.8 分</span></td>
-        </tr>
-        <tr>
-          <td>⑤</td>
-          <td>净权利金</td>
-          <td>卖 $76P 收 $2.20 − 买 $65P 付 $0.55 = 净收 $1.65/股，2 张 = $330</td>
-          <td>权利金 > 价差宽度 10%</td>
-          <td><span class="chip chip-green">✓ $1.65/$11 = 15%</span></td>
-        </tr>
-        <tr>
-          <td>⑥</td>
-          <td>EV 三情景计算</td>
-          <td>Bull(P=0.40): +$330 · Base(P=0.42): +$165 · Bear(P=0.18): -$(11×200-330) = -$1,870</td>
-          <td>EV > 0 且 > 权利金 20%</td>
-          <td>EV = $132+$69-$337 = <span class="chip chip-red">-$136</span> → <span class="chip chip-red">× 负值</span></td>
-        </tr>
-        <tr>
-          <td>⑦</td>
-          <td>调整：缩窄价差</td>
-          <td>改为卖 $76P / 买 $70P（宽度 $6），净权利金 $1.50，2 张 = $300</td>
-          <td>重新计算 EV</td>
-          <td>EV = $120+$63-$(6×200-300)×0.18 = $120+$63-$162 = <span class="chip chip-green">+$21（7%，达标但较低）</span></td>
-        </tr>
-        <tr>
-          <td>⑧</td>
-          <td>Kelly 仓位确认</td>
-          <td>半Kelly = (EV / 最大亏损) × 0.5 = ($21/$900) × 0.5 ≈ 1.2%，保守取 1%，$2,000 / (价差最大亏损 $900) ≈ 2.2 张，取 2 张</td>
-          <td>单次 ≤ 总资金 3%</td>
-          <td><span class="chip chip-green">✓ 2 张，最大亏损 $1,800 / $200,000 = 0.9%</span></td>
-        </tr>
-        <tr>
-          <td>⑨</td>
-          <td>IBKR 下单</td>
-          <td>Sell to Open CRCL $76P / Buy to Open CRCL $70P，2 张，到期日事件后第一个周五，限价 净 $1.50</td>
-          <td>限价 = 买卖中值，15 分钟未成 → $1.42，再 10 分钟 → 放弃</td>
-          <td>成交确认</td>
-        </tr>
-        <tr>
-          <td>⑩</td>
-          <td>事件后平仓</td>
-          <td>GENIUS Act 结果公布后 IV 坍缩，$76P 剩余价值降至 $0.50，$70P 价值 $0.15，净成本 $0.35，利润 = $1.50 - $0.35 = $1.15/股 × 200 = $230</td>
-          <td>24h 内无条件平仓</td>
-          <td><span class="chip chip-green">✓ 实现权利金 76.7% 收益</span></td>
-        </tr>
+        <tr><td>①</td><td>市场状态确认</td><td>BTC &gt; MA20 &gt; MA50，MA20 微升</td><td>状态 B</td><td><span class="chip chip-green">✓ 允许执行</span></td></tr>
+        <tr><td>②</td><td>选行权价</td><td>目标 Delta -0.18~-0.22，查期权链找 $78P（Delta -0.20），跳空缓冲 = ($95-$78)/$95 = 17.9%</td><td>缓冲 ≥ 18%</td><td><span class="chip chip-orange">⚠ 微不足，上移至 $76P（缓冲 20%，Delta -0.17）</span></td></tr>
+        <tr><td>③</td><td>买入保护腿</td><td>买 $65P（Delta -0.07）形成价差，价差宽度 = $11</td><td>宽度覆盖 ≥ 11%</td><td><span class="chip chip-green">✓ 价差宽度 11.6%</span></td></tr>
+        <tr><td>④</td><td>流动性评分</td><td>$76P：成交 320 张，价差 $0.12，OI 1,400 张，3 家做市商</td><td>≥ 7 分</td><td><span class="chip chip-green">✓ 评分 7.8 分</span></td></tr>
+        <tr><td>⑤</td><td>净权利金</td><td>卖 $76P 收 $2.20 − 买 $65P 付 $0.55 = 净收 $1.65/股，2 张 = $330</td><td>权利金 &gt; 价差宽度 10%</td><td><span class="chip chip-green">✓ $1.65/$11 = 15%</span></td></tr>
+        <tr><td>⑥</td><td>EV 三情景计算</td><td>Bull(P=0.40): +$330 · Base(P=0.42): +$165 · Bear(P=0.18): -$1,870</td><td>EV &gt; 0 且 &gt; 权利金 20%</td><td>EV = <span class="chip chip-red">-$136 → 负值</span></td></tr>
+        <tr><td>⑦</td><td>调整：缩窄价差</td><td>改为卖 $76P / 买 $70P（宽度 $6），净权利金 $1.50，2 张 = $300</td><td>重新计算 EV</td><td>EV = <span class="chip chip-green">+$21（7%，达标但较低）</span></td></tr>
+        <tr><td>⑧</td><td>Kelly 仓位确认</td><td>半Kelly ≈ 1.2%，保守取 1%，$2,000 / 最大亏损 $900 ≈ 2.2 张，取 2 张</td><td>单次 ≤ 总资金 3%</td><td><span class="chip chip-green">✓ 2 张，最大亏损 $1,800 / $200,000 = 0.9%</span></td></tr>
+        <tr><td>⑨</td><td>IBKR 下单</td><td>Sell to Open CRCL $76P / Buy to Open CRCL $70P，2 张，限价 净 $1.50</td><td>限价 = 买卖中值，15 分钟未成 → $1.42，再 10 分钟 → 放弃</td><td>成交确认</td></tr>
+        <tr><td>⑩</td><td>事件后平仓</td><td>GENIUS Act 结果公布后 IV 坍缩，净成本降至 $0.35，利润 = $1.15/股 × 200 = $230</td><td>24h 内无条件平仓</td><td><span class="chip chip-green">✓ 实现权利金 76.7% 收益</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -962,7 +1381,7 @@
         <tr><td>腿 2</td><td>Buy Put</td><td>$65（-32%）</td><td>-0.07</td><td>-$0.55</td><td>下行风险封顶</td></tr>
         <tr><td>腿 3</td><td>Sell Call</td><td>$118（+24%）</td><td>+0.18</td><td>+$1.80</td><td>上行卖方，CRCL Put 偏斜陡故 Call 端权利金略低</td></tr>
         <tr><td>腿 4</td><td>Buy Call</td><td>$132（+39%）</td><td>+0.07</td><td>-$0.40</td><td>上行风险封顶</td></tr>
-        <tr style="background:rgba(200,160,74,.04)">
+        <tr style="background:rgba(201,168,76,0.04)">
           <td colspan="4"><strong>净权利金</strong></td>
           <td><strong>+$3.05/股</strong></td>
           <td>最大盈利区间：$76–$118；双边封顶亏损</td>
@@ -980,13 +1399,12 @@
 </section>
 
 <!-- ══════════════ S7: 风险熔断 ══════════════ -->
-<section class="sec" id="s7">
-  <div class="sec-hd">
-    <span class="sec-n">07</span>
-    <h2 class="section-title">
-      <span class="en">Risk Management & Circuit Breakers</span>
-      风险管理与四级熔断
-    </h2>
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div>
+      <div class="section-title"><span class="en">Risk Management &amp; Circuit Breakers</span>风险管理与四级熔断</div>
+    </div>
   </div>
 
   <h3>7.1 仓位六维硬性约束</h3>
@@ -1013,27 +1431,27 @@
         <tr><th>级别</th><th>触发条件（满足任一即触发）</th><th>立即行动</th><th>冷却期</th></tr>
       </thead>
       <tbody>
-        <tr class="fuse-L1">
+        <tr class="fuse-L0">
           <td>L0 · 预警</td>
-          <td>CRCL 单日波动 > 7% · IV 单日跳升 > 20pct · 浮亏 > 权利金 60%</td>
+          <td>CRCL 单日波动 &gt; 7% · IV 单日跳升 &gt; 20pct · 浮亏 &gt; 权利金 60%</td>
           <td>暂停新开仓；检查 Greeks；不强行操作</td>
           <td>当日观察</td>
         </tr>
         <tr class="fuse-L1">
           <td>L1 · 黄色</td>
-          <td>CRCL 单日跌 > 12% · 浮亏 > 权利金 120% · 市场状态突变至 D · VaR 超标</td>
+          <td>CRCL 单日跌 &gt; 12% · 浮亏 &gt; 权利金 120% · 市场状态突变至 D · VaR 超标</td>
           <td>暂停所有新开仓；评估现有卖方仓位；激活 Tail Hedge 检查；准备减仓</td>
           <td>48 小时</td>
         </tr>
         <tr class="fuse-L2">
           <td>L2 · 橙色</td>
-          <td>CRCL 3 日累计跌 > 22% · 总敞口超上限 · 保证金使用率 > 35% · BTC -20%</td>
+          <td>CRCL 3 日累计跌 &gt; 22% · 总敞口超上限 · 保证金使用率 &gt; 35% · BTC -20%</td>
           <td>24h 内平仓全部卖方期权仓位；正股买入保护性 Put；资金转移至货币市场基金</td>
           <td>2 周</td>
         </tr>
         <tr class="fuse-L3">
           <td>L3 · 红色</td>
-          <td>CRCL 5 日累计跌 > 35% · SEC 认定 USDC 为证券 · 券商强制平仓警告</td>
+          <td>CRCL 5 日累计跌 &gt; 35% · SEC 认定 USDC 为证券 · 券商强制平仓警告</td>
           <td>市价平仓所有 CRCL 期权；卖出全部正股；资金回存款账户；全面复盘后才可重启</td>
           <td>1 个月</td>
         </tr>
@@ -1048,48 +1466,47 @@
     <div class="rm-cell rm-hd">股价影响</div>
     <div class="rm-cell rm-hd">应对措施</div>
 
-    <div class="rm-cell rm-lo">稳定币法案通过</div>
-    <div class="rm-cell rm-lo">30%</div>
+    <div class="rm-cell rm-lo"><strong>稳定币法案通过</strong></div>
+    <div class="rm-cell rm-lo"><span class="chip chip-green">30%</span></div>
     <div class="rm-cell rm-lo">+30 ~ +60%</div>
     <div class="rm-cell rm-lo">IV Crush 最大化收益</div>
 
-    <div class="rm-cell rm-lo">法案推迟 / 修改</div>
-    <div class="rm-cell rm-lo">42%</div>
+    <div class="rm-cell rm-lo"><strong>法案推迟 / 修改</strong></div>
+    <div class="rm-cell rm-lo"><span class="chip chip-cyan">42%</span></div>
     <div class="rm-cell rm-lo">±5 ~ ±15%</div>
     <div class="rm-cell rm-lo">Bull Put Spread 安全区内</div>
 
-    <div class="rm-cell rm-md">法案否决</div>
-    <div class="rm-cell rm-md">18%</div>
+    <div class="rm-cell rm-md"><strong>法案否决</strong></div>
+    <div class="rm-cell rm-md"><span class="chip chip-orange">18%</span></div>
     <div class="rm-cell rm-md">-20 ~ -40%</div>
     <div class="rm-cell rm-md">价差亏损；Tail Hedge 激活</div>
 
-    <div class="rm-cell rm-hi">USDC 被认定为证券</div>
-    <div class="rm-cell rm-hi">5%</div>
+    <div class="rm-cell rm-hi"><strong>USDC 被认定为证券</strong></div>
+    <div class="rm-cell rm-hi"><span class="chip chip-red">5%</span></div>
     <div class="rm-cell rm-hi">-50 ~ -80%</div>
     <div class="rm-cell rm-hi">L3 熔断；Tail Hedge 大幅盈利</div>
 
-    <div class="rm-cell rm-hi">加密系统性崩盘</div>
-    <div class="rm-cell rm-hi">5%</div>
+    <div class="rm-cell rm-hi"><strong>加密系统性崩盘</strong></div>
+    <div class="rm-cell rm-hi"><span class="chip chip-red">5%</span></div>
     <div class="rm-cell rm-hi">-30 ~ -60%</div>
     <div class="rm-cell rm-hi">L2/L3 熔断；市场状态 D 早期预警</div>
   </div>
 
   <div class="callout danger">
     <div class="callout-lbl">绝对禁止行为（违反则强制停止操作 4 周）</div>
-    ① EV 计算未完成即下单 &nbsp;·&nbsp; ② 修正 IVR < 50% 时执行卖方策略 &nbsp;·&nbsp; ③ VP Ratio < 1.3 时执行卖方策略<br>
-    ④ 流动性评分 < 7 分强行执行 &nbsp;·&nbsp; ⑤ 事件后 48h 内未平仓（深度实值除外，需书面记录原因）<br>
+    ① EV 计算未完成即下单 &nbsp;·&nbsp; ② 修正 IVR &lt; 50% 时执行卖方策略 &nbsp;·&nbsp; ③ VP Ratio &lt; 1.3 时执行卖方策略<br>
+    ④ 流动性评分 &lt; 7 分强行执行 &nbsp;·&nbsp; ⑤ 事件后 48h 内未平仓（深度实值除外，需书面记录原因）<br>
     ⑥ 单次仓位超总资金 3% &nbsp;·&nbsp; ⑦ L2/L3 熔断触发后未执行规定动作 &nbsp;·&nbsp; ⑧ 持有正股期间未配置 Tail Hedge
   </div>
 </section>
 
 <!-- ══════════════ S8: 跨资产对冲 ══════════════ -->
-<section class="sec" id="s8">
-  <div class="sec-hd">
-    <span class="sec-n">08</span>
-    <h2 class="section-title">
-      <span class="en">Cross-Asset Hedging Engine</span>
-      跨资产对冲引擎
-    </h2>
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div>
+      <div class="section-title"><span class="en">Cross-Asset Hedging Engine</span>跨资产对冲引擎</div>
+    </div>
   </div>
 
   <div class="callout green">
@@ -1105,23 +1522,20 @@
       </thead>
       <tbody>
         <tr>
-          <td>30 日相关性 < 0.45（背离）</td>
-          <td>买入 Straddle</td>
-          <td>卖出 Straddle</td>
+          <td>30 日相关性 &lt; 0.45（背离）</td>
+          <td>买入 Straddle</td><td>卖出 Straddle</td>
           <td>相关性回归，CRCL 独立驱动，IV 相对低估</td>
           <td>相关性回升至 0.60+</td>
         </tr>
         <tr>
-          <td>CRCL IV − COIN IV > 20pct</td>
-          <td>卖出 CRCL Put Spread</td>
-          <td>买入 COIN Put Spread</td>
+          <td>CRCL IV − COIN IV &gt; 20pct</td>
+          <td>卖出 CRCL Put Spread</td><td>买入 COIN Put Spread</td>
           <td>CRCL IV 相对 COIN 高估，均值回归</td>
-          <td>IV 差值收窄至 < 10pct</td>
+          <td>IV 差值收窄至 &lt; 10pct</td>
         </tr>
         <tr>
-          <td>30 日相关性 > 0.88（过度联动）</td>
-          <td>卖出 Straddle</td>
-          <td>买入 Straddle</td>
+          <td>30 日相关性 &gt; 0.88（过度联动）</td>
+          <td>卖出 Straddle</td><td>买入 Straddle</td>
           <td>两者价格过度同步，差异化即将出现</td>
           <td>相关性降至 0.70 以下</td>
         </tr>
@@ -1130,8 +1544,7 @@
   </div>
 
   <h3>8.2 CRCL–BTC Beta 中性对冲</h3>
-  <div class="formula-box">
-<span class="cm">// ─── Beta 中性保证金计算（每月重新校准）</span>
+  <div class="formula"><span class="cm">// ─── Beta 中性保证金计算（每月重新校准）</span>
 
 <span class="k">CRCL_Beta_BTC</span> ≈ <span class="v">0.85</span>（滚动 30 日回归，季度更新）
 
@@ -1143,9 +1556,8 @@
 等效股票暴露 = $50,000 × 0.20 = $10,000
 <span class="k">BTC对冲金额</span> = $10,000 × 0.85 = <span class="v">$8,500</span>（卖空 BTC 期货）
 
-<span class="cm">// 暂停条件：CRCL–BTC 90 日相关性 < 0.40 时暂停对冲（关系破裂）</span>
-<span class="cm">// 调整频率：每周一重算，变动超 20% 时即时调整</span>
-  </div>
+<span class="cm">// 暂停条件：CRCL–BTC 90 日相关性 &lt; 0.40 时暂停对冲（关系破裂）</span>
+<span class="cm">// 调整频率：每周一重算，变动超 20% 时即时调整</span></div>
 
   <h3>8.3 CRCL–TLT 利率敏感性套利（独家维度）</h3>
   <p><strong>核心逻辑：</strong>CRCL 的储备收益直接来自 USDC 储备中持有的美国国债利息，与 10 年期美债收益率正相关，与 TLT（长期美债 ETF）负相关。当 10 年期收益率快速拉升时，CRCL 储备收益上升（利好），但 TLT 下跌——两者的反向关系提供了天然对冲基础。</p>
@@ -1156,7 +1568,7 @@
       </thead>
       <tbody>
         <tr>
-          <td>利率快速拉升（> 2σ）</td>
+          <td>利率快速拉升（&gt; 2σ）</td>
           <td>储备收益上升，基本面利好</td>
           <td>TLT 大跌</td>
           <td>卖出 CRCL Put 同时卖出 TLT Call Spread（利率方向中性）</td>
@@ -1169,8 +1581,7 @@
         </tr>
         <tr>
           <td>利率平稳（FOMC 前后±25bp）</td>
-          <td>中性</td>
-          <td>TLT 微波动</td>
+          <td>中性</td><td>TLT 微波动</td>
           <td>无需特别操作，正常执行事件驱动策略</td>
         </tr>
       </tbody>
@@ -1179,19 +1590,18 @@
 
   <div class="callout">
     <div class="callout-lbl">跨资产对冲仓位上限</div>
-    CRCL–COIN 配对：≤ 总资金 4% · CRCL–BTC 对冲：≤ 总资金 3%（以 BTC 期货名义计） · CRCL–TLT 联动：≤ 总资金 2%<br>
+    CRCL–COIN 配对：≤ 总资金 4% &nbsp;·&nbsp; CRCL–BTC 对冲：≤ 总资金 3%（以 BTC 期货名义计）&nbsp;·&nbsp; CRCL–TLT 联动：≤ 总资金 2%<br>
     跨资产总敞口：≤ 总资金 8%。跨资产对冲不计入 CRCL 单标的 15% 敞口上限。
   </div>
 </section>
 
 <!-- ══════════════ S9: 税务合规 ══════════════ -->
-<section class="sec" id="s9">
-  <div class="sec-hd">
-    <span class="sec-n">09</span>
-    <h2 class="section-title">
-      <span class="en">NRA Tax Compliance Framework</span>
-      NRA 税务合规框架
-    </h2>
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <div>
+      <div class="section-title"><span class="en">NRA Tax Compliance Framework</span>NRA 税务合规框架</div>
+    </div>
   </div>
 
   <div class="callout danger">
@@ -1271,61 +1681,28 @@
 </section>
 
 <!-- ══════════════ S10: 绩效追踪 ══════════════ -->
-<section class="sec" id="s10">
-  <div class="sec-hd">
-    <span class="sec-n">10</span>
-    <h2 class="section-title">
-      <span class="en">Performance Tracking & Attribution</span>
-      绩效追踪与归因分析
-    </h2>
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <div>
+      <div class="section-title"><span class="en">Performance Tracking &amp; Attribution</span>绩效追踪与归因分析</div>
+    </div>
   </div>
 
   <h3>10.1 核心绩效指标（KPIs）</h3>
   <div class="kpi-grid">
-    <div class="kpi">
-      <div class="kpi-l">月化权利金收益率</div>
-      <div class="kpi-v good">2.5 – 4.0%</div>
-      <div class="kpi-sub">警戒线 < 1.5%</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">年化 Sharpe 比率</div>
-      <div class="kpi-v">> 2.0</div>
-      <div class="kpi-sub">警戒线 < 1.0</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">最大回撤</div>
-      <div class="kpi-v info">< 10%</div>
-      <div class="kpi-sub">警戒线 > 15%</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">事件套利胜率</div>
-      <div class="kpi-v good">> 65%</div>
-      <div class="kpi-sub">警戒线 < 50%</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">Put 被行权率</div>
-      <div class="kpi-v info">< 15%</div>
-      <div class="kpi-sub">警戒线 > 25%</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">IV Crush 捕获率</div>
-      <div class="kpi-v">> 55%</div>
-      <div class="kpi-sub">实际 / 理论最大坍缩</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">EV 实现率</div>
-      <div class="kpi-v good">> 80%</div>
-      <div class="kpi-sub">实际盈亏 / 预测 EV</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">滑点成本率</div>
-      <div class="kpi-v info">< 5%</div>
-      <div class="kpi-sub">滑点 / 权利金收入</div>
-    </div>
+    <div class="kpi"><div class="kpi-l">月化权利金收益率</div><div class="kpi-v good">2.5 – 4.0%</div><div class="kpi-sub">警戒线 &lt; 1.5%</div></div>
+    <div class="kpi"><div class="kpi-l">年化 Sharpe 比率</div><div class="kpi-v">&gt; 2.0</div><div class="kpi-sub">警戒线 &lt; 1.0</div></div>
+    <div class="kpi"><div class="kpi-l">最大回撤</div><div class="kpi-v info">&lt; 10%</div><div class="kpi-sub">警戒线 &gt; 15%</div></div>
+    <div class="kpi"><div class="kpi-l">事件套利胜率</div><div class="kpi-v good">&gt; 65%</div><div class="kpi-sub">警戒线 &lt; 50%</div></div>
+    <div class="kpi"><div class="kpi-l">Put 被行权率</div><div class="kpi-v info">&lt; 15%</div><div class="kpi-sub">警戒线 &gt; 25%</div></div>
+    <div class="kpi"><div class="kpi-l">IV Crush 捕获率</div><div class="kpi-v">&gt; 55%</div><div class="kpi-sub">实际 / 理论最大坍缩</div></div>
+    <div class="kpi"><div class="kpi-l">EV 实现率</div><div class="kpi-v good">&gt; 80%</div><div class="kpi-sub">实际盈亏 / 预测 EV</div></div>
+    <div class="kpi"><div class="kpi-l">滑点成本率</div><div class="kpi-v info">&lt; 5%</div><div class="kpi-sub">滑点 / 权利金收入</div></div>
   </div>
 
   <h3>10.2 收益归因框架</h3>
-  <p>每月底生成归因报告，将总收益分解为以下四个来源。<strong>Vega 收益占比应 > 55%</strong>——若方向性收益（Delta P&L）占比超过 30%，说明策略偏向了方向性赌注，需重新校准执行纪律。</p>
+  <p>每月底生成归因报告，将总收益分解为以下四个来源。<strong>Vega 收益占比应 &gt; 55%</strong>——若方向性收益（Delta P&amp;L）占比超过 30%，说明策略偏向了方向性赌注，需重新校准执行纪律。</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -1333,27 +1710,27 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>Vega P&L</strong>（核心）</td>
+          <td><strong>Vega P&amp;L</strong>（核心）</td>
           <td>IV 变化带来的期权价值变动，即 IV Crush 收益</td>
-          <td><span class="chip chip-gold">> 55%</span></td>
+          <td><span class="chip chip-gold">&gt; 55%</span></td>
           <td>持仓期间 IV 变化 × 组合 Vega</td>
         </tr>
         <tr>
-          <td><strong>Theta P&L</strong></td>
+          <td><strong>Theta P&amp;L</strong></td>
           <td>时间价值衰减收益（卖方每日收取）</td>
           <td>25–35%</td>
           <td>持仓天数 × 平均日 Theta</td>
         </tr>
         <tr>
-          <td><strong>Delta P&L</strong></td>
+          <td><strong>Delta P&amp;L</strong></td>
           <td>股价方向性移动带来的损益</td>
-          <td><span class="chip chip-red">< 15%</span></td>
+          <td><span class="chip chip-red">&lt; 15%</span></td>
           <td>价格变化 × 持仓期平均 Delta</td>
         </tr>
         <tr>
           <td><strong>执行损耗</strong></td>
           <td>滑点、买卖价差、手续费</td>
-          <td><span class="chip chip-red">< 5%（负值）</span></td>
+          <td><span class="chip chip-red">&lt; 5%（负值）</span></td>
           <td>实际成交价 vs. 挂单中值的差值</td>
         </tr>
       </tbody>
@@ -1362,7 +1739,7 @@
 
   <h3>10.3 月度复盘协议（每月第一个周一，约 60 分钟）</h3>
   <ul>
-    <li><strong>EV 模型校准：</strong>对比每笔交易的预测 EV 与实际盈亏，若偏差持续 > 30%，调整三情景概率参数</li>
+    <li><strong>EV 模型校准：</strong>对比每笔交易的预测 EV 与实际盈亏，若偏差持续 &gt; 30%，调整三情景概率参数</li>
     <li><strong>流动性基准更新：</strong>记录哪些行权价流动性已改善，更新评分表中的成交量 / OI 参考数据</li>
     <li><strong>Greeks 效率分析：</strong>计算每单位 Vega 的实际盈利，判断哪个到期日组合效率最高</li>
     <li><strong>税务预估：</strong>汇总当月权利金收入（美元 + CNY 折算），发送给 CPA 进行季度预估税计算</li>
@@ -1377,23 +1754,63 @@
     本策略经营的是一门<strong>事件驱动型波动率保险业务</strong>。收入来源是市场对重大不确定性的系统性高估。你不预测立法结果、不预测财报数字、不预测 BTC 涨跌——你只经营"隐含波动率溢价均值回归"这门有统计优势的生意。<br><br>
     <strong>每一次 EV 为负时的放弃，都是一次无形的盈利。每一次在 D 状态下克制开仓的冲动，都是在保护长期的生存能力。</strong>纪律不是约束，是唯一持续盈利的路径。
   </div>
+
+  <!-- 策略信条 -->
+  <div class="card" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.04);text-align:center;padding:36px 40px;margin-top:32px">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">策略信条</div>
+    <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text-primary);line-height:1.75;font-style:italic;max-width:600px;margin:0 auto;color:var(--text-secondary)">
+      "Vol is mean-reverting. Discipline is not."
+    </p>
+  </div>
+
+  <!-- Footer / Disclaimer -->
+  <div class="page-footer">
+    <div class="foot-l">
+      <strong style="color:var(--text-secondary);">CRCL VOL DESK · INSTITUTIONAL FRAMEWORK · FINAL VERSION</strong><br>
+      制定日期：2026-04-01 · 适用账户：IBKR 机构保证金 / NRA 专业投资者<br>
+      本手册不构成投资建议或税务建议。期权交易存在本金全部损失风险。<br>
+      所有税务内容须经持牌 CPA 书面确认后方可执行。CRCL 为新上市标的，流动性风险请参见第 6 章。
+    </div>
+    <div class="foot-r">
+      Vol is mean-reverting.<br>
+      <em>Discipline is not.</em>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>免责声明</strong><br>
+    本操作手册基于 Circle Internet Group（CRCL）公开信息、美股期权市场规则及 NRA 税务政策综合研究制定，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。CRCL 为新上市公司，流动性风险、监管不确定性、以及缺乏完整历史数据等因素，可能使策略面临超出预期的极端波动。<br><br>
+    本手册所涉及的全部税务处理方式，须在相关持牌 CPA、执业律师出具书面意见后方可执行。<strong>版本：Final · 2026 年 4 月 · 客户内部文件 · 禁止对外传阅</strong>
+  </div>
 </section>
 
-<!-- ══════════════ FOOTER ══════════════ -->
-<footer>
-  <div class="foot-l">
-    <strong style="color:var(--text2);">CRCL VOL DESK · INSTITUTIONAL FRAMEWORK · FINAL VERSION</strong><br>
-    制定日期：2026-04-01 · 适用账户：IBKR 机构保证金 / NRA 专业投资者<br>
-    本手册不构成投资建议或税务建议。期权交易存在本金全部损失风险。<br>
-    所有税务内容须经持牌 CPA 书面确认后方可执行。CRCL 为新上市标的，流动性风险请参见第 6 章。
-  </div>
-  <div class="foot-r">
-    Vol is mean-reverting.<br>
-    <em>Discipline is not.</em>
-  </div>
-</footer>
 </main>
 </div>
-<script src="js/disclaimer.js" defer></script>
+
+<script>
+  // Active nav highlighting
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.style.borderLeftColor = 'transparent';
+          item.style.background = '';
+          item.style.color = '';
+        });
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) {
+          active.style.borderLeftColor = 'var(--gold)';
+          active.style.background = 'var(--gold-dim)';
+          active.style.color = 'var(--gold-light)';
+        }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
 </body>
 </html>

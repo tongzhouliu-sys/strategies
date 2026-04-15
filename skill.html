@@ -1,70 +1,675 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="site-doc">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O · 期权交易参谋 · 系统说明</title>
-<link rel="stylesheet" href="css/strategy.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #090c10;
+    --bg-panel:   #0f1419;
+    --bg-card:    #141c24;
+    --bg-glass:   rgba(255,255,255,0.03);
+    --amber:      #f0a500;
+    --amber-dim:  #b37a00;
+    --amber-glow: rgba(240,165,0,0.15);
+    --teal:       #00c9a7;
+    --red:        #ff4d4d;
+    --blue:       #4da6ff;
+    --text-main:  #e8e0d0;
+    --text-sub:   #8a9ab0;
+    --text-muted: #4a5568;
+    --border:     rgba(240,165,0,0.18);
+    --border-dim: rgba(255,255,255,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.85;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(240,165,0,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,201,167,0.06) 0%, transparent 50%);
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(240,165,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,165,0,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 30%, transparent 80%);
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--amber-dim);
+    background: rgba(240,165,0,0.08);
+    padding: 5px 16px;
+    border-radius: 99px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--amber);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .badge::before { content: '●'; font-size: 0.6rem; animation: blink 1.8s infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.6rem, 10vw, 7.5rem);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text-main);
+    animation: fadeUp 0.9s 0.1s ease both;
+  }
+
+  .hero-title span { color: var(--amber); }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text-sub);
+    max-width: 560px;
+    margin-top: 20px;
+    font-weight: 400;
+    animation: fadeUp 1s 0.2s ease both;
+  }
+
+  .hero-meta {
+    margin-top: 36px;
+    display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 1s 0.35s ease both;
+  }
+
+  .hero-meta-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+  }
+
+  .hero-meta-item .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem; font-weight: 500;
+    color: var(--amber);
+  }
+
+  .hero-meta-item .lbl {
+    font-size: 0.75rem; color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  .hero-divider {
+    width: 1px; height: 40px;
+    background: var(--border-dim);
+    align-self: center;
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--text-muted); font-size: 0.75rem; letter-spacing: 0.1em;
+    animation: fadeIn 2s 1s ease both;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    width: 1px; height: 40px;
+    background: linear-gradient(var(--amber-dim), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  @keyframes scrollPulse { 0%{opacity:0;transform:scaleY(0);transform-origin:top} 50%{opacity:1;transform:scaleY(1)} 100%{opacity:0;transform:scaleY(0);transform-origin:bottom} }
+
+  /* ── LAYOUT ── */
+  .main { position: relative; z-index: 1; }
+
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 32px;
+  }
+
+  .section + .section { padding-top: 0; }
+
+  /* ── SECTION HEADER ── */
+  .sec-header {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .sec-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    letter-spacing: 0.04em;
+    color: var(--text-main);
+  }
+
+  .sec-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 12px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover { border-color: var(--border); transform: translateY(-2px); }
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+
+  .card-body {
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    line-height: 1.75;
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .flow-node {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .flow-node:hover { background: var(--bg-glass); }
+
+  .flow-node-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .flow-node-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+  }
+
+  .flow-node-desc {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+  }
+
+  .flow-arrow {
+    display: flex; justify-content: center; align-items: center;
+    height: 36px;
+    color: var(--amber-dim);
+    font-size: 1.2rem;
+    position: relative;
+  }
+
+  .flow-arrow::before, .flow-arrow::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 1px;
+    background: var(--border-dim);
+  }
+
+  .flow-arrow::before { top: 0; height: 12px; }
+  .flow-arrow::after { bottom: 0; height: 12px; }
+
+  /* ── RULE LIST ── */
+  .rule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rule-item {
+    display: flex;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 10px;
+    padding: 16px 20px;
+    align-items: flex-start;
+    transition: border-color 0.3s;
+  }
+
+  .rule-item:hover { border-color: var(--border); }
+
+  .rule-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .rule-text {
+    font-size: 0.92rem;
+    color: var(--text-sub);
+    line-height: 1.7;
+  }
+
+  .rule-text strong { color: var(--text-main); }
+
+  /* ── BUDGET TABLE ── */
+  .budget-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-dim);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  thead th {
+    background: var(--bg-panel);
+    color: var(--amber);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border-dim);
+    transition: background 0.2s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-glass); }
+
+  tbody td {
+    padding: 13px 18px;
+    color: var(--text-sub);
+    vertical-align: middle;
+  }
+
+  tbody td:first-child { color: var(--text-main); font-weight: 600; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
+  .tag-green { background: rgba(0,201,167,0.12); color: var(--teal); border: 1px solid rgba(0,201,167,0.25); }
+  .tag-amber { background: rgba(240,165,0,0.12); color: var(--amber); border: 1px solid rgba(240,165,0,0.25); }
+  .tag-red   { background: rgba(255,77,77,0.12);  color: var(--red);   border: 1px solid rgba(255,77,77,0.25); }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight {
+    background: var(--amber-glow);
+    border: 1px solid rgba(240,165,0,0.3);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 24px;
+    font-size: 0.92rem;
+    color: var(--text-sub);
+    line-height: 1.8;
+  }
+
+  .highlight strong { color: var(--amber); }
+
+  .alert {
+    background: rgba(255,77,77,0.07);
+    border: 1px solid rgba(255,77,77,0.25);
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-top: 20px;
+    font-size: 0.88rem;
+    color: #ff9999;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+
+  .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── FEATURE PUSH PREVIEW ── */
+  .push-preview {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 480px;
+  }
+
+  .push-header {
+    background: var(--bg-card);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border-dim);
+    font-size: 0.8rem; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .push-header span { color: var(--teal); font-weight: 500; }
+
+  .push-body { padding: 16px 18px; font-size: 0.85rem; line-height: 1.9; }
+  .push-sym { color: var(--amber); font-weight: 700; font-size: 1rem; }
+  .push-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; color: var(--text-sub); }
+  .push-kv { color: var(--text-main); }
+  .push-footer { font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; border-top: 1px solid var(--border-dim); padding-top: 10px; }
+
+  /* ── PREREQ STEPS ── */
+  .prereq-list {
+    counter-reset: prereq;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .prereq-item {
+    counter-increment: prereq;
+    display: flex; gap: 20px;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.3s;
+  }
+
+  .prereq-item:hover { border-color: var(--border); }
+
+  .prereq-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--amber-dim);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .prereq-content { flex: 1; }
+  .prereq-title { font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+  .prereq-desc { font-size: 0.88rem; color: var(--text-sub); line-height: 1.7; }
+
+  /* ── KEYWORD TRIGGERS ── */
+  .trigger-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .trigger-item {
+    border: 1px solid var(--border-dim);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .trigger-item:hover { border-color: var(--border); }
+
+  .trigger-cmd {
+    background: var(--bg-panel);
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--amber);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .trigger-desc {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    line-height: 1.65;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border-dim);
+    padding: 40px 32px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 2;
+  }
+
+  footer strong { color: var(--text-sub); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  /* scroll reveal */
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 40px;
+    background: rgba(9,12,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 0.08em;
+    color: var(--amber);
+  }
+
+  .nav-links {
+    display: flex; gap: 28px; list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.08em;
+    color: var(--text-muted); text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--amber); }
+
+  .version-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: rgba(240,165,0,0.1);
+    border: 1px solid var(--amber-dim);
+    color: var(--amber);
+  }
+
+  /* section separator */
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-dim), transparent);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* inline code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(240,165,0,0.08);
+    border: 1px solid rgba(240,165,0,0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--amber);
+  }
+
+  .total-row td {
+    background: rgba(240,165,0,0.06) !important;
+    font-weight: 700;
+    color: var(--text-main) !important;
+    border-top: 1px solid rgba(240,165,0,0.2);
+  }
+
+  @media (max-width: 640px) {
+    nav { padding: 12px 20px; }
+    .nav-links { display: none; }
+    .section { padding: 60px 20px; }
+  }
+</style>
 </head>
 <body>
-<div class="layout-wrapper">
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <span class="logo-tag">Private Strategy</span>
-    <div class="logo-title">技能 期权增强<br>操作手册</div>
-    <div class="logo-ver">2026 年</div>
-  </div>
-  <div class="nav-section-label">核心技能</div>
-  <a href="#principle" class="nav-item">01 · 原理</a>
-  <a href="#value" class="nav-item">02 · 价值</a>
-  <a href="#scenarios" class="nav-item">03 · 场景</a>
-  <div class="nav-section-label">应用</div>
-  <a href="#budget" class="nav-item">04 · 预算</a>
-  <a href="#prereq" class="nav-item">05 · 前提</a>
-  <a href="#rules" class="nav-item">06 · 铁律</a>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">期权交易小助手</div>
+  <ul class="nav-links">
+    <li><a href="#principle">原理</a></li>
+    <li><a href="#value">价值</a></li>
+    <li><a href="#scenarios">场景</a></li>
+    <li><a href="#budget">预算</a></li>
+    <li><a href="#prereq">前提</a></li>
+    <li><a href="#rules">铁律</a></li>
+  </ul>
+  <div class="version-pill">v3.0 · 2026-04-08</div>
 </nav>
-<main class="main-content">
+
 <!-- ── HERO ── -->
-<div class="hero">
-  <div ></div>
-  <div ></div>
-  <div class="hero-eyebrow">美股期权 · AI 数据参谋</div>
-  <h1 >OPEN<span>CLAW</span></h1>
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="badge">美股期权 · AI 数据参谋</div>
+  <h1 class="hero-title">OPEN<span>CLAW</span></h1>
   <p class="hero-sub">信息聚合 · 策略合规检查 · 数据驱动推送<br>只做参谋，不自动下单，判断权永远在人</p>
   <div class="hero-meta">
     <div class="hero-meta-item">
       <span class="num">20+</span>
       <span class="lbl">监控标的</span>
     </div>
-    <div ></div>
+    <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <span class="num">9层</span>
       <span class="lbl">数据源冗余</span>
     </div>
-    <div ></div>
+    <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <span class="num">24/7</span>
       <span class="lbl">自动扫描</span>
     </div>
-    <div ></div>
+    <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <span class="num">≥30%</span>
       <span class="lbl">年化筛选门槛</span>
     </div>
   </div>
-  <div >向下滚动</div>
+  <div class="scroll-hint">向下滚动</div>
 </section>
 
-<main >
+<main class="main">
 
 <!-- ══════════════════════════════════════════
      SECTION 1 — 系统运行原理
 ═══════════════════════════════════════════ -->
 <div class="sep"></div>
 <section class="section reveal" id="principle">
-  <div class="section-header">
-    <span class="section-num">01</span>
-    <h2 class="section-title">系统运行原理</h2>
+  <div class="sec-header">
+    <span class="sec-num">01</span>
+    <h2 class="sec-title">系统运行原理</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -179,9 +784,9 @@
      SECTION 2 — 系统价值
 ═══════════════════════════════════════════ -->
 <section class="section reveal" id="value">
-  <div class="section-header">
-    <span class="section-num">02</span>
-    <h2 class="section-title">系统价值</h2>
+  <div class="sec-header">
+    <span class="sec-num">02</span>
+    <h2 class="sec-title">系统价值</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -243,9 +848,9 @@
      SECTION 3 — 能解决哪些问题
 ═══════════════════════════════════════════ -->
 <section class="section reveal" id="scenarios">
-  <div class="section-header">
-    <span class="section-num">03</span>
-    <h2 class="section-title">解决期权投资者的六大痛点</h2>
+  <div class="sec-header">
+    <span class="sec-num">03</span>
+    <h2 class="sec-title">解决期权投资者的六大痛点</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -320,9 +925,9 @@
      SECTION 4 — 预算
 ═══════════════════════════════════════════ -->
 <section class="section reveal" id="budget">
-  <div class="section-header">
-    <span class="section-num">04</span>
-    <h2 class="section-title">成本预算</h2>
+  <div class="sec-header">
+    <span class="sec-num">04</span>
+    <h2 class="sec-title">成本预算</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -487,9 +1092,9 @@
      SECTION 5 — 使用前提
 ═══════════════════════════════════════════ -->
 <section class="section reveal" id="prereq">
-  <div class="section-header">
-    <span class="section-num">05</span>
-    <h2 class="section-title">使用前提条件</h2>
+  <div class="sec-header">
+    <span class="sec-num">05</span>
+    <h2 class="sec-title">使用前提条件</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -588,9 +1193,9 @@
      SECTION 6 — 铁律 & 安全边界
 ═══════════════════════════════════════════ -->
 <section class="section reveal" id="rules">
-  <div class="section-header">
-    <span class="section-num">06</span>
-    <h2 class="section-title">系统铁律与安全边界</h2>
+  <div class="sec-header">
+    <span class="sec-num">06</span>
+    <h2 class="sec-title">系统铁律与安全边界</h2>
     <div class="sec-line"></div>
   </div>
 
@@ -668,8 +1273,5 @@
   }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
   reveals.forEach(el => io.observe(el));
 </script>
-</main>
-</div>
-<script src="js/disclaimer.js" defer></script>
 </body>
 </html>
