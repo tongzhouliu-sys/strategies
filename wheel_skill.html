@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机构级 NRA 期权卖方交易员操作手册 v2.5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+
+  .term:hover::after { opacity: 1; }
+
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .nav-item.sub {
+    padding-left: 38px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .hero::before {
+    content: 'META';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION STYLES
+  ═══════════════════════════════════════════ */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+
+  .stat-card .stat-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+
+  .callout.gold {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+  }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+
+  .checklist li::before {
+    content: '☐';
+    font-size: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .checklist li.required::before {
+    color: var(--gold);
+  }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula-box {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2;
+  }
+
+  .formula-box .comment {
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════
+     FLOW STEPS
+  ═══════════════════════════════════════════ */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    padding: 14px 0;
+    position: relative;
+  }
+
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--navy-card);
+    border: 2px solid var(--navy-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+  }
+
+  .flow-step-body {
+    flex: 1;
+    padding-top: 8px;
+  }
+
+  .flow-step-body strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-body span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     STATE MATRIX CARDS
+  ═══════════════════════════════════════════ */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .state-card {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid;
+  }
+
+  .state-card.state-a {
+    background: var(--green-dim);
+    border-color: rgba(92,184,122,0.3);
+  }
+  .state-card.state-b {
+    background: var(--blue-dim);
+    border-color: rgba(91,141,200,0.3);
+  }
+  .state-card.state-c {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .state-card.state-d {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.3);
+  }
+
+  .state-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .state-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .state-a .state-badge { background: rgba(92,184,122,0.2); color: var(--green); }
+  .state-b .state-badge { background: rgba(91,141,200,0.2); color: var(--blue); }
+  .state-c .state-badge { background: rgba(224,123,60,0.2); color: var(--orange); }
+  .state-d .state-badge { background: rgba(224,92,92,0.2); color: var(--red); }
+
+  .state-card .state-name { font-size: 13px; font-weight: 600; }
+  .state-a .state-name { color: var(--green); }
+  .state-b .state-name { color: var(--blue); }
+  .state-c .state-name { color: var(--orange); }
+  .state-d .state-name { color: var(--red); }
+
+  .state-card ul {
+    list-style: none;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .state-card ul li { color: var(--text-secondary); }
+  .state-card ul li::before { content: '›  '; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER
+  ═══════════════════════════════════════════ */
+  .circuit-level {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+
+  .circuit-level.l1 {
+    background: var(--yellow-dim);
+    border-color: rgba(212,184,74,0.3);
+  }
+  .circuit-level.l2 {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .circuit-level.l3 {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.35);
+  }
+
+  .circuit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .circuit-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .l1 .circuit-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .l2 .circuit-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .l3 .circuit-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .circuit-level h4 { margin: 0; }
+  .l1 h4 { color: var(--yellow); }
+  .l2 h4 { color: var(--orange); }
+  .l3 h4 { color: var(--red); }
+
+  .circuit-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 13.5px;
+  }
+
+  .trigger-list, .action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .trigger-list .label, .action-list .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .trigger-list li, .action-list li {
+    list-style: none;
+    color: var(--text-secondary);
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .trigger-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-muted); }
+  .action-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 2px; }
+
+  /* ═══════════════════════════════════════════
+     CAPITAL ALLOCATION TIERS
+  ═══════════════════════════════════════════ */
+  .tier-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .tier-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tier-1 .tier-header { background: rgba(92,184,122,0.07); border-bottom: 1px solid rgba(92,184,122,0.2); }
+  .tier-2 .tier-header { background: rgba(91,141,200,0.07); border-bottom: 1px solid rgba(91,141,200,0.2); }
+  .tier-3 .tier-header { background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); }
+
+  .tier-icon {
+    font-size: 22px;
+    width: 40px;
+    text-align: center;
+  }
+
+  .tier-header-info .tier-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .tier-1 .tier-range { color: var(--green); }
+  .tier-2 .tier-range { color: var(--blue); }
+  .tier-3 .tier-range { color: var(--gold-light); }
+
+  .tier-header-info .tier-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .tier-body {
+    padding: 18px 22px;
+    background: var(--navy-card);
+  }
+
+  .alloc-bar-wrap {
+    margin: 12px 0 8px;
+  }
+
+  .alloc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .alloc-label { width: 160px; color: var(--text-secondary); flex-shrink: 0; }
+  .alloc-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--navy-border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .alloc-bar { height: 100%; border-radius: 3px; }
+  .alloc-pct {
+    width: 40px;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .redline-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+  }
+
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .redline-text {
+    font-size: 13.5px;
+    color: #F0A0A0;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     SOP TIMELINE
+  ═══════════════════════════════════════════ */
+  .sop-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sop-step {
+    display: flex;
+    gap: 18px;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .sop-step:hover { border-color: rgba(201,168,76,0.3); }
+
+  .sop-step-icon {
+    font-size: 20px;
+    width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sop-step-content strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .sop-step-content .time-badge {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+
+  .sop-step-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 6px 0 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     LOG TABLE
+  ═══════════════════════════════════════════ */
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* ═══════════════════════════════════════════
+     DIVIDER
+  ═══════════════════════════════════════════ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     DISCLAIMER
+  ═══════════════════════════════════════════ */
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+
+  .disclaimer strong { color: var(--text-secondary); }
+
+  /* ═══════════════════════════════════════════
+     PRINT / RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .state-grid, .circuit-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════════ */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+
+  strong { color: var(--text-primary); }
+
+  .highlight { color: var(--gold-light); font-weight: 500; }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.bullets li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  ul.bullets li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 11px;
+    top: 3px;
+  }
+
+  .page-break { page-break-before: always; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* Markdown-rendered body (choose.md) — extends demo components */
+  #content.markdown {
+    position: relative;
+  }
+  .markdown h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+  }
+  .markdown h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin: 40px 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .markdown h2:first-of-type { margin-top: 0; }
+  .markdown h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .markdown h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+  .markdown p { color: var(--text-secondary); margin-bottom: 12px; }
+  .markdown ul, .markdown ol {
+    padding-left: 22px;
+    margin: 10px 0 18px;
+    color: var(--text-secondary);
+  }
+  .markdown li { margin: 6px 0; }
+  .markdown blockquote {
+    border-left: 3px solid var(--gold);
+    margin: 16px 0;
+    padding: 10px 0 10px 18px;
+    color: var(--text-secondary);
+  }
+  .markdown blockquote p { margin: 6px 0; }
+  .markdown hr {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 28px 0;
+  }
+  .markdown .table-scroll {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+  .markdown table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 0;
+    min-width: 520px;
+  }
+  .markdown table thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .markdown table th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .markdown table tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+  }
+  .markdown table tbody tr:last-child { border-bottom: none; }
+  .markdown table tbody tr:hover { background: rgba(255,255,255,0.025); }
+  .markdown table td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .markdown pre {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold-light);
+    line-height: 1.65;
+    white-space: pre;
+  }
+  .markdown pre code {
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+  }
+  .markdown code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+  .markdown strong { color: var(--text-primary); }
+  .hero.doc-manual::before {
+    content: 'NRA';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero.doc-manual .markdown-blockquote {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 720px;
+  }
+  .hero.doc-manual .markdown-blockquote p { margin: 6px 0; }
+
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Private Playbook</span>
+    <div class="logo-title">NRA 期权卖方<br>操作手册</div>
+    <div class="logo-ver">v2.5 · 交付版</div>
+  </div>
+  <div id="toc"></div>
+</nav>
+<main class="main">
+  <section class="markdown" id="content"></section>
+</main>
+</div>
+<script id="choose-md" type="text/plain">
+# 机构级 NRA 期权卖方交易员操作手册 v2.5
+
+> **交付版本** · V2.5<br>机密 · 不构成投资建议
+> 适用账户:NRA<br>
+> 适用券商:IBKR Singapore(首选)/ Tastytrade
+---
+
+## 目录
+
+- 第 0 章 核心哲学与七条公理
+- 第 1 章 路线分流器(资金双轨架构)
+- 第 2 章 宏观总闸门 + VIX 分档联动矩阵
+- 第 3 章 NRA 税务预过滤(最高优先级)
+- 第 4 章 五层漏斗筛选架构
+- 第 5 章 策略参数配置(IV/DTE/Delta 三维矩阵)
+- 第 6 章 20 标的 Watchlist 分级参数手册
+- 第 7 章 仓位与相关性管理
+- 第 8 章 综合评分模型(0-100 分)
+- 第 9 章 Roll 机制与被指派管理
+- 第 10 章 EV 成本模型(含数值验算)
+- 第 11 章 每日执行 SOP(双时区)
+- 第 12 章 一页式实盘检查清单
+- 附录 A 券商 NRA 兼容性对照表
+- 附录 B 标准化交易口诀
+- 附录 C 迭代路径与已知短板
+- 附录 D 快速查询索引
+
+---
+
+## 第 0 章 核心哲学与七条公理
+
+### 0.1 七条公理(先于所有规则)
+
+当规则出现模糊地带,回归公理做决策。
+
+| # | 公理 | 含义 |
+|---|------|------|
+| ① | 税务合规 ≥ 流动性 > 波动率 > 基本面 | NRA 身份下税务踩雷是硬性否决,任何流动性再好、权利金再高的标的,踩线直接出局。 |
+| ② | 先定路线,再选标的 | 指数现金交割轨道(路线 A)与个股实物交割轨道(路线 B)后期管理逻辑完全不同,不可混用。 |
+| ③ | "最活跃榜"是流动性入口池,不是优质标的池 | 高活跃度只意味着"可以交易",不意味着"值得交易"。 |
+| ④ | Wheel 的本质是"以折价建仓为锚、以权利金为利息"的持股增强策略 | 筛选第一问永远是:如果今天被行权接股,你愿意持有至少 30 天吗?答"否",直接出局。 |
+| ⑤ | 宁缺勿滥 | 黑名单是零容忍红线,触发任一条立即出局;没有"高分豁免"条款。 |
+| ⑥ | 阈值是活的 | 所有数值以 VIX 中枢 14-22 为基准标定。VIX > 25 时卖方门槛自动上调,VIX < 13 时下调。 |
+| ⑦ | NRA 身份是结构性红利,不是劣势 | 免资本利得税 + 期权权利金非 FDAP 是红利;代价是遗产税 $60K 上限与股息预扣 30%,这两条刚性约束决定了策略偏好(低股息 + 单账户规模控制 + 指数期权优先)。 |
+
+### 0.2 三条开仓铁律(开仓前逐条自检,缺一否决)
+
+| # | 铁律 | 否决后行动 |
+|---|------|-----------|
+| ① | **流动性 > 一切**:Bid-Ask 不达标的标的,权利金再高也是幻觉收益 | 直接跳过,换下一标的 |
+| ② | **IV 要高,但不能失控**:IVR ≥ 30 是下限,≥ 85 是陷阱(除非已知事件驱动且已做充分研究) | 调整策略类型或等待 IVR 回落 |
+| ③ | **被指派后愿意持有至少 30 天**:不愿接货就不卖 Put,这是 Wheel 策略的本质 | 永久剔除该标的出候选池 |
+
+---
+
+## 第 1 章 路线分流器(资金双轨架构)
+
+**本章是本手册的顶层架构,先于所有筛选逻辑执行。** 从 NRA 税务结构出发,资金必须在开仓前划分为两条不可交叉的轨道,否则后期管理必然产生逻辑混乱。
+
+### 1.1 两条轨道定义
+
+| 维度 | **路线 A:指数现金交割轨道** | **路线 B:个股/ETF 实物交割轨道** |
+|------|---|---|
+| 标的范围 | SPX / SPXW / OESX / NDX / RUT / XSP | 美股个股 + 美国 40 Act 注册 ETF |
+| NRA 税务属性 | Section 1256:60% 长期 / 40% 短期自动分类 | 卖方权利金非 FDAP,不预扣(优势) |
+| 遗产税风险 | **无**(现金交割不产生美国境内实体资产) | **极高**(接股后直接计入 $60K 免税额) |
+| 股息陷阱 | **无**(无底层股票) | **有**(高股息股 CC 前夕有提前指派风险) |
+| 后期管理 | 纯点位移仓,**永不接货** | 必须准备接货,执行 Wheel 循环或 Collar |
+| IV Crush 风险 | 低(指数 IV 稳定) | 高(财报 IV Crush 需严格回避) |
+| 适用策略 | 短 Put / Bull Put Spread / Iron Condor | Wheel / CSP / Covered Call |
+
+### 1.2 资金配比(NRA 特供)
+
+| 账户规模 | 路线 A 占比 | 路线 B 占比 | 现金缓冲 |
+|---------|:----------:|:----------:|:--------:|
+| **< $100K 小账户** | 40% | 45% | 15% |
+| **$100K - $500K 中账户** | 50% | 35% | 15% |
+| **$500K - $1M 大账户** | 60% | 25% | 15% |
+| **> $1M 超大账户** | 65-70% | 15-20% | 15% |
+
+账户越大,路线 A 占比越高。因为 $60K 遗产税免税额不会随资金扩张,路线 B 的天花板是固定的,超出部分必须转入路线 A。
+
+### 1.3 路线选择决策树
+
+```
+开仓决策起点
+│
+├── 是否涉及 $60K 遗产税窗口风险?
+│   ├── 是 → 路线 A 优先(指数期权)
+│   └── 否 → 继续
+│
+├── 标的是否为非美注册 ETF / 高股息无 DTA?
+│   ├── 是 → 路线 A 或剔除
+│   └── 否 → 继续
+│
+├── 账户已开仓路线 B 敞口是否触顶($60K × N)?
+│   ├── 是 → 新仓必须走路线 A
+│   └── 否 → 继续
+│
+└── 流动性 + IVR + 接货意愿三项是否全过?
+    ├── 是 → 路线 B 正常执行 Wheel
+    └── 否 → 放弃该开仓机会
+```
+
+---
+
+## 第 2 章 宏观总闸门 + VIX 分档联动矩阵
+
+**所有个股/ETF 筛选必须在宏观总闸门开启状态下进行。任一触发 → 全市场暂停新开卖方仓位,无例外。**
+
+### 2.1 黑窗矩阵
+
+| 闸门类型 | 暂停条件 | 恢复条件 | 影响范围 |
+|---------|----------|----------|---------|
+| **VIX 高闸** | VIX > 35 或当日 VIX 涨幅 > 30% | VIX 回落 < 30 且稳定 3 个交易日 | 全部卖方策略 |
+| **VIX 低闸** | VIX < 13 且 GLD IVR < 20 | VIX 回到 > 14 | 避险标的(GLD/TLT)卖 Put 跳过 |
+| **FOMC 黑窗** | 决议日 T-3 至 T+1 | T+2 恢复 | SPX / QQQ / XLU / IBIT 等利率敏感标的 |
+| **CPI/PPI 黑窗** | 发布日 T-1 至 T+0 | T+1 恢复 | 全部标的 DTE ≤ 7 的短周期合约 |
+| **NFP 黑窗** | 非农发布日 T-0 | T+1 恢复 | SPX / QQQ / EWJ 等宏观敏感标的 |
+| **财报黑窗** | 财报日前 14 日(标准)/ 10 日(激进) | 财报后 T+1(等 IV Crush 完成) | 该个股所有新仓 |
+| **除息黑窗(NRA 专属)** | 除息日前 3 天至当日 | 除息日 T+1 | CC 持股期间重点适用 |
+| **地缘危机窗** | 重大地缘事件爆发后 48 小时 | 事件消化、VIX 回落 | 全部新开仓 |
+| **行业系统事件** | 半导体出口管制、银行危机、加密监管等 | 事件消化 48 小时 | 所属行业全部标的 |
+
+### 2.2 VIX 分档联动参数表(核心模块)
+
+**当 VIX 跨档时,各项筛选门槛必须联动调整。VIX 联动规则优先级高于单标的参数。**
+
+| VIX 区间 | 市场状态 | 卖方策略开放度 | IVR 门槛 | Delta 调整 | DTE 调整 | 仓位上限修正 |
+|---------|---------|---------------|:--------:|:----------:|:--------:|:-----------:|
+| **< 13** | 极度平静 | 仅路线 A 指数期权 | ≥ 25 | -0.03 ~ -0.05 | 延长至 45-60 | 较标准 -30% |
+| **13 - 22** | 标准环境 | 全策略开放 | ≥ 30 | 标准 | 标准 30-45 | 标准 100% |
+| **22 - 28** | 偏高波动 | 保守优先,扩大 OTM Buffer | ≥ 35 | -0.03 | 缩短至 28-35 | 较标准 -20% |
+| **28 - 35** | 高波动 | 仅 S+/S 级标的 | ≥ 40 | -0.05 | 缩短至 21-28 | 较标准 -40% |
+| **> 35** | 恐慌模式 | **全面暂停新开仓** | N/A | N/A | N/A | 暂停开仓 |
+
+### 2.3 联动规则附加说明
+
+- **VIX 区间判定时点**:每日盘前 VIX 开盘价,非盘中实时值。
+- **跨档缓冲带**:VIX 处于档位边界 ±0.5 时,沿用前一交易日档位,避免频繁切换。
+- **年化收益率同步调整**:VIX 22-28 档年化门槛上调 5%,28-35 档上调 10%。
+- **极低/极高 VIX 区间禁用裸卖**:VIX < 13 仅做 A+ 级路线 A;VIX > 28 全部卖方仓位强制带保护腿(Credit Spread/Collar)。
+
+---
+
+## 第 3 章 NRA 税务预过滤(最高优先级)
+
+**本章必须在所有流动性筛选之前完成。税务踩雷是不可逆的硬性成本,与流动性、IV 等可调参数性质完全不同。**
+
+### 3.1 FDAP 预提税矩阵
+
+| 收入类型 | NRA(新加坡)税率 | 对 Wheel 影响 | 处理建议 |
+|---------|:--------------:|---------------|---------|
+| **期权 Premium(卖方)** | 0%(非 FDAP) | ✅ Wheel 收入税务友好 | 正常开仓 |
+| **美股普通分红** | 30%(SG 无协定) | ❌ CC 跨除息日被指派 → 分红损失 30% | 避开 Yield > 3% 标的 |
+| **指数期权**(SPX/SPXW/OESX) | 0%(现金交割) | ✅ Section 1256 最优结构 | 优先级提升 |
+| **ETF 分红**(QQQ/SPY) | 30%(股息部分) | ⚠️ 低股息可接受 | GLD / IBIT 优于 QQQ |
+| **资本利得** | 免税 | ✅ 被 Put 指派后卖股免税 | — |
+| **非美 ADR**(ASML/TSM/NVO) | 双重预提(来源国 + 美国) | ❌ 严重税务侵蚀 | 严格避免跨除息日 |
+| **美国 REIT** | 30% 硬预扣 | ❌ 分红构成主要收益 | 非必要不做 Wheel |
+
+### 3.2 遗产税 $60,000 门槛(最大隐性风险)
+
+**NRA 对美国境内资产的遗产税免税额仅 $60,000,超额部分累进税率最高 40%。**
+
+美国境内资产包括:
+- 美股持仓
+- 美股期权(未平仓)
+- 美国券商账户现金余额
+
+美国境内资产**不**包括:
+- 指数期权 SPX / SPXW / OESX / NDX / XSP(现金交割 → 不构成美国境内实体资产)
+- 美国国债 ETF(特定结构下)
+
+**操作含义:**
+
+| 账户规模 | 单标的敞口上限 | 核心策略 |
+|---------|:-------------:|---------|
+| $100K 以下 | ≤ $60K | 路线 B 可开 1-2 个 Wheel 核心仓 |
+| $100K - $500K | min($60K, 组合 8%) | 路线 A 占比提升,多标的分散 |
+| $500K - $1M | min($60K, 组合 5%) | 路线 A 为主,路线 B 卫星 |
+| > $1M | min($60K, 组合 3%) | 路线 A 绝对主导 |
+
+**规避路径:**
+1. 核心配置指数期权(SPX/SPXW/OESX) → 现金交割不计入遗产税
+2. 拆分持仓:多标的小仓位 vs 少数集中大仓位
+3. 考虑境外实体账户(IBKR Singapore / Saxo SG) → 账户归属有法律差异依据
+
+### 3.3 Section 1256 战略路径
+
+**指数期权是 NRA 账户的结构性最优选择,应作为路线 A 的主力工具。**
+
+| 优势维度 | 说明 |
+|---------|------|
+| **现金交割** | 避开 $60K 遗产税计入问题 |
+| **60/40 税务分类** | 60% 长期 / 40% 短期自动分类,对 NRA 常免预提 |
+| **无 FDAP 风险** | 无底层股票 → 无股息陷阱 |
+| **IV 稳定** | 指数 IV 不受个股财报扰动 |
+| **流动性深度** | SPX 日均期权量 > 200 万张,Bid-Ask 极窄 |
+
+**路线 A 核心标的优先级:**
+1. **SPX**(现金交割、周度 + 月度 + 季度 + LEAPS 全覆盖)——首选
+2. **OESX**(欧央行期权,部分欧洲账户友好)
+3. **XSP**(SPX 的 1/10 规模版,适合小账户)
+4. **NDX**(纳斯达克 100,与 QQQ 等价但现金交割)
+
+### 3.4 PFIC 风险
+
+被动外国投资公司(PFIC)规则对 NRA 本身不直接适用,但若账户将来变更居民身份,历史持有的非美注册基金会**追溯征税**。保守做法:
+- Wheel 池内 ETF 全部使用美国注册(40 Act 基金)
+- **EWJ 是美国注册 ✅**(iShares 注册在特拉华)
+- 谨慎对待部分欧洲/日本注册 ETF(如 Amundi 系列)
+
+### 3.5 NRA 税务黑名单(触发任一直接出局)
+
+- 高股息且无 DTA 优惠的美股(股息率 > 4% 且非美国注册)
+- 非美国注册 ETF(PFIC 追溯风险)
+- REIT 权重 > 30% 的 ETF / 个股(除非特定 SOI 结构)
+- 高频除息且分红构成总收益 > 30% 的标的(某些 BDC、公用事业)
+- 双重预提 ADR 且无法避开除息日的标的
+
+### 3.6 W-8BEN 合规管理
+
+| 事项 | 规则 | 操作要求 |
+|------|------|---------|
+| 有效期 | 3 年,到期后触发 30% 全额预扣 | 到期前 60 天 + 30 天双重提醒续签 |
+| 期权权利金(卖方) | 非 FDAP,不预扣 | ✅ Wheel 收入税务友好 |
+| 美股股息 | 30% FDAP 预扣(SG 无协定) | ⚠️ 被 Call 指派前遇除息日须特别注意 |
+| 资本利得 | NRA 免美国资本利得税 | ✅ 被 Put 指派后卖股免税 |
+
+---
+
+## 第 4 章 五层漏斗筛选架构
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 第 0 层:宏观总闸门 + VIX 档位                            │ ← 触发任一即全局暂停
+├─────────────────────────────────────────────────────────┤
+│ 第 1 层:正股初选(流动性 + 基础资质)                      │ ← 淘汰约 60%
+├─────────────────────────────────────────────────────────┤
+│ 第 2 层:风险黑名单 + Wheel 适格性问卷                    │ ← 淘汰约 20%
+├─────────────────────────────────────────────────────────┤
+│ 第 3 层:期权链流动性硬筛(四维门槛)                       │ ← 淘汰约 10%
+├─────────────────────────────────────────────────────────┤
+│ 第 4 层:波动率环境与 IV 数据源校验                        │ ← 淘汰约 5%
+├─────────────────────────────────────────────────────────┤
+│ 第 5 层:事件时窗 + NRA 税务终检                           │ ← 淘汰约 3%
+└─────────────────────────────────────────────────────────┘
+        ↓
+   候选池(通常 3-7 个标的)→ 0-100 打分 → S/A/B/C 分级行动
+```
+
+### 4.1 第 1 层:正股初选
+
+**数据入口:**
+- 主入口:Yahoo Finance Most Active(https://finance.yahoo.com/markets/stocks/most-active/)
+- 取数时点:开盘后 30 分钟(避开开盘噪音),取榜单前 100 名
+- 辅入口:20 标的核心 Watchlist(AAPL/META/NVDA/TSLA/MSTR/HOOD/COIN/TSM/ASML/MA/V/NVO/CRCL/QQQ/SPX/IBIT/GLD/XLU/EWJ/OESX)
+- 加分项:连续 5 日稳定在 Top 50 的标的进入"核心观察池"
+
+**双档量化门槛:**
+
+| 指标 | 保守版(B 级候选池) | 优选版(A/S 级核心池) | 一票否决线 |
+|------|:------------------:|:-----------------------:|:---------:|
+| Avg Vol (3M) | ≥ 500 万股 | ≥ 1,000 万股 | < 200 万股 |
+| 市值 | ≥ $100 亿 | ≥ $500 亿 | < $30 亿 |
+| 股价区间 | $20 - $500 | $30 - $300 | < $15 或 > $600 |
+| 当日 \|% Change\| | ≤ 8% | ≤ 5% | > 15% |
+| 当日量 / 均量 | 0.5 - 3.0 | 0.8 - 2.0 | > 5 或 < 0.2 |
+| 日均成交额 | ≥ $5,000 万 | ≥ $5 亿 | < $1,000 万 |
+
+### 4.2 第 2 层:风险黑名单 + Wheel 适格性问卷
+
+**公司层黑名单(触发任一,本轮永久剔除):**
+- 财报窗口:下次财报日 ≤ 14 个自然日(保守版)/ ≤ 10 天(激进版)
+- 财报后 IV Crush 冷却期:财报发布后 24 小时内不开新仓
+- 退市风险:股价 < $5 持续 15 天 / 交易所不合规通知 / 审计师辞任
+- SEC 调查 / 集体诉讼 / 会计重述 / 破产重组
+- 并购锁定(股价已被套利钉死,无 IV 溢价)
+- 生物科技 PDUFA / 临床公告 ≤ 10 天
+- 连续 NT 10-Q / 10-K 延迟披露(公司治理红旗)
+
+**标的类型黑名单(永久排除):**
+
+| 标的类型 | 处理 | 原因 |
+|---------|------|------|
+| 2x/3x 杠杆 ETF(TQQQ/SOXL/SQQQ) | 永久排除 | 每日再平衡路径依赖,Wheel 逻辑失效 |
+| 反向 ETF(SPXS 等) | 永久排除 | 方向工具,非资产载体 |
+| 波动率 ETN(VXX/UVXY) | 永久排除 | 结构性损耗,长期归零 |
+| MEME 妖股(GME/AMC 类) | 永久排除 | SI > 30% + 社交驱动 + 无基本面 |
+| OTC / 粉单市场 | 永久排除 | 做市商稀少,期权链不完整 |
+| SPAC 未完成并购 | 永久排除 | 赎回潮风险 + IV 结构扭曲 |
+| 中概 ADR(非 VIE 清洁结构) | 谨慎(减半仓) | 监管 + 退市双风险 |
+| 刚拆股/合股 6 个月内 | 谨慎 | IV 曲线未稳定,历史 IVR 失真 |
+
+**Wheel 适格性问卷(必须全部 YES 才进入打分):**
+
+| # | 问卷项目 | 若答"否" |
+|---|---------|---------|
+| □1 | 如果今天以行权价接股,你愿意持有至少 30 天吗? | 直接剔除,不进入后续评估 |
+| □2 | 标的过去 3 年没有 > 50% 的单边暴跌(除非已证伪)? | 降级至 B 级,仅考虑 Spread |
+| □3 | 标的经营现金流 ≥ 0 或有清晰转正路径? | 排除 |
+| □4 | Debt/Equity < 2.0(金融股除外)? | 排除 |
+| □5 | Short Interest < 20%?(非挤空崩盘双风险股) | 排除 |
+| □6 | 未处于并购传闻活跃期、SEC 调查、重大诉讼判决前? | 排除 |
+| □7 | 已通过第 3 章 NRA 税务预过滤? | 排除 |
+
+### 4.3 第 3 层:期权链流动性硬筛(四维门槛)
+
+**合约层指标(针对目标行权价):**
+
+| 维度 | S 级(核心) | A 级(合格) | 一票否决线 |
+|------|:-----------:|:-----------:|:---------:|
+| 当日合约成交量 | ≥ 1,000 张 | ≥ 300 张 | < 100 张 |
+| 目标行权价 OI | ≥ 5,000 张 | ≥ 500 张 | < 200 张 |
+| Volume / OI 比 | 5% - 25% | 2% - 50% | > 100%(脉冲)/ < 1%(僵尸) |
+| Bid-Ask 绝对价差 | ≤ $0.05 | ≤ $0.15 | > $0.30 |
+| Bid-Ask 相对价差(/Mid) | ≤ 3% | ≤ 8% | > 15% |
+
+**标的层期权链结构要求:**
+- 行权价间距:股价 < $50 间距 ≤ $1;$50-$150 间距 ≤ $2.5;> $150 间距 ≤ $5
+- 行权价覆盖:当前股价 ±20% 区间内无断层
+- 到期日结构:至少同时存在 Weekly + 3 个 Monthly + LEAPS
+- 全链合计 OI:优质线 ≥ 200,000 张;合格线 ≥ 50,000 张;否决线 < 10,000 张
+
+### 4.4 第 4 层:波动率环境与 IV 数据源校验
+
+**IV 数据源分级(跨源比较无效,必须统一):**
+
+| 数据源 | 可信度 | 适用场景 |
+|-------|:------:|---------|
+| CBOE 原始 IV(付费) | ★★★★★ | 最终决策基准 |
+| IBKR / TOS 券商 IV | ★★★★ | 日常决策首选 |
+| MarketChameleon / Barchart | ★★★★ | 辅助验证(与券商数据交叉) |
+| HV-based Proxy(自算) | ★★ | 仅作兜底,不作决策依据 |
+| Yahoo Finance IV | ★★ | 仅看趋势,不看绝对值 |
+
+**原则:** 同一标的的 IVR 必须来自"同一数据源的同一时间窗口"(推荐 52 周)。同时使用 IV Percentile + IV Rank 双重验证,防止单指标被异常值欺骗。
+
+**IV Rank 分区与策略适配:**
+
+| IVR 区间 | 市场状态 | 操作建议 |
+|---------|---------|---------|
+| 0 - 20% | 极低波动 | 跳过 CSP,权利金不足;仅考虑 LEAPS 方向性 |
+| 20 - 35% | 偏低 | 仅 A+ 级标的,Delta 降至 ≤ 0.15,DTE 延长至 45+ |
+| **35 - 70%** | **Wheel 黄金区间** | 正常配置,按各标的分级参数执行 |
+| 70 - 85% | 偏高 | 仓位 -20%,DTE 缩短至 21-28,快速收割均值回归 |
+| 85 - 100% | 极高 | 谨慎,要求"已知事件理由"才进场 |
+| > 100% | 极端 | 通常意味事件前夜或系统性恐慌,**不开新仓** |
+
+### 4.5 第 5 层:事件时窗 + NRA 税务终检
+
+**事件黑窗(Wheel 卖 Put 不开新仓):**
+
+| 事件类型 | 黑窗期 | 备注 |
+|---------|-------|------|
+| 财报发布 | 前 10-14 天 + 后 2 天 | NRA 尤其注意 IV Crush 后权利金萎缩 |
+| FOMC 决议 | 前 3 天 + 当日(T+1 恢复) | SPX/QQQ/XLU/IBIT |
+| FDA / 临床公告 | 前 7 天 + 当日 | NVO 等医药 ADR |
+| 地缘/关税/出口管制 | 事件前后 3 天 | ASML/TSM/NVDA 遇行业黑天鹅 |
+| 分红除息日(NRA 专属) | 前 3 天至除息日当天 | 严防 CC 被提前行权抢分红 |
+| 期权到期周(OpEx) | 到期前 2 天视情况 | 周度期权除外;Gamma 风险急剧上升 |
+
+**NRA 税务终检:**
+- □ 非 PFIC 风险品种
+- □ 股息率 < 3% 或无分红
+- □ 单标的敞口 ≤ min($60K, 组合 8%)
+- □ W-8BEN 距到期 > 30 天
+- □ 若卖 CC:未来 3 天无除息日
+
+---
+
+## 第 5 章 策略参数配置
+
+### 5.1 策略-IVR 适配矩阵
+
+| 策略 | IVR 理想区间 | IV vs HV | Delta | DTE | 适用市场 |
+|------|:------------:|:--------:|:-----:|:---:|---------|
+| Cash-Secured Put(Wheel 入口) | 35 - 70 | IV > HV × 1.1 | 0.20 - 0.30 | 30-45 | VIX 13-25 |
+| Covered Call(持股后) | 25 - 60 | IV > HV | 0.15 - 0.25 | 21-45 | 任意非暴跌 |
+| Naked Put(激进) | 45 - 80 | IV > HV × 1.2 | 0.10 - 0.20 | 21-35 | 回调后反弹初期 |
+| Put Credit Spread | 30 - 85 | — | 短腿 0.25-0.35 | 30-45 | IVR 过高仍想做卖方 |
+| Bull Put Spread(路线 A) | 25 - 85 | — | 短腿 0.15-0.25 | 30-45 | 指数温和上行/震荡 |
+| 完全回避 | IVR > 85 或 < 20 | — | — | — | 极端恐慌 / 极端平静 |
+
+### 5.2 DTE(到期天数)选择矩阵
+
+| 场景 | DTE 偏好 | 原因 |
+|------|:-------:|------|
+| 常规 Wheel 主力仓 | 35 - 45 | Theta 衰减最快区间 |
+| 高 IVR(> 70%) | 21 - 30 | 快速收割 IV 均值回归 |
+| 低 IVR(< 40%) | 不开仓 / 45+ | 权利金不足,拉长 DTE 无效补偿 |
+| 接股后 Covered Call | 14 - 30 | 快速滚动回本,保持灵活性 |
+| 财报前 > 14 天仍想做 | 仅 DTE < 财报日周度 | 严格避开 IV Crush |
+| VIX > 28 高波动 | 21 - 28 | 缩短暴露,降 Gamma 风险 |
+| VIX < 13 极度平静 | 45 - 60 | 延长以提高绝对权利金 |
+
+### 5.3 Delta 与 OTM Buffer 分级矩阵
+
+| 标的分级 | Delta 目标 | OTM Buffer | 年化收益率门槛 |
+|---------|:----------:|:----------:|:-------------:|
+| **A+(黄金核心)** | 0.15 - 0.22 | ≥ 8% | ≥ 15%(S+ 级 ≥ 18%) |
+| **A(优质成长)** | 0.20 - 0.28 | ≥ 6% | ≥ 22% |
+| **B(合格高波动)** | 0.25 - 0.30 | ≥ 5% | ≥ 28% |
+| **C(高风险卫星)** | 0.18 - 0.25(偏低对冲高波动) | ≥ 8% | ≥ 35% |
+
+**年化收益率公式:** `(Premium ÷ Strike) × (365 ÷ DTE) × 100%`
+
+**不达标处理:** 下调 Delta 重试 → 仍达不到 → 当期跳过,等下一个机会窗口。
+
+---
+
+## 第 6 章 20 标的 Watchlist 分级参数手册
+
+**本章是本手册可直接落地的核心。每个 ticker 已预设参数,实战无需临时查表。**
+
+### 6.1 A+ 级(黄金核心 · 优先分配保证金)
+
+| Ticker | 类型 | Delta | OTM Buffer | DTE | 年化门槛 | 特殊规则 |
+|--------|------|:-----:|:----------:|:---:|:--------:|---------|
+| **SPX** | 指数(路线 A) | 0.15 - 0.20 | ≥ 8% | 35-45 | ≥ 15% | Section 1256,无遗产税,FOMC 黑窗强制执行 |
+| **QQQ** | ETF(路线 B) | 0.15 - 0.22 | ≥ 8% | 35-45 | ≥ 15% | FOMC + CPI 双黑窗;分红日前 3 天不卖 CC |
+| **OESX** | 指数(路线 A) | 0.15 - 0.20 | ≥ 8% | 35-45 | ≥ 15% | 欧洲交易时段流动性最佳 |
+| **AAPL** | 个股(路线 B) | 0.18 - 0.22 | ≥ 8% | 35-45 | ≥ 15% | 财报前 14 天黑窗;除息日前 3 天 CC 禁用 |
+| **MSFT** | 个股(路线 B) | 0.18 - 0.22 | ≥ 8% | 35-45 | ≥ 15% | 同 AAPL 规则;云业务季度数据前关注 |
+| **V** | 个股(路线 B) | 0.15 - 0.22 | ≥ 8% | 35-45 | ≥ 15% | 低波动蓝筹,年化偏低可接受 |
+| **MA** | 个股(路线 B) | 0.15 - 0.22 | ≥ 8% | 35-45 | ≥ 15% | 同 V |
+
+### 6.2 A 级(优质成长 · 标准 Wheel)
+
+| Ticker | 类型 | Delta | OTM Buffer | DTE | 年化门槛 | 特殊规则 |
+|--------|------|:-----:|:----------:|:---:|:--------:|---------|
+| **META** | 个股(路线 B) | 0.20 - 0.28 | ≥ 6% | 35-45 | ≥ 22% | 财报前 14 天黑窗;广告业务宏观敏感 |
+| **NVDA** | 个股(路线 B) | 0.20 - 0.28 | ≥ 6% | 30-45 | ≥ 22% | 财报黑窗 + 出口管制新闻监控;IVR 波动大 |
+| **TSM** | ADR(路线 B) | 0.20 - 0.28 | ≥ 6% | 35-45 | ≥ 22% | 双重预提税,**严禁**跨除息日 CC;地缘敏感 |
+| **GLD** | ETF(路线 B) | 0.20 - 0.28 | ≥ 6% | 35-45 | ≥ 20% | VIX < 15 且 GLD IVR < 20 → 跳过;避险属性 |
+| **IBIT** | ETF(路线 B) | 0.22 - 0.28 | ≥ 7% | 30-45 | ≥ 25% | 加密监管黑窗;FOMC 利率敏感 |
+| **EWJ** | ETF(路线 B) | 0.20 - 0.28 | ≥ 6% | 35-45 | ≥ 20% | 日元汇率 + BOJ 利率监控 |
+| **XLU** | ETF(路线 B) | 0.18 - 0.25 | ≥ 6% | 35-45 | ≥ 18% | FOMC 黑窗 + 除息日(高股息需警惕) |
+
+### 6.3 B 级(合格高波动 · 控制仓位)
+
+| Ticker | 类型 | Delta | OTM Buffer | DTE | 年化门槛 | 特殊规则 |
+|--------|------|:-----:|:----------:|:---:|:--------:|---------|
+| **TSLA** | 个股(路线 B) | 0.25 - 0.30 | ≥ 5% | 30-45 | ≥ 28% | 财报 + 交付量双黑窗;Musk 新闻监控 |
+| **ASML** | ADR(路线 B) | 0.25 - 0.30 | ≥ 5% | 30-45 | ≥ 28% | **MATCH Act 出口管制持续关注**;荷兰+美国双重预提 |
+| **HOOD** | 个股(路线 B) | 0.25 - 0.30 | ≥ 5% | 30-45 | ≥ 28% | 加密周期 + SEC 监管黑窗 |
+| **NVO** | ADR(路线 B) | 0.25 - 0.30 | ≥ 5% | 30-45 | ≥ 28% | FDA/GLP-1 竞品黑窗;丹麦+美国双重预提 |
+| **COIN** | 个股(路线 B) | 0.25 - 0.30 | ≥ 5% | 30-45 | ≥ 28% | 加密监管 + BTC 高相关;IVR 高度不稳 |
+
+### 6.4 C 级(高风险卫星 · 仅做 Spread)
+
+| Ticker | 类型 | Delta | OTM Buffer | DTE | 年化门槛 | 特殊规则 |
+|--------|------|:-----:|:----------:|:---:|:--------:|---------|
+| **MSTR** | 个股(路线 B) | 0.18 - 0.25 | ≥ 10% | 21-35 | ≥ 35% | **仅做 Put Credit Spread,严禁裸卖**;BTC 杠杆代理 |
+| **CRCL** | 个股(路线 B) | 0.18 - 0.25 | ≥ 10% | 21-35 | ≥ 35% | 同 MSTR;新上市 IV 未稳,谨慎 |
+
+### 6.5 每标的 Pre-screen Gate 清单
+
+**全 20 标的通用:**
+- VIX 分档验证
+- 财报日距离 > 14 天
+- IVR 在该标的分级区间
+- 期权链流动性达 A 级以上
+
+**路线 A 专属:**
+- SPX / OESX:FOMC 黑窗强制执行
+
+**路线 B NRA 专属:**
+- AAPL / MSFT / V / MA / XLU:除息日前 3 天 CC 禁用
+- TSM / ASML / NVO:双重预提,**严禁跨除息日 CC**
+- QQQ / XLU / IBIT:FOMC 黑窗
+- GLD:VIX + IVR 双重低闸
+- HOOD / COIN / IBIT / MSTR / CRCL:加密监管黑窗联动
+
+---
+
+## 第 7 章 仓位与相关性管理
+
+### 7.1 单标的仓位上限(NRA 遗产税修正版)
+
+| 标的评级 | 保证金占用上限 | 操作说明 |
+|---------|:--------------:|---------|
+| **S+ 级核心**(A+ 且路线 A:SPX/OESX) | 账户权益 10% | 不超过 8% 单笔开仓上限 |
+| **S 级**(A+ 且路线 B:AAPL/MSFT/QQQ/V/MA) | 账户权益 7% | 分批建仓,第一次 ≤ 5% |
+| **A 级**(META/NVDA/TSM/GLD/IBIT/EWJ/XLU) | 账户权益 5% | 标准仓位 |
+| **B 级**(TSLA/ASML/HOOD/NVO/COIN) | 账户权益 2% | 控制仓位,优先 Spread |
+| **C 级**(MSTR/CRCL) | 账户权益 1% | 仅 Spread 结构,严禁裸卖 |
+| **单笔最大保证金** | 账户权益 8% | 单次操作上限 |
+
+### 7.2 相关性总敞口约束
+
+**若 AAPL + NVDA + QQQ + META 同时持有卖 Put,本质上是在大盘科技 Beta 上叠加下注,必须合并计算而非分别看单标的。**
+
+| 因子分组 | 总保证金占用上限 | 典型标的 |
+|---------|:---------------:|---------|
+| 大盘 Beta(高相关) | ≤ 35% | SPX + QQQ + 高 Beta 科技股合计 |
+| 科技板块 | ≤ 30% | AAPL / META / NVDA / TSM / ASML |
+| 支付/金融 | ≤ 15% | MA / V / HOOD |
+| 加密相关 | ≤ 10% | COIN / MSTR / IBIT / CRCL |
+| 避险资产 | ≤ 20% | GLD / XLU / EWJ |
+| 单一 Delta 总敞口 | 总 Delta ÷ 账户权益 ≤ 0.3 | 所有仓位合并计算净 Delta |
+
+### 7.3 NRA 资金分配规则
+
+- 单标的最大敞口 = **min($60K, 组合的 8%)** ← 两上限取小值
+- S+/S 级合计占比 **≥ 50%**
+- C 级合计占比 **≤ 15%**
+- 现金缓冲 **≥ 15%**(用于市场极端下跌时 CSP 被大量行权的保证金需求)
+- 优先路线 A(指数期权)替代个股 Wheel → 规避 $60K 遗产税问题
+
+### 7.4 Beta 约束分层
+
+| 策略角色 | Beta 合意区间 | 例外处理 |
+|---------|:-------------:|---------|
+| Wheel 核心仓(60-70%) | 0.7 - 1.3 | 无例外 |
+| Wheel 增强仓(20-30%) | 1.3 - 1.8 | 仓位自动减半 |
+| Wheel 卫星仓(< 10%) | 1.8 - 2.5 | 仅在高 IVR 时点使用 |
+| 禁入区间 | > 2.5 或 < 0.3 | 永久排除(货币型 ETF 除外) |
+
+---
+
+## 第 8 章 综合评分模型(0-100 分)
+
+**对通过所有硬性过滤(第 0-5 层)的标的进行评分,用于候选池内部排序与分级行动决策。**
+
+### 8.1 评分维度与权重
+
+| 维度 | 权重 | 满分标准 | 合格基准 |
+|------|:----:|---------|---------|
+| 期权合约流动性 | 25 | 全链日均 OI ≥ 50,000 + 价差 ≤ $0.05 + 目标 OI ≥ 5,000 | 合格线得 15 分 |
+| 正股底层流动性 | 15 | 日均成交额 ≥ $5 亿 + Avg Vol ≥ 1,000 万 | 合格线得 10 分 |
+| IV Rank 适配度 | 20 | IVR 落在 40-70% = 满分;每偏离 10% 扣 4 分 | IVR 20-40% 或 70-85% = 12 分 |
+| 基本面与 Beta | 15 | Beta 0.7-1.3 + 经营现金流正 + SPX 成分 + D/E < 1 | Beta 1.3-1.8 + 现金流正 = 10 分 |
+| 事件清净度 | 10 | 未来 21 天无已知事件 | 财报 10-14 天内 = 0 分 |
+| 行权链密度 | 5 | 周度 + 月度 + 间距 ≤ 2.5% | 仅月度 = 3 分 |
+| NRA 税务友好度 | 10 | 指数期权 / 无分红 ETF | 高分红 ADR = 0 分 |
+
+### 8.2 奖惩项
+
+| 类型 | 条件 | 分值 |
+|------|------|:----:|
+| 奖励 | 历史 Wheel 成功滚动 ≥ 4 次 | +5 |
+| 奖励 | 连续 5 日 Most Active Top 20 | +3 |
+| 奖励 | 近期 IVR 从高位回落(Vega 顺风) | +3 |
+| 奖励 | 有 Weekly 期权链且流动性达优质线 | +3 |
+| 奖励 | Bid-Ask 低于同类平均 50% | +4 |
+| 惩罚 | 过去 6 个月出现跳空 > 10%(无已知事件) | -10 |
+| 惩罚 | Wheel 适格问卷任何 1 项软性失格 | -15 |
+| 直接归零 | 标的未通过心灵拷问 | 归零 |
+| 直接归零 | 软黑名单命中 ≥ 2 项 | 不参与打分 |
+
+### 8.3 分级与行动决策
+
+| 等级 | 分数线 | 行动方案 | 单标的保证金上限 |
+|------|:------:|---------|:----------------:|
+| **S+(黄金)** | ≥ 90 | 核心重仓 Wheel 池,优先分配保证金 | 账户权益 10% |
+| **S(优质)** | 80 - 89 | 常规 Wheel / CSP,标准参数执行 | 账户权益 7% |
+| **A(合格)** | 65 - 79 | 小仓位 CSP,Roll 时保守操作,不追加 | 账户权益 5% |
+| **B(边缘)** | 50 - 64 | 仅 Credit Spread,不裸卖,控制净 Delta | 账户权益 2% |
+| **C/X(排除)** | < 50 或黑名单 | 进观察池或永久剔除 | 0 |
+
+---
+
+## 第 9 章 Roll 机制与被指派管理
+
+### 9.1 Roll 触发条件(任一满足即评估)
+
+- 短腿 Delta > 0.45(风险敞口过大)
+- 标的价格跌破行权价 + 2%(已进入 ITM 区域)
+- 剩余 DTE < 7 天且仍有较大 Theta 价值未收割
+
+### 9.2 Roll 三铁律
+
+| # | 铁律 | 违反后果 |
+|---|------|---------|
+| ① | **不扩仓**:Roll 后合约数量不增加(除非 Roll-Down + Roll-Out 同时做且确保收 Credit) | 单次扩仓可能将账户暴露在数倍风险下 |
+| ② | **时间有限**:Roll-Out 不超过 45 天;过度延期损失 Theta 加速区 | Roll 至 60+ DTE 等于重新开仓,不是防守 |
+| ③ | **保持 Net Credit**:若 Roll 需要净付出 Debit,宁可接受指派 | Debit Roll 是把亏损锁定并延期偿还,得不偿失 |
+
+### 9.3 被指派后三路径
+
+```
+被 Put 指派 → 持有 100 股正股 × N
+    ├── 路径 1:标准 Wheel(首选)
+    │   条件:IVR ≥ 25,基本面无恶化,愿意继续持股
+    │   操作:立即卖 OTM Covered Call,Delta 0.15-0.25,DTE 30-45
+    │
+    ├── 路径 2:Collar 防御
+    │   条件:VIX 快速上升,市场有系统性下行风险
+    │   操作:卖深度 OTM CC + 买保护 Put,形成 Collar 结构
+    │
+    └── 路径 3:直接止损退出
+        条件:基本面已恶化,心灵拷问答案变"否"
+        操作:卖出持仓,计入亏损,永久踢出候选池
+```
+
+### 9.4 Covered Call 行权价选择
+
+| 持股成本位置 | CC 行权价选择 | 说明 |
+|-------------|---------------|------|
+| 浮盈 > 5% | Delta 0.20 - 0.25 OTM | 股价上涨充裕,可卖较近的 Call 增加权利金 |
+| 浮亏 0% - 5% | Delta 0.15 - 0.20 OTM;行权价 ≥ 持股成本 | 避免被行权时锁定亏损 |
+| 浮亏 > 5% | **绝不在持股成本以下卖 CC** | 锁亏是最糟糕的操作;选远月 OTM 等待回本 |
+
+**NRA 专属 CC 禁忌:**
+- 除息日前 3 天禁止卖 CC(尤其 Delta > 0.30 的 ITM CC → 99% 会被提前行权抢分红)
+- TSM / ASML / NVO 跨除息日 CC 严禁(双重预提 → 税务惩罚严重)
+
+### 9.5 止损纪律
+
+| 止损场景 | 触发条件 | 强制行动 |
+|---------|---------|---------|
+| 单笔期权亏损 | ≥ 2× 收到权利金 | 强制 Roll 或止损平仓 |
+| 单标的累计亏损 | > 账户权益 3% | 该标的暂停 6 个月,踢出候选池 |
+| 全账户单日回撤 | > 5% | 所有新开仓暂停 24 小时,冷静期复盘 |
+
+---
+
+## 第 10 章 EV 成本模型
+
+### 10.1 完整 EV 公式
+
+```
+真实权利金 = 名义权利金
+           - 开仓滑点:(Ask - Bid) / 2 × 100
+           - 开仓佣金:IBKR 典型 $0.65/合约
+           - 平仓滑点 × 期望平仓比例(提前止盈约 50% 概率)
+           - 平仓佣金
+           - 潜在指派费:$5-$15/次 × 指派概率
+
+年化真实收益率 = (真实权利金 ÷ Strike) × (365 ÷ DTE) × 100%
+```
+
+**去留判据:** 年化真实收益率 ≥ 目标下限(A+ 级 15% / A 级 22% / B 级 28% / C 级 35%)
+
+### 10.2 小合约成本警戒案例(必读)
+
+**示例:** 股价 $20 的标的,卖 Put @ 行权价 $18,收名义权利金 $0.50($50/合约)
+
+| 成本项目 | 金额 | 说明 |
+|---------|:----:|------|
+| 名义权利金 | +$50.00 | 0.50 × 100 |
+| 开仓滑点(Bid-Ask $0.10) | -$5.00 | (0.10 / 2) × 100 |
+| 开仓佣金(IBKR) | -$0.65 | 每合约 |
+| 平仓滑点 × 50% | -$2.50 | 假设 50% 概率提前平仓 |
+| 平仓佣金 × 50% | -$0.33 | 0.65 × 50% |
+| **真实权利金** | **$41.52** | **成本侵蚀 17%** |
+
+**结论:**
+- 股价 < $30 的标的,Bid-Ask **必须 ≤ $0.05**,否则跳过
+- 成本侵蚀 > 10% 时,名义年化收益率需上调至少 4-5 个百分点才能达到实际目标
+- 对 C 级标的(MSTR / CRCL),EV 检查优先级高于名义收益率
+
+### 10.3 按 ticker 分级的 EV 下限
+
+| 分级 | 代表标的 | 年化 EV 下限(扣成本后) |
+|------|---------|:-----------------------:|
+| A+ | SPX / OESX / AAPL / MSFT / QQQ / V / MA | ≥ 15% |
+| A | META / NVDA / TSM / GLD / IBIT / EWJ / XLU | ≥ 22% |
+| B | TSLA / ASML / HOOD / NVO / COIN | ≥ 28% |
+| C | MSTR / CRCL | ≥ 35% |
+
+---
+
+## 第 11 章 每日执行 SOP
+
+### 11.1 盘前 15 分钟操作流程(双时区)
+
+| SGT 时刻 | ET 对应 | 步骤 | 预期时长 | 预期产出 |
+|:--------:|:-------:|------|:--------:|---------|
+| 09:00 | 21:00(盘前) | **宏观总闸门 + VIX 档位检查**:VIX 开盘价 + 当日日历(FOMC/CPI/NFP/地缘) | 1 min | 通过/暂停决策 |
+| 09:01 | 21:01 | **Yahoo Most Active 前 100 + 20 核心 Watchlist 对齐** | 2 min | 剩 30-40 只 |
+| 09:03 | 21:03 | **黑名单 + Wheel 适格问卷扫射**:财报 14 天内 / 杠杆 ETF / MEME / 公司事件 / 7 项问卷 | 3 min | 剩 15-20 只 |
+| 09:06 | 21:06 | **期权链流动性硬筛**:OI / 价差 / Volume / 链结构 | 3 min | 剩 8-12 只 |
+| 09:09 | 21:09 | **IVR + VIX 分档联动验证**:确认当前 VIX 档位 → 调整 IVR 门槛 | 2 min | 剩 5-8 只 |
+| 09:11 | 21:11 | **综合评分 + 相关性检查**:已持仓 Beta 总敞口 vs 限额 | 2 min | 3-5 只入当日可交易池 |
+| 09:13 | 21:13 | **EV 真实收益率验算** + **路线 A/B 分流决策** | 1 min | 最终可交易清单 |
+| 09:14 | 21:14 | **心灵拷问 + NRA 税务 Checklist** | 1 min | 准备挂单 |
+| 09:30+ | 21:30 开盘 | **开盘 30 分钟后限价单挂单**(避开开盘噪音) | — | 订单进入市场 |
+| 盘中 | — | **监控已开仓 Delta**:> 0.40 的短腿启动 Roll 评估 | 随时 | Roll 决策日志 |
+| 收盘后 | ET 16:15 后 | **台账记录**(标的/行权价/DTE/权利金/真实年化收益率) | 10 min | 日报 |
+
+### 11.2 心灵拷问 + NRA 税务 Checklist(每日开仓前必过)
+
+| 检查项目 | 标准 | 若不满足 |
+|---------|------|---------|
+| □ 愿意被指派后持有 ≥ 30 天? | 明确回答"是" | 取消该标的开仓计划 |
+| □ W-8BEN 仍在有效期内? | 距到期 > 30 天 | 立即启动续签程序 |
+| □ 总美国境内资产 vs $60K 遗产税线? | 单标的敞口 ≤ min($60K, 权益 8%) | 调整仓位规模 |
+| □ 目标标的非除息日前 3 天(CC 持股时)? | 除息日 > 3 个交易日后 | Roll 或等待除息后开仓 |
+| □ 全账户 Beta 总敞口未超限? | 科技 ≤ 30%;大盘 Beta ≤ 35% | 暂不新开同方向仓位 |
+| □ 路线 A/B 分流已确认? | 符合双轨架构 | 重新评估 |
+| □ 真实 EV 年化达分级下限? | 按 A+/A/B/C 对应门槛 | 下调 Delta 重试或跳过 |
+
+### 11.3 周 / 月 / 季度复盘
+
+| 频率 | 复盘项目 | 时长 |
+|------|---------|:----:|
+| **每周五收盘后** | 持仓 Delta / Vega 总敞口;Roll 候选识别(Delta > 0.40);黑名单更新;软黑名单命中率统计 | 30 min |
+| **每月底** | NRA 税务合规(分红累计、除息事件、W-8BEN 有效期);EV 参数校准(实际成本 vs 预估) | 1 h |
+| **每季度** | 整体 Wheel 年化 vs 基准(SPX 回报);各标的历史成功率更新;A/B/C 分级重新评估;VIX 联动阈值校准;ticker-params 版本迭代 | 3 h |
+
+---
+
+## 第 12 章 一页式实盘检查清单
+
+**全部 ✅ 后方可开仓,任一 ❌ 直接出局。可打印后贴于交易台。**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 0 层  宏观闸门 + VIX 档位
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ VIX < 35 且当日涨幅 < 30%
+□ 不在 FOMC / CPI / NFP 黑窗内
+□ 无重大地缘/行业事件
+□ 当前 VIX 档位联动参数已应用(__档)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 1 层  路线分流(双轨架构)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ 已确认走路线 A 还是路线 B
+□ 路线 B 累计敞口未触达 $60K × N 上限
+□ 账户规模对应的路线配比合规
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 2 层  NRA 税务预过滤
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ 非 PFIC 风险品种(美国注册 ETF / 个股)
+□ 非高股息无 DTA 品种(股息率 < 3% 或无分红)
+□ 单标的敞口 ≤ min($60K, 组合 8%)
+□ W-8BEN 距到期 > 30 天
+□ 若卖 CC:未来 3 天无除息日
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 3 层  正股初选 + 黑名单
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ Avg Vol (3M) ≥ 500 万股;市值 ≥ $100 亿
+□ 财报日 > 14 天;无 SEC 调查/退市警示
+□ Wheel 适格问卷 7 项全 YES
+□ 非杠杆/反向/波动率 ETN/MEME
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 4 层  期权链流动性
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ 合约 OI ≥ 500(优选 ≥ 5,000)
+□ 合约日量 ≥ 300(优选 ≥ 1,000)
+□ Bid-Ask ≤ $0.15(优选 ≤ $0.05)
+□ 价差率 ≤ 8%(优选 ≤ 3%)
+□ Volume/OI 比在 2% - 50% 正常区间
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+第 5 层  IV + 事件时窗
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ IVR 在 40-70%(Wheel 黄金区间)
+□ IV > HV × 1.1(卖方有溢价)
+□ 非除息前 3 天(CC 持股时适用)
+□ 数据源统一(CBOE/IBKR/TOS 其一)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+参数配置
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ DTE 在分级矩阵区间内
+□ Delta 在该标的分级目标区间
+□ OTM Buffer 达到该标的分级门槛
+□ 名义年化收益率 ≥ 该级门槛
+□ **真实 EV 年化(扣滑点/佣金)≥ 门槛**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+组合层面
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ 综合评分 ≥ 65(B 级或以上)
+□ 开仓后科技板块总敞口 ≤ 30%
+□ 大盘 Beta 总敞口 ≤ 35%
+□ 无软黑名单 ≥ 2 项命中
+□ 现金缓冲 ≥ 15%
+□ 已预设 Roll 触发线(Delta > 0.40)
+□ 限价单(非市价)
+
+全部 ✅ → 执行开仓;任一 ❌ → 跳过,不勉强
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## 附录 A  券商 NRA 兼容性对照表
+
+| 券商 | NRA 支持度 | 期权权限 | 路线 A 支持 | 路线 B 支持 | 推荐度 |
+|------|:---------:|---------|:-----------:|:-----------:|:------:|
+| IBKR(盈透证券)Singapore | ★★★★★ | 全部策略(CSP/CC/裸卖/Spread) | ✅ | ✅ | 首选 |
+| Tastytrade | ★★★★ | 全部策略,NRA 申请略繁 | ✅ | ✅ | 推荐 |
+| Schwab International | ★★★ | 部分受限,不支持裸卖 Put | ⚠️ | ⚠️ | 可用 |
+| Fidelity International | ★★ | 不支持裸卖期权 | ❌ | ⚠️ | 不推荐 |
+| Saxo Singapore | ★★★ | 支持主流策略 | ✅ | ✅ | 备用 |
+
+---
+
+## 附录 B  标准化交易口诀
+
+```
+路线先分双轨走,         ← 第 1 章:指数现金 vs 个股实物
+税务先行避 FDAP,         ← 第 3 章:NRA 永远第一关
+VIX 分档联参数,          ← 第 2 章:联动阈值核心
+OI 打底价差关;           ← 第 4 章:流动性硬性门槛
+IV 区间四到七,           ← 第 5 章:IVR 黄金区间 40-70%
+财报前后两周边;          ← 黑窗期管理
+Beta 居中愿持有,         ← 第 4 章:Wheel 适格性
+遗产六万须分散;          ← NRA 仓位规模控制
+Delta 分级按 ticker,     ← 第 6 章:20 标的预设参数
+EV 公式是底线;           ← 第 10 章:真实收益率才是开仓判据
+Roll 三铁律莫违反,       ← 第 9 章:防守核心规则
+台账复盘日月年。         ← 第 11 章:持续迭代
+```
+
+---
+
+## 附录 C  迭代路径与已知短板
+
+### C.1 v2.5 与 v1.0 的增量
+
+| v1.0 两份方法论共同盲区 | v2.5 补充内容 |
+|----------------------|---------------|
+| 线性架构,未做资金分流 | 第 1 章 双轨架构(路线 A/B)作为顶层 |
+| VIX 分档联动参数表缺失 | 第 2 章 §2.2 VIX 分档联动矩阵(核心模块) |
+| Ticker 层参数未标定 | 第 6 章 20 标的 Watchlist 分级参数手册 |
+| Section 1256 战略价值未系统化 | 第 3 章 §3.3 完整阐述指数期权最优结构 |
+| EV 公式缺成本分项 + 数值示例 | 第 10 章 完整 EV 公式 + 数值验算案例 |
+| Roll 机制缺失 | 第 9 章 Roll 三铁律 + 被指派三路径完整覆盖 |
+| 一页检查清单格式未标准化 | 第 12 章 标准化一页式清单,可直接打印 |
+
+### C.2 已知短板
+
+1. **打分权重是推导值而非回测结果**:建议 2-3 个月实盘积累 30 笔以上成交后,用逻辑回归或随机森林反推各维度对"正收益概率"的实际贡献,替换推导权重。
+2. **NRA 税务层仅针对新加坡居民**:其他地区居民需按当地 DTA 条款重新校准 FDAP 预提率。
+3. **VIX 联动参数表为框架性建议**:建议结合个人账户回撤承受力调整仓位修正比例;VIX > 35 的极端情境暂无历史样本回测数据支撑。
+4. **C 级标的(MSTR/CRCL)参数需特别谨慎**:新兴高波动品种的 IV 曲线尚未稳定,历史 IVR 参考价值有限。
+5. **Delta/OTM 矩阵需基于 3 个月实盘数据做个标的参数化校准**:当前数值为群体均值,个体偏差可能达 ±15%。
+
+### C.3 v2.5 → v3.0 升级路径
+
+1. **MVP 阶段(第 1-4 周)**:手动台账记录每笔开仓的 IVR / EV 年化 / 滑点 / Roll 次数 / 实际收益
+2. **数据积累阶段(第 5-12 周)**:积累 30 笔以上完整周期成交,进入统计校准阶段
+3. **权重反推阶段(第 13 周)**:用实盘数据反推打分权重,替换第 8 章推导值
+4. **自动化阶段(第 14+ 周)**:对接 OpenClaw 扫描器 JSON 输出,将本手册参数化为可执行规则引擎
+
+### C.4 与现有 Skill 体系对接
+
+- **openclaw-options** skill:本手册第 2-5 章、第 10 章可作为 `ticker-params-v3.md` 的方法论底稿
+- **options-playbooks** skill:本手册第 6 章、第 9 章可作为各 ticker 操作规程的参数来源
+- **global-tax-expert** skill:本手册第 3 章可反向导入 CRS 深度模块作为交叉验证
+
+---
+
+## 附录 D  快速查询索引
+
+### D.1 紧急情况处置
+
+| 情况 | 立即查阅 |
+|------|---------|
+| VIX 突破 35 | 第 2 章 §2.1 + §2.2 |
+| 持仓被指派 | 第 9 章 §9.3 被指派后三路径 |
+| 单笔亏损 2 倍权利金 | 第 9 章 §9.5 止损纪律 |
+| 账户单日回撤 > 5% | 第 9 章 §9.5 + 24 小时冷静期 |
+| 除息日前 3 天持 CC | 第 9 章 §9.4 NRA 专属 CC 禁忌 |
+| W-8BEN 临近到期 | 第 3 章 §3.6 |
+
+### D.2 每日核查速查
+
+| 时间 | 查阅章节 |
+|------|---------|
+| 盘前 1 min | 第 2 章(宏观闸门) |
+| 盘前 2-6 min | 第 4 章(五层漏斗) |
+| 盘前 9-14 min | 第 6 章(ticker 参数)+ 第 10 章(EV)+ 第 11 章 §11.2(Checklist) |
+| 挂单前 | 第 12 章(一页清单) |
+| 盘中 | 第 9 章(Roll 机制) |
+| 收盘后 | 第 11 章 §11.3(复盘) |
+
+### D.3 ticker-level 快速定位
+
+| Ticker | 分级 | 所在路线 | 参数章节 |
+|:------:|:----:|:-------:|:--------:|
+| SPX | A+ | 路线 A | §6.1 |
+| OESX | A+ | 路线 A | §6.1 |
+| QQQ | A+ | 路线 B | §6.1 |
+| AAPL | A+ | 路线 B | §6.1 |
+| MSFT | A+ | 路线 B | §6.1 |
+| V | A+ | 路线 B | §6.1 |
+| MA | A+ | 路线 B | §6.1 |
+| META | A | 路线 B | §6.2 |
+| NVDA | A | 路线 B | §6.2 |
+| TSM | A | 路线 B | §6.2 |
+| GLD | A | 路线 B | §6.2 |
+| IBIT | A | 路线 B | §6.2 |
+| EWJ | A | 路线 B | §6.2 |
+| XLU | A | 路线 B | §6.2 |
+| TSLA | B | 路线 B | §6.3 |
+| ASML | B | 路线 B | §6.3 |
+| HOOD | B | 路线 B | §6.3 |
+| NVO | B | 路线 B | §6.3 |
+| COIN | B | 路线 B | §6.3 |
+| MSTR | C | 路线 B | §6.4 |
+| CRCL | C | 路线 B | §6.4 |
+
+---
+
+**手册版本:** v2.5(西门先生版)
+**发布日期:** 2026-04-18<br>
+**适用账户类型:** NRA(W-8BEN)
+**下次校准建议:** 2026-07-18(季度校准)或 VIX 中枢结构性变化时
+
+**免责声明:** 本手册由RHCLOUD AI生成为系统化交易框架与风控管线,不构成投资建议。所有阈值需结合账户规模、执行速度与所在辖区税法微调。实盘前必须经过至少 4 周 MVP 台账验证。
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var raw = document.getElementById("choose-md").textContent;
+  if (typeof marked === "undefined" || !marked.parse) {
+    document.getElementById("content").innerHTML = "<p class=\"callout danger\">无法加载 Markdown 解析器，请检查网络后刷新。</p>";
+    return;
+  }
+  var html = marked.parse(raw, { breaks: false, gfm: true });
+  var content = document.getElementById("content");
+  content.innerHTML = html;
+
+  function slugId(text) {
+    var s = "h-" + text.replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fff\-·（）%]/g, "").slice(0, 80);
+    return s.length > 2 ? s : "";
+  }
+
+  var h2s = content.querySelectorAll("h2");
+  var toc = document.getElementById("toc");
+  var used = {};
+  h2s.forEach(function (h2, i) {
+    var t = h2.textContent.trim();
+    var id = h2.id || slugId(t) || ("section-" + i);
+    if (used[id]) id = id + "-" + i;
+    used[id] = true;
+    h2.id = id;
+  });
+
+  var tocOnly = [];
+  var chapters = [];
+  var appendix = [];
+  h2s.forEach(function (h2) {
+    var t = h2.textContent.trim();
+    if (/^目录$/.test(t)) tocOnly.push(h2);
+    else if (/^附录/.test(t)) appendix.push(h2);
+    else chapters.push(h2);
+  });
+
+  function addNav(label, items) {
+    if (!items.length) return;
+    var lab = document.createElement("div");
+    lab.className = "nav-section-label";
+    lab.textContent = label;
+    toc.appendChild(lab);
+    items.forEach(function (h2) {
+      var a = document.createElement("a");
+      a.href = "#" + h2.id;
+      a.className = "nav-item";
+      var t = h2.textContent.trim();
+      a.textContent = t.length > 42 ? t.slice(0, 40) + "…" : t;
+      toc.appendChild(a);
+    });
+  }
+
+  addNav("目录", tocOnly);
+  addNav("章节", chapters);
+  addNav("附录", appendix);
+
+  var firstH1 = content.querySelector("h1");
+  var bq = firstH1 && firstH1.nextElementSibling;
+  if (firstH1 && bq && bq.tagName === "BLOCKQUOTE") {
+    var hero = document.createElement("div");
+    hero.className = "hero doc-manual";
+    hero.style.marginBottom = "40px";
+    var eyebrow = document.createElement("div");
+    eyebrow.className = "hero-eyebrow";
+    eyebrow.textContent = "机构级卖方策略 · NRA 操作手册";
+    hero.appendChild(eyebrow);
+    hero.appendChild(firstH1);
+    bq.classList.add("markdown-blockquote");
+    hero.appendChild(bq);
+    content.insertBefore(hero, content.firstChild);
+  }
+
+  var navItems = document.querySelectorAll("#toc .nav-item");
+  var observe = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      navItems.forEach(function (item) {
+        item.style.borderLeftColor = "transparent";
+        item.style.background = "";
+        item.style.color = "";
+      });
+      var active = document.querySelector('#toc .nav-item[href="#' + entry.target.id + '"]');
+      if (active) {
+        active.style.borderLeftColor = "var(--gold)";
+        active.style.background = "var(--gold-dim)";
+        active.style.color = "var(--gold-light)";
+      }
+    });
+  }, { rootMargin: "-18% 0px -65% 0px", threshold: 0 });
+  h2s.forEach(function (s) { observe.observe(s); });
+
+  content.querySelectorAll("table").forEach(function (tbl) {
+    if (tbl.parentNode && tbl.parentNode.classList && tbl.parentNode.classList.contains("table-scroll")) return;
+    var wrap = document.createElement("div");
+    wrap.className = "table-scroll";
+    tbl.parentNode.insertBefore(wrap, tbl);
+    wrap.appendChild(tbl);
+  });
+});
+</script>
+
+</body>
+</html>

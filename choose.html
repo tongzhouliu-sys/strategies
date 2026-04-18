@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>最强版 NRA 专用期权卖方筛选方法论 v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "DM Sans", sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+  .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .logo-title {
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .logo-ver { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .main {
+    flex: 1;
+    max-width: 980px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    margin-bottom: 40px;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 30px;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .hero-sub { color: var(--text-secondary); font-size: 14px; }
+
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+  }
+
+  .markdown h1, .markdown h2, .markdown h3 { color: var(--text-primary); }
+  .markdown h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 32px;
+    margin: 10px 0 18px;
+  }
+  .markdown h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 22px;
+    margin: 28px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .markdown h3 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 24px 0 10px;
+    color: var(--gold-light);
+  }
+  .markdown p, .markdown li { color: var(--text-secondary); }
+  .markdown ul, .markdown ol { padding-left: 24px; margin: 10px 0 14px; }
+  .markdown code {
+    font-family: "DM Mono", monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+  .markdown pre {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  .markdown pre code {
+    background: transparent;
+    padding: 0;
+  }
+  .markdown hr {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 26px 0;
+  }
+  .markdown table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 12px 0 18px;
+    overflow: hidden;
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+  }
+  .markdown thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .markdown th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .markdown td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    vertical-align: top;
+  }
+  .markdown tr:last-child td { border-bottom: none; }
+
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-tag">Private Methodology</span>
+      <div class="logo-title">NRA 期权卖方筛选<br>方法论</div>
+      <div class="logo-ver">V1.0 · 2026 年 4 月</div>
+    </div>
+    <div id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="hero">
+      <div class="hero-eyebrow">机构级筛选框架 · 内部文档</div>
+      <h1>最强版 NRA 专用期权卖方筛选方法论</h1>
+      <p class="hero-sub">基于 V1 原始内容，按 demo 视觉结构重排为单页阅读版本，尽量保留 demo 的布局和样式体系。</p>
+    </div>
+
+    <section class="card markdown" id="content"></section>
+  </main>
+</div>
+
+<script id="v1-md" type="text/plain">
+# 最强版 NRA 专用期权卖方筛选方法论 v1.0
+
+## 0. 方法论定位与三条铁律（价值观锚点）
+
+本方法论**专为 NRA（Non-Resident Alien）账户**的期权卖方策略设计，适用 Wheel 循环、Cash-Secured Put、Covered Call、Credit Spread。核心目标：在可被指派即可被长期持有的优质资产上，系统性收割时间价值与波动率溢价。
+
+**三条铁律（开仓前逐条自检，缺一否决）：**
+
+1. **流动性 > 一切**——Bid-Ask 不达标的标的，权利金再高也是幻觉收益
+2. **IV 要高，但不能失控**——IVR ≥ 30 是下限，≥ 85 是陷阱
+3. **被指派后愿意持有至少 6 个月**——不愿接货就不卖 Put，这是 Wheel 策略的本质
+
+---
+
+## 1. 宏观总闸门（Pre-screen Gate·系统性黑窗）
+
+**所有个股筛选必须在宏观总闸门开启状态下进行，任何一项触发即全市场暂停新开卖方仓位。**
+
+| 闸门 | 暂停条件 | 恢复条件 | 影响范围 |
+|---|---|---|---|
+| VIX 总闸 | VIX > 35 或 当日 VIX 涨幅 > 30% | VIX 回到 < 30 且稳定 3 个交易日 | 全部卖方策略 |
+| VIX 低闸（GLD 等避险标的专用）| VIX < 15 且 GLD IVR < 20 | — | GLD/TLT 等避险资产卖 Put 直接跳过 |
+| FOMC 黑窗 | FOMC 决议日 T-3 至 T+1 | T+2 恢复 | SPX/QQQ/XLU/IBIT 等利率敏感标的 |
+| CPI/PPI 黑窗 | 发布日 T-1 至 T+0 | T+1 恢复 | 全部标的 DTE ≤ 7 的短周期合约 |
+| NFP 黑窗 | 非农发布日 T-0 | T+1 恢复 | SPX/QQQ/EWJ 等宏观敏感标的 |
+| 地缘危机窗 | 重大地缘事件爆发后 48 小时 | 事件消化、VIX 回落 | 全部新开仓 |
+| 行业系统性事件 | 如半导体出口管制、银行危机、加密监管重大事件 | 事件消化 48 小时 | 所属行业全部标的（例如 ASML、TSM、NVDA 遇 MATCH Act 需单独评估）|
+
+---
+
+## 2. 第一步：Yahoo Most Active 正股初选
+
+### 2.1 数据入口与字段对齐
+
+入口：`https://finance.yahoo.com/markets/stocks/most-active/`
+取数时点：开盘后 30 分钟（避开开盘噪音），取榜单前 100 名
+
+Yahoo 页面字段直接映射：
+
+| Yahoo 字段 | 用途 |
+|---|---|
+| Volume | 当日成交量 |
+| Avg Vol (3M) | 3 个月日均成交量（核心基准）|
+| Market Cap | 市值门槛 |
+| Price | 股价区间筛选 |
+| 52 Wk Range | 极端位置评估 |
+| % Change | 当日异动排除 |
+
+### 2.2 双档量化门槛（GLM 设计）
+
+| 指标 | 保守版 | 优选版 | 淘汰线 |
+|---|---|---|---|
+| Avg Vol (3M) | ≥ 500 万股 | ≥ 1,000 万股 | < 200 万股 |
+| Market Cap | ≥ 100 亿美元 | ≥ 500 亿美元 | < 30 亿美元 |
+| 股价区间 | $20 – $500 | $30 – $300 | < $15 或 > $600 |
+| 当日 \|% Change\| | ≤ 8% | ≤ 5% | > 15% |
+| 20 日换手率异常 | 当日量 / 均量 在 0.5 – 3.0 | 0.8 – 2.0 | > 5 或 < 0.2 |
+
+保守版门槛用于 B 级候选池，优选版用于 A/S 级核心池。
+
+### 2.3 加分项
+
+- 连续 5 日稳定在 Most Active Top 50
+- SPX 500 / NDX 100 / Russell 1000 成分股
+- 所属板块非强周期（排除加密二级 beta、生物科技 binary event）
+
+---
+
+## 3. 第二步：风险排除黑名单（DeepSeek + NRA 增强）
+
+**任意一条触发永久剔除本轮，不进入后续评估。**
+
+### 3.1 公司层黑名单
+
+- 退市风险：股价 < $5 持续 15 天、收到交易所不合规通知、审计师辞任
+- 财报窗口：下次财报日 ≤ 14 个自然日（标准）或 ≤ 10 天（激进）
+- 财报后 IV Crush 冷却期：财报发布后 24 小时内不开仓
+- SEC 调查 / 集体诉讼 / 会计重述 / 破产重组
+- 并购锁定（股价已被套利钉死）
+- 生物科技 PDUFA ≤ 10 天
+- 公司治理信号：连续 NT 10-Q/10-K 延迟披露
+
+### 3.2 标的类型黑名单
+
+| 类型 | 处理 | 理由 |
+|---|---|---|
+| 2x/3x 杠杆 ETF（TQQQ/SOXL/SQQQ）| **永久排除** | 每日再平衡路径依赖，Wheel 逻辑失效 |
+| 反向 ETF | **永久排除** | 方向工具，非资产载体 |
+| 波动率 ETN（VXX/UVXY）| **永久排除** | 结构性损耗 |
+| MEME 妖股 | **永久排除** | Short Interest > 30% + 社交驱动 + 无基本面 |
+| OTC / 粉单 | **永久排除** | 做市商稀少 |
+| 中概 ADR（非 VIE 清洁结构）| 谨慎（仓位减半）| 监管+退市双风险 |
+| SPAC 未并购 | **永久排除** | 赎回潮风险 |
+| 刚拆股/合股 6 个月内 | 谨慎 | IV 曲线未稳定 |
+
+### 3.3 心灵拷问（DeepSeek 核心过滤器）
+
+> **"若该股票以行权价被指派，我是否愿意以该成本持有 100 股 × N 手 至少 3–6 个月？"**
+
+答"否"→ 直接剔除。这比任何量化指标都重要。
+
+---
+
+## 4. 第三步：期权专项流动性筛选
+
+### 4.1 四维流动性门槛
+
+| 维度 | S 级 | A 级 | 淘汰线 |
+|---|---|---|---|
+| 标的期权日均成交量 | ≥ 50,000 张 | ≥ 10,000 张 | < 3,000 张 |
+| 目标行权价 OI | ≥ 5,000 张 | ≥ 1,000 张 | < 300 张 |
+| 目标行权价 Volume | ≥ 500 张 | ≥ 100 张 | < 50 张 |
+| Bid-Ask 绝对价差 | ≤ $0.05 | ≤ $0.10 | > $0.20 |
+| Bid-Ask 相对价差 | ≤ 3% | ≤ 8% | > 12% |
+| OI / Volume 比 | ≥ 2 | ≥ 1 | — |
+
+### 4.2 行权链结构要求
+
+- 行权价间距：股价 < $50 间距 ≤ $1；$50–$150 间距 ≤ $2.5；> $150 间距 ≤ $5
+- 行权价覆盖范围：当前股价 ± 20% 区间内无断层
+- 到期日：至少同时存在 Weekly（短期）+ 3 个 Monthly + LEAPS（长期备用）
+- Wheel 首选**第三个周五月度到期**，DTE 30–45 天为 Theta 最优区间
+
+---
+
+## 5. 第四步：IV 数据源透明化与策略适配
+
+### 5.1 IV 数据源铁律
+
+**NRA 账户用户必须明确 IV 数据来源，不同数据源数值差异可达 20%+：**
+
+| 数据源 | 可信度 | 适用场景 |
+|---|---|---|
+| CBOE 原始 IV（付费）| ★★★★★ | 最终决策 |
+| 券商 TOS/IBKR 计算 IV | ★★★★ | 日常决策 |
+| MarketChameleon / Barchart | ★★★★ | 辅助验证 |
+| HV-based Proxy（自算）| ★★ | 仅作兜底，不作决策 |
+| Yahoo Finance IV | ★★ | 仅看趋势，不看绝对值 |
+
+**原则**：同一标的的 IVR 必须来自**同一数据源的同一时间窗口**（推荐 52 周），跨源比较无效。
+
+### 5.2 策略-IVR 适配矩阵（Claude + DeepSeek 合成）
+
+| 策略 | IVR 理想区间 | IV vs HV | OTM Delta | DTE | 适用市场状态 |
+|---|---|---|---|---|---|
+| Cash-Secured Put（Wheel 入口）| 35 – 70 | IV > HV × 1.1 | 0.20 – 0.30 | 30 – 45 | VIX 15–28 |
+| Covered Call（持股后）| 25 – 60 | IV > HV | 0.15 – 0.25 | 21 – 45 | 任意非暴跌 |
+| Naked Put（激进）| 45 – 80 | IV > HV × 1.2 | 0.10 – 0.20 | 21 – 35 | 回调后反弹初期 |
+| Put Credit Spread | 30 – 85 | — | 短腿 0.25–0.35 | 30 – 45 | IVR 过高但仍想做卖方 |
+| **完全回避**（Naked Put 禁区）| IVR > 85 或 < 20 | — | — | — | 极端恐慌 / 极端平静 |
+
+### 5.3 年化收益率硬门槛
+
+`年化收益率 = (Premium ÷ Strike) × (365 ÷ DTE) × 100%`
+
+| 标的评级 | 年化下限 | 说明 |
+|---|---|---|
+| S 级（A+ 核心）| ≥ 18% | 蓝筹+指数，安全性换收益率 |
+| A 级 | ≥ 22% | 主流成长股 |
+| B 级 | ≥ 28% | 高波动个股，需更高补偿 |
+| 不达线 | 跳过 | 去下一档 Strike 或换标的 |
+
+---
+
+## 6. 第五步：仓位与相关性管理
+
+### 6.1 单标的仓位上限
+
+| 标的类型 | 保证金占用上限 | 最大合约数 |
+|---|---|---|
+| S 级核心（AAPL/MSFT/QQQ/SPX 等）| 账户权益 10% | 按资金换算 |
+| A 级主流 | 账户权益 5% | — |
+| B 级高波动 | 账户权益 2% | — |
+| 单笔最大保证金 | 不超过账户权益 8% | — |
+
+### 6.2 相关性总敞口约束
+
+| 因子 | 总保证金占用上限 |
+|---|---|
+| 大盘 Beta（SPX + QQQ + 高 Beta 科技股）| ≤ 35% |
+| 科技板块（AAPL/META/NVDA/TSM/ASML 等）| ≤ 30% |
+| 支付/金融（MA/V/HOOD）| ≤ 15% |
+| 加密相关（COIN/MSTR/IBIT/CRCL）| ≤ 10% |
+| 避险资产（GLD/XLU/EWJ）| ≤ 20% |
+| 单一 Delta 总敞口 | 总 Delta ÷ 账户权益 ≤ 0.3 |
+
+**实操检验**：若 AAPL + NVDA + QQQ + META 同时持有卖 Put，这本质上是在大盘科技 beta 上叠加下注，必须合并计算而非分别看单标的。
+
+---
+
+## 7. 第六步：NRA 账户专属约束（核心新增）
+
+### 7.1 税务结构硬约束
+
+| 项目 | NRA 处理 | 对策略的影响 |
+|---|---|---|
+| W-8BEN 有效期 | 3 年，到期需续签 | 到期前 30 天检查，否则触发 30% 预扣 |
+| 期权 Premium（卖方）| **非 FDAP、不预扣**（来源地为居住国）| ✅ Wheel 收入税务友好 |
+| 美股股息 | 30% FDAP 预扣（SG 无税收协定优惠）| ❌ 被 Call 指派前遇除息日会吃 30% 税 |
+| 资本利得 | NRA 免美国资本利得税 | ✅ 被 Put 指派后卖股免税 |
+| **美国遗产税**（Estate Tax）| NRA 免税额仅 **$60,000**（美国境内资产）| ⚠️ **最大隐性风险** |
+
+### 7.2 NRA 策略调整
+
+**关于股息陷阱**：
+- Covered Call 持股期间遇除息日，收到的股息被预扣 30%（SG-US 无协定减免）
+- **对策**：Covered Call 优先选择低股息率标的（如科技股），避免高股息股（XLU、MO、T 等）长期持股
+- **早期指派风险**：ITM Call 在除息日前夜 99% 会被指派（Call 买方为了拿股息），卖 CC 必须在除息日前 2 天 Roll 或接受指派
+
+**关于遗产税 $60K 上限**：
+- 美国境内资产（美股、美股期权、美国券商账户）超 $60K 部分触发 18%–40% 遗产税
+- **缓解方案**：
+  1. 使用非美国券商（IBKR Singapore、Saxo SG 等新加坡实体账户，但 W-8BEN 仍适用）
+  2. 通过香港保险或新加坡信托间接持有（结构复杂，仅建议资产 > $500K 考虑）
+  3. 家族公司或 LLC 持有（需评估 CFC 穿透）
+- **操作层面**：单账户持仓控制在 $60K 以下可完全规避，但对积极 Wheel 交易者不现实
+
+**关于指派偏好**：
+- 被 Put 指派后持股 → 无资本利得税 ✅
+- 被 Call 指派后卖股 → 无资本利得税 ✅
+- NRA 账户的 Wheel 策略在税务结构上优于美国本土账户
+
+### 7.3 券商层面的 NRA 兼容性检查
+
+| 券商 | NRA 支持度 | 期权权限 |
+|---|---|---|
+| IBKR（推荐）| ★★★★★ | 全部策略 |
+| Tastytrade | ★★★★ | 全部，申请略繁 |
+| Schwab International | ★★★ | 受限 |
+| Fidelity International | ★★ | 不支持裸卖 |
+
+---
+
+## 8. 第七步：最终评分与分级（Claude + DeepSeek 合成）
+
+### 8.1 打分表（总分 100 + 加分项上限 20）
+
+| 维度 | 权重 | 满分标准 |
+|---|---|---|
+| **正股流动性**（15）| 15 | Avg Vol ≥ 1,000 万股 + Market Cap ≥ 500 亿 |
+| **期权流动性**（25）| 25 | 全链日均 ≥ 50,000 张 + Bid-Ask ≤ $0.05 + OI ≥ 5,000 |
+| **IV 质量**（20）| 20 | IVR 40–65 + IV > HV × 1.1 |
+| **基本面安全**（15）| 15 | SPX 500 成分 + 连续 3 年盈利 + D/E < 1 |
+| **Wheel 适配**（15）| 15 | 股价 $30–$200 + 接货意愿强 + 低股息率 |
+| **技术面**（10）| 10 | 200 日均线上方 + RSI 40–60 + 无缺口 |
+| **加分项**（+20 上限）| 上限 +20 | 见下表 |
+| **黑名单触发**| 总分归零 | 一票否决 |
+
+### 8.2 加分项（可叠加，合计 ≤ 20）
+
+- 连续 Most Active Top 20：+3
+- 历史 Wheel 成功率 > 70%：+5
+- 有 Weekly 期权链：+3
+- Bid-Ask 低于同类平均 50%：+4
+- 标的同时存在于客户组合池（已有持仓熟悉度）：+3
+- 近期 IVR 从高位回落过程中（Vega 顺风）：+3
+- 属于防御性板块（XLU/XLP，但需配合低股息过滤）：+2
+
+### 8.3 分级与行动
+
+| 等级 | 分数 | 行动 | 单标的上限 |
+|---|---|---|---|
+| **S+**（黄金）| ≥ 90 | 核心重仓 Wheel 池 | 10% |
+| **S**（优质）| 80 – 89 | 常规 Wheel / CSP | 7% |
+| **A**（合格）| 65 – 79 | 小仓位 CSP，Roll 需保守 | 5% |
+| **B**（边缘）| 50 – 64 | 仅 Credit Spread，不裸卖 | 2% |
+| **C/X**（排除）| < 50 或黑名单 | 观察池或永久剔除 | 0 |
+
+---
+
+## 9. 第八步：Roll 机制与被指派后管理
+
+### 9.1 Roll 的三条铁律
+
+**开仓时即规划 Roll 路径。触发 Roll 的条件：短腿 Delta > 0.45 或 标的跌破行权价 + 2%。**
+
+1. **不扩仓**：Roll 后合约数量不增加（除非 Roll-Down 同时 Roll-Out 可收 Credit）
+2. **Roll-Out 不超过 45 天**：时间价值衰减最快的区间是最后 30 天，过度延期损失 Theta
+3. **必须保持净 Credit**：若 Roll 需要净付出 Debit，宁可接受指派
+
+### 9.2 被指派后的三选择路径
+
+```
+被 Put 指派 → 持有 100 股正股 × N
+    ├── 路径 1：立即卖 OTM Covered Call（标准 Wheel）
+    │   条件：IVR ≥ 25，选 Delta 0.15–0.25，DTE 30–45
+    │
+    ├── 路径 2：卖深度 OTM CC + 买保护 Put（Collar，黑天鹅保险）
+    │   条件：VIX 快速上升时使用
+    │
+    └── 路径 3：直接卖出（放弃 Wheel 循环）
+        条件：基本面已恶化、心灵拷问答案变"否"
+```
+
+### 9.3 Covered Call 行权价选择
+
+| 持股成本位置 | CC 行权价选择 |
+|---|---|
+| 浮盈 > 5% | 选 Delta 0.20–0.25 OTM |
+| 浮亏 0% – 5% | 选 Delta 0.15–0.20 OTM，行权价 ≥ 持股成本 |
+| 浮亏 > 5% | **绝不在持股成本以下卖 CC**（锁亏），选远月 OTM |
+
+### 9.4 止损纪律
+
+- 单笔期权亏损 ≥ 2× 收到权利金 → 强制 Roll 或止损
+- 单标的累计亏损 > 账户权益 3% → 该标的暂停 6 个月
+- 全账户单日回撤 > 5% → 所有新开仓暂停 24 小时
+
+---
+
+## 10. 第九步：交易成本 EV 模型
+
+### 10.1 完整 EV 公式
+
+```
+真实权利金 = 名义权利金
+           − 开仓滑点（(Ask−Bid)/2 × 100）
+           − 开仓佣金（IBKR 典型 $0.65/合约）
+           − 平仓滑点 × 期望平仓比例
+           − 平仓佣金
+           − 潜在指派费（$5–$15/次 × 指派概率）
+           − 融券利息（若被 CC 指派后做空情形，一般不发生）
+
+年化真实收益率 = (真实权利金 ÷ Strike) × (365 ÷ DTE)
+
+去留判据：年化真实收益率 ≥ 目标下限（S 级 15% / A 级 18% / B 级 22%）
+```
+
+### 10.2 小合约标的（股价 < $30）成本警戒
+
+股价 $20 的标的卖 Put @ $18 收 $0.50 权利金：
+- 名义收益率：$0.50 / $18 = 2.78%
+- 滑点吃掉：$0.05（假设 Bid-Ask $0.10）
+- 佣金吃掉：$0.65
+- 真实收益：$50 − $5 − $0.65 = $44.35
+- 成本侵蚀：11.3%
+
+**结论**：股价 < $30 的标的，Bid-Ask 必须 ≤ $0.05，否则跳过。
+
+---
+
+## 11. 每日执行 SOP（15 分钟完整流程）
+
+```
+09:00 SGT (ET 21:00，盘前 30 分钟)
+├── [1 分钟] 宏观总闸门检查：VIX 数值 + 当日日历（FOMC/CPI/NFP/地缘）
+│           → 任一触发 → 全面暂停，等待恢复
+│
+├── [2 分钟] Yahoo Most Active 抓前 100，对齐 20 只核心 Watchlist
+│           → 保守版门槛过滤 → 剩 30–40 只
+│
+├── [3 分钟] 黑名单扫射：财报 14 天内、杠杆 ETF、MEME、公司事件
+│           → 剩 15–20 只
+│
+├── [3 分钟] 期权链流动性验证：近月 ATM 的 OI + Bid-Ask
+│           → 剩 8–12 只
+│
+├── [2 分钟] IVR + 策略匹配：S 级 IVR 35–70 为主战场
+│           → 剩 5–8 只
+│
+├── [2 分钟] 评分 + 相关性检查：已持仓科技/大盘 beta 是否超限
+│           → A/S 级 3–5 只入当日可交易池
+│
+├── [1 分钟] 年化真实收益率验算：≥ 目标下限才进场
+│
+└── [1 分钟] 心灵拷问 + NRA 税务检查：
+           • 愿意接货 6 个月？
+           • W-8BEN 在有效期内？
+           • 总美国境内资产 vs $60K 遗产税线？
+           → 全部 Yes → 开仓
+
+每周复盘（周五收盘后 30 分钟）
+├── 持仓 Delta / Vega 总敞口
+├── Roll 候选识别（Delta > 0.40 的短腿）
+├── 黑名单更新
+└── 评分参数校准
+```
+
+---
+
+## 12. 方法论与 10 份原版对比的增量价值
+
+| 10 份原版集体缺失 | 本方法论补充 |
+|---|---|
+| VIX 总闸门无 | §1 宏观总闸门 |
+| FOMC/CPI/NFP 黑窗无 | §1 日历黑窗矩阵 |
+| IV 数据源不透明 | §5.1 数据源分级 |
+| 年化收益率门槛不统一 | §5.3 分级年化下限 |
+| 相关性风险盲区 | §6.2 因子总敞口约束 |
+| NRA 税务零覆盖 | §7 W-8BEN / 股息预扣 / 遗产税完整模块 |
+| Roll 与指派后空白 | §9 三条铁律 + 三选择路径 |
+| 交易成本未进 EV | §10 完整 EV 公式 + 小合约警戒 |
+
+---
+
+**核心设计哲学**：本方法论以 **"概率优势 × 流动性护城河 × 税务结构优化"** 三者乘积最大化为目标。NRA 身份不是劣势——免资本利得税 + 期权权利金非 FDAP 是结构性红利，代价是遗产税 $60K 上限与股息预扣 30%，这两条刚性约束决定了策略偏好（低股息 + 单账户规模控制）。
+
+</script>
+
+<script>
+  const rawMarkdown = document.getElementById("v1-md").textContent.trim();
+  const html = marked.parse(rawMarkdown, { breaks: true });
+  document.getElementById("content").innerHTML = html;
+
+  const content = document.getElementById("content");
+  const toc = document.getElementById("toc");
+  const h2s = content.querySelectorAll("h2");
+
+  const navNameMap = {
+    "0. 方法论定位与三条铁律（价值观锚点）": "00 · 方法定位与铁律",
+    "1. 宏观总闸门（Pre-screen Gate·系统性黑窗）": "01 · 宏观总闸门",
+    "2. 第一步：Yahoo Most Active 正股初选": "02 · 正股初选",
+    "3. 第二步：风险排除黑名单（DeepSeek + NRA 增强）": "03 · 黑名单筛选",
+    "4. 第三步：期权专项流动性筛选": "04 · 期权流动性",
+    "5. 第四步：IV 数据源透明化与策略适配": "05 · IV 与策略适配",
+    "6. 第五步：仓位与相关性管理": "06 · 仓位与相关性",
+    "7. 第六步：NRA 账户专属约束（核心新增）": "07 · NRA 专属约束",
+    "8. 第七步：最终评分与分级（Claude + DeepSeek 合成）": "08 · 最终评分分级",
+    "9. 第八步：Roll 机制与被指派后管理": "09 · Roll 与指派管理",
+    "10. 第九步：交易成本 EV 模型": "10 · 交易成本 EV",
+    "11. 每日执行 SOP（15 分钟完整流程）": "11 · 每日执行 SOP",
+    "12. 方法论与 10 份原版对比的增量价值": "12 · 增量价值对比"
+  };
+
+  const navGroups = [
+    {
+      label: "总览",
+      keys: [
+        "0. 方法论定位与三条铁律（价值观锚点）",
+        "1. 宏观总闸门（Pre-screen Gate·系统性黑窗）"
+      ]
+    },
+    {
+      label: "筛选流程",
+      keys: [
+        "2. 第一步：Yahoo Most Active 正股初选",
+        "3. 第二步：风险排除黑名单（DeepSeek + NRA 增强）",
+        "4. 第三步：期权专项流动性筛选",
+        "5. 第四步：IV 数据源透明化与策略适配",
+        "8. 第七步：最终评分与分级（Claude + DeepSeek 合成）"
+      ]
+    },
+    {
+      label: "风控与执行",
+      keys: [
+        "6. 第五步：仓位与相关性管理",
+        "7. 第六步：NRA 账户专属约束（核心新增）",
+        "9. 第八步：Roll 机制与被指派后管理",
+        "10. 第九步：交易成本 EV 模型",
+        "11. 每日执行 SOP（15 分钟完整流程）",
+        "12. 方法论与 10 份原版对比的增量价值"
+      ]
+    }
+  ];
+
+  const h2ByText = new Map();
+  h2s.forEach((h2, i) => {
+    if (!h2.id) h2.id = "s" + (i + 1);
+    h2ByText.set(h2.textContent.trim(), h2);
+  });
+
+  navGroups.forEach((group) => {
+    const sectionLabel = document.createElement("div");
+    sectionLabel.className = "nav-section-label";
+    sectionLabel.textContent = group.label;
+    toc.appendChild(sectionLabel);
+
+    group.keys.forEach((key) => {
+      const target = h2ByText.get(key);
+      if (!target) return;
+      const a = document.createElement("a");
+      a.href = "#" + target.id;
+      a.className = "nav-item";
+      a.textContent = navNameMap[key] || key;
+      toc.appendChild(a);
+    });
+  });
+
+  const sections = content.querySelectorAll("h2");
+  const navItems = document.querySelectorAll(".nav-item");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        navItems.forEach((item) => {
+          item.style.borderLeftColor = "transparent";
+          item.style.background = "";
+          item.style.color = "";
+        });
+        const active = document.querySelector('.nav-item[href="#' + entry.target.id + '"]');
+        if (active) {
+          active.style.borderLeftColor = "var(--gold)";
+          active.style.background = "var(--gold-dim)";
+          active.style.color = "var(--gold-light)";
+        }
+      }
+    });
+  }, { rootMargin: "-20% 0px -70% 0px", threshold: 0 });
+  sections.forEach((s) => observer.observe(s));
+</script>
+</body>
+</html>
