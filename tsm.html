@@ -1,34 +1,1773 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>权限提示</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f5f7fa;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-        .tip {
-            font-size: 22px;
-            color: #666;
-            padding: 20px 40px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSM 期权增强策略 — 机构级操作手册 V3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+  .term:hover::after { opacity: 1; }
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+  .nav-item.sub {
+    padding-left: 38px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .hero::before {
+    content: 'TSM';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--gold-light); }
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .hero-meta-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .hero-meta-item .value {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .hero-disclaimer {
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--navy-border);
+    padding-top: 16px;
+    line-height: 1.7;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTIONS
+  ═══════════════════════════════════════════ */
+  .section { margin-bottom: 56px; scroll-margin-top: 40px; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .subsection { margin-bottom: 32px; }
+  .subsection-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    margin-top: 24px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+  .callout.gold {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+  }
+  .callout strong { font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+  .td-ok { color: var(--green) !important; font-weight: 500; }
+  .td-warn { color: var(--yellow) !important; font-weight: 500; }
+  .td-bad { color: var(--red) !important; font-weight: 500; }
+  .td-gold { color: var(--gold-light) !important; font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     BADGES
+  ═══════════════════════════════════════════ */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     PARAM CARDS
+  ═══════════════════════════════════════════ */
+  .param-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .param-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .param-card .pc-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .param-card .pc-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--gold-light);
+    margin-bottom: 4px;
+  }
+  .param-card .pc-note { font-size: 12px; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     STAT CARDS
+  ═══════════════════════════════════════════ */
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+  .stat-card .stat-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════
+     FLOW STEPS
+  ═══════════════════════════════════════════ */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 20px 0;
+  }
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 21px;
+    top: 32px;
+    bottom: 32px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+  .flow-step { display: flex; gap: 20px; padding: 10px 0; position: relative; }
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--navy-card);
+    border: 2px solid var(--navy-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+  }
+  .flow-step-body { flex: 1; padding-top: 8px; }
+  .flow-step-body strong { display: block; color: var(--text-primary); font-size: 14px; margin-bottom: 4px; }
+  .flow-step-body span { font-size: 13px; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+  .checklist li::before {
+    content: '☐';
+    font-size: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .checklist li.required { border-left: 2px solid var(--gold); }
+  .checklist li.required::before { color: var(--gold); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER / RISK TIER
+  ═══════════════════════════════════════════ */
+  .risk-tier { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .circuit-level {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+  .circuit-level .cl-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .circuit-level .cl-trigger { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .circuit-level .cl-action { font-size: 13px; color: var(--text-secondary); }
+  .circuit-level.l1 { background: var(--yellow-dim); border-color: rgba(212,184,74,0.3); }
+  .circuit-level.l1 .cl-num { color: var(--yellow); }
+  .circuit-level.l1 .cl-trigger { color: #E8D090; }
+  .circuit-level.l2 { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .circuit-level.l2 .cl-num { color: var(--orange); }
+  .circuit-level.l2 .cl-trigger { color: #F0C0A0; }
+  .circuit-level.l3 { background: var(--red-dim); border-color: rgba(224,92,92,0.3); }
+  .circuit-level.l3 .cl-num { color: var(--red); }
+  .circuit-level.l3 .cl-trigger { color: #F0A0A0; }
+
+  /* geo warning 3-col */
+  .geo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .geo-card { border-radius: var(--radius); padding: 18px 20px; border: 1px solid; }
+  .geo-card .geo-level { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+  .geo-card .geo-trigger { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .geo-card .geo-action { font-size: 13px; }
+  .geo-yellow { background: var(--yellow-dim); border-color: rgba(212,184,74,0.3); }
+  .geo-yellow .geo-level { color: var(--yellow); }
+  .geo-yellow .geo-action { color: #E8D090; }
+  .geo-orange { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .geo-orange .geo-level { color: var(--orange); }
+  .geo-orange .geo-action { color: #F0C0A0; }
+  .geo-red { background: var(--red-dim); border-color: rgba(224,92,92,0.3); }
+  .geo-red .geo-level { color: var(--red); }
+  .geo-red .geo-action { color: #F0A0A0; }
+
+  /* ═══════════════════════════════════════════
+     DECISION TREE
+  ═══════════════════════════════════════════ */
+  .dtree {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .dtree-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    border-bottom: 1px solid rgba(36,59,85,0.5);
+  }
+  .dtree-row:last-child { border-bottom: none; }
+  .dtree-q {
+    min-width: 220px;
+    max-width: 220px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-right: 1px solid rgba(36,59,85,0.5);
+    background: rgba(255,255,255,0.01);
+  }
+  .dtree-a {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .dtree-a .go { color: var(--green); font-weight: 600; }
+  .dtree-a .stop { color: var(--red); font-weight: 600; }
+  .dtree-a .warn { color: var(--yellow); font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     SCENARIO CARDS
+  ═══════════════════════════════════════════ */
+  .scenario-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
+  .sc-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .sc-card .sc-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text-primary); }
+  .sc-card .sc-prob { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--navy-border); }
+  .sc-card .sc-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(36,59,85,0.4); font-size: 13px; }
+  .sc-card .sc-row:last-child { border-bottom: none; }
+  .sc-card .sc-row .sk { color: var(--text-muted); }
+  .sc-card .sc-row .sv { font-weight: 500; }
+  .sv-green { color: var(--green); }
+  .sv-yellow { color: var(--yellow); }
+  .sv-red { color: var(--red); }
+
+  /* ═══════════════════════════════════════════
+     REDLINES
+  ═══════════════════════════════════════════ */
+  .redlines { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+  .redline-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    background: rgba(224,92,92,0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .redline-text { font-size: 13.5px; color: #F0A0A0; line-height: 1.7; }
+  .redline-text strong { color: #FFCCCC; font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     MISC
+  ═══════════════════════════════════════════ */
+  ul.plain { list-style: none; margin: 12px 0; }
+  ul.plain li { padding: 4px 0 4px 18px; position: relative; color: var(--text-secondary); font-size: 14px; }
+  ul.plain li::before { content: '›'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+
+  .footnote { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+
+  code {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold-light);
+  }
+
+  .divider { border: none; border-top: 1px solid var(--navy-border); margin: 32px 0; }
+
+  /* Log field style for IBKR table */
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--blue);
+    background: var(--blue-dim);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-top: 32px;
+  }
+  .disclaimer .dis-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .disclaimer p { font-size: 13px; color: var(--text-muted); line-height: 1.75; margin-bottom: 10px; }
+  .disclaimer strong { color: var(--text-secondary); }
+  .sig-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--navy-border);
+    flex-wrap: wrap;
+  }
+  .sig-item .sig-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .sig-item .sig-line { width: 180px; border-bottom: 1px solid var(--navy-border); height: 24px; }
+
+  .footer-note {
+    text-align: center;
+    padding-top: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 32px 24px; }
+    .risk-tier, .geo-grid { grid-template-columns: 1fr; }
+    .scenario-grid { grid-template-columns: 1fr; }
+    .card-grid-3 { grid-template-columns: 1fr 1fr; }
+    .dtree-q { min-width: 140px; max-width: 140px; }
+  }
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 24px; }
+    .card-grid-3 { grid-template-columns: 1fr; }
+    .param-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
 <body>
-    <div class="tip">权限不足，请联系管理员。</div>
+<div class="layout">
+
+<!-- ══════════════════════════════════
+     SIDEBAR NAV
+══════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">Institutional Strategy Manual</span>
+    <div class="logo-title">台积电 TSM<br>期权增强策略</div>
+    <div class="logo-ver">V3.0 · 2026年4月 · Confidential</div>
+  </div>
+
+  <div class="nav-section-label">标的与框架</div>
+  <a class="nav-item" href="#s1">01 · TSM 标的深度分析</a>
+  <a class="nav-item sub" href="#s1">基本面 · IV结构 · 台海风险</a>
+  <a class="nav-item" href="#s2">02 · 策略框架与核心逻辑</a>
+  <a class="nav-item sub" href="#s2">三层持仓结构</a>
+
+  <div class="nav-section-label">仓位与参数</div>
+  <a class="nav-item" href="#s3">03 · 仓位结构与资金配置</a>
+  <a class="nav-item sub" href="#s3">VIX矩阵 · 分规模配置</a>
+  <a class="nav-item" href="#s4">04 · 核心参数矩阵</a>
+  <a class="nav-item sub" href="#s4">IV分层 · 财报禁区</a>
+
+  <div class="nav-section-label">执行与风控</div>
+  <a class="nav-item" href="#s5">05 · 开仓 SOP</a>
+  <a class="nav-item sub" href="#s5">Pre-Screen Gate · 执行步骤</a>
+  <a class="nav-item" href="#s6">06 · 风险管理与移仓</a>
+  <a class="nav-item sub" href="#s6">决策树 · 三级熔断</a>
+  <a class="nav-item" href="#s7">07 · 尾部对冲（强制）</a>
+  <a class="nav-item" href="#s8">08 · 极端情景预案</a>
+
+  <div class="nav-section-label">运营与合规</div>
+  <a class="nav-item" href="#s9">09 · IBKR 账户执行</a>
+  <a class="nav-item" href="#s10">10 · NRA 税务说明</a>
+  <a class="nav-item" href="#s11">11 · 收益预期分析</a>
+  <a class="nav-item" href="#s12">12 · 日常监控清单</a>
+</nav>
+
+<!-- ══════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════ -->
+<main class="main">
+
+<!-- ── HERO ── -->
+<div class="hero" id="top">
+  <div class="hero-eyebrow">Institutional Strategy Manual · Confidential · IBKR NRA</div>
+  <h1>台积电 <span>TSM</span> 期权增强策略<br>完整操作手册</h1>
+  <div class="hero-sub">RHCLOUD 执行框架 · 覆盖标的分析、仓位架构、风控体系、尾部对冲与税务优化<br>适用于 美股期权 平台的 NRA 非居民外国人账户</div>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="label">标的代码</div><div class="value">TSM (NYSE)</div></div>
+    <div class="hero-meta-item"><div class="label">策略类型</div><div class="value">CC + CSP / Put Spread</div></div>
+    <div class="hero-meta-item"><div class="label">目标客群</div><div class="value">NRA 长期持股者</div></div>
+    <div class="hero-meta-item"><div class="label">资金规模</div><div class="value">$150K – $10M</div></div>
+    <div class="hero-meta-item"><div class="label">执行平台</div><div class="value">Interactive Brokers</div></div>
+    <div class="hero-meta-item"><div class="label">文档版本</div><div class="value">V3.0 · 2026年4月</div></div>
+  </div>
+  <div class="hero-disclaimer">
+    本手册仅供已签署客户协议的授权合格投资者内部使用，不构成投资建议或收益保证。期权交易涉及重大风险，包括本金全部损失。过往表现不代表未来结果。请在充分理解所有风险后审慎决策。
+  </div>
+</div>
+
+<!-- ══ SECTION 1 ══ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div>
+      <div class="section-title">TSM 标的深度分析</div>
+      <div class="section-subtitle">基本面快照 · 波动率结构 · 台海尾部风险 · ADR联动机制</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">1.1 基本面快照（2026年 Q1 实际数据）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>数值</th><th>策略意义</th></tr></thead>
+      <tbody>
+        <tr><td>Q1 营收</td><td class="td-gold">$359 亿（超指引 +6.4%）</td><td>基本面扎实，长期底仓逻辑成立</td></tr>
+        <tr><td>毛利率</td><td class="td-gold">66.2%（行业顶尖）</td><td>盈利质量高，抗周期能力强</td></tr>
+        <tr><td>全年营收指引</td><td class="td-ok">+30%+（较此前上调）</td><td>AI 需求催化持续至 2027</td></tr>
+        <tr><td>资本支出计划</td><td>$520–560亿</td><td>先进制程扩产，护城河持续加深</td></tr>
+        <tr><td>市盈率</td><td>约 31–32 倍</td><td>考虑 50%+ 利润增速，估值合理</td></tr>
+        <tr><td>分析师目标价中位数</td><td>$437（高者看至 $600）</td><td>当前约 $370，上行空间 18%+</td></tr>
+        <tr><td>HPC（高性能计算）营收占比</td><td>61%</td><td>AI 算力为核心驱动力</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">1.2 波动率结构：双峰分布</div>
+    <p>TSM 的<span class="term" data-tip="隐含波动率（Implied Volatility）：期权市场对未来标的价格波动程度的预期，通过期权定价模型反推得出。IV越高，期权权利金越贵，对卖方越有利。">IV（隐含波动率）</span>呈现典型的"双峰"形态，决定了策略开仓时机的核心逻辑：</p>
+    <div class="param-grid">
+      <div class="param-card">
+        <div class="pc-label">平静期 IV 区间</div>
+        <div class="pc-val">25–35%</div>
+        <div class="pc-note">非财报、无地缘事件，VRP 偏正，卖方有溢价</div>
+      </div>
+      <div class="param-card">
+        <div class="pc-label">事件期 IV 峰值</div>
+        <div class="pc-val">50–65%</div>
+        <div class="pc-note">财报前后 / 台海动态，可在 24–48 小时内骤升</div>
+      </div>
+      <div class="param-card">
+        <div class="pc-label">OpenClaw IVR 门槛</div>
+        <div class="pc-val">≥ 42%</div>
+        <div class="pc-note">低于此值不推送 TSM 开仓信号</div>
+      </div>
+      <div class="param-card">
+        <div class="pc-label">最低年化目标</div>
+        <div class="pc-val">≥ 13%</div>
+        <div class="pc-note">期权权利金增厚部分，不含正股涨幅</div>
+      </div>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">⚠</span>
+      <div><strong>事件期禁卖铁律：</strong>财报前后各 10 个交易日为禁止新开仓期。台海局势升温、美国对华芯片新增出口管制时立即暂停。此日历必须提前写入操作提醒，不依赖临时判断。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">1.3 台海尾部风险：非均值回归特征</div>
+    <p>这是 TSM 区别于所有其他半导体标的的最核心特征：</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>特征</th><th>说明</th><th>策略含义</th></tr></thead>
+      <tbody>
+        <tr><td>非对称性</td><td>台海事件可导致 TSM ADR 开盘前跳空 -20% 至 -40%，且期权买卖价差瞬间暴扩至 $2+ 甚至无法成交</td><td class="td-bad">不能依靠盘中止损</td></tr>
+        <tr><td>非均值回归性</td><td>不同于一般市场恐慌（V 型反弹），台海事件引发的下跌可能持续而非快速恢复</td><td class="td-bad">禁止用"越跌越买" CSP 逻辑</td></tr>
+        <tr><td>事前可对冲性</td><td>IV 低位时远月 OTM Put 保险成本仅约 0.8–1.5%/年，是性价比最高的尾险工具</td><td class="td-ok">必须提前布置，不是"发生了再应对"</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">1.4 ADR 与 2330.TW 联动机制</div>
+    <div class="callout info">
+      <span class="callout-icon">📡</span>
+      <div><strong>ADR 折溢价监控：</strong>TSM ADR（美股）与台交所挂牌的 2330.TW 之间存在联动，但台湾市场有 ±10% 涨跌停限制。当 ADR 相对 2330.TW 出现 <strong>显著折价（>3%）</strong>时，往往是机构对地缘政治风险提前定价的早期信号，需立即提高警戒级别。</div>
+    </div>
+    <ul class="plain">
+      <li>ADR 正常溢价区间：+0.5% 至 +2%（反映美股流动性溢价）</li>
+      <li>ADR 折价 >3%：机构撤离先行信号，触发橙色预警</li>
+      <li><span class="term" data-tip="台币（TWD）兑美元汇率波动会影响TSM以台币计价的营收换算成美元后的EPS数值，进而影响ADR股价。台币升值有利于ADR持有者，贬值则不利。">台币汇率隐性风险</span>：TSM 营收以台币计价，台币贬值直接压缩 ADR 的 EPS 换算值，是 ADR 持有者的隐性风险敞口</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ SECTION 2 ══ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div>
+      <div class="section-title">策略框架与核心逻辑</div>
+      <div class="section-subtitle">五维收益来源 · 三层持仓结构 · 收益增强本质</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">2.1 策略本质（必读纠正）</div>
+    <div class="callout gold">
+      <span class="callout-icon">💡</span>
+      <div><strong>关键认知：</strong>本策略的本质是"<strong>收益增强型多头策略</strong>"，而非"稳定收息策略"。收益来源是：长期持有优质标的（Beta 收益）+ 系统性卖出 OTM 期权（Theta/IV 溢价收益）。卖出 Covered Call 意味着放弃行权价以上的全部上行收益换取权利金——两者不可同时获得，不能叠加计算。</div>
+    </div>
+    <p>策略适合的投资者：<strong>长期看好 TSM 基本面</strong>，愿意在持有期间通过期权系统性增厚收益，同时接受在主升浪中可能跑输纯持股的机会成本。</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">2.2 五维收益来源拆解</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>收益来源</th><th>驱动因素</th><th>年化贡献估算</th></tr></thead>
+      <tbody>
+        <tr><td>①</td><td><span class="term" data-tip="方向性收益：持有正股带来的资本增值，依赖标的股价上涨。这是策略最主要的收益来源，期权权利金只是增厚部分。">正股资本增值（β）</span></td><td>AI 产业周期，基本面成长</td><td>12–20%（视市场环境）</td></tr>
+        <tr><td>②</td><td><span class="term" data-tip="备兑看涨期权（Covered Call）：持有正股的同时卖出等量看涨期权，收取权利金。行权价以上的上行收益被封顶，但持仓已有正股作担保，不产生额外保证金。">CC 权利金（Θ）</span></td><td>时间价值衰减，IV 均值回归</td><td>4–10%（受 IV 高低影响）</td></tr>
+        <tr><td>③</td><td><span class="term" data-tip="现金担保看跌期权（Cash-Secured Put）：卖出看跌期权同时预留等额现金。若股票不跌至行权价，权利金归己；若跌至行权价则以行权价接货。适用于股票被行权卖出后的等待期。">CSP / Put Spread 权利金</span></td><td>过渡期等待接回底仓时的收益</td><td>3–8%（视持续时长）</td></tr>
+        <tr><td>④</td><td>股息收入</td><td>TSM 季度分红（NRA预扣30%）</td><td>约 0.5%（税后，可忽略）</td></tr>
+        <tr><td>⑤</td><td>IBKR 股票出借</td><td><span class="term" data-tip="IBKR股票收益提升计划（SYEP）：将持有的正股出借给需要做空的机构，收取出借利息。对NRA客户该利息通常免税，且股票被提前召回时有保护机制。">SYEP 出借利息</span>（NRA 免税）</td><td>0.5–2%（视市场借贷需求）</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="footnote">注：①与②在同一周期内存在对冲关系——CC 被行权后股票已卖出，无法同时享受正股涨幅。收益计算不可将两者简单叠加。</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">2.3 三层持仓结构</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>层级</th><th>工具</th><th>定位</th><th>资金占比</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-gold">第一层</span> 核心底仓</td><td>TSM 正股（ADR）</td><td>长期多头，享受产业成长与资本增值。这是策略的基础，永不全仓清出。</td><td>55–80%</td></tr>
+        <tr><td><span class="badge badge-blue">第二层</span> 期权增强</td><td>卖出 OTM <span class="term" data-tip="价外（Out of the Money）：对于看涨期权，行权价高于当前股价；对于看跌期权，行权价低于当前股价。OTM期权不具有内在价值，全部价值来自时间价值。">CC</span> + CSP / <span class="term" data-tip="牛市看跌价差（Bull Put Spread）：同时卖出较高行权价Put和买入较低行权价Put，净收权利金。最大亏损被限定在两个行权价之差减去净权利金，适合替代裸卖CSP以控制台海等极端风险。">Bull Put Spread</span></td><td>将持仓转化为"类收息资产"，系统性收割时间价值与波动率溢价。</td><td>与底仓联动</td></tr>
+        <tr><td><span class="badge badge-red">第三层</span> 尾部保险（必选）</td><td>远月 OTM Put（<span class="term" data-tip="Delta：衡量期权价格随标的价格变动的敏感度。Delta=0.10意味着标的价格每涨$1，该期权价格约涨$0.10。深度价外Put的Delta很小（0.08–0.12），仅在极端下跌时才大幅增值，是低成本尾险工具。">Delta</span> 0.08–0.12）</td><td>专为台海/黑天鹅事件定制。<strong>非可选项，所有账户规模均需配置。</strong></td><td>约 1–1.5%/年预算</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 3 ══ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div>
+      <div class="section-title">仓位结构与资金配置</div>
+      <div class="section-subtitle">分规模配置表 · VIX 仓位矩阵</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">3.1 分规模仓位配置表</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>小账户 $150K–$500K</th><th>中账户 $500K–$300万</th><th>大账户 $300万–$1000万</th></tr></thead>
+      <tbody>
+        <tr><td>保证金模式</td><td><span class="term" data-tip="Reg T（常规保证金）：美国证监会规定的标准保证金模式。卖出CSP需预留100%现金担保，资金利用率相对较低。">Reg T</span></td><td>Reg T 或申请 <span class="term" data-tip="Portfolio Margin（组合保证金）：基于风险价值模型计算的动态保证金，通常仅需Reg T的30–50%，大幅提升资金效率。账户净值需≥$100K且需通过IBKR压力测试。">PM</span></td><td>Portfolio Margin（必须）</td></tr>
+        <tr><td>正股底仓占比</td><td class="td-gold">75–80%</td><td class="td-gold">65–75%</td><td class="td-gold">55–65%</td></tr>
+        <tr><td>现金/等价物</td><td>20–25%</td><td>25–35%</td><td>35–45%（流动性缓冲）</td></tr>
+        <tr><td>CC 覆盖比例</td><td>80–100% 持股</td><td>60–75% 持股</td><td>45–60% 持股（保留趋势敞口）</td></tr>
+        <tr><td>CSP 结构</td><td>1–2 张裸 CSP（小额）</td><td>裸 CSP + 可用 Bull Put Spread</td><td>优先 Bull Put Spread（强制）</td></tr>
+        <tr><td>尾部保险 Put</td><td>Delta 0.08–0.10，90天，每季续</td><td>Delta 0.08–0.10，90天，每季续</td><td>Delta 0.08–0.12，分批布局</td></tr>
+        <tr><td>单策略仓位上限</td><td>账户净值 5%</td><td>账户净值 5%</td><td>账户净值 5%（无例外）</td></tr>
+        <tr><td>单笔最大亏损上限</td><td>账户净值 1%</td><td>账户净值 1%</td><td>账户净值 1%（无例外）</td></tr>
+        <tr><td>执行方式</td><td>手动 TWS 限价单</td><td>TWS Combo 单 + 条件单</td><td>Algo（VWAP/TWAP）+ Iceberg</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">3.2 VIX 仓位矩阵（动态调整）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th><span class="term" data-tip="VIX（CBOE波动率指数）：衡量市场对未来30天S&P500指数波动程度预期的指标，被称为'恐惧指数'。VIX越高，市场恐慌情绪越强，期权权利金越高。">VIX 区间</span></th><th>最大期权部署比例</th><th>TSM 特别规则</th></tr></thead>
+      <tbody>
+        <tr><td>&lt; 15</td><td class="td-warn">40%</td><td>IV 太低，期权权利金不足，仅维持现有仓位，禁止新开</td></tr>
+        <tr><td>15–20</td><td class="td-warn">60%</td><td>IV 门槛提升至 IV Rank ≥ 50%，否则不开仓</td></tr>
+        <tr><td>20–25</td><td class="td-gold">75%</td><td>标准运行，IV Rank ≥ 42% 即可</td></tr>
+        <tr><td>25–35</td><td class="td-gold">80%</td><td>黄金窗口，权利金丰厚，积极操作</td></tr>
+        <tr><td>&gt; 35</td><td class="td-bad">停止新开</td><td>保留现有仓位，等待 VIX 回落，只管理不新开</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 4 ══ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div>
+      <div class="section-title">核心参数矩阵</div>
+      <div class="section-subtitle">开仓参数 · IV 分层框架 · 财报禁区日历</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">4.1 期权开仓参数标准</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>合约类型</th><th><span class="term" data-tip="Delta：衡量期权价格对标的价格变动的敏感度。卖出Delta=0.20的Call，意味着标的每涨$1，该Call价值约涨$0.20。Delta越小（越价外），被行权概率越低但权利金也越少。">Delta 目标</span></th><th><span class="term" data-tip="DTE（Days to Expiration）：期权距到期日的剩余天数。30–45天是Theta时间价值衰减最快的区间，是卖方策略的最优窗口。">DTE</span></th><th><span class="term" data-tip="IV Rank（隐含波动率排名）：当前IV在过去52周IV范围内的百分比位置。IV Rank=60%意味着当前IV高于过去一年中60%的时间，是卖方有利的环境。">IV Rank</span></th><th>行权价参考</th><th>禁止情形</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gold">Covered Call</span></td>
+          <td class="td-gold">0.18–0.25</td>
+          <td>30–45 天</td>
+          <td>≥ 42%（严格）</td>
+          <td>阻力位/前高上方 5–10%</td>
+          <td>财报前10天；IV Rank&lt;30%；跳空突破初期</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">CSP（小账户）</span></td>
+          <td class="td-gold">0.15–0.22</td>
+          <td>30–45 天</td>
+          <td>≥ 42%</td>
+          <td>50/60 日均线下方 3–6%</td>
+          <td>财报前10天；下跌趋势中；台海事件期</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Bull Put Spread（中大账户）</span></td>
+          <td>卖腿 0.18–0.25<br>买腿 0.08–0.12</td>
+          <td>30–45 天</td>
+          <td>≥ 42%</td>
+          <td>卖腿：支撑下方 5–8%<br>买腿：再低 $20–30</td>
+          <td>同 CSP；价差宽度不低于 $20</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">尾部保险 Put（必配）</span></td>
+          <td>0.08–0.12</td>
+          <td>60–90 天</td>
+          <td><strong>&lt; 35%</strong>（低位建仓）</td>
+          <td>当前价格下方 15–20%</td>
+          <td>无禁止，越早布局越好</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">4.2 IV 分层开仓量化框架</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>IV Rank 区间</th><th>市场含义</th><th>CC 操作指令</th><th>CSP 操作指令</th></tr></thead>
+      <tbody>
+        <tr><td>&lt; 25%</td><td>IV 极低，权利金廉价</td><td class="td-bad">禁止新开仓</td><td class="td-bad">禁止新开仓</td></tr>
+        <tr><td>25–42%</td><td>IV 偏低，谨慎操作</td><td class="td-warn">减量至常规 50%，Delta 收紧至 0.18</td><td class="td-warn">减量至常规 50%</td></tr>
+        <tr><td>42–60%</td><td>IV 正常，黄金窗口</td><td class="td-ok">正常仓位，Delta 0.20–0.25</td><td class="td-ok">正常仓位，Delta 0.18–0.22</td></tr>
+        <tr><td>&gt; 60%</td><td>IV 偏高，重点机会</td><td class="td-ok">可加量，Delta 0.22–0.28</td><td class="td-ok">重点加量，Delta 0.20–0.25</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">4.3 财报禁区日历（2026年）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>财季</th><th>预计公布时间</th><th>禁止新开仓窗口</th><th>重点关注</th></tr></thead>
+      <tbody>
+        <tr><td>Q4 / 年报</td><td>1月中旬（第3周）</td><td class="td-bad">财报前 10 日 + 财报后 3 日 = 13天禁区</td><td>全年指引，最重要财报</td></tr>
+        <tr><td>Q1</td><td>4月中旬（约4/17）</td><td class="td-bad">财报前 10 日 + 财报后 3 日 = 13天禁区</td><td>AI 需求更新，封装产能指引</td></tr>
+        <tr><td>Q2</td><td>7月中旬（第3周）</td><td class="td-bad">财报前 10 日 + 财报后 3 日 = 13天禁区</td><td>台币汇率影响 EPS 关键季度</td></tr>
+        <tr><td>Q3</td><td>10月中旬（第3周）</td><td class="td-bad">财报前 10 日 + 财报后 3 日 = 13天禁区</td><td>半导体旺季，CoWoS 需求</td></tr>
+        <tr><td colspan="2" class="td-gold">全年可操作窗口</td><td>剔除 4×13 天后约 200 交易日</td><td>每年约 4–6 轮 CC+CSP 周期</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout warning">
+      <span class="callout-icon">📡</span>
+      <div><strong>临时禁区：</strong>当美国宣布新一轮对华芯片出口管制（通常在非财报期突然发布），立即暂停所有新开仓，等待市场消化（通常 3–5 个交易日）。建议在手机设置 "Taiwan Strait / TSMC restriction / chip ban" 等关键词新闻推送作为实时预警。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 5 ══ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div>
+      <div class="section-title">开仓 SOP：Pre-Screen Gate</div>
+      <div class="section-subtitle">五项强制核查 · CC 执行步骤 · Bull Put Spread 操作</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">5.1 五项开仓前强制核查（全部通过方可执行）</div>
+    <div class="callout danger">
+      <span class="callout-icon">🔒</span>
+      <div><strong>铁律：</strong>以下 5 项为开仓前的强制门控（Gate），任一未达标则等待下一个窗口，不得因"差一点就达标"而强行开仓。</div>
+    </div>
+    <ul class="checklist">
+      <li class="required"><strong>Gate 1 · 事件日历：</strong>距下次财报 &gt; 10 个交易日；无已知地缘政治高危事件；VIX ≤ 35</li>
+      <li class="required"><strong>Gate 2 · IV Rank 确认：</strong>TSM IV Rank ≥ 42%（在 IBKR TWS Option Chain 查看，以实时数据为准）</li>
+      <li class="required"><strong>Gate 3 · 价格位置：</strong>CC：股价处于横盘或冲高回落；CSP：回调至 50/60 日均线附近技术支撑区</li>
+      <li class="required"><strong>Gate 4 · 尾部保险有效：</strong>第三层保险 Put 仓位有效（DTE &gt; 20 天）。若临近到期，先续保 Put，再执行 CC/CSP</li>
+      <li class="required"><strong>Gate 5 · 保证金确认：</strong>Reg T：CSP 现金已预留，保证金使用率 &lt; 55%；PM：整体占用 &lt; 60%</li>
+    </ul>
+    <div class="callout success">
+      <span class="callout-icon">✓</span>
+      <div><strong>盈亏平衡验证（开仓前额外检验）：</strong>单笔预期权利金必须 &gt; 3 × (IBKR 佣金 + 预估滑点)，否则该笔交易的风险回报比不值得执行。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">5.2 Covered Call 开仓步骤（IBKR TWS）</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-body">
+          <strong>打开 Option Chain</strong>
+          <span>TWS → 搜索 TSM → 展开 Option Chain，选择目标到期日（当前日期 + 30–45 天，优先选月度合约）</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-body">
+          <strong>确认行权价</strong>
+          <span>在 Call 侧找到 Delta ≈ 0.20 的行权价（通常在当前价上方约 5–10%）。确认位于近期技术阻力位或前高上方，避免在突破初期卖出</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-body">
+          <strong>验证流动性 · 挂限价单</strong>
+          <span>验证买卖价差 &lt; $0.30。报价取<span class="term" data-tip="中间价（Mid Price）：期权买一价（Bid）和卖一价（Ask）的平均值。用限价单挂中间价，通常能以合理价格成交，避免在价差较大时因市价单而损失。">中间价（Mid Price）</span>挂<strong>限价单（Limit Order）</strong>，禁止使用市价单</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-body">
+          <strong>确认合约数量</strong>
+          <span>合约数量 = 持有 TSM 股数 ÷ 100（向下取整）。确认覆盖比例在规定范围内</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <div class="flow-step-body">
+          <strong>下单 · SmartRouting</strong>
+          <span>Order Type 选 Limit，勾选 SmartRouting（跨交易所最优成交）。大资金（&gt; 10 张）分 2–3 批次、不同时段执行</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">6</div>
+        <div class="flow-step-body">
+          <strong>设置条件预警</strong>
+          <span>成交后，在 TWS 设置条件预警：TSM 股价触及行权价 97% 时发送警报，启动 Roll 评估流程</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">7</div>
+        <div class="flow-step-body">
+          <strong>更新持仓记录表</strong>
+          <span>同步记录：开仓日期、行权价、权利金收入、到期日、Delta</span>
+        </div>
+      </div>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">⚠</span>
+      <div><strong>禁止使用市价单：</strong>尤其在开盘 30 分钟内和收盘 30 分钟前，此时买卖价差最大，市价单滑点损耗显著。大资金（&gt;10 张）使用 IBKR <span class="term" data-tip="TWAP（时间加权平均价格算法）：将大额订单分散在指定时间段内执行，以减少市场冲击和滑点，是机构执行大额期权订单的标准方法。">TWAP 算法单</span>，设置 15–30 分钟执行窗口。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">5.3 Bull Put Spread 开仓步骤（中大账户优先）</div>
+    <div class="callout gold">
+      <span class="callout-icon">🛡</span>
+      <div><strong>为何优先 Bull Put Spread 而非裸卖 CSP：</strong>裸卖 CSP 在台海事件下理论亏损无底线（正股跳空跌 40%，亏损远超权利金）。Bull Put Spread 通过买入更低行权价的 Put 将最大亏损锁定在价差宽度，是控制尾部风险的关键改进。</div>
+    </div>
+    <p><strong>案例示范</strong>（以 TSM 现价 $370 为例）：</p>
+    <ul class="plain">
+      <li>卖出 1 张 45天到期、行权价 <strong>$340</strong> Put（收权利金约 $5.50，Delta ≈ -0.20）</li>
+      <li>同时买入 1 张同到期日、行权价 <strong>$315</strong> Put（付权利金约 $1.80，Delta ≈ -0.08）</li>
+      <li>净收权利金：$3.70/股 = $370/张</li>
+      <li>最大亏损锁定：($340–$315–$3.70) × 100 = <strong>$2,130/张</strong>（无论 TSM 跌多深）</li>
+      <li>保证金占用（PM 账户）：约 $2,500（远低于裸 CSP 的 $34,000）</li>
+    </ul>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-body"><strong>打开 Option Chain</strong><span>TWS → TSM Option Chain → 选择到期日</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-body"><strong>选择两腿行权价</strong><span>找卖腿行权价（Delta ≈ -0.20），右键 → Sell；找买腿行权价（再低 $20–30），右键 → Buy</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-body"><strong>构建 Combo 单</strong><span>使用 Option Strategy Builder 构建 Combo 单，同时挂出两腿，确保以净信用成交</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-body"><strong>验证最低净权利金</strong><span>净收 &gt; 价差宽度的 12%（否则风险回报不合格）</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 6 ══ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div>
+      <div class="section-title">风险管理与移仓操作</div>
+      <div class="section-subtitle">净信用原则 · 50%止盈 · 决策树 · 三级熔断</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.1 移仓铁律：净信用原则</div>
+    <div class="callout danger">
+      <span class="callout-icon">⚡</span>
+      <div><strong>生死线：</strong>只在能收到净信用（Net Credit）的前提下执行 Roll，否则宁可接受被行权。无脑向下展期只会把亏损越滚越大——这是 <span class="term" data-tip="Wheel Strategy（轮动策略）：持股→卖CC→被行权变现金→卖CSP→接回股票→再卖CC的循环策略。">Wheel 策略</span>最常见的致命操作陷阱。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.2 50% 止盈规则（主动平仓）</div>
+    <p>当卖出的期权盈利达到初始权利金的 <strong>50%</strong>（即期权当前价格跌至建仓成本的 50% 以下），且距到期日仍有 &gt; 15 天，<strong>主动平仓锁定利润</strong>，释放保证金等待下一轮高 IV 机会。不必等到期权自然归零。</p>
+    <div class="callout success">
+      <span class="callout-icon">💡</span>
+      <div><strong>为何提前平仓：</strong>期权在盈利 50% 后，剩余时间价值已较少，继续持有的边际收益低但 Gamma 风险持续存在。提前平仓后，资金周转加速，全年可多执行 1–2 轮开仓周期。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.3 CC 逼近时的决策树</div>
+    <div class="dtree">
+      <div class="dtree-row">
+        <div class="dtree-q">股价接近行权价，DTE &gt; 10天</div>
+        <div class="dtree-a">评估 Roll Out + Up 能否获净信用？<br><span class="go">● 能</span>：平仓当前 Call → 卖出远一个月更高行权价 Call（保持 Delta &lt; 0.28）<br><span class="stop">● 不能</span>：等待继续评估；如 DTE ≤ 5 天且仍无净信用 → 接受被行权</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">权利金已盈利 ≥ 50%，DTE &gt; 15天</div>
+        <div class="dtree-a"><span class="go">● 主动平仓锁定利润</span>，释放保证金，等待下一轮 IV Rank 回升后再开</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">IV 骤降（IV Rank &lt; 25%），Call 浮盈中</div>
+        <div class="dtree-a"><span class="warn">● 提前平仓</span>。剩余时间价值较少，继续持有性价比低；等待 IV 回升后再开新仓</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">即将到期（DTE ≤ 5天），股价仍在行权价下方</div>
+        <div class="dtree-a"><span class="go">● 持有至自然到期归零</span>，全额收取权利金，到期后重新开仓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.4 CSP / Put Spread 被跌破时的决策树</div>
+    <div class="dtree">
+      <div class="dtree-row">
+        <div class="dtree-q">股价跌破行权价 1–3%，DTE &gt; 15天</div>
+        <div class="dtree-a">基本面无变化 → <span class="go">● 继续持有</span>。给时间价值发挥缓冲作用，短暂跌破无需立即行动</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">股价跌破行权价 3–8%，持续2日</div>
+        <div class="dtree-a">评估 Roll Down + Out 能否获净信用？<br><span class="go">● 能</span>：降行权价 + 延期 30 天（净信用原则，最多 Roll 2 次）<br><span class="stop">● 不能净信用</span>：接受指派接货，股票入库后转为 Covered Call 模式</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">股价单日跌幅 &gt; 8%（事件驱动）</div>
+        <div class="dtree-a"><span class="stop">● 立即暂停所有新开仓</span>；检查第三层保险 Put 是否激活；不强行 Roll（此时买卖价差极宽）；等待市场稳定 3–5 日后重新评估</div>
+      </div>
+      <div class="dtree-row">
+        <div class="dtree-q">Bull Put Spread 被跌破行权价</div>
+        <div class="dtree-a"><span class="warn">● 最大亏损已被锁定</span>，持有至到期（买腿保护已覆盖极端下跌）。接受指派后转 CC 模式。不需要追加平仓或 Roll，策略设计已防止亏损扩大</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.5 希腊字母监控目标（每日核查）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>希腊字母</th><th>目标区间</th><th>超限动作</th></tr></thead>
+      <tbody>
+        <tr><td><span class="term" data-tip="Net Delta：组合整体方向性敞口。Net Delta=0.70意味着组合对TSM股价的净敏感度约为持有70%仓位多头。">Net Delta</span></td><td class="td-gold">0.55 – 0.80</td><td>&gt;0.80：降低 CC 覆盖比例；&lt;0.55：减少 CSP 或增加底仓</td></tr>
+        <tr><td><span class="term" data-tip="Gamma：Delta对标的价格变动的敏感度，即期权价格变动的加速度。高Gamma意味着临近到期的期权价格变动更剧烈，风险更大。">Gamma</span></td><td>绝对值 &lt; 账户净值 2%</td><td>超限时暂停新开仓，平仓近期（DTE &lt; 10天）合约</td></tr>
+        <tr><td><span class="term" data-tip="Vega：期权价格对隐含波动率变动的敏感度。作为卖方，Vega为负，意味着IV上升对卖方不利；IV越高时开仓，期望IV回落赚取Vega收益。">Vega</span></td><td>与 IV Rank 反向调节</td><td>IV Rank &gt; 60%：可增加卖方仓位；IV Rank &lt; 25%：停止卖方操作</td></tr>
+        <tr><td><span class="term" data-tip="Theta：时间价值衰减率，即每天由于时间流逝带来的期权价值减少量。作为卖方，Theta为正，意味着时间流逝对卖方有利，每天持有都在盈利。">Theta（每日）</span></td><td>监控确认正值</td><td>整体 Theta 应为正值（卖方策略时间流逝获益），若为负值说明买入保险成本过高</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">6.6 三级风控红线（绝对止损）</div>
+    <div class="circuit-level l1">
+      <div class="cl-num">L1 · 警告线</div>
+      <div class="cl-trigger">单笔期权亏损 ≥ 权利金收入 × 200%</div>
+      <div class="cl-action">评估 Roll 可行性；无净信用则强制平仓止损，禁止无限扛单</div>
+    </div>
+    <div class="circuit-level l2">
+      <div class="cl-num">L2 · 熔断线</div>
+      <div class="cl-trigger">组合总浮亏 ≥ 账户净值 10%</div>
+      <div class="cl-action">暂停所有新开仓；仓位降至 50%；等待净值修复至 -5% 以内方可重启</div>
+    </div>
+    <div class="circuit-level l3">
+      <div class="cl-num">L3 · 熔断清仓</div>
+      <div class="cl-trigger">可用现金 &lt; $150K（或保证金使用率 &gt; 85%）</div>
+      <div class="cl-action">HALT ALL：停止一切开仓，专注管理现有仓位，防止强制平仓</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 7 ══ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div>
+      <div class="section-title">尾部对冲（强制，非可选）</div>
+      <div class="section-subtitle">台海专项保险 · 参数标准 · 成本效益量化</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">🚨</span>
+    <div><strong>最重要的章节：</strong>本章节内容是 TSM 策略区别于普通 Wheel 策略的核心设计。台海风险是非线性的，一旦发生可能单日跌去 25–40%，期权盘口流动性同时枯竭，无法在事后应对。<strong>尾部保险 Put 必须在 IV 低位时提前布置，不是发生事件后才考虑。</strong></div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">7.1 保险 Put 参数标准</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>具体设置</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>Delta</td><td class="td-gold">0.08–0.12</td><td>深度价外，只在极端下跌时大幅增值；日常 Theta 衰减慢，成本可控</td></tr>
+        <tr><td>DTE</td><td class="td-gold">60–90 天</td><td>避免 Theta 衰减过快；时间足够长才有持续保护意义</td></tr>
+        <tr><td>最佳建仓时机</td><td>IV Rank &lt; 35%</td><td>在 IV 低位买入期权成本更低——与 CC/CSP 卖方逻辑相反，此时是买方有利时机</td></tr>
+        <tr><td>年化预算上限</td><td>账户净值 1.0–1.5%</td><td>超过此成本需重新评估策略整体效率；通常每季续期成本约 $3,000–$15,000（视账户规模）</td></tr>
+        <tr><td>行权价位置</td><td>当前价下方 15–20%</td><td>$370 股价时，约 $300–$315 行权价</td></tr>
+        <tr><td>续期规则</td><td>DTE &lt; 20 天时续保</td><td>提前买入新保险 Put 再卖出旧仓；保证保护层始终有效，不留空窗期</td></tr>
+        <tr><td>止盈规则</td><td>浮盈 &gt; 200% 时卖出 50%</td><td>极端事件中不要一次全平，风险未解除前保留剩余保护</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">7.2 成本效益量化（$100万账户示范）</div>
+    <div class="card-grid-3">
+      <div class="stat-card">
+        <div class="stat-label">年化保险预算</div>
+        <div class="stat-value">$12,000</div>
+        <div class="stat-note">$1,000,000 × 1.2%，每季约 $3,000</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">台海事件对冲量</div>
+        <div class="stat-value">$60K–120K</div>
+        <div class="stat-note">TSM 跌 30% 时，保险 Put 可对冲的区间</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">保护倍数</div>
+        <div class="stat-value">5–10×</div>
+        <div class="stat-note">以 $12K 成本获得 $60K–120K 灾难保护</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SECTION 8 ══ -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div>
+      <div class="section-title">极端情景预案</div>
+      <div class="section-subtitle">地缘政治三级预警 · 系统性崩盘 · 基本面退出条件</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">8.1 地缘政治三级预警系统</div>
+    <div class="geo-grid">
+      <div class="geo-card geo-yellow">
+        <div class="geo-level">🟡 黄色预警</div>
+        <div class="geo-trigger">触发：台海新闻舆情升温 / VIX 单日跳涨 15% / TSM ADR 折价 &gt; 3%</div>
+        <div class="geo-action">暂停所有新开期权仓位；检查现有 CC/CSP 的 Delta 值；确认尾部保险 Put DTE &gt; 20天</div>
+      </div>
+      <div class="geo-card geo-orange">
+        <div class="geo-level">🟠 橙色预警</div>
+        <div class="geo-trigger">触发：美股期指夜盘跌超 2% / TSM 盘前跌超 5% / 重要军政官员异常声明</div>
+        <div class="geo-action">已持 CC：买入更虚值 Call 构建 Bear Call Spread，锁定最大亏损。已持 CSP：保留，风险已由 Bull Put Spread 结构控制</div>
+      </div>
+      <div class="geo-card geo-red">
+        <div class="geo-level">🔴 红色预警</div>
+        <div class="geo-trigger">触发：局势实质性升级 / 期权盘口流动性枯竭（价差 &gt; $1.00）/ TSM 盘前跌超 10%</div>
+        <div class="geo-action">停止所有交易。保险 Put 止盈 50%，保留剩余对冲。等待 3–5 个交易日市场重新定价后评估</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">8.2 系统性崩盘预案（SOX 半导体板块单月跌 &gt;20%）</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-body"><strong>暂停卖方开仓</strong><span>停止所有卖方新开仓；不强制平仓正股底仓（除非基本面恶化）</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-body"><strong>锁定保险 Put 部分浮盈</strong><span>保险 Put 大幅增值，视情况锁定 50% 浮盈；剩余保护继续持有</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-body"><strong>等待 VIX 回落</strong><span>动用第三层护城河现金（20–40%），等待 VIX 从峰值回落 30% 以上再重启卖方策略</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-body"><strong>市场企稳后重启</strong><span>优先卖出 CSP/Bull Put Spread 在低位积累底仓，此时 IV 极高，权利金丰厚</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">8.3 基本面恶化退出条件（任意一条触发）</div>
+    <div class="callout danger">
+      <span class="callout-icon">🚨</span>
+      <div>以下任意一条出现，放弃 CSP 接货逻辑，转为防守，逐步减仓底仓至 30–40%：</div>
+    </div>
+    <ul class="plain">
+      <li>AI 资本开支指引下调，TSM 营收增速预期回落至 15% 以下</li>
+      <li>股价有效跌破 200 周均线（长期牛市生命线），且无基本面利好支撑</li>
+      <li>毛利率连续两季度跌破 60%（成本端持续恶化）</li>
+      <li>核心大客户（NVDA、AAPL、AMD）资本开支大幅削减</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ SECTION 9 ══ -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <div>
+      <div class="section-title">IBKR 账户执行指南</div>
+      <div class="section-subtitle">账户基础设置 · TWS 工作区 · 条件单半自动化</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">9.1 账户基础设置（前置检查）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>设置项</th><th>要求</th><th>操作路径</th></tr></thead>
+      <tbody>
+        <tr><td>期权权限</td><td><span class="term" data-tip="IBKR期权Level 2：可执行备兑看涨（Covered Call）和现金担保看跌（Cash-Secured Put），即CC和CSP。无需Level 3（裸卖）——本策略严禁裸卖期权。">Options Level 2</span>（CC + CSP，无需 Level 3）</td><td>账户管理 → 交易权限 → 期权</td></tr>
+        <tr><td>税务表格</td><td><span class="term" data-tip="W-8BEN：美国税务局表格，非居民外国人（NRA）通过填写此表声明其外国身份，享受期权权利金资本利得免税待遇，并可能通过税收协定降低股息预扣税率。有效期3年，到期前IBKR会提醒续签。">W-8BEN</span> 电子签署（NRA 必须）</td><td>账户设置 → 税务信息 → W-8BEN</td></tr>
+        <tr><td>保证金模式</td><td>&lt;$500K 用 Reg T；≥$500K 申请 Portfolio Margin</td><td>账户设置 → 配置 → 保证金模式</td></tr>
+        <tr><td>股票出借</td><td>开通 <span class="term" data-tip="IBKR股票收益提升计划（SYEP）：将持仓股票出借给机构做空方，赚取出借利息。对NRA客户此利息通常免税。IBKR会自动召回被出借的股票以满足卖出或被行权需求。">SYEP 出借计划</span>（额外利息，NRA 免税）</td><td>账户设置 → 交易 → 股票收益提升</td></tr>
+        <tr><td>除息日提醒</td><td>Corporate Actions 预警（CC 持有者需关注）</td><td>TWS → 账户 → 配置 → 公司行动提醒</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">9.2 TWS 工作区配置</div>
+    <p>建议在 TWS 主界面创建专属监控面板，包含：</p>
+    <ul class="plain">
+      <li><code>Option Chain</code>：TSM 实时期权链，监控 30–45 天到期合约的 Delta / IV / 买卖价差</li>
+      <li><code>Risk Navigator</code>：组合希腊字母实时监控（Net Delta / Gamma / Vega）；每周进行 ±20% 压力测试</li>
+      <li><code>TWS Watchlist</code>：2330.TW（台积电台股）报价，用于监控 ADR 折溢价信号</li>
+      <li><code>Portfolio</code>：持仓明细，含每张期权的 Delta / Theta / 未实现盈亏</li>
+    </ul>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">9.3 条件单预设（半自动化管理）</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>目的</th><th>条件设置</th><th>触发动作</th></tr></thead>
+      <tbody>
+        <tr><td>CC 止盈提醒</td><td>Call 期权当前价 ≤ 建仓成本 × 50%</td><td>发送提醒，人工评估提前平仓</td></tr>
+        <tr><td>CC Roll 预警</td><td>TSM 价格 ≥ 行权价 × 97%</td><td>发送提醒，启动 Roll 评估流程</td></tr>
+        <tr><td>CSP 跌破警报</td><td>TSM 价格 ≤ CSP 行权价 × 97%</td><td>发送提醒，进入决策树评估</td></tr>
+        <tr><td>IV 暂停开仓</td><td>TSM IV Rank &lt; 30%</td><td>提醒暂停新开仓，等待 IV 回升</td></tr>
+        <tr><td>尾险续期提醒</td><td>保险 Put DTE ≤ 25 天</td><td>提醒续期，避免保护空窗</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>TWS 条件单设置路径：Order Ticket → Condition → 选择条件类型（Price / Time / Margin）→ 设置触发值 → 绑定通知或操作。</p>
+  </div>
+</section>
+
+<!-- ══ SECTION 10 ══ -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <div>
+      <div class="section-title">NRA 税务说明</div>
+      <div class="section-subtitle">各类收益税率 · W-8BEN 要点 · 操作注意事项</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">10.1 各类收益税率对照</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>收益类型</th><th>NRA 税率</th><th>策略优化建议</th></tr></thead>
+      <tbody>
+        <tr><td>正股资本利得（买卖价差）</td><td class="td-ok">0%（美国对 NRA 不征收）</td><td>长期持有底仓，资本利得全额归持有人</td></tr>
+        <tr><td>期权权利金（CC / CSP）</td><td class="td-ok">0%（归类为资本利得）</td><td>权利金收入全额归持有人，是本策略最大税务优势</td></tr>
+        <tr><td>股息收入（ADR 分红）</td><td class="td-bad">默认 30% 预扣税</td><td>签署 W-8BEN 后，税收协定国家可降低税率；策略设计优先最大化权利金而非股息</td></tr>
+        <tr><td>IBKR 股票出借利息（SYEP）</td><td class="td-ok">0%（NRA 免税）</td><td>开通 SYEP 计划，额外年化 0.5–2%，全额归持有人</td></tr>
+        <tr><td>Bull Put Spread 净权利金</td><td class="td-ok">0%（同期权权利金）</td><td>结构优化（价差替代裸CSP）不影响税务优惠地位</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout gold">
+      <span class="callout-icon">✦</span>
+      <div><strong>税务最大优势总结：</strong>作为 NRA 在 IBKR 执行此策略，正股资本利得 + 期权权利金 + 出借利息三项主要收益均为 <strong>0% 税率</strong>，仅股息需扣税（约 0.5% 税后收益，影响极小）。这是相比美国居民（需缴纳最高 23.8% 资本利得税）的巨大竞争优势。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">10.2 操作注意事项</div>
+    <ul class="plain">
+      <li><strong>W-8BEN 有效期：</strong>3年，到期前 IBKR 会提醒续签，务必及时处理</li>
+      <li><strong>除息日风险：</strong>若 CC 临近行权价且即将除息，期权买方可能提前行权以套取股息。在除息日前 5 个交易日检查 CC 仓位，必要时提前 Roll，避免被动行权引发税务复杂化</li>
+      <li><strong>年度报表：</strong>IBKR 自动生成 <code>Form 1042-S</code>（替代美国居民的 1099），建议使用 Sprintax 等专业软件处理 NRA 申报</li>
+      <li><strong>税收协定核查：</strong>股息预扣税率依赖税收协定，定期与税务顾问确认本国最新协定条款</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ SECTION 11 ══ -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <div>
+      <div class="section-title">收益预期与情景分析（诚实版）</div>
+      <div class="section-subtitle">分情景收益拆解 · 概率加权分析 · 账户规模示例</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠</span>
+    <div><strong>必读警告：</strong>CC 策略的核心机制是"用放弃部分上行收益换取权利金"。当正股大涨超过行权价时，股票被行权卖出，投资者不能同时享受正股大涨和权利金收入——两者不可叠加。以下收益预估均基于此原则，不进行误导性叠加计算。</div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">11.1 分情景收益拆解</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>收益来源</th><th>保守（低IV震荡）</th><th>基准（正常IV慢牛）</th><th>高IV主升浪（CC封顶）</th></tr></thead>
+      <tbody>
+        <tr><td>TSM 正股增值（受 CC 封顶影响）</td><td>5–10%</td><td>12–18%</td><td>20%+（行权价以上部分被截断）</td></tr>
+        <tr><td>CC 权利金年化增厚</td><td>4–6%</td><td>6–10%</td><td>8–12%（但正股涨幅被限）</td></tr>
+        <tr><td>CSP/Put Spread 权利金（过渡期）</td><td>3–5%</td><td>5–8%</td><td>6–10%</td></tr>
+        <tr><td>尾部保险成本（第三层）</td><td class="td-bad">-1.0 至 -1.5%</td><td class="td-bad">-1.0 至 -1.5%</td><td class="td-bad">-1.0 至 -1.5%</td></tr>
+        <tr><td>IBKR 出借收益</td><td>+0.5–1.5%</td><td>+0.5–1.5%</td><td>+0.5–1.5%</td></tr>
+        <tr><td class="td-gold"><strong>综合年化收益估算</strong></td><td class="td-gold"><strong>12–18%</strong></td><td class="td-gold"><strong>18–26%</strong></td><td class="td-warn"><strong>20–28%（受封顶限制）</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">11.2 概率加权情景分析</div>
+    <div class="scenario-grid">
+      <div class="sc-card">
+        <div class="sc-name">场景一：震荡市</div>
+        <div class="sc-prob">发生概率约 40%</div>
+        <div class="sc-row"><span class="sk">TSM 股价</span><span class="sv sv-green">±10% 区间波动</span></div>
+        <div class="sc-row"><span class="sk">期权策略表现</span><span class="sv sv-green">最优，Θ 稳定衰减</span></div>
+        <div class="sc-row"><span class="sk">综合年化</span><span class="sv sv-green">12–18%</span></div>
+        <div class="sc-row"><span class="sk">最大回撤</span><span class="sv sv-yellow">-10% 至 -15%</span></div>
+        <div class="sc-row"><span class="sk">策略动作</span><span class="sv">标准 30–45D 轮动</span></div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-name">场景二：慢牛市</div>
+        <div class="sc-prob">发生概率约 30%</div>
+        <div class="sc-row"><span class="sk">TSM 股价</span><span class="sv sv-green">+15–25%</span></div>
+        <div class="sc-row"><span class="sk">期权策略表现</span><span class="sv sv-green">良好，偶被行权</span></div>
+        <div class="sc-row"><span class="sk">综合年化</span><span class="sv sv-green">18–26%</span></div>
+        <div class="sc-row"><span class="sk">最大回撤</span><span class="sv sv-green">-5% 至 -10%</span></div>
+        <div class="sc-row"><span class="sk">策略动作</span><span class="sv">被行权后 CSP 接回</span></div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-name">场景三：强势突破</div>
+        <div class="sc-prob">发生概率约 20%</div>
+        <div class="sc-row"><span class="sk">TSM 股价</span><span class="sv sv-green">+30%+</span></div>
+        <div class="sc-row"><span class="sk">期权策略表现</span><span class="sv sv-yellow">落后纯持股</span></div>
+        <div class="sc-row"><span class="sk">综合年化</span><span class="sv sv-yellow">20–28%（被封顶）</span></div>
+        <div class="sc-row"><span class="sk">最大回撤</span><span class="sv sv-green">通常无明显回撤</span></div>
+        <div class="sc-row"><span class="sk">策略动作</span><span class="sv">降低 CC 覆盖至 30%</span></div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-name">场景四：黑天鹅</div>
+        <div class="sc-prob">发生概率约 10%</div>
+        <div class="sc-row"><span class="sk">TSM 股价</span><span class="sv sv-red">-25% 至 -45%</span></div>
+        <div class="sc-row"><span class="sk">期权策略表现</span><span class="sv sv-red">启动尾险对冲</span></div>
+        <div class="sc-row"><span class="sk">综合年化</span><span class="sv sv-red">不确定（尾险激活）</span></div>
+        <div class="sc-row"><span class="sk">最大净回撤</span><span class="sv sv-yellow">-20% 至 -25%（有尾险）</span></div>
+        <div class="sc-row"><span class="sk">策略动作</span><span class="sv">暂停所有卖方，现金为王</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">11.3 账户规模收益示例</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>账户规模</th><th>配置示例</th><th>预期期权权利金年化区间</th><th>综合年化总回报</th></tr></thead>
+      <tbody>
+        <tr><td>$200,000</td><td>正股 $150K（约 405 股）+ 现金 $50K；卖 4 张 CC + 2 张 CSP；保险 Put 2 张</td><td>$13,000–$20,000（扣除尾险 $2,400）</td><td>15–22%</td></tr>
+        <tr><td>$1,000,000</td><td>正股 $680K（约 1,840 股）+ 现金 $320K；16 张 CC + 6 张 CSP/Spread；保险 Put 4 张</td><td>$62,000–$100,000（扣除尾险 $12,000）</td><td>18–26%</td></tr>
+        <tr><td>$5,000,000</td><td>正股 $3.2M（约 8,600 股）+ 现金 $1.8M；PM 模式；多到期日梯队分布</td><td>$270,000–$480,000（扣除尾险 $60,000）</td><td>18–25%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="footnote">注：以上数据基于 TSM 约 $370 股价、IV Rank 45–55% 环境估算，不构成收益保证。</p>
+  </div>
+</section>
+
+<!-- ══ SECTION 12 ══ -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <div>
+      <div class="section-title">日常监控清单与压力测试</div>
+      <div class="section-subtitle">分频率操作清单 · 季度压力测试 · 开仓前核对</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">12.1 分频率操作清单</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>频率</th><th>检查项目</th><th>工具 / 时长</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-gold">每日 5分钟</span></td><td>TSM 盘前涨跌幅 &gt; 3%？重大新闻？台海舆情？VIX 单日变化 &gt; 15%？ADR vs 2330.TW 折溢价异常？</td><td>Google Alert（关键词：Taiwan Strait / TSMC restriction）；Finviz</td></tr>
+        <tr><td><span class="badge badge-blue">每周三 10分钟</span></td><td>检查组合整体 Delta（是否在 0.55–0.80 区间）；Gamma 是否超限；保证金使用率；下周重要宏观事件（FOMC / 非农 / CPI）</td><td>IBKR Risk Navigator；Earnings Whispers</td></tr>
+        <tr><td><span class="badge badge-blue">每周五 5分钟</span></td><td>处理当周到期合约（避免被指派麻烦）；确认下周有无财报风险；检查保险 Put DTE 是否 &lt; 25 天（触发续期）</td><td>IBKR Portfolio → 持仓到期日排列</td></tr>
+        <tr><td><span class="badge badge-gray">每月 20分钟</span></td><td>执行 ±20% / ±40% IV 变化的压力测试；核对权利金实际收入 vs 预期；评估 Delta/IV 参数是否需要调整；股息报表核查（Form 1042-S）</td><td>Risk Navigator → Scenario Analysis</td></tr>
+        <tr><td><span class="badge badge-gray">每季度 1小时</span></td><td>财报后重新评估基本面（增速/毛利率/资本支出）；再平衡底仓比例；台海风险重新评级；尾部保险 Put 续期；税务申报准备</td><td>IBKR Activity Report；自建追踪表</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">12.2 季度压力测试标准</div>
+    <p>每季度财报后，使用 IBKR Risk Navigator 对整体持仓进行压力测试，验证以下极端情景下账户净值变化在可接受范围内：</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>压力情景</th><th>假设参数</th><th>可接受的净值最大变化</th></tr></thead>
+      <tbody>
+        <tr><td>温和回调</td><td>TSM 跌 15%，IV 升至 45%</td><td class="td-ok">净值下跌 &lt; 10%</td></tr>
+        <tr><td>半导体周期下行</td><td>TSM 跌 25%，SOX 跌 20%，IV 升至 55%</td><td class="td-warn">净值下跌 &lt; 18%（含保险 Put 对冲）</td></tr>
+        <tr><td>台海极端事件</td><td>TSM 跳空跌 35%，IV 飙升至 80%，流动性枯竭</td><td class="td-warn">净值下跌 &lt; 22%（第三层保险激活）</td></tr>
+        <tr><td>全球系统性崩盘</td><td>SPX 跌 30%，TSM 跌 40%，VIX &gt; 60</td><td class="td-bad">净值下跌 &lt; 28%（接近最坏情形）</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">⚠</span>
+      <div>若压力测试结果超过上述可接受范围，必须立即降低底仓比例或加大保险 Put 仓位，并在重新达标前暂停所有新的 CC/CSP 开仓操作。</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">12.3 开仓前核对清单（每次打印使用）</div>
+    <ul class="checklist">
+      <li class="required">□ Gate 1：距下次财报 &gt; 10 个交易日，无已知地缘政治高危事件，VIX ≤ 35</li>
+      <li class="required">□ Gate 2：TSM IV Rank ≥ 42%（IBKR TWS 实时查看）</li>
+      <li class="required">□ Gate 3：价格位置合适（CC：横盘/冲高回落；CSP：技术支撑附近）</li>
+      <li class="required">□ Gate 4：尾部保险 Put 有效（DTE &gt; 20 天），如不足先续保</li>
+      <li class="required">□ Gate 5：保证金使用率 &lt; 55%（Reg T）或 &lt; 60%（PM）</li>
+      <li>□ 盈亏平衡检验：单笔权利金 &gt; 3 × 交易成本</li>
+      <li>□ 单策略仓位 ≤ 账户净值 5%；单笔最大亏损 ≤ 账户净值 1%</li>
+      <li>□ 同标的持仓笔数 ≤ 3 笔（防止过度集中）</li>
+      <li>□ 期权合约：月度合约（每月第三个周五到期），非周度合约</li>
+      <li>□ 下单类型：限价单（Limit Order），禁止市价单</li>
+      <li>□ 成交后：设置 TWS 条件预警（Roll 触发 / 止盈触发 / 尾险续期提醒）</li>
+      <li>□ 成交后：更新持仓记录表（日期 / 行权价 / 权利金 / DTE / Delta）</li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 策略信条 -->
+  <div style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.3);border-radius:var(--radius-lg);padding:36px 40px;margin-bottom:32px;text-align:center;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">策略信条</div>
+    <p style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text-primary);line-height:1.75;font-style:italic;max-width:660px;margin:0 auto;">
+      "我们不是赌财报的投机客。我们是 TSM 的长期股东，通过向市场出售保险，将持仓成本每年降低 10%–20%。偶尔的股价大跌是我们低价加仓的机会，偶尔的大涨是我们阶段性盈利的兑现。坚持系统，让概率和时间为我们工作。"
+    </p>
+  </div>
+
+  <!-- 免责声明 -->
+  <div class="disclaimer">
+    <div class="dis-title">⚠ 免责声明 · Risk Disclosure</div>
+    <p>本操作手册由专业交易团队基于 2026 年 4 月市场数据及公开信息编制，仅供具备期权交易经验的合格专业投资者参考使用。<strong>本文件不构成任何形式的投资建议、投资邀约或收益保证。</strong></p>
+    <p>期权交易含有固有风险，包括但不限于：标的价格下跌导致正股亏损；<span class="term" data-tip="Assignment（被行权/指派）：当期权被行权时，期权卖方被指派执行合约义务。如CC被行权，股票以行权价被买走；如CSP被行权，需以行权价买入股票。">被行权（Assignment）</span>导致持仓变化；IV 骤变导致期权价值剧烈波动；地缘政治等极端事件导致流动性枯竭；以及上行机会成本损失。过往业绩不代表未来表现。实际收益受市场条件、执行效率、账户规模、税务情况等多重因素影响，可能与预期产生重大差异。</p>
+    <p>NRA 税务规则可能随税收协定更新发生变化，请定期与持牌跨境税务顾问复核。本手册内参数需每季度根据 IV 结构、基本面变化、宏观环境动态校准。接收方应自行独立判断本策略是否符合自身投资目标、财务状况与风险承受能力。</p>
+    <div class="sig-row">
+      <div class="sig-item">
+        <div class="sig-label">客户确认签署</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-label">策略顾问签署</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-item">
+        <div class="sig-label">日期</div>
+        <div class="sig-line" style="width:120px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    TSM 期权增强策略操作手册 V3.0 · 2026年4月 · 仅限RHCLOUD授权客户使用 · 本策略由AI生成，仅供学习，请勿用于实际交易。
+
+  </div>
+
+</section>
+</main>
+</div>
+
+<script>
+  // Active nav highlighting on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.style.borderLeftColor = 'transparent';
+          item.style.background = '';
+          item.style.color = '';
+        });
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) {
+          active.style.borderLeftColor = 'var(--gold)';
+          active.style.background = 'var(--gold-dim)';
+          active.style.color = 'var(--gold-light)';
+        }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
 </body>
 </html>
