@@ -27,7 +27,10 @@
   html { scroll-behavior: smooth; }
   body {
     font-family: "DM Sans", sans-serif;
-    background: var(--navy);
+    background:
+      radial-gradient(circle at 15% -10%, rgba(201,168,76,0.08), transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(91,141,200,0.06), transparent 35%),
+      var(--navy);
     color: var(--text-primary);
     font-size: 15px;
     line-height: 1.75;
@@ -47,6 +50,9 @@
     padding: 32px 0;
     flex-shrink: 0;
   }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
   .sidebar-logo {
     padding: 0 24px 28px;
     border-bottom: 1px solid var(--navy-border);
@@ -95,6 +101,7 @@
     max-width: 980px;
     padding: 48px 52px;
     overflow-x: hidden;
+    margin: 0 auto;
   }
   .hero {
     border: 1px solid var(--navy-border);
@@ -102,6 +109,22 @@
     padding: 40px 44px;
     background: var(--navy-card);
     margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+  }
+  .hero::before {
+    content: "NRA";
+    position: absolute;
+    right: -8px;
+    top: -18px;
+    font-family: "Playfair Display", serif;
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
   }
   .hero-eyebrow {
     font-size: 11px;
@@ -123,6 +146,7 @@
     border: 1px solid var(--navy-border);
     border-radius: var(--radius-lg);
     padding: 24px 28px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
   }
 
   .markdown h1, .markdown h2, .markdown h3 { color: var(--text-primary); }
@@ -138,6 +162,7 @@
     padding-bottom: 10px;
     border-bottom: 1px solid var(--navy-border);
   }
+  .markdown h2:first-of-type { margin-top: 6px; }
   .markdown h3 {
     font-size: 15px;
     text-transform: uppercase;
@@ -146,7 +171,16 @@
     color: var(--gold-light);
   }
   .markdown p, .markdown li { color: var(--text-secondary); }
+  .markdown p { margin-bottom: 12px; }
   .markdown ul, .markdown ol { padding-left: 24px; margin: 10px 0 14px; }
+  .markdown blockquote {
+    border-left: 3px solid var(--gold);
+    margin: 16px 0;
+    padding: 8px 0 8px 14px;
+    color: var(--text-secondary);
+    background: rgba(201,168,76,0.04);
+    border-radius: 0 8px 8px 0;
+  }
   .markdown code {
     font-family: "DM Mono", monospace;
     font-size: 12.5px;
@@ -172,14 +206,18 @@
     border-top: 1px solid var(--navy-border);
     margin: 26px 0;
   }
-  .markdown table {
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--navy-border);
+    margin: 12px 0 18px;
+  }
+  .table-wrap table {
     width: 100%;
+    min-width: 580px;
     border-collapse: collapse;
     font-size: 13.5px;
-    margin: 12px 0 18px;
-    overflow: hidden;
-    border: 1px solid var(--navy-border);
-    border-radius: 10px;
+    margin: 0;
   }
   .markdown thead tr {
     background: rgba(201,168,76,0.08);
@@ -199,6 +237,19 @@
     vertical-align: top;
   }
   .markdown tr:last-child td { border-bottom: none; }
+  .markdown tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 28px;
+  }
+  .disclaimer strong { color: var(--text-secondary); }
 
   @media (max-width: 1100px) {
     .sidebar { display: none; }
@@ -220,11 +271,18 @@
   <main class="main">
     <div class="hero">
       <div class="hero-eyebrow">机构级筛选框架 · 内部文档</div>
-      <h1> NRA 专用期权卖方筛选方法论</h1>
+      <h1>NRA 专用期权卖方筛选方法论</h1>
       <p class="hero-sub">基于 西门先生选股理论，根据期权卖方策略特点，结合NRA账户特点，制定出一套专为NRA账户的期权卖方筛选方法论。</p>
     </div>
 
     <section class="card markdown" id="content"></section>
+
+    <div class="disclaimer">
+      <strong>免责声明</strong><br>
+      本操作手册基于历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，由RHCLOUD AI 生成，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。相关标的受监管变化、业绩表现、行业竞争、技术迭代等因素影响，可能出现超出历史经验的极端波动。<br><br>
+      本手册所涉及的全部税务处理方式、遗产税规划、离岸公司架构，须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
+      <strong>版本：v2.5 · 交付版 · 2026 年 4 月 · 内部学习文件 · 禁止对外传阅</strong>
+    </div>
   </main>
 </div>
 
@@ -634,6 +692,12 @@ Yahoo 页面字段直接映射：
   document.getElementById("content").innerHTML = html;
 
   const content = document.getElementById("content");
+  content.querySelectorAll("table").forEach((table) => {
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
+  });
   const toc = document.getElementById("toc");
   const h2s = content.querySelectorAll("h2");
 
