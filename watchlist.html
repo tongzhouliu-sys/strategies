@@ -1090,6 +1090,60 @@
 #watchlist-panel td{padding:5px 7px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:top}
 #watchlist-panel tr:hover td{background:var(--color-background-secondary)}
 #watchlist-panel .tk{font-weight:500;font-family:var(--font-mono);font-size:13px}
+#watchlist-panel .tk a.tk-link{color:var(--gold-light);text-decoration:none;font-weight:500;cursor:pointer}
+#watchlist-panel .tk a.tk-link:hover{text-decoration:underline;color:var(--gold)}
+#watchlist-panel .tk a.tk-vip{cursor:pointer}
+
+  /* VIP 提示弹窗 */
+  .vip-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .vip-modal.is-open { display: flex; }
+  .vip-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 12, 22, 0.72);
+    backdrop-filter: blur(4px);
+  }
+  .vip-modal-box {
+    position: relative;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 32px 36px 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .vip-modal-box p {
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.75;
+    margin: 0 0 22px;
+  }
+  .vip-modal-btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold-light);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .vip-modal-btn:hover {
+    background: rgba(201, 168, 76, 0.25);
+    color: var(--text-primary);
+  }
 #watchlist-panel .sp{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
 #watchlist-panel #cnt{font-size:12px;color:var(--color-text-secondary);margin-left:auto}
 #watchlist-panel #sec-sel{font-size:12px}
@@ -1186,7 +1240,7 @@
 <tbody id="tb"></tbody>
 </table>
 </div>
-<p style="font-size:11px;color:var(--color-text-secondary);margin-top:10px">⚠️ 免责声明（摘要）：本操作手册基于历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，由 RHCLOUD AI 生成，不构成任何投资建议；完整表述见本页下方「免责声明」区块。</p>
+<p style="font-size:11px;color:var(--color-text-secondary);margin-top:10px">⚠️ 本内容由RHCLOUD生成，不构成任何投资建议。期权交易具有高风险，可能导致全部本金损失。</p>
 </div>
 <script>
 const D=[
@@ -1307,6 +1361,27 @@ const D=[
 ["PDD","C","中概/电商",70,20,"强制价差","暂停","财报前14天",0,"Temu全球化；美国关税+中概监管双重尾部风险"],
 ["MARA","C","比特币矿业",85,25,"强制价差","暂停","财报前14天",0,"🚨最多1张；BTC价格1:1联动；哈希率+算力电费成本"],
 ];
+/** 与 index 批量页面一致：这些标的链到「小写 ticker.html」；另见 tickerHref 中与「官方」合并 */
+const PAGE_TICKERS=new Set(['iwm','xlk','xlf','xlv','xly','googl','amzn','avgo','intu','jpm','gs','schw','kkr','dis','lly','vrtx','unh','elv','tmo','nke','cmg','lulu','de','cop','cost','mcd','hon','lmt','rtx','gd','amd','shop','uber','abnb','pypl','dkng','rddt','pdd','mara']);
+function tickerAccess(tk,off){
+  const key=String(tk).toLowerCase();
+  if(PAGE_TICKERS.has(key)||off===1)return{vip:false,href:key+'.html'};
+  return{vip:true,href:'#'};
+}
+function openVipModal(){
+  const m=document.getElementById('vip-modal');
+  if(!m)return;
+  m.classList.add('is-open');
+  m.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+}
+function closeVipModal(){
+  const m=document.getElementById('vip-modal');
+  if(!m)return;
+  m.classList.remove('is-open');
+  m.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
 const secs=[...new Set(D.map(r=>r[2]))].sort();
 const sel=document.getElementById('sec-sel');
 secs.forEach(s=>{const o=document.createElement('option');o.value=s;o.text=s;sel.appendChild(o);});
@@ -1332,22 +1407,38 @@ function render(){
   document.getElementById('tb').innerHTML=rows.map(r=>{
     const[tk,grade,sector,ivr,ann,struct,cst,blackout,off,sp]=r;
     const obadge=off?`<span class="badge src-off">官方</span>`:`<span class="badge src-new">建议</span>`;
-    return`<tr><td class="tk">${tk}</td><td><span class="badge ${gc(grade)}">${grade}</span></td><td>${obadge}</td><td style="font-size:11px">${sector}</td><td style="font-weight:500">${ivr}%</td><td style="font-weight:500;color:var(--color-text-success)">${ann}%+</td><td style="font-size:11px">${struct}</td><td><span style="font-size:11px;${cstyle(cst)}">${cst}</span></td><td style="font-size:11px">${blackout}</td><td class="sp">${sp}</td></tr>`;
+    const acc=tickerAccess(tk,off);
+    const acls='tk-link'+(acc.vip?' tk-vip':'');
+    return`<tr><td class="tk"><a href="${acc.href}" class="${acls}">${tk}</a></td><td><span class="badge ${gc(grade)}">${grade}</span></td><td>${obadge}</td><td style="font-size:11px">${sector}</td><td style="font-weight:500">${ivr}%</td><td style="font-weight:500;color:var(--color-text-success)">${ann}%+</td><td style="font-size:11px">${struct}</td><td><span style="font-size:11px;${cstyle(cst)}">${cst}</span></td><td style="font-size:11px">${blackout}</td><td class="sp">${sp}</td></tr>`;
   }).join('');
 }
 render();
+(function(){
+  const wrap=document.getElementById('wrap');
+  if(wrap)wrap.addEventListener('click',function(e){
+    const a=e.target.closest('a.tk-vip');
+    if(a){e.preventDefault();openVipModal();}
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVipModal();});
+})();
 </script>
 
   </section>
 
   <div class="disclaimer" id="page-disclaimer">
     <strong>免责声明</strong><br>
-    本操作手册基于 历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，由RHCLOUD AI 生成，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。股票 受监管变化、业绩表现、行业竞争、技术迭代等因素影响，可能出现超出历史经验的极端波动。<br><br>
-    本手册所涉及的全部税务处理方式、遗产税规划、离岸公司架构，须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
-    <strong>版本：V3.0 · 综合优化版 · 2026 年 4 月 · 内部学习文件 · 禁止对外传阅</strong>
+    本页面所载标的筛选、级别划分、参数区间及操作提示由系统自动生成或整理，仅供学习与研究之用，<strong>不构成任何投资建议或买卖邀约</strong>。期权及其他衍生品交易具有高风险，可能导致全部本金损失；过往展示或统计不预示未来表现。使用者应结合自身风险承受能力，在必要时咨询持牌专业人士，并独立承担全部决策与后果。
   </div>
 
 </main>
+</div>
+
+<div id="vip-modal" class="vip-modal" role="dialog" aria-modal="true" aria-labelledby="vip-modal-msg" aria-hidden="true">
+  <div class="vip-modal-backdrop" onclick="closeVipModal()"></div>
+  <div class="vip-modal-box">
+    <p id="vip-modal-msg">本标的仅对VIP成员开放，感谢您的关注！</p>
+    <button type="button" class="vip-modal-btn" onclick="closeVipModal()">确定</button>
+  </div>
 </div>
 
 <script>
