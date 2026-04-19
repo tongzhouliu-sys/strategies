@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P03 · 策略操作全手册 — 期权策略训练系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+
+  .term:hover::after { opacity: 1; }
+
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .nav-item.sub {
+    padding-left: 38px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .hero::before {
+    content: 'META';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION STYLES
+  ═══════════════════════════════════════════ */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+
+  .stat-card .stat-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+
+  .callout.gold {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+  }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+
+  .checklist li::before {
+    content: '☐';
+    font-size: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .checklist li.required::before {
+    color: var(--gold);
+  }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula-box {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2;
+  }
+
+  .formula-box .comment {
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════
+     FLOW STEPS
+  ═══════════════════════════════════════════ */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    padding: 14px 0;
+    position: relative;
+  }
+
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--navy-card);
+    border: 2px solid var(--navy-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+  }
+
+  .flow-step-body {
+    flex: 1;
+    padding-top: 8px;
+  }
+
+  .flow-step-body strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-body span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     STATE MATRIX CARDS
+  ═══════════════════════════════════════════ */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .state-card {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid;
+  }
+
+  .state-card.state-a {
+    background: var(--green-dim);
+    border-color: rgba(92,184,122,0.3);
+  }
+  .state-card.state-b {
+    background: var(--blue-dim);
+    border-color: rgba(91,141,200,0.3);
+  }
+  .state-card.state-c {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .state-card.state-d {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.3);
+  }
+
+  .state-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .state-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .state-a .state-badge { background: rgba(92,184,122,0.2); color: var(--green); }
+  .state-b .state-badge { background: rgba(91,141,200,0.2); color: var(--blue); }
+  .state-c .state-badge { background: rgba(224,123,60,0.2); color: var(--orange); }
+  .state-d .state-badge { background: rgba(224,92,92,0.2); color: var(--red); }
+
+  .state-card .state-name { font-size: 13px; font-weight: 600; }
+  .state-a .state-name { color: var(--green); }
+  .state-b .state-name { color: var(--blue); }
+  .state-c .state-name { color: var(--orange); }
+  .state-d .state-name { color: var(--red); }
+
+  .state-card ul {
+    list-style: none;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .state-card ul li { color: var(--text-secondary); }
+  .state-card ul li::before { content: '›  '; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER
+  ═══════════════════════════════════════════ */
+  .circuit-level {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+
+  .circuit-level.l1 {
+    background: var(--yellow-dim);
+    border-color: rgba(212,184,74,0.3);
+  }
+  .circuit-level.l2 {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .circuit-level.l3 {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.35);
+  }
+
+  .circuit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .circuit-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .l1 .circuit-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .l2 .circuit-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .l3 .circuit-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .circuit-level h4 { margin: 0; }
+  .l1 h4 { color: var(--yellow); }
+  .l2 h4 { color: var(--orange); }
+  .l3 h4 { color: var(--red); }
+
+  .circuit-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 13.5px;
+  }
+
+  .trigger-list, .action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .trigger-list .label, .action-list .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .trigger-list li, .action-list li {
+    list-style: none;
+    color: var(--text-secondary);
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .trigger-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-muted); }
+  .action-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 2px; }
+
+  /* ═══════════════════════════════════════════
+     CAPITAL ALLOCATION TIERS
+  ═══════════════════════════════════════════ */
+  .tier-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .tier-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tier-1 .tier-header { background: rgba(92,184,122,0.07); border-bottom: 1px solid rgba(92,184,122,0.2); }
+  .tier-2 .tier-header { background: rgba(91,141,200,0.07); border-bottom: 1px solid rgba(91,141,200,0.2); }
+  .tier-3 .tier-header { background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); }
+
+  .tier-icon {
+    font-size: 22px;
+    width: 40px;
+    text-align: center;
+  }
+
+  .tier-header-info .tier-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .tier-1 .tier-range { color: var(--green); }
+  .tier-2 .tier-range { color: var(--blue); }
+  .tier-3 .tier-range { color: var(--gold-light); }
+
+  .tier-header-info .tier-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .tier-body {
+    padding: 18px 22px;
+    background: var(--navy-card);
+  }
+
+  .alloc-bar-wrap {
+    margin: 12px 0 8px;
+  }
+
+  .alloc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .alloc-label { width: 160px; color: var(--text-secondary); flex-shrink: 0; }
+  .alloc-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--navy-border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .alloc-bar { height: 100%; border-radius: 3px; }
+  .alloc-pct {
+    width: 40px;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .redline-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+  }
+
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .redline-text {
+    font-size: 13.5px;
+    color: #F0A0A0;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     SOP TIMELINE
+  ═══════════════════════════════════════════ */
+  .sop-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sop-step {
+    display: flex;
+    gap: 18px;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .sop-step:hover { border-color: rgba(201,168,76,0.3); }
+
+  .sop-step-icon {
+    font-size: 20px;
+    width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sop-step-content strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .sop-step-content .time-badge {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+
+  .sop-step-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 6px 0 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     LOG TABLE
+  ═══════════════════════════════════════════ */
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* ═══════════════════════════════════════════
+     DIVIDER
+  ═══════════════════════════════════════════ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     DISCLAIMER
+  ═══════════════════════════════════════════ */
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+
+  .disclaimer strong { color: var(--text-secondary); }
+
+  /* ═══════════════════════════════════════════
+     PRINT / RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .state-grid, .circuit-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════════ */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+
+  strong { color: var(--text-primary); }
+
+  .highlight { color: var(--gold-light); font-weight: 500; }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.bullets li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  ul.bullets li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 11px;
+    top: 3px;
+  }
+
+  .page-break { page-break-before: always; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+</style>
+<style>
+
+  /* ═══ P03 策略手册页（基于 demo 变量扩展）══════════════════ */
+  .strategies-page { --sidebar-w: 270px; --purple: #A78BFA; --cyan: #38bdf8; }
+
+  .strategies-page .main {
+    flex: 1;
+    max-width: 1320px;
+    padding: 48px 52px 64px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .strategies-page a.sidebar-logo {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .strategies-page .nav-item .icon { margin-right: 6px; opacity: 0.85; }
+
+  .strategies-page .nav-item.active {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .strategies-page .sidebar-logo .logo-title span {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .strategies-page .nav-pill {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 100px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+
+  .strategies-page .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 24px 0;
+    border-top: 1px solid var(--navy-border);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .strategies-page .hero::before {
+    content: 'P03';
+    font-size: 120px;
+    color: rgba(201,168,76,0.06);
+  }
+
+  .strategies-page .hero h1 em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  .strategies-page .hero-meta .value.hero-stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--gold-light);
+  }
+
+  .strategies-page .filter-bar {
+    padding: 20px 24px;
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    background: var(--navy-mid);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 28px;
+  }
+
+  .strategies-page .filter-title {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .strategies-page .filter-rows { display: flex; flex-direction: column; gap: 10px; }
+  .strategies-page .filter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .strategies-page .filter-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    width: 56px;
+    flex-shrink: 0;
+  }
+
+  .strategies-page .filter-btn {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+  }
+
+  .strategies-page .filter-btn:hover {
+    border-color: rgba(201,168,76,0.45);
+    color: var(--text-primary);
+  }
+
+  .strategies-page .filter-btn.active {
+    background: var(--gold-dim);
+    border-color: rgba(201,168,76,0.45);
+    color: var(--gold-light);
+  }
+
+  .strategies-page .filter-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+
+  .strategies-page .search-box {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    outline: none;
+    font-family: inherit;
+    width: 200px;
+    transition: border-color 0.15s;
+  }
+
+  .strategies-page .search-box:focus { border-color: var(--gold); }
+  .strategies-page .search-box::placeholder { color: var(--text-muted); }
+
+  .strategies-page .reset-btn {
+    background: transparent;
+    border: 1px solid var(--navy-border);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .strategies-page .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .strategies-page .match-count {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .strategies-page .match-count span { color: var(--gold-light); font-weight: 600; }
+
+  .strategies-page .content { padding: 0; flex: 1; }
+
+  .strategies-page .tab-bar { display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+
+  .strategies-page .tab-btn {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .strategies-page .tab-btn:hover { color: var(--text-primary); border-color: rgba(201,168,76,0.35); }
+  .strategies-page .tab-btn.active {
+    background: var(--gold-dim);
+    border-color: rgba(201,168,76,0.45);
+    color: var(--gold-light);
+  }
+
+  .strategies-page #cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+  }
+
+  .strategies-page .strategy-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-card);
+  }
+
+  .strategies-page .strategy-card:hover {
+    border-color: rgba(201,168,76,0.25);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .strategies-page .card-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--navy-border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .strategies-page .card-title-group { flex: 1; min-width: 0; }
+
+  .strategies-page .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+  }
+
+  .strategies-page .card-zh {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .strategies-page .card-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .strategies-page .badge-dir {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: var(--radius);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .strategies-page .badge-dir.up { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .strategies-page .badge-dir.down { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .strategies-page .badge-dir.neutral { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .strategies-page .badge-dir.income { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.35); }
+  .strategies-page .badge-dir.hedge { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.28); }
+
+  .strategies-page .stars { font-size: 11px; letter-spacing: 1px; color: var(--gold); }
+
+  .strategies-page .card-meta {
+    padding: 12px 20px;
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid var(--navy-border);
+    flex-wrap: wrap;
+  }
+
+  .strategies-page .meta-item { display: flex; flex-direction: column; gap: 2px; }
+
+  .strategies-page .meta-key {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .strategies-page .meta-val {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+  }
+
+  .strategies-page .meta-val.green { color: var(--green); }
+  .strategies-page .meta-val.red { color: var(--red); }
+  .strategies-page .meta-val.accent { color: var(--gold-light); }
+
+  .strategies-page .env-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .strategies-page .env-tag {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--navy-border);
+    color: var(--text-secondary);
+  }
+
+  .strategies-page .source-bar {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--navy-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .strategies-page .source-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .strategies-page .source-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .strategies-page .source-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+  }
+
+  .strategies-page .pill-delta { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.25); }
+  .strategies-page .pill-theta { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.25); }
+  .strategies-page .pill-vega  { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.25); }
+  .strategies-page .pill-gamma { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+
+  .strategies-page .card-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--navy-border);
+    background: rgba(0,0,0,0.15);
+  }
+
+  .strategies-page .card-tab {
+    flex: 1;
+    padding: 9px 6px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+    border: none;
+    background: none;
+    font-family: inherit;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .strategies-page .card-tab:hover { color: var(--text-secondary); }
+  .strategies-page .card-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+  .strategies-page .card-body {
+    padding: 14px 20px 18px;
+    flex: 1;
+    min-height: 160px;
+  }
+
+  .strategies-page .list-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .strategies-page .list-items li {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .strategies-page .li-icon { flex-shrink: 0; margin-top: 1px; font-size: 12px; }
+
+  .strategies-page .steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    counter-reset: step;
+  }
+
+  .strategies-page .steps li {
+    display: flex;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    counter-increment: step;
+  }
+
+  .strategies-page .step-num {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    color: var(--gold);
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .strategies-page .why-box {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  .strategies-page .why-box strong { color: var(--gold-light); }
+
+  .strategies-page .no-results {
+    grid-column: 1/-1;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    border: 1px dashed var(--navy-border);
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .strategies-page .no-results .icon { font-size: 32px; margin-bottom: 12px; }
+  .strategies-page .no-results p { font-size: 14px; color: var(--text-secondary); }
+
+  .strategies-page .hamburger {
+    display: none;
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 300;
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .strategies-page .disclaimer { margin-top: 40px; }
+
+  @media (max-width: 1100px) {
+    .strategies-page .sidebar {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: min(280px, 88vw);
+      z-index: 250;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+    .strategies-page .sidebar.open { transform: translateX(0); }
+    .strategies-page .main { max-width: 100%; padding: 32px 20px 48px; }
+    .strategies-page .hamburger { display: block; }
+    .strategies-page #cards-container { grid-template-columns: 1fr; }
+    .strategies-page .filter-bar { padding: 16px; }
+  }
+
+</style>
+</head>
+<body>
+<div class="layout strategies-page">
+<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <a href="#" class="sidebar-logo">
+    <div class="logo-title">期权策略<span> · 训练系统</span></div>
+  </a>
+
+  <div class="nav-section-label">学习基础</div>
+  <a href="#" class="nav-item"><span class="icon">📚</span>期权基础知识</a>
+  <a href="#" class="nav-item"><span class="icon">🗺️</span>学习路径总览</a>
+
+  <div class="nav-section-label">策略体系</div>
+  <a href="#" class="nav-item active"><span class="icon">📋</span>策略操作全手册 <span class="nav-pill">核心</span></a>
+  <a href="#" class="nav-item"><span class="icon">🎯</span>市场环境与策略选择 <span class="nav-pill">核心</span></a>
+
+  <div class="nav-section-label">五大模块</div>
+  <a href="#" class="nav-item"><span class="icon">①</span>大盘环境分析</a>
+  <a href="#" class="nav-item"><span class="icon">②</span>板块轮动分析</a>
+  <a href="#" class="nav-item"><span class="icon">③</span>期权商机扫描</a>
+  <a href="#" class="nav-item"><span class="icon">④</span>事件风险日历</a>
+  <a href="#" class="nav-item"><span class="icon">⑤</span>综合信号决策</a>
+
+  <div class="nav-section-label">工具参考</div>
+  <a href="#" class="nav-item"><span class="icon">🏢</span>标的档案库</a>
+  <a href="#" class="nav-item"><span class="icon">⚡</span>决策矩阵速查</a>
+  <a href="#" class="nav-item"><span class="icon">🖥️</span>策略逻辑仪表盘</a>
+  <a href="#" class="nav-item"><span class="icon">🔧</span>常用工具指南</a>
+
+  <a href="#" class="nav-item" style="margin-top:4px;border-top:1px solid var(--navy-border);padding-top:14px;"><span class="icon">🎯</span>实战练习</a>
+
+  <div class="sidebar-footer">
+    V3.0 · 更新：2026年4月<br>
+    仅供教育用途，不构成投资建议
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">P03 · STRATEGIES</div>
+    <h1>策略操作<em>全手册</em></h1>
+    <p class="hero-sub">
+      15 种策略完整操作规范（风险等级 + 门槛 + 操作步骤 + 逻辑链）。<br>
+      关键区别：每个策略明确标注<strong class="text-gold">收益来源</strong>（Delta / Theta / Vega / Gamma），训练 <em>WHY</em> 思维，而非背结论。
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="label">策略总数</span><span class="value hero-stat-num">15</span></div>
+      <div class="hero-meta-item"><span class="label">风险等级</span><span class="value hero-stat-num">5</span></div>
+      <div class="hero-meta-item"><span class="label">市场环境</span><span class="value hero-stat-num">7</span></div>
+      <div class="hero-meta-item"><span class="label">收益来源维度</span><span class="value hero-stat-num">4</span></div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-title">三维筛选（方向 × 风险 × 环境）</div>
+    <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+      <div class="filter-rows">
+        <div class="filter-row">
+          <div class="filter-label">方向</div>
+          <button class="filter-btn active" data-group="dir" data-val="">全部</button>
+          <button class="filter-btn" data-group="dir" data-val="看涨">看涨</button>
+          <button class="filter-btn" data-group="dir" data-val="看跌">看跌</button>
+          <button class="filter-btn" data-group="dir" data-val="中性">中性</button>
+          <button class="filter-btn" data-group="dir" data-val="收入型">收入型</button>
+          <button class="filter-btn" data-group="dir" data-val="对冲">对冲</button>
+        </div>
+        <div class="filter-row">
+          <div class="filter-label">风险</div>
+          <button class="filter-btn active" data-group="risk" data-val="">全部</button>
+          <button class="filter-btn" data-group="risk" data-val="1">★</button>
+          <button class="filter-btn" data-group="risk" data-val="2">★★</button>
+          <button class="filter-btn" data-group="risk" data-val="3">★★★</button>
+          <button class="filter-btn" data-group="risk" data-val="4">★★★★</button>
+          <button class="filter-btn" data-group="risk" data-val="5">★★★★★</button>
+        </div>
+        <div class="filter-row">
+          <div class="filter-label">环境</div>
+          <button class="filter-btn active" data-group="env" data-val="">全部</button>
+          <button class="filter-btn" data-group="env" data-val="趋势">趋势</button>
+          <button class="filter-btn" data-group="env" data-val="震荡">震荡</button>
+          <button class="filter-btn" data-group="env" data-val="高IV">高IV</button>
+          <button class="filter-btn" data-group="env" data-val="低IV">低IV</button>
+          <button class="filter-btn" data-group="env" data-val="财报/事件">财报/事件</button>
+        </div>
+      </div>
+      <div class="filter-right" style="margin-top:auto;">
+        <input class="search-box" placeholder="搜索策略名称…" id="searchInput">
+        <button class="reset-btn" onclick="resetFilters()">重置</button>
+        <div class="match-count">当前匹配：<span id="matchCount">15</span>/15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-view="all" onclick="setView('all',this)">📋 全部视图</button>
+      <button class="tab-btn" data-view="apply" onclick="setView('apply',this)">✅ 适用场景</button>
+      <button class="tab-btn" data-view="forbid" onclick="setView('forbid',this)">🚫 禁止场景</button>
+      <button class="tab-btn" data-view="steps" onclick="setView('steps',this)">🔢 操作步骤</button>
+      <button class="tab-btn" data-view="why" onclick="setView('why',this)">💡 逻辑链（WHY）</button>
+    </div>
+
+    <div id="cards-container"></div>
+
+    <div class="disclaimer" id="disclaimer">
+      <strong>免责声明：</strong>本页面及所载全部内容（包括但不限于策略说明、操作步骤、风险等级、希腊字母收益来源标注、筛选与搜索功能所展示的信息）仅供教育与知识训练用途，用于理解期权策略的一般性逻辑与术语，不构成任何形式的投资建议、交易指令、收益承诺或法律、税务、合规意见。期权与杠杆产品具有高风险，可能导致本金全部损失或超出本金的负债；过往表现、示例与假设不代表未来结果。您应结合自身风险承受能力、投资目标与专业顾问意见独立决策，并自行承担全部交易后果。作者与发布方不对因使用或依赖本页面信息而产生的任何直接或间接损失承担责任。
+    </div>
+  </div>
+
+</div>
+</div>
+<script>
+// ── DATA ──
+const strategies = [
+  {
+    id:'long-call',
+    name:'Long Call',
+    zh:'买入认购期权',
+    dir:'看涨',
+    risk:2,
+    env:['趋势','低IV'],
+    source:['Delta','Vega'],
+    maxProfit:'无限',
+    maxLoss:'权利金全损',
+    breakeven:'行权价 + 权利金',
+    apply:[
+      '标的处于明确上升趋势（MA20 > MA50 > MA200）',
+      'IV百分位 < 30%，期权相对便宜',
+      '有明确催化剂：财报预期、产品发布、政策利好',
+      'DTE 30~60天，时间价值损耗可控'
+    ],
+    forbid:[
+      'IV百分位 > 60%，买入成本过高',
+      '横盘震荡行情，Delta推动力不足',
+      'DTE < 14天，Theta加速衰减',
+      '标的处于下降趋势或盘整区间'
+    ],
+    steps:[
+      '确认方向：标的收于MA20之上，MA20 > MA50',
+      '检查IV百分位：需 < 30%，确保估值合理',
+      '选择到期日：优先DTE 30~45天',
+      '选择行权价：ATM 或轻度虚值（Delta 0.40~0.50）',
+      '确认流动性：买卖价差 < 标的价格0.3%',
+      '执行：以市价限价单买入Call',
+      '管理：盈利 ≥50% 止盈，亏损 ≥50% 止损'
+    ],
+    why:'<strong>Delta驱动</strong>：标的每上涨$1，Call价值增加Delta。<strong>Vega受益</strong>：低IV买入，若市场波动率回升则额外获益。时间是敌人——需要标的在DTE耗尽前完成上涨。'
+  },
+  {
+    id:'long-put',
+    name:'Long Put',
+    zh:'买入认沽期权',
+    dir:'看跌',
+    risk:2,
+    env:['趋势','低IV'],
+    source:['Delta','Vega'],
+    maxProfit:'行权价 - 权利金（接近无限）',
+    maxLoss:'权利金全损',
+    breakeven:'行权价 - 权利金',
+    apply:[
+      '标的处于明确下降趋势或关键支撑位破位',
+      'IV百分位 < 30%，对冲/投机成本低',
+      '持有多头仓位需要下行对冲',
+      '宏观事件前建立保护性头寸'
+    ],
+    forbid:[
+      'IV百分位 > 60%，对冲溢价过高',
+      '牛市上升趋势中，逆势交易',
+      'DTE < 14天且距大幅下跌概率低',
+      '仅凭情绪/消息面买入，无技术确认'
+    ],
+    steps:[
+      '确认方向：标的跌破MA20，MA20下穿MA50',
+      '检查IV百分位：需 < 40%',
+      '选择到期日：DTE 30~60天',
+      '选择行权价：ATM 或轻度虚值（Delta -0.40~-0.50）',
+      '评估风险回报比：目标盈亏比 ≥ 2:1',
+      '执行：买入Put',
+      '管理：盈利 ≥50% 止盈，亏损 ≥40% 止损'
+    ],
+    why:'<strong>负Delta驱动</strong>：标的每下跌$1，Put价值增加|Delta|。<strong>对冲价值</strong>：在多头组合中，Put的负Delta抵消持仓损失，实现保险功能。'
+  },
+  {
+    id:'covered-call',
+    name:'Covered Call',
+    zh:'备兑开仓（持股卖Call）',
+    dir:'收入型',
+    risk:2,
+    env:['震荡','高IV'],
+    source:['Theta'],
+    maxProfit:'权利金 + (行权价 - 持仓成本)',
+    maxLoss:'持仓成本 - 权利金（标的归零风险）',
+    breakeven:'持仓成本 - 权利金',
+    apply:[
+      '已持有100股（每份合约）的标的',
+      'IV百分位 > 50%，权利金丰厚',
+      '预期标的短期横盘或温和上涨',
+      '愿意在行权价以上出售持仓'
+    ],
+    forbid:[
+      '强势上涨趋势中，会错失大幅盈利',
+      'IV百分位 < 30%，收权利金价值低',
+      '标的处于下降趋势，应先止损持仓',
+      '不愿意被行权出售股票时'
+    ],
+    steps:[
+      '确认已持有标的：每份合约需100股',
+      '检查IV百分位：目标 > 50%',
+      '选择行权价：虚值10~15%（OTM Call），Delta 0.20~0.30',
+      '选择到期日：DTE 21~45天（Theta衰减最优区间）',
+      '执行：卖出Call（Sell to Open）',
+      '管理：权利金盈利50%买回（BTC at 50%）',
+      '若标的涨近行权价：提前买回，上移行权价或等待行权'
+    ],
+    why:'<strong>Theta收割</strong>：时间是朋友——每天Theta流入。<strong>成本摊薄</strong>：持续卖Call降低持仓成本基础。核心逻辑：将持仓流动性变现，用时间换溢价收入。'
+  },
+  {
+    id:'csp',
+    name:'Cash-Secured Put',
+    zh:'现金担保卖Put',
+    dir:'收入型',
+    risk:2,
+    env:['震荡','高IV'],
+    source:['Theta'],
+    maxProfit:'权利金（有限）',
+    maxLoss:'行权价 - 权利金（标的归零时）',
+    breakeven:'行权价 - 权利金',
+    apply:[
+      'IV百分位 > 50%，收权利金价值高',
+      '标的具有长期持有价值（愿意低价接货）',
+      '账户有足够现金/保证金支撑行权',
+      '目标行权价处有强技术支撑'
+    ],
+    forbid:[
+      '标的处于明确下降趋势',
+      'IV百分位 < 30%，权利金薄，风险收益不划算',
+      '账户保证金不足支撑潜在行权',
+      '不愿意承接标的时（应改用Put Spread）'
+    ],
+    steps:[
+      '筛选标的：长期看好且愿意持有的优质标的',
+      '检查IV百分位：需 > 50%',
+      '确定行权价：虚值5~15%的支撑位附近，Delta -0.20~-0.30',
+      '选择到期日：DTE 21~45天',
+      '确认保证金：账户需预留行权价×100的现金',
+      '执行：卖出Put（Sell to Open）',
+      '管理：50%盈利平仓，若被行权则承接股票开始卖Call（Wheel）'
+    ],
+    why:'<strong>Theta收割 + 低价接货</strong>：以理想价格"被强制买入"优质标的，同时收取时间价值。Wheel策略核心第一步：CSP → Covered Call → CSP循环产生持续现金流。'
+  },
+  {
+    id:'bull-call-spread',
+    name:'Bull Call Spread',
+    zh:'牛市认购垂直价差',
+    dir:'看涨',
+    risk:2,
+    env:['趋势','低IV'],
+    source:['Delta'],
+    maxProfit:'价差宽度 - 净权利金',
+    maxLoss:'净权利金',
+    breakeven:'买入行权价 + 净权利金',
+    apply:[
+      '温和看涨，有明确目标价位',
+      '高IV环境下也可使用（比单腿Long Call便宜）',
+      '想限制最大亏损（学员/小账户友好）',
+      '标的价格在支撑位附近'
+    ],
+    forbid:[
+      '预期大幅快速上涨，价差上限会截断利润',
+      'IV即将大幅下降（Vega净敞口为负）',
+      '距到期日 < 7天，价差难以有效交易'
+    ],
+    steps:[
+      '确认方向：温和看涨，有目标价位',
+      '买入行权价：ATM或轻度虚值Call（Buy Leg）',
+      '卖出行权价：目标价附近的Call（Sell Leg，减少成本）',
+      '到期日：DTE 30~60天',
+      '计算最大盈利/亏损：(卖出行权价-买入行权价)×100 - 净权利金',
+      '执行：以净借记（Net Debit）方式建仓',
+      '管理：盈利75%获利了结，亏损50%止损'
+    ],
+    why:'<strong>Delta主导，Vega中性化</strong>：买入Call获得方向性Delta，卖出更高行权价Call抵消部分Vega和Theta风险。用利润上限换取更低的建仓成本——适合"对的不多"的温和行情。'
+  },
+  {
+    id:'bear-put-spread',
+    name:'Bear Put Spread',
+    zh:'熊市认沽垂直价差',
+    dir:'看跌',
+    risk:2,
+    env:['趋势','低IV'],
+    source:['Delta'],
+    maxProfit:'价差宽度 - 净权利金',
+    maxLoss:'净权利金',
+    breakeven:'买入行权价 - 净权利金',
+    apply:[
+      '温和看跌，有明确目标价位',
+      '标的跌破关键支撑位',
+      '想限制最大亏损（对冲目的）',
+      'IV较低，购买成本相对合理'
+    ],
+    forbid:[
+      '预期大幅快速下跌，应使用Long Put',
+      'IV百分位 > 60%，价差成本过高',
+      '牛市强势上涨趋势中逆势操作'
+    ],
+    steps:[
+      '确认方向：温和看跌，标的跌破支撑',
+      '买入行权价：ATM Put（Buy Leg）',
+      '卖出行权价：目标价附近的更低行权价Put（Sell Leg）',
+      '到期日：DTE 30~60天',
+      '计算最大盈亏',
+      '执行：净借记建仓',
+      '管理：盈利75%获利了结，亏损50%止损'
+    ],
+    why:'<strong>负Delta主导</strong>：标的下跌，净Delta获益。卖出更低行权价Put降低建仓成本，以限制利润上限为代价换取更高胜率和更低成本。'
+  },
+  {
+    id:'bull-put-spread',
+    name:'Bull Put Spread',
+    zh:'牛市认沽价差（卖Put价差）',
+    dir:'收入型',
+    risk:2,
+    env:['震荡','高IV'],
+    source:['Theta','Delta'],
+    maxProfit:'净权利金（有限）',
+    maxLoss:'价差宽度 - 净权利金',
+    breakeven:'卖出行权价 - 净权利金',
+    apply:[
+      'IV百分位 > 50%，权利金丰厚',
+      '标的处于震荡或温和上涨行情',
+      '行权价区间有强支撑',
+      '想要限制风险的卖方策略'
+    ],
+    forbid:[
+      '标的处于明确下降趋势',
+      'IV百分位 < 30%，权利金不够补偿风险',
+      '行权区间无明显技术支撑'
+    ],
+    steps:[
+      '选择标的：震荡或温和上涨的标的',
+      '检查IV百分位：需 > 50%',
+      '卖出行权价：支撑位附近OTM Put，Delta -0.20~-0.30',
+      '买入行权价：更低的Put作为风险保护（同月）',
+      '到期日：DTE 21~45天',
+      '执行：净贷记（Net Credit）建仓',
+      '管理：盈利50%买回（BTC at 50%），DTE < 7天提前平仓'
+    ],
+    why:'<strong>Theta + 方向性Delta</strong>：时间流逝是朋友，标的不下跌就能获利。买入更低行权价的Put将最大亏损锁定，是资金效率更高的卖Put方式——Portfolio Margin账户首选。'
+  },
+  {
+    id:'bear-call-spread',
+    name:'Bear Call Spread',
+    zh:'熊市认购价差（卖Call价差）',
+    dir:'收入型',
+    risk:2,
+    env:['震荡','高IV'],
+    source:['Theta','Delta'],
+    maxProfit:'净权利金（有限）',
+    maxLoss:'价差宽度 - 净权利金',
+    breakeven:'卖出行权价 + 净权利金',
+    apply:[
+      'IV百分位 > 50%',
+      '标的处于震荡或温和下跌行情',
+      '卖出行权价附近有强阻力位',
+      '期望上方空间有限的行情'
+    ],
+    forbid:[
+      '强势突破上涨行情，亏损无上限（相对价差宽度）',
+      'IV百分位 < 30%，收入不足',
+      '卖出行权价无明显阻力位支撑'
+    ],
+    steps:[
+      '确认方向：震荡偏空，阻力位清晰',
+      '检查IV百分位：需 > 50%',
+      '卖出行权价：阻力位附近OTM Call，Delta 0.20~0.30',
+      '买入行权价：更高行权价的Call作保护',
+      '到期日：DTE 21~45天',
+      '执行：净贷记建仓',
+      '管理：盈利50%平仓，DTE < 7天强制平仓'
+    ],
+    why:'<strong>Theta驱动，负Delta方向性</strong>：标的不上涨就获利。与Bull Put Spread配合构成Iron Condor，两端同时收权利金。卖方逻辑核心：概率 > 50% 的范围内收取时间价值。'
+  },
+  {
+    id:'long-straddle',
+    name:'Long Straddle',
+    zh:'买入跨式组合',
+    dir:'中性',
+    risk:3,
+    env:['低IV','财报/事件'],
+    source:['Vega','Gamma'],
+    maxProfit:'无限（双向均可）',
+    maxLoss:'两腿权利金之和',
+    breakeven:'行权价 ± 净权利金',
+    apply:[
+      '即将有重大事件（财报、FDA审批、宏观数据）',
+      'IV百分位 < 30%，买入成本低',
+      '预期大幅波动，但方向不确定',
+      '历史财报季标的平均波动率 > 隐含波动率'
+    ],
+    forbid:[
+      'IV百分位 > 60%，"买贵了Vega"导致IV Crush亏损',
+      '财报后建仓（IV已Crush）',
+      '横盘震荡行情中，Theta快速侵蚀',
+      '建仓后没有足够的价格移动'
+    ],
+    steps:[
+      '检查IV百分位：必须 < 30%（核心门槛）',
+      '确认事件催化剂：财报日、FDA日、FOMC等',
+      '比较隐含波动率 vs 历史实际波动率',
+      '同一行权价（ATM）同时买入Call和Put',
+      '选择到期日：事件后1~2周到期',
+      '计算盈亏平衡：需要移动幅度 > 总权利金',
+      '管理：事件前一天或事件后立即平仓（避免IV Crush）'
+    ],
+    why:'<strong>Vega + Gamma驱动</strong>：IV上升推高双腿价值（Vega正敞口）；标的大幅移动后Gamma加速获利。核心逻辑：押注实际波动率 > 隐含波动率。最大风险：标的不动 + IV下降（双重打击）。'
+  },
+  {
+    id:'short-straddle',
+    name:'Short Straddle',
+    zh:'卖出跨式组合',
+    dir:'收入型',
+    risk:5,
+    env:['高IV','震荡'],
+    source:['Theta'],
+    maxProfit:'两腿权利金之和（有限）',
+    maxLoss:'理论无限（双向）',
+    breakeven:'行权价 ± 净权利金',
+    apply:[
+      'IV百分位 > 80%，隐含波动率极度高估',
+      '财报后IV Crush机会',
+      '标的处于极度震荡但无明确方向的行情',
+      '仅适用于Portfolio Margin大账户 + 高级选手'
+    ],
+    forbid:[
+      '趋势性行情（损失无上限）',
+      'IV百分位 < 60%，权利金不够补偿裸卖双腿风险',
+      '保证金账户资金不足',
+      '初学者/中级水平禁止使用'
+    ],
+    steps:[
+      '确认IV百分位 > 80%（核心前提）',
+      '确认标的近期处于震荡区间',
+      '卖出ATM Call + 卖出ATM Put（同行权价同到期日）',
+      '到期日：DTE 30~45天',
+      '设置风险上限：Delta超过±0.30立即调仓',
+      '管理：盈利25%~50%立即平仓，不贪',
+      '若被套：滚动至下一月份（Roll out）'
+    ],
+    why:'<strong>极致Theta收割</strong>：双腿同时收Theta，是所有策略中Theta/日最高的。代价：双向无上限风险。核心逻辑：押注实际波动率 < 隐含波动率，收取IV溢价。<strong>⚠ 高手专属工具，错误使用可爆仓。</strong>'
+  },
+  {
+    id:'long-strangle',
+    name:'Long Strangle',
+    zh:'买入宽跨式组合',
+    dir:'中性',
+    risk:3,
+    env:['低IV','财报/事件'],
+    source:['Vega','Gamma'],
+    maxProfit:'无限（双向均可）',
+    maxLoss:'两腿权利金之和',
+    breakeven:'Call行权价+权利金 / Put行权价-权利金',
+    apply:[
+      '事件前IV百分位 < 30%',
+      '预期大幅波动，比Straddle便宜但需要更大移动幅度',
+      '行权价选虚值：Call OTM 5~10%，Put OTM 5~10%'
+    ],
+    forbid:[
+      'IV百分位 > 50%，成本过高',
+      '横盘震荡行情（Theta双重吃仓位）',
+      '移动幅度低于两腿权利金之和时无法盈利'
+    ],
+    steps:[
+      '检查IV百分位：需 < 30%',
+      '选择到期日：事件后1~2周',
+      '买入OTM Call（虚值5~10%）',
+      '买入OTM Put（虚值5~10%）',
+      '计算盈亏平衡：两个方向分别计算',
+      '管理：事件发生后立即评估是否平仓，避免IV Crush'
+    ],
+    why:'<strong>比Straddle更便宜的Vega敞口</strong>：虚值期权权利金更低，但需要更大的价格移动才能盈利。适合确定性大幅移动但方向不明的场景——用更低成本换取更大盈亏平衡点。'
+  },
+  {
+    id:'short-strangle',
+    name:'Short Strangle',
+    zh:'卖出宽跨式组合',
+    dir:'收入型',
+    risk:4,
+    env:['高IV','震荡'],
+    source:['Theta'],
+    maxProfit:'两腿权利金之和（有限）',
+    maxLoss:'理论无限（双向）',
+    breakeven:'Call行权价+权利金 / Put行权价-权利金',
+    apply:[
+      'IV百分位 > 60%',
+      '预期标的在两个行权价之间震荡',
+      '比Short Straddle更宽的盈利区间',
+      'Portfolio Margin账户，保证金效率高'
+    ],
+    forbid:[
+      '趋势性行情',
+      'IV百分位 < 50%',
+      '行权价外无明显技术支撑/阻力',
+      '账户保证金不足'
+    ],
+    steps:[
+      '检查IV百分位：需 > 60%',
+      '卖出OTM Call：Delta 0.15~0.25，阻力位附近',
+      '卖出OTM Put：Delta -0.15~-0.25，支撑位附近',
+      '同到期日，DTE 30~45天',
+      '确认盈利区间宽度合理',
+      '管理：盈利50%平仓；Delta偏移超±0.30时调仓'
+    ],
+    why:'<strong>Theta双腿收割 + 更宽安全边际</strong>：相比Short Straddle，行权价更远，胜率更高，但收到的权利金更少。是最常用的卖方高胜率策略，适合稳定收租型操作风格。'
+  },
+  {
+    id:'iron-condor',
+    name:'Iron Condor',
+    zh:'铁鹰式策略',
+    dir:'收入型',
+    risk:3,
+    env:['高IV','震荡'],
+    source:['Theta'],
+    maxProfit:'净权利金（有限）',
+    maxLoss:'价差宽度 - 净权利金（任一侧）',
+    breakeven:'Put卖出行权价-权利金 / Call卖出行权价+权利金',
+    apply:[
+      'IV百分位 > 50%',
+      '标的处于宽幅震荡，有清晰支撑/阻力',
+      '不愿意承受裸卖双腿的无限风险',
+      '账户资金有限，需要风险定义型策略'
+    ],
+    forbid:[
+      '趋势性行情（单侧突破会亏损）',
+      'IV百分位 < 40%，权利金不足',
+      '行权价区间无技术依据',
+      '财报前建仓（事件驱动风险高）'
+    ],
+    steps:[
+      '检查IV百分位：需 > 50%',
+      '确定震荡区间：支撑位和阻力位',
+      '卖出OTM Put（支撑位附近，Delta -0.15~-0.25）',
+      '买入更低行权价Put（风险保护腿）',
+      '卖出OTM Call（阻力位附近，Delta 0.15~0.25）',
+      '买入更高行权价Call（风险保护腿）',
+      '到期日：DTE 30~45天',
+      '管理：整体盈利50%平仓；单腿被打穿时调整或平仓'
+    ],
+    why:'<strong>四腿Theta收割，有限风险版Short Strangle</strong>：通过买入外侧期权将最大亏损锁定，牺牲部分权利金换取可控风险。最受散户卖方欢迎的策略——在高IV环境下，宽幅震荡行情中稳定产生现金流。'
+  },
+  {
+    id:'calendar-spread',
+    name:'Calendar Spread',
+    zh:'日历价差（时间价差）',
+    dir:'中性',
+    risk:3,
+    env:['低IV','震荡'],
+    source:['Theta','Vega'],
+    maxProfit:'两腿Theta差值（有限）',
+    maxLoss:'净权利金（前腿未到期时）',
+    breakeven:'行权价附近的价格区间',
+    apply:[
+      'IV百分位 < 30%，预期IV将回升',
+      '标的短期横盘，中期有方向性预期',
+      '利用近月和远月Theta衰减速率差异',
+      '财报前不适用（除反向日历）'
+    ],
+    forbid:[
+      'IV百分位 > 60%，远月期权已被高估',
+      '标的大幅趋势性移动（价格离行权价越远亏损越大）',
+      '临近近月到期日（需提前滚动或平仓）'
+    ],
+    steps:[
+      '确认IV百分位 < 30%',
+      '选择行权价：ATM（最大Theta收益区间）',
+      '卖出近月期权（Sell Front Month，DTE 21~30）',
+      '买入远月期权（Buy Back Month，DTE 45~60，同行权价）',
+      '执行：净借记建仓',
+      '管理：近月到期前5天平仓或滚动；若标的移动超出盈利区间立即平仓'
+    ],
+    why:'<strong>Theta差值 + Vega正敞口</strong>：近月期权Theta衰减快，远月期权Theta衰减慢——收近月Theta，远月Theta损耗小。同时IV上升使远月更贵（Vega正），构成时间+波动率双重受益。'
+  },
+  {
+    id:'wheel',
+    name:'Wheel Strategy',
+    zh:'滚轮策略（Wheel）',
+    dir:'收入型',
+    risk:2,
+    env:['震荡','高IV'],
+    source:['Theta'],
+    maxProfit:'持续权利金收入（循环产生）',
+    maxLoss:'持仓成本 - 总收到权利金（标的大幅下跌）',
+    breakeven:'行权价 - 历次总收权利金',
+    apply:[
+      '长期看好标的，愿意低价买入并持有',
+      'IV百分位 > 50%，权利金丰厚',
+      '震荡市或缓慢上涨市',
+      '大账户（需要足够现金/保证金）'
+    ],
+    forbid:[
+      '标的处于下降趋势（持续接货亏损）',
+      '不愿意持有标的的情况',
+      'IV百分位 < 30%，权利金太薄',
+      '账户资金不足以支撑行权'
+    ],
+    steps:[
+      '第一轮：卖出OTM Put（CSP）收取权利金',
+      '若未被行权：权利金落袋，下月继续卖Put',
+      '若被行权：以行权价承接100股（成本=行权价-权利金）',
+      '第二轮：持股后卖出OTM Call（Covered Call）',
+      '若未被行权：权利金落袋，继续卖Call',
+      '若被行权：股票被出售，回到第一步继续卖Put',
+      '滚动循环：目标年化收益 10~25%'
+    ],
+    why:'<strong>持续Theta收割的机器</strong>：CSP（收Theta直到接货）→ Covered Call（收Theta直到出货）→ 循环。核心优势：用时间换钱，每一天都在产生现金流。核心风险：标的持续下跌时，持仓亏损超过权利金积累。选标的比选策略更重要。'
+  }
+];
+
+// ── STATE ──
+let filters = { dir: '', risk: '', env: '' };
+let searchTerm = '';
+let currentView = 'all';
+
+// ── RENDER ──
+function starsHTML(n) {
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+function dirClass(dir) {
+  const map = { '看涨':'up','看跌':'down','中性':'neutral','收入型':'income','对冲':'hedge' };
+  return map[dir] || 'neutral';
+}
+
+function pillClass(s) {
+  const map = { Delta:'pill-delta', Theta:'pill-theta', Vega:'pill-vega', Gamma:'pill-gamma' };
+  return map[s] || '';
+}
+
+function renderCard(s) {
+  const tabId = `tab-${s.id}`;
+  const bodyId = `body-${s.id}`;
+
+  const applyHTML = `<ul class="list-items">${s.apply.map(a=>`<li><span class="li-icon">✅</span><span>${a}</span></li>`).join('')}</ul>`;
+  const forbidHTML = `<ul class="list-items">${s.forbid.map(f=>`<li><span class="li-icon">🚫</span><span>${f}</span></li>`).join('')}</ul>`;
+  const stepsHTML = `<ol class="steps">${s.steps.map((st,i)=>`<li><span class="step-num">${i+1}</span><span>${st}</span></li>`).join('')}</ol>`;
+  const whyHTML = `<div class="why-box">${s.why}</div>`;
+
+  let bodyContent;
+  if (currentView === 'apply') bodyContent = applyHTML;
+  else if (currentView === 'forbid') bodyContent = forbidHTML;
+  else if (currentView === 'steps') bodyContent = stepsHTML;
+  else if (currentView === 'why') bodyContent = whyHTML;
+  else bodyContent = applyHTML; // default = apply for 'all' view
+
+  return `
+  <div class="strategy-card" data-id="${s.id}">
+    <div class="card-header">
+      <div class="card-title-group">
+        <div class="card-name">${s.name}</div>
+        <div class="card-zh">${s.zh}</div>
+      </div>
+      <div class="card-badges">
+        <div class="badge-dir ${dirClass(s.dir)}">${s.dir}</div>
+        <div class="stars" title="风险等级 ${s.risk}/5">${starsHTML(s.risk)}</div>
+      </div>
+    </div>
+    <div class="card-meta">
+      <div class="meta-item">
+        <div class="meta-key">最大盈利</div>
+        <div class="meta-val green">${s.maxProfit}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">最大亏损</div>
+        <div class="meta-val red">${s.maxLoss}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">盈亏平衡</div>
+        <div class="meta-val accent">${s.breakeven}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">适用环境</div>
+        <div class="env-tags">${s.env.map(e=>`<span class="env-tag">${e}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="source-bar">
+      <div class="source-label">收益来源</div>
+      <div class="source-pills">${s.source.map(p=>`<span class="source-pill ${pillClass(p)}">${p}</span>`).join('')}</div>
+    </div>
+    ${currentView === 'all' ? `
+    <div class="card-tabs">
+      <button class="card-tab active" onclick="switchCardTab(this,'apply-${s.id}','${s.id}')">✅ 适用</button>
+      <button class="card-tab" onclick="switchCardTab(this,'forbid-${s.id}','${s.id}')">🚫 禁止</button>
+      <button class="card-tab" onclick="switchCardTab(this,'steps-${s.id}','${s.id}')">🔢 步骤</button>
+      <button class="card-tab" onclick="switchCardTab(this,'why-${s.id}','${s.id}')">💡 WHY</button>
+    </div>
+    <div class="card-body" id="apply-${s.id}">${applyHTML}</div>
+    <div class="card-body" id="forbid-${s.id}" style="display:none">${forbidHTML}</div>
+    <div class="card-body" id="steps-${s.id}" style="display:none">${stepsHTML}</div>
+    <div class="card-body" id="why-${s.id}" style="display:none">${whyHTML}</div>
+    ` : `
+    <div class="card-body">${bodyContent}</div>
+    `}
+  </div>`;
+}
+
+function switchCardTab(btn, targetId, cardId) {
+  const card = btn.closest('.strategy-card');
+  card.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ['apply','forbid','steps','why'].forEach(section => {
+    const el = document.getElementById(`${section}-${cardId}`);
+    if (el) el.style.display = el.id === targetId ? '' : 'none';
+  });
+}
+
+function filterAndRender() {
+  const container = document.getElementById('cards-container');
+  const filtered = strategies.filter(s => {
+    if (filters.dir && s.dir !== filters.dir) return false;
+    if (filters.risk && s.risk !== parseInt(filters.risk)) return false;
+    if (filters.env && !s.env.includes(filters.env)) return false;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      if (!s.name.toLowerCase().includes(q) && !s.zh.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('matchCount').textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-results"><div class="icon">⚠️</div><p>没有匹配的策略，请调整筛选条件或清空搜索关键词。</p></div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(renderCard).join('');
+}
+
+// ── FILTER BUTTONS ──
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.dataset.group;
+    const val = btn.dataset.val;
+    document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filters[group] = val;
+    filterAndRender();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value.trim();
+  filterAndRender();
+});
+
+function resetFilters() {
+  filters = { dir:'', risk:'', env:'' };
+  searchTerm = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === '');
+  });
+  filterAndRender();
+}
+
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterAndRender();
+}
+
+// ── INIT ──
+filterAndRender();
+</script>
+</body>
+</html>
