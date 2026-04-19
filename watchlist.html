@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Watchlist — 期权参数推荐表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ROOT VARIABLES & RESET
+  ═══════════════════════════════════════════ */
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════
+     TOOLTIP SYSTEM
+  ═══════════════════════════════════════════ */
+  .term {
+    border-bottom: 1px dashed var(--gold);
+    color: var(--gold-light);
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+  }
+
+  .term::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0A1520;
+    border: 1px solid var(--gold);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    width: 260px;
+    text-align: left;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+
+  .term:hover::after { opacity: 1; }
+
+  .term::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+  }
+  .term:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     LAYOUT — SIDEBAR + CONTENT
+  ═══════════════════════════════════════════ */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-logo .logo-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .sidebar-logo .logo-ver {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 9px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+
+  .nav-item:hover {
+    color: var(--gold-light);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+
+  .nav-item.sub {
+    padding-left: 38px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    max-width: 960px;
+    padding: 48px 52px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO HEADER
+  ═══════════════════════════════════════════ */
+  .hero {
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 44px;
+    background: var(--navy-card);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .hero::before {
+    content: 'META';
+    position: absolute;
+    right: -10px;
+    top: -20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 130px;
+    font-weight: 700;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .hero-meta-item .value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION STYLES
+  ═══════════════════════════════════════════ */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    padding: 4px 9px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin: 28px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 8px;
+  }
+
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════ */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+
+  .stat-card .stat-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════
+     CALLOUT BOXES
+  ═══════════════════════════════════════════ */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  .callout.danger {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.3);
+    color: #F0A0A0;
+  }
+
+  .callout.warning {
+    background: var(--orange-dim);
+    border: 1px solid rgba(224,123,60,0.3);
+    color: #F0C0A0;
+  }
+
+  .callout.info {
+    background: var(--blue-dim);
+    border: 1px solid rgba(91,141,200,0.3);
+    color: #A0C0E0;
+  }
+
+  .callout.success {
+    background: var(--green-dim);
+    border: 1px solid rgba(92,184,122,0.3);
+    color: #A0D4B4;
+  }
+
+  .callout.gold {
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+  }
+
+  /* ═══════════════════════════════════════════
+     TABLES
+  ═══════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead tr {
+    background: rgba(201,168,76,0.08);
+    border-bottom: 1px solid var(--navy-border);
+  }
+
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(36,59,85,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+
+  /* ═══════════════════════════════════════════
+     CHECKLIST
+  ═══════════════════════════════════════════ */
+  .checklist {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+  }
+
+  .checklist li::before {
+    content: '☐';
+    font-size: 15px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .checklist li.required::before {
+    color: var(--gold);
+  }
+
+  /* ═══════════════════════════════════════════
+     FORMULA BOX
+  ═══════════════════════════════════════════ */
+  .formula-box {
+    background: #0A1520;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13.5px;
+    color: var(--gold-light);
+    line-height: 2;
+  }
+
+  .formula-box .comment {
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════
+     FLOW STEPS
+  ═══════════════════════════════════════════ */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--navy-border);
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    padding: 14px 0;
+    position: relative;
+  }
+
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--navy-card);
+    border: 2px solid var(--navy-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    z-index: 1;
+  }
+
+  .flow-step-body {
+    flex: 1;
+    padding-top: 8px;
+  }
+
+  .flow-step-body strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-body span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     STATE MATRIX CARDS
+  ═══════════════════════════════════════════ */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .state-card {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid;
+  }
+
+  .state-card.state-a {
+    background: var(--green-dim);
+    border-color: rgba(92,184,122,0.3);
+  }
+  .state-card.state-b {
+    background: var(--blue-dim);
+    border-color: rgba(91,141,200,0.3);
+  }
+  .state-card.state-c {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .state-card.state-d {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.3);
+  }
+
+  .state-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .state-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .state-a .state-badge { background: rgba(92,184,122,0.2); color: var(--green); }
+  .state-b .state-badge { background: rgba(91,141,200,0.2); color: var(--blue); }
+  .state-c .state-badge { background: rgba(224,123,60,0.2); color: var(--orange); }
+  .state-d .state-badge { background: rgba(224,92,92,0.2); color: var(--red); }
+
+  .state-card .state-name { font-size: 13px; font-weight: 600; }
+  .state-a .state-name { color: var(--green); }
+  .state-b .state-name { color: var(--blue); }
+  .state-c .state-name { color: var(--orange); }
+  .state-d .state-name { color: var(--red); }
+
+  .state-card ul {
+    list-style: none;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .state-card ul li { color: var(--text-secondary); }
+  .state-card ul li::before { content: '›  '; color: var(--text-muted); }
+
+  /* ═══════════════════════════════════════════
+     CIRCUIT BREAKER
+  ═══════════════════════════════════════════ */
+  .circuit-level {
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+
+  .circuit-level.l1 {
+    background: var(--yellow-dim);
+    border-color: rgba(212,184,74,0.3);
+  }
+  .circuit-level.l2 {
+    background: var(--orange-dim);
+    border-color: rgba(224,123,60,0.3);
+  }
+  .circuit-level.l3 {
+    background: var(--red-dim);
+    border-color: rgba(224,92,92,0.35);
+  }
+
+  .circuit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .circuit-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .l1 .circuit-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .l2 .circuit-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .l3 .circuit-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .circuit-level h4 { margin: 0; }
+  .l1 h4 { color: var(--yellow); }
+  .l2 h4 { color: var(--orange); }
+  .l3 h4 { color: var(--red); }
+
+  .circuit-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 13.5px;
+  }
+
+  .trigger-list, .action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .trigger-list .label, .action-list .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .trigger-list li, .action-list li {
+    list-style: none;
+    color: var(--text-secondary);
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .trigger-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-muted); }
+  .action-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 2px; }
+
+  /* ═══════════════════════════════════════════
+     CAPITAL ALLOCATION TIERS
+  ═══════════════════════════════════════════ */
+  .tier-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--navy-border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .tier-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tier-1 .tier-header { background: rgba(92,184,122,0.07); border-bottom: 1px solid rgba(92,184,122,0.2); }
+  .tier-2 .tier-header { background: rgba(91,141,200,0.07); border-bottom: 1px solid rgba(91,141,200,0.2); }
+  .tier-3 .tier-header { background: rgba(201,168,76,0.07); border-bottom: 1px solid rgba(201,168,76,0.2); }
+
+  .tier-icon {
+    font-size: 22px;
+    width: 40px;
+    text-align: center;
+  }
+
+  .tier-header-info .tier-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .tier-1 .tier-range { color: var(--green); }
+  .tier-2 .tier-range { color: var(--blue); }
+  .tier-3 .tier-range { color: var(--gold-light); }
+
+  .tier-header-info .tier-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .tier-body {
+    padding: 18px 22px;
+    background: var(--navy-card);
+  }
+
+  .alloc-bar-wrap {
+    margin: 12px 0 8px;
+  }
+
+  .alloc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .alloc-label { width: 160px; color: var(--text-secondary); flex-shrink: 0; }
+  .alloc-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--navy-border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .alloc-bar { height: 100%; border-radius: 3px; }
+  .alloc-pct {
+    width: 40px;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     RED LINES
+  ═══════════════════════════════════════════ */
+  .redlines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .redline-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--red-dim);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: var(--radius);
+  }
+
+  .redline-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(224,92,92,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .redline-text {
+    font-size: 13.5px;
+    color: #F0A0A0;
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     SOP TIMELINE
+  ═══════════════════════════════════════════ */
+  .sop-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sop-step {
+    display: flex;
+    gap: 18px;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .sop-step:hover { border-color: rgba(201,168,76,0.3); }
+
+  .sop-step-icon {
+    font-size: 20px;
+    width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sop-step-content strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .sop-step-content .time-badge {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+
+  .sop-step-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 6px 0 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     LOG TABLE
+  ═══════════════════════════════════════════ */
+  .log-field {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* ═══════════════════════════════════════════
+     DIVIDER
+  ═══════════════════════════════════════════ */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     DISCLAIMER
+  ═══════════════════════════════════════════ */
+  .disclaimer {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 48px;
+  }
+
+  .disclaimer strong { color: var(--text-secondary); }
+
+  /* ═══════════════════════════════════════════
+     PRINT / RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 32px 24px; }
+  }
+
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .state-grid, .circuit-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .term::after, .term::before { display: none; }
+    .main { padding: 20px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════════ */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(201,168,76,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--gold-light);
+  }
+
+  strong { color: var(--text-primary); }
+
+  .highlight { color: var(--gold-light); font-weight: 500; }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  .text-red { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-gold { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+
+  ul.bullets {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.bullets li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  ul.bullets li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 11px;
+    top: 3px;
+  }
+
+  .page-break { page-break-before: always; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+</style>
+
+<style>
+/* watchlist.html 样式（选择器已加 #watchlist-panel 前缀，与 demo 表格全局样式隔离；变量映射至 demo 色板） */
+
+#watchlist-panel {
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-background-primary: var(--navy-card);
+  --color-background-secondary: rgba(255,255,255,0.04);
+  --color-border-secondary: var(--navy-border);
+  --color-border-primary: rgba(201,168,76,0.35);
+  --color-border-tertiary: rgba(36,59,85,0.55);
+  --color-background-info: var(--blue-dim);
+  --color-text-info: var(--blue);
+  --color-background-success: var(--green-dim);
+  --color-text-success: var(--green);
+  --color-background-warning: var(--orange-dim);
+  --color-text-warning: var(--orange);
+  --color-background-danger: var(--red-dim);
+  --color-text-danger: var(--red);
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --border-radius-md: 8px;
+}
+
+#watchlist-panel, #watchlist-panel *{box-sizing:border-box}
+#watchlist-panel #ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+#watchlist-panel #srch{width:140px;font-size:12px}
+#watchlist-panel .gf{font-size:11px;padding:3px 9px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary)}
+#watchlist-panel .gf.active[data-g="all"]{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+#watchlist-panel .gf.active[data-g="A+"]{background:var(--color-background-info);color:var(--color-text-info);border-color:transparent}
+#watchlist-panel .gf.active[data-g="A"]{background:var(--color-background-success);color:var(--color-text-success);border-color:transparent}
+#watchlist-panel .gf.active[data-g="B"]{background:var(--color-background-warning);color:var(--color-text-warning);border-color:transparent}
+#watchlist-panel .gf.active[data-g="C"]{background:var(--color-background-danger);color:var(--color-text-danger);border-color:transparent}
+#watchlist-panel .badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+#watchlist-panel .g-ap{background:var(--color-background-info);color:var(--color-text-info)}
+#watchlist-panel .g-a{background:var(--color-background-success);color:var(--color-text-success)}
+#watchlist-panel .g-b{background:var(--color-background-warning);color:var(--color-text-warning)}
+#watchlist-panel .g-c{background:var(--color-background-danger);color:var(--color-text-danger)}
+#watchlist-panel .src-new{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary)}
+#watchlist-panel .src-off{background:var(--color-background-info);color:var(--color-text-info)}
+#watchlist-panel #wrap{overflow-x:auto}
+#watchlist-panel table{width:100%;border-collapse:collapse;font-size:12px;min-width:860px}
+#watchlist-panel th{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:6px 7px;border-bottom:0.5px solid var(--color-border-secondary);white-space:nowrap;background:var(--color-background-primary)}
+#watchlist-panel td{padding:5px 7px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:top}
+#watchlist-panel tr:hover td{background:var(--color-background-secondary)}
+#watchlist-panel .tk{font-weight:500;font-family:var(--font-mono);font-size:13px}
+#watchlist-panel .sp{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+#watchlist-panel #cnt{font-size:12px;color:var(--color-text-secondary);margin-left:auto}
+#watchlist-panel #sec-sel{font-size:12px}
+#watchlist-panel .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:11px}
+#watchlist-panel .li{display:flex;align-items:center;gap:5px}
+#watchlist-panel .badge {
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+/* 本页 Hero 水印：沿用 demo .hero 样式，文字改为 WL */
+#watchlist-hero.hero::before {
+  content: 'WL';
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR NAVIGATION
+══════════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-tag">OpenClaw</span>
+    <div class="logo-title">期权参数<br>推荐 Watchlist</div>
+    <div class="logo-ver">RHCLOUD AI FY27 Q1</div>
+  </div>
+  <div class="nav-section-label">本页</div>
+  <a href="#watchlist-hero" class="nav-item">概览</a>
+  <a href="#watchlist-panel" class="nav-item">筛选与表格</a>
+  <a href="#page-disclaimer" class="nav-item">免责声明</a>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<main class="main">
+
+  <div class="hero" id="watchlist-hero">
+    <div class="hero-eyebrow">OpenClaw · 期权卖方参数表</div>
+    <h1>OpenClaw Watchlist<br>期权参数推荐</h1>
+    <p class="hero-sub">共 100+ 标的，支持按级别（A+ / A / B / C）、行业与关键词筛选。</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="value" style="font-size:14px;font-weight:400;color:var(--text-secondary);line-height:1.65;max-width:640px">提示：本watchlist仅供学习使用，每季度进行更新，本次更新时间为2024年4月19日。</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="s-watchlist">
+    <div class="section-header">
+      <span class="section-num">表</span>
+      <div>
+        <div class="section-title">期权参数推荐表</div>
+      </div>
+    </div>
+
+<h2 class="sr-only">OpenClaw Watchlist 期权参数推荐表，共100+标的，支持按级别/行业/关键词筛选</h2>
+<div id="watchlist-panel" style="padding:0.75rem 0">
+<div class="legend">
+  <span class="li"><span class="badge g-ap">A+</span> 核心指数ETF，最稳健</span>
+  <span class="li"><span class="badge g-a">A</span> 蓝筹+科技，主力仓</span>
+  <span class="li"><span class="badge g-b">B</span> 防御/价值，压舱石</span>
+  <span class="li"><span class="badge g-c">C</span> 高波动，轻仓强制价差</span>
+  <span class="li"><span class="badge src-off">官方</span> OpenClaw原20标的</span>
+  <span class="li"><span class="badge src-new">建议</span> 本次扩展推荐参数</span>
+</div>
+<div id="ctrl">
+  <input type="text" id="srch" placeholder="搜索标的/行业..." oninput="render()">
+  <button class="gf active" data-g="all" onclick="setG('all')">全部</button>
+  <button class="gf" data-g="A+" onclick="setG('A+')">A+</button>
+  <button class="gf" data-g="A" onclick="setG('A')">A</button>
+  <button class="gf" data-g="B" onclick="setG('B')">B</button>
+  <button class="gf" data-g="C" onclick="setG('C')">C</button>
+  <select id="sec-sel" onchange="render()"><option value="">全部行业</option></select>
+  <span id="cnt"></span>
+</div>
+<div id="wrap">
+<table>
+<thead><tr>
+  <th style="width:68px">标的</th>
+  <th style="width:44px">级别</th>
+  <th style="width:42px">来源</th>
+  <th style="width:85px">行业</th>
+  <th style="width:52px">IVR≥</th>
+  <th style="width:60px">最低年化</th>
+  <th style="width:105px">结构</th>
+  <th style="width:72px">C状态</th>
+  <th style="width:90px">财报黑名单</th>
+  <th>特殊说明</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin-top:10px">⚠️ 本内容由RHCLOUD生成，不构成任何投资建议。期权交易具有高风险，可能导致全部本金损失。</p>
+</div>
+<script>
+const D=[
+["SPY","A+","ETF宽基",25,10,"CSP / C→价差","价差","FOMC/CPI/非农前3天",1,"SPY+QQQ合计≤净值25%；不同时满仓"],
+["QQQ","A+","ETF宽基",28,10,"CSP / C→价差","价差","FOMC/CPI/非农前3天",1,"与SPY不同时满仓；NVDA/AAPL财报周仓位×0.7"],
+["EWJ","A+","ETF日本",30,8,"CSP","暂停","BOJ前后2天",1,"净值≥$500K；USD/JPY周变<3%；C状态直接暂停"],
+["IWM","A+","ETF宽基",30,10,"CSP / C→价差","价差","FOMC/CPI/非农前3天",0,"小盘风险偏好指标；与SPY高相关，注意集中度"],
+["XLK","A+","ETF科技",28,10,"CSP / C→价差","价差","无（ETF）",0,"NVDA/AAPL权重高；财报周注意组合重叠"],
+["XLF","A+","ETF金融",28,10,"CSP / C→价差","价差","无（ETF）",0,"利率高度联动；FOMC前谨慎；区域银行事件敏感"],
+["XLV","A+","ETF医疗",25,9,"CSP / C→价差","价差","无（ETF）",0,"防御属性强；IV偏低需等待窗口；与SPX低相关"],
+["XLY","A+","ETF消费",28,10,"CSP / C→价差","价差","无（ETF）",0,"AMZN/TSLA权重高；消费信心联动"],
+["AAPL","A","科技",38,12,"CSP / C→价差","价差","财报前10天",1,"被行权3日内推CC；接货超$60K需监控遗产税"],
+["MSFT","A","科技",35,11,"CSP / C→价差","价差","财报前10天",1,"IV曲线平滑；Azure业绩日注意但不自动停开"],
+["NVO","A","生物制药",40,12,"CSP","—","财报/FDA前10天",1,"FDA事件视同财报；与SPX相关性<0.45，分散价值强"],
+["ASML","A","半导体设备",40,12,"CSP","暂停","财报前10天",1,"净值≥$1M；出口管制新闻立即暂停；价差/权利金<4%"],
+["MA","A","金融",32,10,"CSP / C→价差","价差","财报前10天",1,"MA+V合计≤净值12%；两者不同时超80%"],
+["TSM","A","半导体",42,13,"CSP","暂停","财报前10天",1,"地缘监控（台海/chip export）；ADR换算比验证"],
+["GOOGL","A","科技",35,11,"CSP / C→价差","价差","财报前10天",0,"广告收入驱动；与GOOG共财报，二选一开仓"],
+["GOOG","A","科技",35,11,"CSP / C→价差","价差","财报前10天",0,"与GOOGL共财报；不同时持有，二选一"],
+["AMZN","A","科技/零售",38,12,"CSP / C→价差","价差","财报前10天",0,"AWS+广告双驱动；AWS增速为核心跟踪指标"],
+["AVGO","A","半导体",42,13,"CSP / C→价差","价差","财报前10天",0,"AI定制芯片敞口大；与NVDA高相关，注意组合集中度"],
+["ORCL","A","科技",38,11,"CSP / C→价差","价差","财报前10天",0,"云数据库转型；财报RPO指引波动较大"],
+["CRM","A","科技SaaS",40,12,"CSP / C→价差","价差","财报前10天",0,"SaaS订阅模式；AI Agent商业化进展监控"],
+["ADBE","A","科技SaaS",40,12,"CSP / C→价差","价差","财报前10天",0,"创意软件护城河；AI替代风险与Firefly商业化"],
+["QCOM","A","半导体",40,12,"CSP / C→价差","价差","财报前10天",0,"手机终端敞口；中国市场依赖高，出口管制风险"],
+["TXN","A","半导体",35,11,"CSP / C→价差","价差","财报前10天",0,"工业/汽车模拟芯片；强周期性；库存去化节奏"],
+["AMAT","A","半导体设备",42,13,"CSP / C→价差","价差","财报前10天",0,"出口管制监控；与LRCX/KLAC高相关，注意集中度"],
+["LRCX","A","半导体设备",42,13,"CSP / C→价差","价差","财报前10天",0,"出口管制监控；与AMAT/KLAC高相关，二选一"],
+["KLAC","A","半导体设备",42,13,"CSP / C→价差","价差","财报前10天",0,"工艺控制设备垄断；与AMAT相关性高，注意集中"],
+["ANET","A","网络设备",45,13,"CSP / C→价差","价差","财报前10天",0,"AI超算网络交换机龙头；云厂商资本支出联动"],
+["INTU","A","科技/金融",38,12,"CSP / C→价差","价差","财报前10天",0,"税务SaaS季节性强（1-4月IV升高）；AI竞争监控"],
+["NOW","A","科技SaaS",45,13,"CSP / C→价差","价差","财报前10天",0,"企业IT平台龙头；AI Agent工作流商业化进展"],
+["JPM","A","银行",30,10,"CSP / C→价差","价差","财报前10天",0,"美联储利率决议联动；与XLF/KRE高相关"],
+["GS","A","投行",35,11,"CSP / C→价差","价差","财报前10天",0,"投行业务周期性强；并购/IPO市场活跃度联动"],
+["MS","A","投行",35,11,"CSP / C→价差","价差","财报前10天",0,"财富管理+投行双驱动；AUM与市场正相关"],
+["BLK","A","资管",32,10,"CSP / C→价差","价差","财报前10天",0,"AUM与市场正相关；VIX高时资产缩水敏感"],
+["SCHW","A","券商",38,12,"CSP / C→价差","价差","财报前10天",0,"利率敏感型；存款流失/货币基金转移风险监控"],
+["AXP","A","金融",32,10,"CSP / C→价差","价差","财报前10天",0,"高端消费信用卡；消费景气度直接联动"],
+["WFC","A","银行",32,10,"CSP / C→价差","价差","财报前10天",0,"资产上限松动进展；监管事件敏感度高"],
+["KKR","A","另类资管",40,12,"CSP / C→价差","价差","财报前10天",0,"PE+信贷双线；市场B/C状态时主动收紧仓位"],
+["APO","A","另类资管",40,12,"CSP / C→价差","价差","财报前10天",0,"信贷资管龙头；利率/信用利差高度敏感"],
+["BX","A","另类资管",40,12,"CSP / C→价差","价差","财报前10天",0,"房地产+私募敞口；流动性事件与赎回风险监控"],
+["DIS","A","娱乐/媒体",40,12,"CSP / C→价差","价差","财报前10天",0,"流媒体扭亏+主题公园双驱动；Disney+订阅增速"],
+["NXPI","A","半导体",45,13,"CSP / C→价差","价差","财报前10天",0,"汽车半导体龙头；中国市场依赖度高，出口管制风险"],
+["KRE","A","ETF区域银行",38,12,"CSP / C→价差","价差","无（ETF）",0,"区域银行危机风险监控；与利率/存款外流高度相关"],
+["LLY","A","生物制药",45,13,"CSP / C→价差","价差","财报/FDA前10天",0,"GLP-1与NVO同赛道竞争；FDA关键数据视同财报"],
+["ISRG","A","医疗器械",40,12,"CSP / C→价差","价差","财报前10天",0,"达芬奇手术机器人垄断；装机量+手术量双跟踪"],
+["REGN","A","生物制药",45,13,"CSP / C→价差","价差","财报/FDA前10天",0,"FDA临床数据高敏感；Dupixent适应证增速核心"],
+["VRTX","A","生物制药",45,13,"CSP / C→价差","价差","财报/FDA前10天",0,"CF垄断+镇痛新药pipeline；FDA里程碑监控"],
+["BSX","A","医疗器械",35,11,"CSP / C→价差","价差","财报前10天",0,"心脏介入器械；FDA审批敏感度低于biotech"],
+["HCA","A","医院",38,12,"CSP / C→价差","价差","财报前10天",0,"医院运营；医保报销政策（Medicaid）联动"],
+["UNH","A","医保",35,10,"CSP / C→价差","价差","财报前10天",0,"Medicare Advantage政策风险；医疗损失率监控"],
+["ELV","A","医保",35,11,"CSP / C→价差","价差","财报前10天",0,"与UNH高度相关；医保政策同步敏感，不同时超配"],
+["CI","A","医保",35,11,"CSP / C→价差","价差","财报前10天",0,"PBM业务监管风险；与UNH/ELV不同时满仓"],
+["SYK","A","医疗器械",35,11,"CSP / C→价差","价差","财报前10天",0,"骨科+神经外科机器人；程序量增长稳健"],
+["TMO","A","生命科学",35,11,"CSP / C→价差","价差","财报前10天",0,"生命科学仪器+CRO；生物制药客户资本支出联动"],
+["DHR","A","生命科学",35,11,"CSP / C→价差","价差","财报前10天",0,"分拆Veralto后更聚焦生科；生物加工需求监控"],
+["NKE","A","消费品",40,12,"CSP / C→价差","价差","财报前10天",0,"中国市场依赖度高；品牌定价权与库存周转监控"],
+["CMG","A","餐饮",38,12,"CSP / C→价差","价差","财报前10天",0,"同店销售增速+数字化订单；食品安全黑天鹅"],
+["LULU","A","服装",50,14,"CSP / C→价差","价差","财报前10天",0,"高端运动服饰；库存周转率与国际扩张速度"],
+["ULTA","A","美妆零售",45,13,"CSP / C→价差","价差","财报前10天",0,"美妆渠道垄断；亚马逊竞争与同店销售增速"],
+["SBUX","A","消费",38,12,"CSP / C→价差","价差","财报前10天",0,"中国市场依赖高；全球同店销售+APP会员数"],
+["CAT","A","工业",35,11,"CSP / C→价差","价差","财报前10天",0,"全球基建+矿业周期；中国建设投资联动"],
+["DE","A","工业",35,11,"CSP / C→价差","价差","财报前10天",0,"农机周期；农产品价格与粮食需求联动"],
+["GE","A","航空工业",35,11,"CSP / C→价差","价差","财报前10天",0,"GE Aerospace纯发动机；订单积压强劲，交付进度"],
+["ETN","A","电气化",35,11,"CSP / C→价差","价差","财报前10天",0,"电气化+数据中心电力基础设施核心受益者"],
+["COP","A","能源",38,12,"CSP / C→价差","价差","财报前10天",0,"油价联动；OPEC+决议前谨慎开仓"],
+["EOG","A","能源",38,12,"CSP / C→价差","价差","财报前10天",0,"页岩油低成本龙头；WTI油价为核心指标"],
+["SLB","A","油服",40,12,"CSP / C→价差","价差","财报前10天",0,"全球油服龙头；新兴市场油气资本支出联动"],
+["SMH","A","ETF半导体",38,12,"CSP / C→价差","价差","无（ETF）",0,"NVDA+TSM+ASML权重高；注意与个股持仓重叠"],
+["SOXX","A","ETF半导体",38,12,"CSP / C→价差","价差","无（ETF）",0,"与SMH高度相关；二选一开仓；出口管制联动"],
+["V","B","金融",28,8,"CSP（全天候）","允许×0.5","财报前10天",1,"MA+V合计≤净值12%；IVR<20%不推也非错误"],
+["GLD","B","ETF商品",32,8,"CSP","强制前置","无（ETF）",1,"VIX>22或地缘触发才推；VIX<18绝对禁止"],
+["XLU","B","ETF公用事业",26,7,"CSP / C→×0.5","允许×0.5","FOMC前5天",1,"利率高度敏感；FOMC窗口最严；C状态仓位×0.5"],
+["SPGI","B","金融数据",28,9,"CSP / C→价差","价差","财报前10天",0,"信用评级垄断；低波动防御持仓"],
+["CME","B","金融交易所",28,9,"CSP / C→价差","价差","财报前10天",0,"波动率受益者；VIX高时成交量上升反而利好"],
+["ICE","B","金融交易所",28,9,"CSP / C→价差","价差","财报前10天",0,"固收市场敞口；利率波动联动；NYSE运营者"],
+["MCO","B","金融数据",30,10,"CSP / C→价差","价差","财报前10天",0,"信用评级+数据分析双业务；低波防御"],
+["COST","B","零售",30,9,"CSP / C→价差","价差","财报前10天",0,"会员费护城河；低波动防御型；量贩抗通胀属性"],
+["WMT","B","零售",28,8,"CSP / C→价差","价差","财报前10天",0,"防御零售龙头；广告+金融科技增量业务"],
+["MCD","B","餐饮",28,8,"CSP / C→价差","价差","财报前10天",0,"特许经营模式；全球收入分散；同店销售核心"],
+["TJX","B","折扣零售",28,9,"CSP / C→价差","价差","财报前10天",0,"折扣零售；经济下行受益者；库存买手护城河"],
+["HON","B","工业",30,10,"CSP / C→价差","价差","财报前10天",0,"工业多元化龙头；航空+工业自动化防御属性"],
+["UNP","B","工业",28,9,"CSP / C→价差","价差","财报前10天",0,"铁路运输垄断；经济先行指标；劳工协议监控"],
+["LMT","B","国防",28,9,"CSP / C→价差","价差","财报前10天",0,"国防预算刚性；地缘风险时IV升高有利于卖方"],
+["RTX","B","国防/航空",28,9,"CSP / C→价差","价差","财报前10天",0,"发动机+国防双驱动；普惠发动机维修事件监控"],
+["GD","B","国防",28,9,"CSP / C→价差","价差","财报前10天",0,"军舰/陆军系统；国防订单能见度高"],
+["META","C","科技",60,15,"强制Bull Put Spread","暂停","财报前14天",1,"持正股禁卖Put；广告/DAU预报视同财报前14天"],
+["NVDA","C","半导体",65,18,"强制Bull Put Spread","暂停","财报前14天",1,"BIS出口管制实时监控；NVDA+TSM+ASML≤净值15%"],
+["TSLA","C","电动车",80,20,"强制Bull Put Spread","暂停","财报前14天",1,"🚨最多2张；仅状态A；>200MA；马斯克声明前14天"],
+["HOOD","C","金融科技",65,18,"强制价差","暂停","财报前14天",1,"BTC单日跌>8%停开；OI≥5000张；加密组合≤4%"],
+["IBIT","C","ETF比特币",60,15,"强制价差","暂停","无",1,"BTC>50MA；SEC监管动作监控；加密组合≤净值4%"],
+["COIN","C","加密交易所",75,20,"强制Bull Put Spread","暂停","财报前14天",1,"仅状态A；与MSTR互斥持仓；COIN≤净值2%"],
+["MSTR","C","加密持仓",85,25,"强制Bull Put Spread","暂停","财报前14天",1,"🚨最多1张；BTC>$60K且>50MA；与COIN互斥；≤净值1.5%"],
+["CRCL","C","稳定币",80,20,"强制价差","暂停","财报前14天",1,"上市≥180天；OI≥5000；监管立法零容忍；≤净值1%"],
+["NFLX","C","流媒体",55,15,"强制价差","暂停","财报前14天",0,"订阅用户+ARPU双指标；广告层级转化率监控"],
+["AMD","C","半导体",60,16,"强制价差","暂停","财报前14天",0,"AI GPU份额vs NVDA竞争；MI系列数据中心季报"],
+["PANW","C","网络安全",55,15,"强制价差","暂停","财报前14天",0,"平台化ARR增速核心；Billings指引高度敏感"],
+["CRWD","C","网络安全",65,18,"强制价差","暂停","财报前14天",0,"ARR增速核心；2024年IT宕机事件后信誉修复进度"],
+["SNOW","C","云数据",70,20,"强制价差","暂停","财报前14天",0,"消费型计费（用量驱动）；RPO+NDR增速监控"],
+["DDOG","C","云监控",65,18,"强制价差","暂停","财报前14天",0,"ARR+NDR双指标；AI Workload监控收益变现节奏"],
+["NET","C","网络安全",65,18,"强制价差","暂停","财报前14天",0,"SASE/SSE架构；大客户RPO增速为核心指标"],
+["SHOP","C","电商SaaS",65,18,"强制价差","暂停","财报前14天",0,"GMV增速+Take Rate；假日季与Q4财报高敏感"],
+["UBER","C","出行平台",55,15,"强制价差","暂停","财报前14天",0,"Trips增速+EBITDA利润率；自动驾驶竞争压力"],
+["ABNB","C","旅行平台",55,15,"强制价差","暂停","财报前14天",0,"GN增速+ADR；旅游季节性（Q2/Q3峰值窗口）"],
+["MU","C","半导体",55,15,"强制价差","暂停","财报前14天",0,"DRAM/HBM内存周期；AI服务器HBM需求联动"],
+["MRVL","C","半导体",55,15,"强制价差","暂停","财报前14天",0,"定制AI芯片（ASIC）龙头；云客户集中度风险"],
+["ON","C","半导体",55,15,"强制价差","暂停","财报前14天",0,"汽车+工业模拟芯片；EV渗透率下行压力监控"],
+["ARM","C","半导体IP",70,20,"强制价差","暂停","财报前14天",0,"ATA授权模式；软银持股集中；AI边缘授权进展"],
+["PYPL","C","金融科技",55,15,"强制价差","暂停","财报前14天",0,"TPV增速+Take Rate；苹果Pay/Google Pay竞争"],
+["SMCI","C","服务器",80,22,"强制价差","暂停","财报前14天",0,"🚨最多2张；会计违规历史，审计风险极高，流动性必验"],
+["PLTR","C","数据分析",70,20,"强制价差","暂停","财报前14天",0,"政府+商业双线；AI Platform商业化速度核心指标"],
+["RBLX","C","游戏/元宇宙",65,18,"强制价差","暂停","财报前14天",0,"DAU+消费时长；青少年用户监管与货币化风险"],
+["DKNG","C","体育博彩",65,18,"强制价差","暂停","财报前14天",0,"Hold Rate季度波动大；各州执照合规进展监控"],
+["DASH","C","外卖平台",65,18,"强制价差","暂停","财报前14天",0,"GOV增速+EBITDA；劳工分类（员工vs承包商）立法风险"],
+["RDDT","C","社交媒体",70,20,"强制价差","暂停","财报前14天",0,"IPO较新，历史IV参考有限；AI数据授权收入变现"],
+["BABA","C","中概/电商",65,18,"强制价差","暂停","财报前14天",0,"中概监管/ADR退市风险持续；云分拆进展监控"],
+["PDD","C","中概/电商",70,20,"强制价差","暂停","财报前14天",0,"Temu全球化；美国关税+中概监管双重尾部风险"],
+["MARA","C","比特币矿业",85,25,"强制价差","暂停","财报前14天",0,"🚨最多1张；BTC价格1:1联动；哈希率+算力电费成本"],
+];
+const secs=[...new Set(D.map(r=>r[2]))].sort();
+const sel=document.getElementById('sec-sel');
+secs.forEach(s=>{const o=document.createElement('option');o.value=s;o.text=s;sel.appendChild(o);});
+let cg='all';
+function setG(g){cg=g;document.querySelectorAll('.gf').forEach(b=>b.classList.toggle('active',b.dataset.g===g));render();}
+function gc(g){return g==='A+'?'g-ap':g==='A'?'g-a':g==='B'?'g-b':'g-c';}
+function cstyle(c){
+  if(c==='暂停')return'color:var(--color-text-danger)';
+  if(c==='强制前置')return'color:var(--color-text-warning)';
+  if(c==='允许×0.5')return'color:var(--color-text-warning)';
+  return'color:var(--color-text-secondary)';
+}
+function render(){
+  const q=document.getElementById('srch').value.trim().toUpperCase();
+  const sec=document.getElementById('sec-sel').value;
+  const rows=D.filter(r=>{
+    if(cg!=='all'&&r[1]!==cg)return false;
+    if(q&&!r[0].includes(q)&&!r[2].toUpperCase().includes(q)&&!r[9].toUpperCase().includes(q))return false;
+    if(sec&&r[2]!==sec)return false;
+    return true;
+  });
+  document.getElementById('cnt').textContent=rows.length+' 个标的';
+  document.getElementById('tb').innerHTML=rows.map(r=>{
+    const[tk,grade,sector,ivr,ann,struct,cst,blackout,off,sp]=r;
+    const obadge=off?`<span class="badge src-off">官方</span>`:`<span class="badge src-new">建议</span>`;
+    return`<tr><td class="tk">${tk}</td><td><span class="badge ${gc(grade)}">${grade}</span></td><td>${obadge}</td><td style="font-size:11px">${sector}</td><td style="font-weight:500">${ivr}%</td><td style="font-weight:500;color:var(--color-text-success)">${ann}%+</td><td style="font-size:11px">${struct}</td><td><span style="font-size:11px;${cstyle(cst)}">${cst}</span></td><td style="font-size:11px">${blackout}</td><td class="sp">${sp}</td></tr>`;
+  }).join('');
+}
+render();
+</script>
+
+  </section>
+
+  <div class="disclaimer" id="page-disclaimer">
+    <strong>免责声明</strong><br>
+    本页面所载标的筛选、级别划分、参数区间及操作提示由系统自动生成或整理，仅供学习与研究之用，<strong>不构成任何投资建议或买卖邀约</strong>。期权及其他衍生品交易具有高风险，可能导致全部本金损失；过往展示或统计不预示未来表现。使用者应结合自身风险承受能力，在必要时咨询持牌专业人士，并独立承担全部决策与后果。
+  </div>
+
+</main>
+</div>
+
+<script>
+  // Smooth active nav highlighting
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.style.borderLeftColor = 'transparent';
+          item.style.background = '';
+          item.style.color = '';
+        });
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) {
+          active.style.borderLeftColor = 'var(--gold)';
+          active.style.background = 'var(--gold-dim)';
+          active.style.color = 'var(--gold-light)';
+        }
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
