@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRA 期权卖方策略 — 完整方法论 v3.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --surface2: #181c23;
+    --border: #1e2330;
+    --border2: #252d3d;
+    --accent: #3b82f6;
+    --accent2: #22d3ee;
+    --accent3: #a78bfa;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --orange: #f97316;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Sora', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.7;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .nav-logo .badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.3);
+    padding: 3px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .nav-logo h1 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .nav-logo .ver {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .nav-section {
+    padding: 6px 20px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 20px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  nav a:hover {
+    color: var(--text);
+    background: var(--surface2);
+    border-left-color: var(--accent);
+  }
+  nav a .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  main {
+    margin-left: 260px;
+    flex: 1;
+    padding: 0 0 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 56px 48px;
+    background: linear-gradient(135deg, #0d1117 0%, #111827 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: 200px;
+    width: 400px; height: 300px;
+    background: radial-gradient(ellipse, rgba(34,211,238,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--accent2); }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--text2);
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hero-meta-item .label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .hero-meta-item .value {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── CONTENT SECTIONS ── */
+  .section {
+    padding: 48px 56px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .phase-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.3;
+  }
+  .section-title .sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text2);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border2); }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 16px 0;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-block .code-label {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .kw { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .num { color: #f78c6c; }
+  .cmt { color: #546e7a; }
+  .key { color: #80cbc4; }
+  .fn { color: var(--accent2); }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead tr {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+  }
+  th {
+    padding: 10px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  td.mono { font-family: var(--mono); font-size: 11.5px; }
+  td.em { color: var(--text); font-weight: 500; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 28px 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .flow-step {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 14px;
+    text-align: center;
+    position: relative;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    color: var(--text3);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .flow-step .phase-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .flow-step h4 {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .flow-step p {
+    font-size: 10.5px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-left: 3px solid;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .alert-warn { background: rgba(245,158,11,0.08); border-color: var(--yellow); }
+  .alert-danger { background: rgba(239,68,68,0.08); border-color: var(--red); }
+  .alert-info { background: rgba(59,130,246,0.08); border-color: var(--accent); }
+  .alert-ok { background: rgba(16,185,129,0.08); border-color: var(--green); }
+  .alert strong { display: block; font-weight: 700; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .alert-warn strong { color: var(--yellow); }
+  .alert-danger strong { color: var(--red); }
+  .alert-info strong { color: var(--accent); }
+  .alert-ok strong { color: var(--green); }
+  .alert p { color: var(--text2); }
+
+  /* ── RULE LIST ── */
+  .rule-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .rule-list li {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .rule-list li:last-child { border-bottom: none; }
+  .rule-list li .num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    padding-top: 2px;
+    min-width: 20px;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    margin: 12px 0;
+  }
+  .checklist li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text2);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.6;
+  }
+  .checklist li::before {
+    content: '◇';
+    color: var(--text3);
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .checklist li.ok::before { content: '◆'; color: var(--green); }
+  .checklist li.warn::before { content: '◆'; color: var(--yellow); }
+  .checklist li.crit::before { content: '◆'; color: var(--red); }
+
+  /* ── DISCLAIMER（参照 demo.html）── */
+  .disclaimer-wrap {
+    padding: 8px 56px 80px;
+  }
+  .disclaimer {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 12.5px;
+    color: var(--text3);
+    line-height: 1.8;
+    margin-top: 24px;
+  }
+  .disclaimer strong { color: var(--text2); }
+
+  /* ── TWO COL ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+    nav { display: none; }
+    main { margin-left: 0; }
+    .hero, .section { padding: 32px 24px; }
+    .disclaimer-wrap { padding: 8px 24px 64px; }
+  }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid;
+    margin: 2px;
+  }
+  .tag-blue { color: var(--accent); border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); }
+  .tag-green { color: var(--green); border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); }
+  .tag-yellow { color: var(--yellow); border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+  .tag-red { color: var(--red); border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
+  .tag-purple { color: var(--accent3); border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.08); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  p { margin-bottom: 10px; color: var(--text2); }
+  p:last-child { margin-bottom: 0; }
+  h2 { font-size: 18px; font-weight: 700; margin: 24px 0 12px; }
+  h3 { font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text); }
+  h4 { font-size: 13px; font-weight: 600; margin: 16px 0 8px; color: var(--text2); }
+
+  .inline-code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--accent2);
+  }
+
+  /* Phase colors */
+  .ph1 { background: rgba(59,130,246,0.12); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+  .ph2 { background: rgba(34,211,238,0.12); color: var(--accent2); border: 1px solid rgba(34,211,238,0.3); }
+  .ph3 { background: rgba(167,139,250,0.12); color: var(--accent3); border: 1px solid rgba(167,139,250,0.3); }
+  .ph4 { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .ph5 { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ──────────────────── SIDEBAR ──────────────────── -->
+<nav>
+  <div class="nav-logo">
+    <div class="badge">NRA · Method</div>
+    <h1>期权卖方策略<br>完整方法论</h1>
+    <div class="ver">v3.0 · 2026-04</div>
+  </div>
+
+  <div class="nav-section">总览</div>
+  <a href="#overview"><span class="dot" style="background:#3b82f6"></span>架构总览</a>
+  <a href="#principles"><span class="dot" style="background:#3b82f6"></span>核心原则</a>
+
+  <div class="nav-section">五个阶段</div>
+  <a href="#phase1"><span class="dot" style="background:#3b82f6"></span>阶段1 · 规则制定</a>
+  <a href="#phase2"><span class="dot" style="background:#22d3ee"></span>阶段2 · 每日筛选</a>
+  <a href="#phase3"><span class="dot" style="background:#a78bfa"></span>阶段3 · 单标手册</a>
+  <a href="#phase4"><span class="dot" style="background:#10b981"></span>阶段4 · 扫单推荐</a>
+  <a href="#phase5"><span class="dot" style="background:#f59e0b"></span>阶段5 · 持仓管理</a>
+
+  <div class="nav-section">系统设计</div>
+  <a href="#conflict"><span class="dot" style="background:#ef4444"></span>参数冲突规则</a>
+  <a href="#versioning"><span class="dot" style="background:#f97316"></span>版本控制规范</a>
+  <a href="#files"><span class="dot" style="background:#64748b"></span>文件清单</a>
+  <a href="#checklist"><span class="dot" style="background:#64748b"></span>投产检查表</a>
+</nav>
+
+<!-- ──────────────────── MAIN ──────────────────── -->
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">NRA Wheel Strategy</div>
+    <h1>期权卖方策略<br><span>完整方法论</span></h1>
+    <p class="hero-sub">
+      覆盖从标的筛选、每日合格清单、单标手册生成、实时扫单推荐，到持仓全生命周期管理的五阶段闭环系统。适用于 IBKR Portfolio Margin 账户，目标资金规模 $500K–$2M。
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="label">版本</span>
+        <span class="value">v3.0.0</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">生效日期</span>
+        <span class="value">2026-04-19</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">核心策略</span>
+        <span class="value">Wheel / Sell PUT</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">执行平台</span>
+        <span class="value">OpenClaw / IBKR</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">自动化程度</span>
+        <span class="value">推荐 → 人工确认</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <div>
+        <div class="section-title">架构总览</div>
+        <div class="section-title"><span class="sub">五阶段闭环，从规则到平仓</span></div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step" style="border-color:rgba(59,130,246,0.4)">
+        <div class="phase-num">阶段 1</div>
+        <h4 style="color:var(--accent)">规则制定</h4>
+        <p>全市场通用筛选规则<br>config.json + choose.html</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:rgba(34,211,238,0.4)">
+        <div class="phase-num">阶段 2</div>
+        <h4 style="color:var(--accent2)">每日筛选</h4>
+        <p>wheel_screener.py<br>产出今日合格清单</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:rgba(167,139,250,0.4)">
+        <div class="phase-num">阶段 3</div>
+        <h4 style="color:var(--accent3)">单标手册</h4>
+        <p>AI 生成 meta.html<br>+ ticker-params.yaml</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:rgba(16,185,129,0.4)">
+        <div class="phase-num">阶段 4</div>
+        <h4 style="color:var(--green)">扫单推荐</h4>
+        <p>openclaw_scan.py<br>输出具体合约建议</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:rgba(245,158,11,0.4)">
+        <div class="phase-num">阶段 5</div>
+        <h4 style="color:var(--yellow)">持仓管理</h4>
+        <p>position_monitor.py<br>止盈 / Roll / 熔断</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>系统定位</strong>
+      <p>本系统是<strong>辅助决策系统</strong>，不是全自动执行系统。阶段 4 产出的是建议，操作者在 IBKR TWS 中完成二次确认后手动下单。这是 NRA 合规与风控的硬性要求——EV 修正、滑点判断、异常市场识别等环节，当前 AI 可靠性不足以支撑全自动执行。</p>
+    </div>
+
+    <h3>数据流向</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>来源阶段</th><th>产出物</th><th>消费阶段</th><th>格式</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="em">阶段1</td>
+            <td>全市场通用规则</td>
+            <td>阶段2、阶段4</td>
+            <td class="mono">config.json</td>
+          </tr>
+          <tr>
+            <td class="em">阶段2</td>
+            <td>今日合格标的清单</td>
+            <td>阶段4（入场门票）</td>
+            <td class="mono">eligible_YYYYMMDD.json</td>
+          </tr>
+          <tr>
+            <td class="em">阶段3</td>
+            <td>单标结构化参数</td>
+            <td>阶段4</td>
+            <td class="mono">ticker-params.yaml</td>
+          </tr>
+          <tr>
+            <td class="em">IBKR 实时</td>
+            <td>期权链、IV、账户保证金</td>
+            <td>阶段4</td>
+            <td class="mono">TWS API / REST</td>
+          </tr>
+          <tr>
+            <td class="em">阶段4</td>
+            <td>具体合约推荐</td>
+            <td>人工确认 → IBKR</td>
+            <td class="mono">signal_YYYYMMDD.json</td>
+          </tr>
+          <tr>
+            <td class="em">IBKR 持仓</td>
+            <td>实时持仓状态</td>
+            <td>阶段5</td>
+            <td class="mono">position_snapshot.json</td>
+          </tr>
+          <tr>
+            <td class="em">阶段5</td>
+            <td>提醒事件 / Roll 建议</td>
+            <td>人工处理</td>
+            <td class="mono">alert_YYYYMMDD.txt</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── PRINCIPLES ── -->
+  <section class="section" id="principles">
+    <div class="section-header">
+      <div>
+        <div class="section-title">核心原则</div>
+        <div class="section-title"><span class="sub">贯穿所有阶段的不可违背规则</span></div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label" style="color:var(--red)">原则 1 · 资金安全第一</div>
+        <h3>永不孤注</h3>
+        <p>单一标的名义敞口上限受阶段1全局配置约束，任何单标手册不得突破此上限。账户层面保留 ≥20% 保证金缓冲，不得满仓裸卖。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--yellow)">原则 2 · 单标更严原则</div>
+        <h3>越往下越严</h3>
+        <p>阶段3单标参数只能比阶段1全局规则<strong>更严</strong>，不能放宽。这是系统防止单标手册逃逸全局风控的硬性约束。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--accent)">原则 3 · 文档与配置同步</div>
+        <h3>版本号强绑定</h3>
+        <p>任何规则变更必须同时更新对应文档（HTML）和机器可读配置（JSON/YAML），版本号不一致视为系统故障，CI 应报错拦截。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--green)">原则 4 · 人工确认节点</div>
+        <h3>推荐 ≠ 执行</h3>
+        <p>阶段4产出建议，阶段5产出提醒。所有实际下单、Roll、平仓操作均需操作者在 IBKR TWS 二次确认，禁止任何绕过人工的全自动执行路径。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--accent3)">原则 5 · 今日合格门票制</div>
+        <h3>每日动态准入</h3>
+        <p>静态 Watchlist 是季度资产，每日合格清单才是动态入场门票。一个标的不在今日合格清单内，阶段4绝不为其产出推荐，无论单标手册质量如何。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--orange)">原则 6 · 全生命周期覆盖</div>
+        <h3>开仓只是开始</h3>
+        <p>方法论必须覆盖开仓后的止盈、Roll、熔断处理、月度复盘全周期。只管开仓不管持仓，在大资金多标的并发场景下必然出现漏单。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PHASE 1
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="phase1">
+    <div class="section-header">
+      <div class="phase-badge ph1">阶段 1</div>
+      <div>
+        <div class="section-title">全市场通用规则制定</div>
+        <div class="section-title"><span class="sub">choose.html ↔ config.json · 季度审阅</span></div>
+      </div>
+    </div>
+
+    <p>阶段1是整个系统的宪法级文件。它定义了对所有标的普遍适用的市场准入门槛、VIX 仓位矩阵、Delta 上限、保证金约束。任何单标规则不得违背此层级约束。</p>
+
+    <h3>1.1 市场准入门槛（Pre-screen Gate）</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>指标</th><th>最低要求</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr><td class="em">流动性</td><td class="mono">期权日均成交量 ≥ 500 张，买卖价差 ≤ 0.05×标的价格</td><td>防止滑点过大侵蚀 EV</td></tr>
+          <tr><td class="em">IV Rank</td><td class="mono">IVR ≥ 20（卖出窗口），IVR ≥ 30 为优选</td><td>低 IVR 卖权溢价不足</td></tr>
+          <tr><td class="em">财报窗口</td><td class="mono">距下次财报 ≥ 10 个交易日</td><td>持仓不得跨越财报</td></tr>
+          <tr><td class="em">标的价格</td><td class="mono">≥ $20（标准合约）</td><td>低价股波动不可预测</td></tr>
+          <tr><td class="em">市值</td><td class="mono">≥ $5B（除 ETF 外）</td><td>防流动性风险</td></tr>
+          <tr><td class="em">合规</td><td class="mono">非 OTC、非 PFIC、无未了结监管调查</td><td>NRA 合规要求</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>1.2 VIX 仓位矩阵</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>VIX 区间</th><th>市场状态</th><th>A 级标的</th><th>B 级标的</th><th>C 级标的</th><th>总名义敞口上限</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mono em">&lt; 18</td><td>正常</td>
+            <td class="mono">全仓可用</td><td class="mono">全仓可用</td><td class="mono">可用，需审批</td>
+            <td class="mono">≤ 80% NAV</td>
+          </tr>
+          <tr>
+            <td class="mono em">18 – 28</td><td>温和波动</td>
+            <td class="mono">全仓可用</td><td class="mono">减仓 30%</td><td class="mono">暂停新仓</td>
+            <td class="mono">≤ 65% NAV</td>
+          </tr>
+          <tr>
+            <td class="mono em">28 – 35</td><td>高波动</td>
+            <td class="mono">减仓 20%</td><td class="mono">禁止裸卖，仅 Spread</td><td class="mono">全面暂停</td>
+            <td class="mono">≤ 50% NAV</td>
+          </tr>
+          <tr>
+            <td class="mono em">&gt; 35</td><td>危机</td>
+            <td class="mono">禁止新仓，仅管理存量</td><td class="mono">禁止新仓</td><td class="mono">禁止新仓</td>
+            <td class="mono">≤ 30% NAV</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>VIX 区间冲突处理规则</strong>
+      <p>如果阶段1说"VIX > 28 时 B 级标的禁止裸卖"，而某个单标手册说"VIX > 35 时才全面暂停"，28–35 区间由阶段1全局规则主导：B 级标的禁止裸卖，只允许 Spread。单标手册的 VIX 阈值只能比全局<strong>更严</strong>，不能更宽。</p>
+    </div>
+
+    <h3>1.3 通用 Delta 上限矩阵</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>标的级别</th><th>IVR Low (&lt;30)</th><th>IVR Mid (30–60)</th><th>IVR High (&gt;60)</th></tr></thead>
+        <tbody>
+          <tr><td class="em">A 级（低波动）</td><td class="mono">0.10 – 0.15</td><td class="mono">0.12 – 0.18</td><td class="mono">0.15 – 0.20</td></tr>
+          <tr><td class="em">B 级（中波动）</td><td class="mono">0.08 – 0.12</td><td class="mono">0.10 – 0.15</td><td class="mono">0.12 – 0.18</td></tr>
+          <tr><td class="em">C 级（高波动）</td><td class="mono">0.06 – 0.10</td><td class="mono">0.08 – 0.12</td><td class="mono">仅 Spread</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>1.4 全局保证金约束</h3>
+    <ul class="rule-list">
+      <li><span class="num">R-01</span>账户总保证金占用不得超过 NAV 的 70%（PM 账户）。</li>
+      <li><span class="num">R-02</span>单一标的名义敞口不得超过账户 NAV 的 20%。</li>
+      <li><span class="num">R-03</span>相关性高的板块（如 NVDA/AMD/SMCI）合并计算名义敞口，上限 30% NAV。</li>
+      <li><span class="num">R-04</span>任何时刻保证金缓冲（Excess Liquidity）不得低于 NAV 的 20%。</li>
+      <li><span class="num">R-05</span>FOMC 会议当日及前一日，禁止开新仓（高不确定性窗口）。</li>
+    </ul>
+
+    <h3>1.5 config.json 顶部结构示例</h3>
+    <div class="code-block">
+      <span class="code-label">config.json</span>
+<span class="cmt">// 全局配置 — 与 choose.html v3.0.0 严格同步</span>
+{
+  <span class="key">"_README"</span>: {
+    <span class="key">"method_version"</span>: <span class="str">"v3.0.0"</span>,          <span class="cmt">// 必须与 choose.html 版本号一致</span>
+    <span class="key">"last_updated"</span>: <span class="str">"2026-04-19"</span>,
+    <span class="key">"effective_date"</span>: <span class="str">"2026-04-19"</span>,
+    <span class="key">"reviewer"</span>: <span class="str">"quarterly"</span>
+  },
+  <span class="key">"vix_tiers"</span>: {
+    <span class="key">"normal"</span>:   { <span class="key">"max"</span>: <span class="num">18</span>, <span class="key">"max_nav_exposure"</span>: <span class="num">0.80</span> },
+    <span class="key">"elevated"</span>: { <span class="key">"min"</span>: <span class="num">18</span>, <span class="key">"max"</span>: <span class="num">28</span>, <span class="key">"max_nav_exposure"</span>: <span class="num">0.65</span> },
+    <span class="key">"high"</span>:     { <span class="key">"min"</span>: <span class="num">28</span>, <span class="key">"max"</span>: <span class="num">35</span>, <span class="key">"max_nav_exposure"</span>: <span class="num">0.50</span> },
+    <span class="key">"crisis"</span>:   { <span class="key">"min"</span>: <span class="num">35</span>, <span class="key">"max_nav_exposure"</span>: <span class="num">0.30</span>, <span class="key">"no_new_positions"</span>: <span class="kw">true</span> }
+  },
+  <span class="key">"margin"</span>: {
+    <span class="key">"max_utilization"</span>: <span class="num">0.70</span>,
+    <span class="key">"min_buffer"</span>: <span class="num">0.20</span>,
+    <span class="key">"single_ticker_cap"</span>: <span class="num">0.20</span>,
+    <span class="key">"sector_cluster_cap"</span>: <span class="num">0.30</span>
+  },
+  <span class="key">"blackout"</span>: {
+    <span class="key">"earnings_days_before"</span>: <span class="num">10</span>,
+    <span class="key">"fomc_blackout"</span>: <span class="kw">true</span>
+  }
+}
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PHASE 2
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="phase2">
+    <div class="section-header">
+      <div class="phase-badge ph2">阶段 2</div>
+      <div>
+        <div class="section-title">每日标的筛选与合格清单</div>
+        <div class="section-title"><span class="sub">wheel_screener.py · 每个交易日 9:00 AM ET 运行</span></div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>重要概念澄清</strong>
+      <p><strong>静态 Watchlist（季度资产）≠ 每日合格清单（动态门票）</strong><br>
+      Watchlist 是经过季度审阅选入的 118 个候选标的库，是长期资产。每日合格清单是 wheel_screener.py 每天跑完后产出的"今天哪些标的符合入场条件"的动态快照。同一个标的今天可能因 VIX 过高、财报临近或 IV 过低而被踢出合格清单，明天又重新进入。阶段4只处理今日合格清单中的标的。</p>
+    </div>
+
+    <h3>2.1 静态 Watchlist 管理</h3>
+    <div class="two-col">
+      <div>
+        <h4>纳入标准（季度审阅）</h4>
+        <ul class="checklist">
+          <li>市值 ≥ $5B，期权流动性 ≥ 500 张/日</li>
+          <li>历史 IVR 均值 ≥ 25（过去 252 个交易日）</li>
+          <li>业务模式可理解，AI 能生成合格单标手册</li>
+          <li>NRA 合规审查通过（无 PFIC 风险）</li>
+          <li>与现有持仓相关性审查（避免过度集中）</li>
+        </ul>
+      </div>
+      <div>
+        <h4>移除标准（随时移除）</h4>
+        <ul class="checklist">
+          <li class="warn">流动性连续 5 日低于门槛</li>
+          <li class="warn">监管调查或重大治理事件</li>
+          <li class="crit">退市风险 / 并购谈判公告</li>
+          <li class="crit">市值跌破 $2B</li>
+          <li class="warn">季度审阅不通过（每季度末执行）</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>2.2 wheel_screener.py 执行逻辑</h3>
+    <div class="code-block">
+      <span class="code-label">wheel_screener.py · 伪代码</span>
+<span class="kw">def</span> <span class="fn">run_screener</span>(watchlist, config, market_data):
+    eligible = []
+    current_vix = market_data[<span class="str">"VIX"</span>]
+    vix_tier = <span class="fn">get_vix_tier</span>(current_vix, config)
+
+    <span class="kw">if</span> vix_tier == <span class="str">"crisis"</span>:
+        <span class="fn">log</span>(<span class="str">"VIX CRISIS — 所有标的暂停，仅处理存量"</span>)
+        <span class="kw">return</span> []  <span class="cmt"># 直接返回空清单</span>
+
+    <span class="kw">for</span> ticker <span class="kw">in</span> watchlist:
+        <span class="cmt"># Gate 1: 财报黑名单</span>
+        <span class="kw">if</span> <span class="fn">days_to_earnings</span>(ticker) &lt; config[<span class="str">"blackout"</span>][<span class="str">"earnings_days_before"</span>]:
+            <span class="kw">continue</span>
+
+        <span class="cmt"># Gate 2: FOMC 黑名单</span>
+        <span class="kw">if</span> config[<span class="str">"blackout"</span>][<span class="str">"fomc_blackout"</span>] <span class="kw">and</span> <span class="fn">is_fomc_window</span>():
+            <span class="kw">continue</span>
+
+        <span class="cmt"># Gate 3: IVR 最低门槛</span>
+        ivr = market_data[ticker][<span class="str">"iv_rank"</span>]
+        <span class="kw">if</span> ivr &lt; config[<span class="str">"min_ivr"</span>]:
+            <span class="kw">continue</span>
+
+        <span class="cmt"># Gate 4: VIX 层级与标的级别的兼容性</span>
+        grade = ticker_params[ticker][<span class="str">"grade"</span>]
+        <span class="kw">if not</span> <span class="fn">vix_grade_compatible</span>(vix_tier, grade, config):
+            <span class="kw">continue</span>
+
+        <span class="cmt"># Gate 5: 账户保证金容量检查</span>
+        <span class="kw">if not</span> <span class="fn">margin_capacity_available</span>(ticker, ticker_params, account):
+            <span class="kw">continue</span>
+
+        eligible.append({
+            <span class="str">"ticker"</span>: ticker,
+            <span class="str">"ivr"</span>: ivr,
+            <span class="str">"grade"</span>: grade,
+            <span class="str">"vix_tier"</span>: vix_tier,
+            <span class="str">"scan_ts"</span>: <span class="fn">now_iso</span>()
+        })
+
+    <span class="fn">save_eligible_list</span>(eligible)   <span class="cmt"># → eligible_YYYYMMDD.json</span>
+    <span class="kw">return</span> eligible
+    </div>
+
+    <h3>2.3 合格清单输出格式</h3>
+    <div class="code-block">
+      <span class="code-label">eligible_20260419.json</span>
+{
+  <span class="key">"date"</span>: <span class="str">"2026-04-19"</span>,
+  <span class="key">"vix"</span>: <span class="num">21.3</span>,
+  <span class="key">"vix_tier"</span>: <span class="str">"elevated"</span>,
+  <span class="key">"screener_version"</span>: <span class="str">"v3.0.0"</span>,
+  <span class="key">"eligible_count"</span>: <span class="num">14</span>,
+  <span class="key">"eligible"</span>: [
+    { <span class="key">"ticker"</span>: <span class="str">"META"</span>, <span class="key">"ivr"</span>: <span class="num">48</span>, <span class="key">"grade"</span>: <span class="str">"A"</span>, <span class="key">"notes"</span>: <span class="str">"优选"</span> },
+    { <span class="key">"ticker"</span>: <span class="str">"GOOGL"</span>, <span class="key">"ivr"</span>: <span class="num">35</span>, <span class="key">"grade"</span>: <span class="str">"A"</span>, <span class="key">"notes"</span>: <span class="str">""</span> },
+    { <span class="key">"ticker"</span>: <span class="str">"NVDA"</span>, <span class="key">"ivr"</span>: <span class="num">61</span>, <span class="key">"grade"</span>: <span class="str">"B"</span>, <span class="key">"notes"</span>: <span class="str">"VIX elevated，仅Spread"</span> }
+  ],
+  <span class="key">"excluded_count"</span>: <span class="num">104</span>,
+  <span class="key">"exclusion_reasons"</span>: {
+    <span class="str">"earnings_blackout"</span>: <span class="num">18</span>,
+    <span class="str">"ivr_too_low"</span>: <span class="num">43</span>,
+    <span class="str">"vix_grade_incompatible"</span>: <span class="num">29</span>,
+    <span class="str">"margin_full"</span>: <span class="num">14</span>
+  }
+}
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PHASE 3
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="phase3">
+    <div class="section-header">
+      <div class="phase-badge ph3">阶段 3</div>
+      <div>
+        <div class="section-title">单标手册生成与结构化参数</div>
+        <div class="section-title"><span class="sub">meta.html（人读）+ ticker-params.yaml（机读）· 季度更新</span></div>
+      </div>
+    </div>
+
+    <p>阶段3为每个纳入 Watchlist 的标的生成两个配套文件：一份供人阅读的 HTML 手册（meta.html），以及一份机器可读的 YAML 参数文件（ticker-params.yaml）。两者必须保持严格同步，且单标参数只能比全局配置更严。</p>
+
+    <div class="alert alert-danger">
+      <strong>关键约束：HTML 手册必须有对应 YAML 文件</strong>
+      <p>如果某标的只有 meta.html 没有对应的 ticker-params.yaml，阶段4将无法消费该标的的策略参数，该标的即使出现在今日合格清单中也不会产出推荐。这是系统完整性的硬性要求。</p>
+    </div>
+
+    <h3>3.1 meta.html 标准章节结构（12章）</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>章节名称</th><th>核心内容</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">01</td><td class="em">标的概况</td><td>市值、Beta、业务描述、标的级别（A/B/C）</td></tr>
+          <tr><td class="mono">02</td><td class="em">历史波动特征</td><td>历史单日最大跌幅、财报后波动幅度统计、异常事件案例</td></tr>
+          <tr><td class="mono">03</td><td class="em">IV 特征分析</td><td>IVR 历史均值、财报前后 IV 行为、期限结构特征</td></tr>
+          <tr><td class="mono">04</td><td class="em">Delta 矩阵</td><td>各 VIX 层级下的推荐 Delta 区间（比全局更严）</td></tr>
+          <tr><td class="mono">05</td><td class="em">DTE 策略</td><td>推荐 DTE 区间（裸卖 / Spread 分开说明）</td></tr>
+          <tr><td class="mono">06</td><td class="em">行权价扩展系数</td><td>左尾肥尾修正系数（ev_correction）</td></tr>
+          <tr><td class="mono">07</td><td class="em">价差宽度参数</td><td>Bull Put Spread 的宽度（按 IVR 层级分段）</td></tr>
+          <tr><td class="mono">08</td><td class="em">止盈止损规则</td><td>50% 止盈 GTC、最大亏损比例、时间止损</td></tr>
+          <tr><td class="mono">09</td><td class="em">Roll 规则</td><td>Credit Roll vs Debit Roll 触发条件、底线</td></tr>
+          <tr><td class="mono">10</td><td class="em">三级熔断机制</td><td>L1/L2/L3 触发阈值与对应操作</td></tr>
+          <tr><td class="mono">11</td><td class="em">25% 下跌切换机制</td><td>正股下跌 25% 后从裸卖切换至 Spread 的执行规则</td></tr>
+          <tr><td class="mono">12</td><td class="em">财报与黑名单</td><td>财报前封闭期天数、FOMC 处理方式、特殊事件清单</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3.2 ticker-params.yaml 标准格式</h3>
+    <div class="code-block">
+      <span class="code-label">ticker-params.yaml · META 示例</span>
+<span class="key">META</span>:
+  <span class="cmt"># ── 元数据 ──</span>
+  <span class="key">version</span>: <span class="str">"3.0.2"</span>
+  <span class="key">effective_date</span>: <span class="str">"2026-04-19"</span>
+  <span class="key">method_version</span>: <span class="str">"v3.0.0"</span>   <span class="cmt"># 必须与 config.json 一致</span>
+  <span class="key">grade</span>: <span class="str">"A"</span>                   <span class="cmt"># A=低波动, B=中波动, C=高波动</span>
+  <span class="key">sector</span>: <span class="str">"Tech"</span>
+  <span class="key">cluster</span>: <span class="str">"Meta-Platforms"</span>   <span class="cmt"># 用于板块集中度检查</span>
+
+  <span class="cmt"># ── Delta 矩阵（只能比全局更严）──</span>
+  <span class="key">delta_matrix</span>:
+    <span class="key">vix_normal</span>:
+      <span class="key">ivr_low</span>:  [<span class="num">0.10</span>, <span class="num">0.15</span>]
+      <span class="key">ivr_mid</span>:  [<span class="num">0.12</span>, <span class="num">0.17</span>]
+      <span class="key">ivr_high</span>: [<span class="num">0.14</span>, <span class="num">0.20</span>]
+    <span class="key">vix_elevated</span>:
+      <span class="key">ivr_low</span>:  [<span class="num">0.08</span>, <span class="num">0.12</span>]
+      <span class="key">ivr_mid</span>:  [<span class="num">0.10</span>, <span class="num">0.15</span>]
+      <span class="key">ivr_high</span>: [<span class="num">0.12</span>, <span class="num">0.17</span>]
+    <span class="key">vix_high</span>:            <span class="cmt"># B 级下全局要求 Spread；A 级此处减仓</span>
+      <span class="key">mode</span>: <span class="str">"spread_only"</span>
+
+  <span class="cmt"># ── 行权价修正 ──</span>
+  <span class="key">ev_correction</span>: <span class="num">1.20</span>           <span class="cmt"># 左尾肥尾系数；1.0=不修正</span>
+  <span class="key">fat_tail_note</span>: <span class="str">"历史单日最大跌幅 -26%，标准模型低估左尾"</span>
+
+  <span class="cmt"># ── 价差宽度 ──</span>
+  <span class="key">spread_width_pct</span>:
+    <span class="key">ivr_low</span>:  [<span class="num">0.015</span>, <span class="num">0.020</span>]
+    <span class="key">ivr_mid</span>:  [<span class="num">0.020</span>, <span class="num">0.035</span>]
+    <span class="key">ivr_high</span>: [<span class="num">0.035</span>, <span class="num">0.050</span>]
+
+  <span class="cmt"># ── DTE 策略 ──</span>
+  <span class="key">dte</span>:
+    <span class="key">naked_put</span>: { <span class="key">min</span>: <span class="num">21</span>, <span class="key">max</span>: <span class="num">45</span>, <span class="key">target</span>: <span class="num">30</span> }
+    <span class="key">spread</span>:    { <span class="key">min</span>: <span class="num">14</span>, <span class="key">max</span>: <span class="num">45</span>, <span class="key">target</span>: <span class="num">25</span> }
+
+  <span class="cmt"># ── 止盈止损 ──</span>
+  <span class="key">exit</span>:
+    <span class="key">profit_target_pct</span>: <span class="num">0.50</span>       <span class="cmt"># 50% 止盈，设 GTC 单</span>
+    <span class="key">max_loss_pct</span>: <span class="num">2.00</span>            <span class="cmt"># 最大亏损=权利金的 2 倍</span>
+    <span class="key">time_stop_dte</span>: <span class="num">5</span>              <span class="cmt"># DTE ≤ 5 且亏损则强制平仓</span>
+
+  <span class="cmt"># ── Roll 规则 ──</span>
+  <span class="key">roll</span>:
+    <span class="key">credit_roll_trigger</span>: <span class="str">"Delta > 0.40 且 DTE > 14"</span>
+    <span class="key">debit_roll_trigger</span>:  <span class="str">"正股跌破行权价 3% 且 DTE > 7"</span>
+    <span class="key">roll_floor_strike</span>:   <span class="str">"不得低于初始行权价 × 0.85"</span>
+
+  <span class="cmt"># ── 三级熔断 ──</span>
+  <span class="key">circuit_breaker</span>:
+    <span class="key">L1</span>: { <span class="key">trigger</span>: <span class="str">"标的单日跌 8%"</span>,  <span class="key">action</span>: <span class="str">"暂停新仓，评估 Roll"</span> }
+    <span class="key">L2</span>: { <span class="key">trigger</span>: <span class="str">"标的单日跌 15%"</span>, <span class="key">action</span>: <span class="str">"启动 Spread 对冲，上报"</span> }
+    <span class="key">L3</span>: { <span class="key">trigger</span>: <span class="str">"标的单日跌 25%"</span>, <span class="key">action</span>: <span class="str">"强制平仓，退出标的"</span> }
+
+  <span class="cmt"># ── 黑名单 ──</span>
+  <span class="key">blackout</span>:
+    <span class="key">earnings_days</span>: <span class="num">10</span>             <span class="cmt"># 同全局，不放宽</span>
+    <span class="key">fomc_blackout</span>: <span class="kw">false</span>          <span class="cmt"># META 不受 FOMC 特别影响</span>
+
+  <span class="cmt"># ── 切换机制 ──</span>
+  <span class="key">mode_switch</span>:
+    <span class="key">trigger</span>: <span class="str">"正股累计下跌 25%"</span>
+    <span class="key">from</span>: <span class="str">"naked_put"</span>
+    <span class="key">to</span>: <span class="str">"bull_put_spread"</span>
+    <span class="key">notes</span>: <span class="str">"切换后等待 5 日再评估是否恢复"</span>
+    </div>
+
+    <h3>3.3 AI 生成单标手册的 Prompt 规范</h3>
+    <div class="alert alert-ok">
+      <strong>AI 生成工作流</strong>
+      <p>生成单标手册时，Prompt 中必须明确传入：(1) 全局 config.json 的约束边界；(2) 要求 YAML 输出中所有 Delta 值不得高于全局允许值；(3) 要求输出版本号字段并与 method_version 绑定。生成后执行 <code class="inline-code">validate_params(global_config, ticker_params)</code> 校验通过才允许写入 ticker-params.yaml。</p>
+    </div>
+
+    <h3>3.4 参数校验函数规范</h3>
+    <div class="code-block">
+      <span class="code-label">validate_params.py</span>
+<span class="kw">def</span> <span class="fn">validate_params</span>(global_config, ticker_params):
+    errors = []
+    <span class="kw">for</span> ticker, params <span class="kw">in</span> ticker_params.items():
+
+        <span class="cmt"># 校验1：method_version 必须一致</span>
+        <span class="kw">if</span> params[<span class="str">"method_version"</span>] != global_config[<span class="str">"_README"</span>][<span class="str">"method_version"</span>]:
+            errors.append(<span class="fn">f</span><span class="str">"{ticker}: method_version 不匹配"</span>)
+
+        <span class="cmt"># 校验2：Delta 上限不得超过全局</span>
+        global_delta_max = <span class="fn">get_global_delta_max</span>(params[<span class="str">"grade"</span>], global_config)
+        <span class="kw">for</span> vix_tier, ivr_deltas <span class="kw">in</span> params[<span class="str">"delta_matrix"</span>].items():
+            <span class="kw">if</span> <span class="fn">isinstance</span>(ivr_deltas, dict) <span class="kw">and</span> <span class="str">"ivr_high"</span> <span class="kw">in</span> ivr_deltas:
+                local_max = ivr_deltas[<span class="str">"ivr_high"</span>][<span class="num">1</span>]
+                <span class="kw">if</span> local_max > global_delta_max:
+                    errors.append(<span class="fn">f</span><span class="str">"{ticker}/{vix_tier}: Delta {local_max} 超出全局上限 {global_delta_max}"</span>)
+
+        <span class="cmt"># 校验3：单标名义敞口不得超过全局 single_ticker_cap</span>
+        <span class="cmt"># ... 更多校验规则 ...</span>
+
+    <span class="kw">if</span> errors:
+        <span class="fn">raise</span> ValueError(<span class="str">"\n"</span>.join(errors))
+    <span class="kw">return True</span>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PHASE 4
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="phase4">
+    <div class="section-header">
+      <div class="phase-badge ph4">阶段 4</div>
+      <div>
+        <div class="section-title">实时扫单与合约推荐</div>
+        <div class="section-title"><span class="sub">openclaw_scan.py · 盘中实时或 9:15 AM ET 定时运行</span></div>
+      </div>
+    </div>
+
+    <h3>4.1 输入三要素</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label" style="color:var(--accent2)">输入 1</div>
+        <h3>今日合格清单</h3>
+        <p>来自阶段2的 <span class="inline-code">eligible_YYYYMMDD.json</span>。不在此清单内的标的，本脚本直接跳过，不产出任何推荐。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--accent3)">输入 2</div>
+        <h3>单标结构化参数</h3>
+        <p>来自阶段3的 <span class="inline-code">ticker-params.yaml</span>。提供该标的的 Delta 矩阵、DTE 策略、spread 宽度等操作参数。</p>
+      </div>
+      <div class="card">
+        <div class="card-label" style="color:var(--green)">输入 3</div>
+        <h3>实时期权链</h3>
+        <p>通过 IBKR TWS API 或 REST 拉取。包含各行权价的 Delta、IV、买卖价差、成交量、持仓量。</p>
+      </div>
+    </div>
+
+    <h3>4.2 扫单核心逻辑</h3>
+    <div class="code-block">
+      <span class="code-label">openclaw_scan.py · 核心逻辑</span>
+<span class="kw">def</span> <span class="fn">scan_ticker</span>(ticker, eligible_info, params, option_chain, account):
+
+    <span class="cmt"># Step 1: 确定当前 VIX 层级下的 Delta 目标区间</span>
+    vix_tier = eligible_info[<span class="str">"vix_tier"</span>]
+    ivr = eligible_info[<span class="str">"ivr"</span>]
+    ivr_bucket = <span class="fn">get_ivr_bucket</span>(ivr)  <span class="cmt"># low / mid / high</span>
+    delta_range = params[<span class="str">"delta_matrix"</span>][vix_tier][ivr_bucket]
+
+    <span class="cmt"># Step 2: 确定模式（裸卖 or Spread）</span>
+    mode = <span class="fn">determine_mode</span>(vix_tier, params[<span class="str">"grade"</span>], account)
+
+    <span class="cmt"># Step 3: 筛选符合 Delta 区间的行权价</span>
+    candidates = [
+        opt <span class="kw">for</span> opt <span class="kw">in</span> option_chain[<span class="str">"puts"</span>]
+        <span class="kw">if</span> delta_range[<span class="num">0</span>] &lt;= <span class="fn">abs</span>(opt[<span class="str">"delta"</span>]) &lt;= delta_range[<span class="num">1</span>]
+        <span class="kw">and</span> params[<span class="str">"dte"</span>][mode][<span class="str">"min"</span>] &lt;= opt[<span class="str">"dte"</span>] &lt;= params[<span class="str">"dte"</span>][mode][<span class="str">"max"</span>]
+        <span class="kw">and</span> opt[<span class="str">"volume"</span>] >= <span class="num">50</span>  <span class="cmt"># 基础流动性门槛</span>
+    ]
+
+    <span class="cmt"># Step 4: EV 修正计算（含左尾肥尾系数）</span>
+    <span class="kw">for</span> opt <span class="kw">in</span> candidates:
+        opt[<span class="str">"ev_raw"</span>] = <span class="fn">calc_ev</span>(opt)
+        opt[<span class="str">"ev_adj"</span>] = opt[<span class="str">"ev_raw"</span>] / params[<span class="str">"ev_correction"</span>]
+        opt[<span class="str">"spread_ok"</span>] = opt[<span class="str">"ask"</span>] - opt[<span class="str">"bid"</span>] &lt;= opt[<span class="str">"mid"</span>] * <span class="num">0.10</span>
+
+    <span class="cmt"># Step 5: 按修正 EV 降序排列，返回 top-3</span>
+    ranked = <span class="fn">sorted</span>(
+        [o <span class="kw">for</span> o <span class="kw">in</span> candidates <span class="kw">if</span> o[<span class="str">"spread_ok"</span>] <span class="kw">and</span> o[<span class="str">"ev_adj"</span>] > <span class="num">0</span>],
+        key=<span class="kw">lambda</span> x: x[<span class="str">"ev_adj"</span>], reverse=<span class="kw">True</span>
+    )[:3]
+
+    <span class="kw">return</span> { <span class="str">"ticker"</span>: ticker, <span class="str">"mode"</span>: mode, <span class="str">"candidates"</span>: ranked }
+    </div>
+
+    <h3>4.3 推荐输出格式（signal.json）</h3>
+    <div class="code-block">
+      <span class="code-label">signal_20260419.json · 单标推荐示例</span>
+{
+  <span class="key">"ticker"</span>: <span class="str">"META"</span>,
+  <span class="key">"scan_ts"</span>: <span class="str">"2026-04-19T09:17:32Z"</span>,
+  <span class="key">"mode"</span>: <span class="str">"naked_put"</span>,
+  <span class="key">"vix_tier"</span>: <span class="str">"elevated"</span>,
+  <span class="key">"ivr"</span>: <span class="num">48</span>,
+  <span class="key">"recommendations"</span>: [
+    {
+      <span class="key">"rank"</span>: <span class="num">1</span>,
+      <span class="key">"expiry"</span>: <span class="str">"2026-05-16"</span>,
+      <span class="key">"strike"</span>: <span class="num">540</span>,
+      <span class="key">"dte"</span>: <span class="num">27</span>,
+      <span class="key">"delta"</span>: <span class="num">-0.135</span>,
+      <span class="key">"mid_price"</span>: <span class="num">4.85</span>,
+      <span class="key">"ev_raw"</span>: <span class="num">0.62</span>,
+      <span class="key">"ev_adj"</span>: <span class="num">0.52</span>,
+      <span class="key">"margin_req"</span>: <span class="num">12800</span>,
+      <span class="key">"annualized_return"</span>: <span class="num">0.148</span>,
+      <span class="key">"profit_target_price"</span>: <span class="num">2.43</span>,   <span class="cmt">// 50% 止盈价，用于设 GTC</span>
+      <span class="key">"notes"</span>: <span class="str">"优选；流动性好；EV修正后仍为正"</span>
+    }
+  ],
+  <span class="key">"execution_required"</span>: <span class="str">"人工在 IBKR TWS 确认后手动下单"</span>
+}
+    </div>
+
+    <div class="alert alert-danger">
+      <strong>禁止全自动执行</strong>
+      <p>阶段4的输出文件是推荐，不是指令。<strong>严禁</strong>任何自动将 signal.json 转化为 IBKR TWS 自动下单的脚本或接口。操作者必须逐一审阅推荐内容，核实价格合理性、确认保证金充裕后，手动在 TWS 中下单。</p>
+    </div>
+
+    <h3>4.4 执行前人工核查清单</h3>
+    <ul class="checklist">
+      <li class="ok">确认今日 VIX 与 signal.json 中 vix_tier 一致</li>
+      <li class="ok">确认行权价的实时买卖价差在合理范围（≤10% mid）</li>
+      <li class="ok">确认账户当前 Excess Liquidity 下单后仍 ≥ 20% NAV</li>
+      <li class="ok">确认该标的本月已持仓数量不超过单标上限</li>
+      <li class="warn">检查是否有突发新闻或重大公告（财报外的）</li>
+      <li class="warn">对照 meta.html 确认没有遗漏的特殊黑名单事件</li>
+      <li class="crit">下单后立即在 TWS 设置 50% 止盈 GTC 限价单</li>
+    </ul>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PHASE 5
+  ═══════════════════════════════════════════ -->
+  <section class="section" id="phase5">
+    <div class="section-header">
+      <div class="phase-badge ph5">阶段 5</div>
+      <div>
+        <div class="section-title">持仓管理与全生命周期监控</div>
+        <div class="section-title"><span class="sub">position_monitor.py · 每日盘中运行 + 月度 SOP</span></div>
+      </div>
+    </div>
+
+    <p>阶段5是系统中最容易被忽视但最关键的环节。开仓只完成了 20% 的工作，剩下 80% 在持仓管理中。在多标的并发持仓（10+个标的）的情况下，纯人工监控必然出现漏单，position_monitor.py 是防漏的最后一道网。</p>
+
+    <h3>5.1 每日监控项目</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>监控事件</th><th>触发条件</th><th>建议操作</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="em">止盈触达</td>
+            <td class="mono">期权市价 ≤ 开仓价 × 50%</td>
+            <td>确认 GTC 成交 / 手动平仓</td>
+            <td><span class="tag tag-green">High</span></td>
+          </tr>
+          <tr>
+            <td class="em">Delta 漂移</td>
+            <td class="mono">|Delta| > 单标手册上限</td>
+            <td>评估是否 Roll 或调仓</td>
+            <td><span class="tag tag-yellow">Mid</span></td>
+          </tr>
+          <tr>
+            <td class="em">L1 熔断</td>
+            <td class="mono">标的单日跌幅 ≥ 8%</td>
+            <td>暂停新仓，评估 Roll</td>
+            <td><span class="tag tag-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="em">L2 熔断</td>
+            <td class="mono">标的单日跌幅 ≥ 15%</td>
+            <td>启动 Spread 对冲，上报</td>
+            <td><span class="tag tag-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="em">L3 熔断</td>
+            <td class="mono">标的单日跌幅 ≥ 25%</td>
+            <td>强制平仓，退出标的</td>
+            <td><span class="tag tag-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="em">25% 累计下跌</td>
+            <td class="mono">正股较开仓时累计跌 ≥ 25%</td>
+            <td>切换至 Spread 模式</td>
+            <td><span class="tag tag-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="em">DTE 时间止损</td>
+            <td class="mono">DTE ≤ 5 且仍亏损</td>
+            <td>强制平仓</td>
+            <td><span class="tag tag-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td class="em">财报临近警告</td>
+            <td class="mono">距下次财报 ≤ 12 日</td>
+            <td>提前评估平仓或滚动</td>
+            <td><span class="tag tag-yellow">Mid</span></td>
+          </tr>
+          <tr>
+            <td class="em">VIX 层级变化</td>
+            <td class="mono">VIX 跨越 18/28/35 阈值</td>
+            <td>重新评估所有持仓合规性</td>
+            <td><span class="tag tag-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td class="em">保证金缓冲告警</td>
+            <td class="mono">Excess Liquidity &lt; 25% NAV</td>
+            <td>主动减仓，防止爆仓</td>
+            <td><span class="tag tag-red">Critical</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5.2 Roll 决策树</h3>
+    <div class="card-grid">
+      <div class="card" style="border-color:rgba(34,211,238,0.3)">
+        <div class="card-label" style="color:var(--accent2)">Credit Roll（优先选项）</div>
+        <h3>向前滚动，净收权利金</h3>
+        <p><strong>触发条件：</strong>Delta > 上限阈值 且 DTE > 14</p>
+        <p><strong>操作：</strong>平掉近月，卖出远月更低行权价，确保净 Credit ≥ $0.10</p>
+        <p><strong>底线：</strong>新行权价不得低于初始行权价 × 0.85</p>
+      </div>
+      <div class="card" style="border-color:rgba(245,158,11,0.3)">
+        <div class="card-label" style="color:var(--yellow)">Debit Roll（防守选项）</div>
+        <h3>跌破行权价，支付权利金滚动</h3>
+        <p><strong>触发条件：</strong>正股跌破行权价 3% 且 DTE > 7</p>
+        <p><strong>操作：</strong>平掉亏损头寸，支付小额 Debit 换取更多时间</p>
+        <p><strong>底线：</strong>累计 Debit 不超过原始权利金 × 1.5，否则直接平仓</p>
+      </div>
+      <div class="card" style="border-color:rgba(239,68,68,0.3)">
+        <div class="card-label" style="color:var(--red)">直接平仓（止损线）</div>
+        <h3>亏损触及阈值，不再 Roll</h3>
+        <p><strong>触发条件：</strong>亏损超过权利金 2 倍 或 DTE ≤ 5 且仍亏损</p>
+        <p><strong>操作：</strong>市价或限价平仓，全部退出，入台账</p>
+        <p><strong>注意：</strong>L3 熔断不评估 Roll，直接平仓</p>
+      </div>
+    </div>
+
+    <h3>5.3 月度 SOP 标准操作流程</h3>
+    <ul class="rule-list">
+      <li><span class="num">M-01</span><strong>月末 -3 日：</strong>扫描所有 DTE ≤ 10 的持仓，评估是否需要提前平仓或滚动。</li>
+      <li><span class="num">M-02</span><strong>月末 -1 日：</strong>检查次月财报日历，更新所有标的的财报黑名单日期。</li>
+      <li><span class="num">M-03</span><strong>月初 +1 日：</strong>台账录入——记录本月已平仓的权利金收入、止盈数、止损数、Roll 次数。</li>
+      <li><span class="num">M-04</span><strong>月初复盘：</strong>计算本月实现 PnL vs 预期 EV，识别哪些标的表现低于预期，标记下季度审阅优先项。</li>
+      <li><span class="num">M-05</span><strong>季度末：</strong>执行 Watchlist 静态审阅——移除不合格标的，纳入新候选标的，更新对应 YAML 文件。</li>
+    </ul>
+
+    <h3>5.4 position_monitor.py 骨架</h3>
+    <div class="code-block">
+      <span class="code-label">position_monitor.py · 骨架</span>
+<span class="kw">def</span> <span class="fn">run_position_monitor</span>(positions, ticker_params, market_data, account):
+    alerts = []
+
+    <span class="kw">for</span> pos <span class="kw">in</span> positions:
+        ticker = pos[<span class="str">"ticker"</span>]
+        params = ticker_params[ticker]
+        price_now = market_data[ticker][<span class="str">"price"</span>]
+        
+        <span class="cmt"># 检查1：止盈触达</span>
+        <span class="kw">if</span> pos[<span class="str">"current_price"</span>] &lt;= pos[<span class="str">"open_price"</span>] * <span class="num">0.50</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"PROFIT_TARGET"</span>, <span class="str">"止盈触达 50%，确认平仓"</span>, priority=<span class="str">"HIGH"</span>))
+
+        <span class="cmt"># 检查2：熔断</span>
+        daily_chg = market_data[ticker][<span class="str">"daily_change_pct"</span>]
+        <span class="kw">if</span> daily_chg &lt;= -<span class="num">0.25</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"L3_CIRCUIT_BREAK"</span>, <span class="str">"单日跌 25%，强制平仓"</span>, priority=<span class="str">"CRITICAL"</span>))
+        <span class="kw">elif</span> daily_chg &lt;= -<span class="num">0.15</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"L2_CIRCUIT_BREAK"</span>, <span class="str">"单日跌 15%，启动对冲"</span>, priority=<span class="str">"CRITICAL"</span>))
+        <span class="kw">elif</span> daily_chg &lt;= -<span class="num">0.08</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"L1_CIRCUIT_BREAK"</span>, <span class="str">"单日跌 8%，暂停新仓"</span>, priority=<span class="str">"CRITICAL"</span>))
+
+        <span class="cmt"># 检查3：25% 累计跌幅切换</span>
+        cumulative_chg = (price_now / pos[<span class="str">"entry_price"</span>]) - <span class="num">1</span>
+        <span class="kw">if</span> cumulative_chg &lt;= -<span class="num">0.25</span> <span class="kw">and</span> pos[<span class="str">"mode"</span>] == <span class="str">"naked_put"</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"MODE_SWITCH"</span>, <span class="str">"累计跌 25%，切换至 Spread"</span>, priority=<span class="str">"CRITICAL"</span>))
+
+        <span class="cmt"># 检查4：DTE 时间止损</span>
+        <span class="kw">if</span> pos[<span class="str">"dte"</span>] &lt;= params[<span class="str">"exit"</span>][<span class="str">"time_stop_dte"</span>] <span class="kw">and</span> pos[<span class="str">"pnl_pct"</span>] &lt; <span class="num">0</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"TIME_STOP"</span>, <span class="str">f"DTE={pos['dte']}，仍亏损，强制平仓"</span>, priority=<span class="str">"HIGH"</span>))
+
+        <span class="cmt"># 检查5：财报临近</span>
+        days_to_earn = <span class="fn">days_to_earnings</span>(ticker)
+        <span class="kw">if</span> days_to_earn &lt;= <span class="num">12</span>:
+            alerts.append(<span class="fn">Alert</span>(ticker, <span class="str">"EARNINGS_WARN"</span>, <span class="str">f"距财报 {days_to_earn} 日，评估平仓"</span>, priority=<span class="str">"MID"</span>))
+
+    <span class="fn">send_alerts</span>(alerts)   <span class="cmt"># 发送到邮件 / Telegram / Slack</span>
+    <span class="fn">save_alerts</span>(alerts)   <span class="cmt"># 保存至 alert_YYYYMMDD.txt</span>
+    <span class="kw">return</span> alerts
+    </div>
+  </section>
+
+  <!-- ── CONFLICT RULES ── -->
+  <section class="section" id="conflict">
+    <div class="section-header">
+      <div>
+        <div class="section-title">参数冲突处理规则</div>
+        <div class="section-title"><span class="sub">全局 vs 单标 · 谁赢谁输的铁律</span></div>
+      </div>
+    </div>
+
+    <div class="alert alert-danger">
+      <strong>核心原则：单标参数只能更严，不能更宽</strong>
+      <p>阶段1（全局配置）是宪法，阶段3（单标手册）是地方法规。地方法规可以比宪法更严格，但不能突破宪法的底线。任何冲突都以更严格的那一方为准。</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>冲突场景</th><th>全局规则</th><th>单标规则</th><th>执行结果</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="em">VIX 阈值冲突</td>
+            <td>VIX > 28，B 级禁止裸卖</td>
+            <td>VIX > 35 全面暂停（未覆盖 28–35）</td>
+            <td class="mono">全局优先：28–35 区间执行全局规则（禁止裸卖）</td>
+          </tr>
+          <tr>
+            <td class="em">Delta 上限冲突</td>
+            <td>A 级 IVR-mid：Delta ≤ 0.18</td>
+            <td>META IVR-mid：Delta ≤ 0.15（更严）</td>
+            <td class="mono">单标优先：执行 0.15 上限（更严者胜）</td>
+          </tr>
+          <tr>
+            <td class="em">Delta 上限越界</td>
+            <td>A 级 IVR-high：Delta ≤ 0.20</td>
+            <td>某标的 IVR-high：Delta ≤ 0.22（违规！）</td>
+            <td class="mono">validate_params 报错，拒绝写入，必须修正 YAML</td>
+          </tr>
+          <tr>
+            <td class="em">名义敞口冲突</td>
+            <td>单标上限 20% NAV</td>
+            <td>META 手册未指定上限</td>
+            <td class="mono">全局兜底：执行 20% NAV 上限</td>
+          </tr>
+          <tr>
+            <td class="em">财报黑名单冲突</td>
+            <td>距财报 ≥ 10 日</td>
+            <td>NVDA 手册：距财报 ≥ 14 日（更严）</td>
+            <td class="mono">单标优先：执行 14 日封闭期</td>
+          </tr>
+          <tr>
+            <td class="em">FOMC 黑名单冲突</td>
+            <td>FOMC 当日及前一日禁止开仓</td>
+            <td>META 手册：FOMC 不影响</td>
+            <td class="mono">全局优先：FOMC 黑名单不可被单标放宽</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>冲突判定流程</h3>
+    <div class="code-block">
+      <span class="code-label">validate_params.py · 冲突判定逻辑</span>
+<span class="kw">def</span> <span class="fn">resolve_conflict</span>(global_val, local_val, constraint_type):
+    <span class="str">"""
+    constraint_type:
+      "max" = 取较小值（上限约束，如 Delta 上限）
+      "min" = 取较大值（下限约束，如 DTE 下限）
+      "bool_strict" = global=True 时单标不得设为 False（如 FOMC 黑名单）
+    """</span>
+    <span class="kw">if</span> constraint_type == <span class="str">"max"</span>:
+        <span class="kw">return</span> <span class="fn">min</span>(global_val, local_val)   <span class="cmt"># 取更严（更小）的上限</span>
+    <span class="kw">elif</span> constraint_type == <span class="str">"min"</span>:
+        <span class="kw">return</span> <span class="fn">max</span>(global_val, local_val)   <span class="cmt"># 取更严（更大）的下限</span>
+    <span class="kw">elif</span> constraint_type == <span class="str">"bool_strict"</span>:
+        <span class="kw">if</span> global_val == <span class="kw">True</span> <span class="kw">and</span> local_val == <span class="kw">False</span>:
+            <span class="kw">raise</span> ValueError(<span class="str">"全局强制约束不可被单标放宽"</span>)
+        <span class="kw">return</span> global_val  <span class="cmt"># 全局更严时取全局</span>
+    </div>
+  </section>
+
+  <!-- ── VERSIONING ── -->
+  <section class="section" id="versioning">
+    <div class="section-header">
+      <div>
+        <div class="section-title">版本控制规范</div>
+        <div class="section-title"><span class="sub">文档与配置强绑定 · 防止脱节故障</span></div>
+      </div>
+    </div>
+
+    <h3>版本号格式</h3>
+    <p>采用三段式版本号 <span class="inline-code">vMAJOR.MINOR.PATCH</span>，含义如下：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>段位</th><th>触发升级场景</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td class="em">MAJOR</td><td>方法论核心架构变化（如增减阶段、改变核心策略）</td><td class="mono">v2.x.x → v3.0.0</td></tr>
+          <tr><td class="em">MINOR</td><td>参数边界实质性调整（如 VIX 阈值、Delta 上限变化）</td><td class="mono">v3.0.x → v3.1.0</td></tr>
+          <tr><td class="em">PATCH</td><td>文字修正、新增标的、小改进，不影响核心逻辑</td><td class="mono">v3.0.0 → v3.0.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>版本同步规则</h3>
+    <ul class="rule-list">
+      <li><span class="num">V-01</span>每次修改 <span class="inline-code">choose.html</span>，必须同步更新 <span class="inline-code">config.json</span> 中的 <span class="inline-code">method_version</span> 字段，两者版本号必须完全一致。</li>
+      <li><span class="num">V-02</span>每个 <span class="inline-code">ticker-params.yaml</span> 中的 <span class="inline-code">method_version</span> 字段，必须与当前 <span class="inline-code">config.json</span> 一致，否则 <span class="inline-code">validate_params</span> 报错。</li>
+      <li><span class="num">V-03</span>版本不一致不得静默通过，必须报错阻断流程。</li>
+      <li><span class="num">V-04</span>每个 <span class="inline-code">ticker-params.yaml</span> 独立维护自己的 <span class="inline-code">version</span> 字段（PATCH 级），用于追踪单标手册的迭代历史。</li>
+      <li><span class="num">V-05</span>所有文件变更记录到 CHANGELOG.md，标注变更时间、变更人、变更内容摘要。</li>
+    </ul>
+  </section>
+
+  <!-- ── FILE LIST ── -->
+  <section class="section" id="files">
+    <div class="section-header">
+      <div>
+        <div class="section-title">系统文件清单</div>
+        <div class="section-title"><span class="sub">完整系统的必要文件一览</span></div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">目录结构</span>
+nra-wheel-system/
+├── <span class="key">config/</span>
+│   ├── config.json                   <span class="cmt"># 全局规则配置（阶段1）</span>
+│   └── watchlist.json                <span class="cmt"># 静态 Watchlist（118 标的）</span>
+│
+├── <span class="key">playbooks/</span>
+│   ├── META/
+│   │   ├── meta.html                 <span class="cmt"># 人读版手册（阶段3）</span>
+│   │   └── params.yaml               <span class="cmt"># 机读版参数（阶段3）</span>
+│   ├── NVDA/
+│   │   ├── meta.html
+│   │   └── params.yaml
+│   └── ...                           <span class="cmt"># 每个标的一个目录</span>
+│
+├── <span class="key">scripts/</span>
+│   ├── wheel_screener.py             <span class="cmt"># 每日筛选（阶段2）</span>
+│   ├── openclaw_scan.py              <span class="cmt"># 扫单推荐（阶段4）</span>
+│   ├── position_monitor.py          <span class="cmt"># 持仓监控（阶段5）</span>
+│   └── validate_params.py           <span class="cmt"># 参数校验工具</span>
+│
+├── <span class="key">docs/</span>
+│   ├── choose.html                   <span class="cmt"># 全局方法论文档（阶段1，与 config.json 同步）</span>
+│   └── nra-wheel-methodology.html   <span class="cmt"># 本文件</span>
+│
+├── <span class="key">outputs/</span>               <span class="cmt"># 脚本产出物，按日期归档</span>
+│   ├── eligible_20260419.json
+│   ├── signal_20260419.json
+│   └── alert_20260419.txt
+│
+├── <span class="key">ledger/</span>                <span class="cmt"># 月度台账</span>
+│   ├── 2026-04.xlsx
+│   └── CHANGELOG.md
+│
+└── ticker-params.yaml               <span class="cmt"># 合并版（供脚本快速读取）</span>
+    </div>
+  </section>
+
+  <!-- ── CHECKLIST ── -->
+  <section class="section" id="checklist">
+    <div class="section-header">
+      <div>
+        <div class="section-title">投产检查表</div>
+        <div class="section-title"><span class="sub">在系统正式投产前，确认所有项目</span></div>
+      </div>
+    </div>
+
+    <h3>必须完成（Blocker）</h3>
+    <ul class="checklist">
+      <li>阶段1 ✦ config.json 与 choose.html 版本号一致，内容对应</li>
+      <li>阶段2 ✦ wheel_screener.py 通过 Unit Test（VIX=15/25/32/40 四个场景各跑一次）</li>
+      <li>阶段2 ✦ 静态 Watchlist 完成季度审阅，118 个标的均通过准入复核</li>
+      <li>阶段3 ✦ 所有 Watchlist 标的均有对应的 ticker-params.yaml</li>
+      <li>阶段3 ✦ validate_params.py 对所有 YAML 文件校验通过（无版本冲突、无 Delta 越界）</li>
+      <li>阶段4 ✦ openclaw_scan.py 在沙盒环境跑通，输出格式正确</li>
+      <li>阶段4 ✦ 确认无任何自动下单路径（代码审查）</li>
+      <li>阶段5 ✦ position_monitor.py 部署完成，告警通道（邮件/Telegram）测试通过</li>
+      <li>✦ IBKR 账户 PM 账户资格确认，保证金模型设置正确</li>
+      <li>✦ 50% 止盈 GTC 下单 SOP 已培训，所有操作者知晓</li>
+    </ul>
+
+    <h3>建议完成（Nice-to-Have）</h3>
+    <ul class="checklist">
+      <li>CI 流水线：每次 push 自动运行 validate_params.py</li>
+      <li>月度台账模板准备好，第一笔交易即开始录入</li>
+      <li>熔断演练：模拟 META 单日跌 26% 场景，走一遍 L3 处置流程</li>
+      <li>CHANGELOG.md 模板建立</li>
+      <li>position_monitor.py 输出接入简单 Web Dashboard（可选）</li>
+    </ul>
+
+    <div class="alert alert-ok" style="margin-top:32px">
+      <strong>系统就绪标准</strong>
+      <p>所有"必须完成"项均打勾，validate_params.py 对全量 YAML 零报错，在 IBKR 纸交易账户完成 3 个交易日的全流程演练，方可切换至实盘账户。</p>
+    </div>
+  </section>
+
+  <!-- 免责声明（与 demo.html 一致） -->
+  <div class="disclaimer-wrap">
+    <div class="disclaimer">
+      <strong>免责声明</strong><br>
+      本操作手册基于 历史数据、美股期权市场规则及 NRA 税务政策综合研究制定，由RHCLOUD AI 生成，<strong>不构成任何投资建议</strong>。期权交易存在本金全部损失的重大风险。股票 受监管变化、业绩表现、行业竞争、技术迭代等因素影响，可能出现超出历史经验的极端波动。<br><br>
+      本手册所涉及的全部税务处理方式、遗产税规划、离岸公司架构，须在相关持牌 CPA、执业律师出具书面意见后方可执行。过往绩效数据与历史回测结果不代表未来收益。交易者须自行评估风险承受能力，并对一切投资决策及其税务后果承担完全责任。<br><br>
+      <strong>版本：V3.0 · 综合优化版 · 2026 年 4 月 · 内部学习文件 · 禁止对外传阅</strong>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>
