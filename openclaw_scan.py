@@ -1,141 +1,23 @@
 #!/usr/bin/env python3
 """
-OpenClaw · Wheel卖Put · 期权链扫描器 v2.1
+OpenClaw · Wheel卖Put · 期权链扫描器 v3.1
 ==========================================
-v2.1 核心变更（对比 v2.0）：
 
-  [BUG FIX] at_20d_low窗口包含当天问题修复
-       ▸ 改为使用过去20个交易日窗口（不含当天）并用严格小于判定
-       ▸ Opportunity Alert 条件5（SPX未创20日新低）恢复真实过滤语义
+功能概要：Put 期权链扫描、Pre-screen Gate、宏观事件窗口（FOMC/CPI/NFP/BOJ）、
+全量标的扫描、LLM 精简 JSON 输出。
 
-  [FEATURE] IV历史库启动健康检查
-       ▸ scan_all 启动时检查 iv_history.db 近30天覆盖率
-       ▸ 覆盖不足时明确告警，提示本轮信号可能大量退化为 HV 代理
-
-  [FEATURE] LLM JSON 关键上下文补齐
-       ▸ meta 新增 gate_score / fomc_d / margin / d_adj / sp_dd20
-       ▸ signal 新增 th 阈值块；contract 新增 oi/vol
-       ▸ 新增 earn_note 字段，关闭 legend 也能识别 earn<0 语义
-
-  [FEATURE] 财报后波动阻断开关
-       ▸ 新增 --block-post-earnings
-       ▸ 启用时财报后 vol crush 窗口可直接阻断信号
-
-  [OUTPUT] hv_proxy统计拆分
-       ▸ 区分全量 hv_proxy_count 与信号内 hv_proxy_sig_count
-       ▸ 便于判断是数据质量问题还是信号本身问题
-
-  [CONFIG] legend 默认开启
-       ▸ 默认输出字段图例，支持 --no-legend 关闭
-
-v2.0 核心变更（对比 v9.0）：
-
-  [FEATURE] Opportunity Alert C1条件重构（跌幅触发替代连跌天数）
-       ▸ 旧C1：连续收阴 ≥ 3个交易日（方向有，幅度无，假阳性多）
-       ▸ 新C1：5日跌幅 ≥ 分档阈值 OR 3日跌幅 ≥ 分档阈值
-       ▸ 分档阈值（按评级）：
-           A+/A：5日≥5%  OR  3日≥3%
-           B：   5日≥6%  OR  3日≥4%
-           C：   5日≥12% OR  3日≥8%
-       ▸ 优势：过滤小幅震荡假信号；与IV溢价天然强相关；幅度可见
-       ▸ consec_down 保留为辅助参考字段，不再作为触发条件
-
-  [FEATURE] get_stock_data() 新增两个价格跌幅字段
-       ▸ drop_5d_pct：(今收 / 5交易日前收 - 1) × 100
-       ▸ drop_3d_pct：(今收 / 3交易日前收 - 1) × 100
-
-  [OUTPUT] LLM JSON opp字段扩展
-       ▸ 新增 p5d（5日跌幅）、p3d（3日跌幅）、c1_5d、c1_3d 四个字段
-       ▸ skip标注升级：⚡drop5d(-6.2%) 替代 ⚡down3d
-
-v9.0 核心变更（对比 v8.0）：
-
-  [FEATURE] Opportunity Alert — 连跌触发层
-       ▸ get_stock_data() 新增 consecutive_down_days 字段（连续收阴天数）
-       ▸ get_ivr_5d_ago() 新helper：从SQLite IV历史库读取~5交易日前的IVR
-       ▸ evaluate_opportunity_alert() 新函数：评估五项触发条件
-         条件1：连跌 ≥ 3个交易日
-         条件2：IVR较5日前上升 ≥ 15个百分点
-         条件3：无财报/FOMC黑名单
-         条件4：标的评级 ≥ B（C级不触发）
-         条件5：SPX未创近20日新低
-       ▸ 全部满足时triggered=True；连跌≥3但其他条件未全满足时partial=True
-       ▸ process_ticker() 新增 sp500_data 参数，输出 opportunity_alert 字段
-       ▸ get_sp500() 新增 low_20d / at_20d_low 字段（供条件5使用）
-       ▸ LLM JSON信号卡新增 opp 字段（triggered/partial/consec_down/ivr_delta_5d）
-       ▸ 注意：触发后仍须走完整Pre-screen Gate，仓位上限×50%，尾盘30分钟确认
-
-v8.0 核心变更（对比 v7.0）：
-
-  [BUG FIX #1] BS公式sigma归一化（高危）
-       ▸ 原代码将 iv_raw=30.0 直接传入 sigma，等于3000%波动率
-       ▸ 修复：iv_for_bs = iv_raw / 100.0 if iv_raw >= 1.0 else iv_raw
-       ▸ 影响：无真实Greeks时的Delta估算完全错误 → 已修复
-
-  [BUG FIX #2] Delta调整方向反转（高危）
-       ▸ 期限结构倒挂时原代码收紧DELTA_MAX（排除最安全的合约）
-       ▸ 修复：倒挂时收紧DELTA_MIN（排除最激进端），保留安全端
-       ▸ 效果：倒挂时允许范围从[-0.30,-0.15]收紧为[-0.28,-0.15]
-
-  [BUG FIX #3] 财报黑名单静默失效（高危）
-       ▸ yfinance获取失败时 days_to_earnings=None → in_blackout=False
-       ▸ 修复：blackout>0 且日期获取失败时，保守默认 in_blackout=True
-       ▸ 同时记录 earnings_unknown_risk 警告字段
-
-  [BUG FIX #4] IVR=None信号门控缺失（高危）
-       ▸ Python: None is not False == True → IVR未知时信号全通过
-       ▸ 修复：has_signal 要求 ivr_meets is True（明确为真才通过）
-       ▸ HV代理模式：允许通过但强制标记 warn=["ivr_hv_proxy"]
-
-  [BUG FIX #5] Alpaca Paper零价合约未过滤（中危）
-       ▸ bid=0 或 ask=0 的合约会通过价差过滤（spread_pct=None）
-       ▸ 修复：bid<=0 or ask<=0 强制跳过
-
-  [FEATURE] IV趋势检测
-       ▸ calculate_ivr 新增 iv_trend 字段（rising/flat/falling）
-       ▸ IV上升时在 warnings 中标记，不直接屏蔽（保留人工判断空间）
-       ▸ 可用 --block-rising-iv 选项开启硬过滤
-
-  [FEATURE] 合约排序优化（OTM安全优先）
-       ▸ 原排序：年化收益优先（偏向浅OTM高收益合约）
-       ▸ 新排序：OTM深度优先，年化收益次之，流动性最后
-       ▸ 符合卖方"先保安全垫，再优化收益"原则
-
-  [CONFIG] 密钥加载（与 v6 对齐，降低「零配置」门槛）
-       ▸ .env / 环境变量始终优先于代码内默认值
-       ▸ 未设置 MASSIVE_KEYS 时使用与 v6 相同的开发用 Massive 密钥列表
-       ▸ 未设置 Alpaca 时使用与 v6 相同的 Paper 默认 key/secret（可被环境变量覆盖）
-       ▸ 生产环境请将真实密钥只放在 .env，勿提交仓库
-
-  [PERF] MassiveKeyPool 改进
-       ▸ 新增 mark_invalid() 方法，标记401/403失效密钥
-       ▸ retry装饰器区分限流错误(429，可重试)与认证错误(401/403，不重试)
-       ▸ 等待时间计算移入锁内（消除竞态条件）
-
-  [OUTPUT] LLM精简JSON大幅优化（Token消耗降低~55%）
-       ▸ 跳过标的改为聚合字符串（非必要不列明细）
-       ▸ 仅输出最优合约（Top 1），次优合约可选
-       ▸ 缩短键名（tkr/px/dte/ivr/del/yld/otm/prem）
-       ▸ IVR来源：real/hv 取代长字符串
-       ▸ 新增 --compact-output 与 --full-output 选项
-       ▸ 新增 --block-hv-proxy 选项（拒绝HV代理信号）
-       ▸ 新增 --block-rising-iv 选项（拒绝IV上升信号）
-
-─────────────────────────────────────────────────
 安装：pip install requests yfinance pandas numpy
 
-配置（推荐脚本同目录 .env；与 v6 一致，缺省使用内置默认密钥与 Massive 地址）：
-  MASSIVE_KEYS=key1,key2,...                    （可选，缺省与 v6 相同）
-  MASSIVE_BASE_URL=https://api.massivetrader.com/v1  （可选）
-  ALPACA_PAPER_KEY / ALPACA_PAPER_SECRET        （可选，缺省与 v6 相同）
-  TRADIER_TOKEN=your_tradier_token               （可选）
-  POLYGON_API_KEY=your_polygon_key               （可选）
+配置（推荐脚本同目录 .env；缺省含开发用 Massive / Alpaca Paper 占位，生产请改用私有密钥）：
+  MASSIVE_KEYS / MASSIVE_BASE_URL
+  ALPACA_PAPER_KEY / ALPACA_PAPER_SECRET
+  TRADIER_TOKEN / POLYGON_API_KEY
 
 运行示例：
-  python openclaw_scan_v7.py
-  python openclaw_scan_v7.py --compact-output
-  python openclaw_scan_v7.py --block-hv-proxy --block-rising-iv
-  python openclaw_scan_v7.py --margin-used 42.5 --save-raw-json
+  python openclaw_scan.py
+  python openclaw_scan.py
+  python openclaw_scan.py --block-hv-proxy --block-rising-iv
+  python openclaw_scan.py --margin-used 42.5 --save-raw-json
 
 ⚠ 本内容仅为数据参考，不构成任何投资建议。期权交易具有高风险。
 """
@@ -149,15 +31,21 @@ import logging
 import argparse
 import os
 import re
+import html
 import threading
+import socket
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
 from typing import Optional
+from collections import defaultdict
 
-__version__ = "v2.1"
+__version__ = "v3.1"
+
+# 扫描结果（LLM/摘要/raw JSON）始终写入脚本所在目录，与当前工作目录无关
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 # 与本脚本写出文件名一致：LLM_YYYYMMDD_HHMM.txt 或带 _compact / _full 后缀
 _LLM_OUTPUT_TXT_RE = re.compile(r"^LLM_\d{8}_\d{4}(?:_(?:compact|full))?\.txt$")
@@ -184,7 +72,7 @@ except ImportError:
 #  日志系统
 # ═══════════════════════════════════════════════════════════
 
-LOG_FILE = Path(__file__).parent / "scanner.log"
+LOG_FILE = SCRIPT_DIR / "scanner.log"
 logging.basicConfig(
     filename=str(LOG_FILE),
     level=logging.INFO,
@@ -218,6 +106,8 @@ def parse_args():
     parser.add_argument("--delta-max",   type=float, default=-0.15)
     parser.add_argument("--risk-free",   type=float, default=0.045)
     parser.add_argument("--workers",     type=int,   default=None)
+    parser.add_argument("--batch-size",  type=int,   default=0,
+                        help="分批扫描标的数量（0=不分批；建议20~30）")
     parser.add_argument("--keep-files",  type=int,   default=200)
     parser.add_argument("--max-spread",  type=float, default=15.0,
                         help="bid/ask价差上限%%（默认15）")
@@ -229,15 +119,14 @@ def parse_args():
                         help="Massive API 单密钥最小调用间隔秒数（默认20）")
     parser.add_argument("--save-raw-json",   action="store_true",
                         help="同时保存完整原始JSON（默认关闭）")
-    # v7.0 新增选项
     parser.add_argument("--compact-output",  action="store_true",
                         help="极简LLM输出（最大限度压缩token，跳过标的仅统计数量）")
     parser.add_argument("--full-output",     action="store_true",
                         help="完整LLM输出（包含所有合约细节，适合调试）")
     parser.add_argument("--block-hv-proxy",  action="store_true",
-                        help="v7新增：IVR为HV代理时不产生信号（默认允许但标记警告）")
+                        help="IVR为HV代理时不产生信号（默认允许但标记警告）")
     parser.add_argument("--block-rising-iv", action="store_true",
-                        help="v7新增：IV趋势上升时不产生信号（默认允许但标记警告）")
+                        help="IV趋势上升时不产生信号（默认允许但标记警告）")
     parser.add_argument("--block-post-earnings", action="store_true",
                         help="财报后vol crush窗口内不产生信号（默认只warn不block）")
     parser.add_argument("--with-legend", dest="with_legend", action="store_true",
@@ -246,6 +135,10 @@ def parse_args():
                         help="关闭LLM JSON字段图例（进一步节省token）")
     parser.add_argument("--pretty-json", action="store_true",
                         help="LLM JSON使用缩进格式输出（默认紧凑以节省token）")
+    parser.add_argument("--disable-cboe", action="store_true",
+                        help="禁用 CBOE 期权源，仅使用其他数据源")
+    parser.add_argument("--cboe-gap", type=float, default=1.0,
+                        help="CBOE 请求最小间隔秒数（默认1.0）")
     parser.set_defaults(with_legend=False)
     return parser.parse_args()
 
@@ -262,6 +155,7 @@ def _default_args() -> argparse.Namespace:
         delta_max=-0.15,
         risk_free=0.045,
         workers=None,
+        batch_size=0,
         keep_files=200,
         max_spread=15.0,
         min_oi=50,
@@ -275,6 +169,8 @@ def _default_args() -> argparse.Namespace:
         block_post_earnings=False,
         with_legend=False,
         pretty_json=False,
+        disable_cboe=False,
+        cboe_gap=1.0,
     )
 
 
@@ -303,6 +199,60 @@ FOMC_DATES = [
     "2027-01-27", "2027-03-17",
 ]
 
+# 美国 CPI（BLS CPI 发布日程；按年核对 bls.gov/cpi/）
+CPI_DATES = [
+    "2026-01-13", "2026-02-11", "2026-03-11", "2026-04-10", "2026-05-12",
+    "2026-06-10", "2026-07-14", "2026-08-12", "2026-09-11", "2026-10-14",
+    "2026-11-10", "2026-12-10",
+    "2027-01-13", "2027-02-10", "2027-03-10",
+]
+
+# 美国非农就业（BLS empsit；遇联邦假日等会调整发布日，见 bls.gov/schedule/news_release/empsit.htm）
+NFP_DATES = [
+    "2026-01-09", "2026-02-11", "2026-03-06", "2026-04-03", "2026-05-08",
+    "2026-06-05", "2026-07-02", "2026-08-07", "2026-09-04", "2026-10-02",
+    "2026-11-06", "2026-12-04",
+    "2027-01-08", "2027-02-05", "2027-03-05",
+]
+
+# 日本央行 MPM 决议次日（日银日程 boj.or.jp/en/mopo/mpmsche_minu/）
+BOJ_DATES = [
+    "2026-01-23", "2026-03-19", "2026-04-28", "2026-06-16", "2026-07-31",
+    "2026-09-18", "2026-10-30", "2026-12-18",
+    "2027-01-22",
+]
+
+
+def _days_to_next_macro(date_list: list, today=None) -> Optional[int]:
+    """距 date_list 中下一事件日的天数（含当日为 0）；无未来日期则 None。"""
+    base = today or datetime.now().date()
+    diffs: list[int] = []
+    for ds in date_list:
+        try:
+            d = datetime.strptime(ds, "%Y-%m-%d").date()
+        except Exception:
+            continue
+        diff = (d - base).days
+        if diff >= 0:
+            diffs.append(diff)
+    return min(diffs) if diffs else None
+
+
+def _days_to_next_fomc(today=None) -> Optional[int]:
+    return _days_to_next_macro(FOMC_DATES, today)
+
+
+def _days_to_next_cpi(today=None) -> Optional[int]:
+    return _days_to_next_macro(CPI_DATES, today)
+
+
+def _days_to_next_nfp(today=None) -> Optional[int]:
+    return _days_to_next_macro(NFP_DATES, today)
+
+
+def _days_to_next_boj(today=None) -> Optional[int]:
+    return _days_to_next_macro(BOJ_DATES, today)
+
 
 # ── API Key 加载（.env 文件或环境变量）──────────────────────
 
@@ -318,7 +268,7 @@ def _load_env():
 
 _load_env()
 
-# Massive API（.env 优先；无 MASSIVE_KEYS 时与 v6 相同内置列表）
+# Massive API（.env 优先；无 MASSIVE_KEYS 时使用内置开发列表）
 _massive_keys_raw  = os.environ.get("MASSIVE_KEYS", "")
 MASSIVE_KEYS_LIST  = [k.strip() for k in _massive_keys_raw.split(",") if k.strip()]
 _HARDCODED_MASSIVE_KEYS = [
@@ -349,7 +299,7 @@ TRADIER_TOKEN   = os.environ.get("TRADIER_TOKEN",   "")
 POLYGON_API_KEY = os.environ.get("POLYGON_API_KEY", "")
 TRADIER_SANDBOX = os.environ.get("TRADIER_SANDBOX", "false").lower() == "true"
 
-# Alpaca Paper API（与 v6 一致：环境变量优先，缺省使用 v6 内置 Paper key/secret）
+# Alpaca Paper API（环境变量优先，缺省为内置 Paper 占位）
 ALPACA_PAPER_KEY = os.environ.get(
     "ALPACA_PAPER_KEY",
     "PK3CE4AJHF3IFMR5TCKIVW7ZPY",
@@ -371,45 +321,1800 @@ ALPACA_DATA_BASE_URL = os.environ.get(
 # ═══════════════════════════════════════════════════════════
 #  标的配置
 # ═══════════════════════════════════════════════════════════
+# 内置 fallback（无 tickers_config.json 时）：宏观黑名单仅 SPY/QQQ（FOMC+CPI+NFP）、
+# EWJ（BOJ）、XLU（仅 FOMC）；其余标的仅财报等逻辑，宏观窗口为 0。生产以 JSON 为准。
 
-_DEFAULT_TICKERS = {
-    "SPY":  {"grade":"A+","ivr_min":25,"ann_min":10,"otm_buffer":0.08,"earnings_blackout":0, "fomc_blackout":5, "structure":"CSP"},
-    "QQQ":  {"grade":"A+","ivr_min":28,"ann_min":10,"otm_buffer":0.08,"earnings_blackout":0, "fomc_blackout":5, "structure":"CSP"},
-    "EWJ":  {"grade":"A+","ivr_min":30,"ann_min":8, "otm_buffer":0.08,"earnings_blackout":0, "structure":"CSP"},
-    "AAPL": {"grade":"A", "ivr_min":38,"ann_min":12,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "MSFT": {"grade":"A", "ivr_min":35,"ann_min":11,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "NVO":  {"grade":"A", "ivr_min":40,"ann_min":12,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "ASML": {"grade":"A", "ivr_min":40,"ann_min":12,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "MA":   {"grade":"A", "ivr_min":32,"ann_min":10,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "TSM":  {"grade":"A", "ivr_min":42,"ann_min":13,"otm_buffer":0.06,"earnings_blackout":10,"structure":"CSP"},
-    "V":    {"grade":"B", "ivr_min":28,"ann_min":8, "otm_buffer":0.05,"earnings_blackout":10,"structure":"CSP"},
-    "GLD":  {"grade":"B", "ivr_min":32,"ann_min":8, "otm_buffer":0.05,"earnings_blackout":0, "special_rules":["gld_vix_gate"], "structure":"CSP"},
-    "XLU":  {"grade":"B", "ivr_min":26,"ann_min":7, "otm_buffer":0.05,"earnings_blackout":0, "fomc_blackout":3, "structure":"CSP"},
-    "META": {"grade":"C", "ivr_min":60,"ann_min":15,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "NVDA": {"grade":"C", "ivr_min":65,"ann_min":18,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "TSLA": {"grade":"C", "ivr_min":80,"ann_min":20,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "HOOD": {"grade":"C", "ivr_min":65,"ann_min":18,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "IBIT": {"grade":"C", "ivr_min":60,"ann_min":15,"otm_buffer":0.05,"earnings_blackout":0, "structure":"Bull Put Spread"},
-    "COIN": {"grade":"C", "ivr_min":75,"ann_min":20,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "MSTR": {"grade":"C", "ivr_min":85,"ann_min":25,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
-    "CRCL": {"grade":"C", "ivr_min":80,"ann_min":20,"otm_buffer":0.05,"earnings_blackout":14,"structure":"Bull Put Spread"},
+_DEFAULT_TICKERS = {'SPY': {'grade': 'A+',
+         'sector': 'ETF宽基',
+         'ivr_min': 25,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 3,
+         'cpi_blackout': 3,
+         'nfp_blackout': 3,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': True,
+         'blackout_desc': 'FOMC/CPI/非农前3天',
+         'notes': 'SPY+QQQ合计≤净值25%；不同时满仓'},
+ 'QQQ': {'grade': 'A+',
+         'sector': 'ETF宽基',
+         'ivr_min': 28,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 3,
+         'cpi_blackout': 3,
+         'nfp_blackout': 3,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': True,
+         'blackout_desc': 'FOMC/CPI/非农前3天',
+         'notes': '与SPY不同时满仓；NVDA/AAPL财报周仓位×0.7'},
+ 'EWJ': {'grade': 'A+',
+         'sector': 'ETF日本',
+         'ivr_min': 30,
+         'ann_min': 8,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 2,
+         'structure': 'CSP',
+         'cc_rule': '暂停',
+         'is_official': True,
+         'blackout_desc': 'BOJ前后2天',
+         'notes': '净值≥$500K；USD/JPY周变<3%；C状态直接暂停'},
+ 'IWM': {'grade': 'A+',
+         'sector': 'ETF宽基',
+         'ivr_min': 30,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 3,
+         'cpi_blackout': 3,
+         'nfp_blackout': 3,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': 'FOMC/CPI/非农前3天',
+         'notes': '小盘风险偏好指标；与SPY高相关，注意集中度'},
+ 'XLK': {'grade': 'A+',
+         'sector': 'ETF科技',
+         'ivr_min': 28,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': 'NVDA/AAPL权重高；财报周注意组合重叠'},
+ 'XLF': {'grade': 'A+',
+         'sector': 'ETF金融',
+         'ivr_min': 28,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': '利率高度联动；FOMC前谨慎；区域银行事件敏感'},
+ 'XLV': {'grade': 'A+',
+         'sector': 'ETF医疗',
+         'ivr_min': 25,
+         'ann_min': 9,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': '防御属性强；IV偏低需等待窗口；与SPX低相关'},
+ 'XLY': {'grade': 'A+',
+         'sector': 'ETF消费',
+         'ivr_min': 28,
+         'ann_min': 10,
+         'otm_buffer': 0.08,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': 'AMZN/TSLA权重高；消费信心联动'},
+ 'AAPL': {'grade': 'A',
+          'sector': '科技',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': True,
+          'blackout_desc': '财报前10天',
+          'notes': '被行权3日内推CC；接货超$60K需监控遗产税'},
+ 'MSFT': {'grade': 'A',
+          'sector': '科技',
+          'ivr_min': 35,
+          'ann_min': 11,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': True,
+          'blackout_desc': '财报前10天',
+          'notes': 'IV曲线平滑；Azure业绩日注意但不自动停开'},
+ 'NVO': {'grade': 'A',
+         'sector': '生物制药',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP',
+         'cc_rule': '—',
+         'is_official': True,
+         'blackout_desc': '财报/FDA前10天',
+         'notes': 'FDA事件视同财报；与SPX相关性<0.45，分散价值强'},
+ 'ASML': {'grade': 'A',
+          'sector': '半导体设备',
+          'ivr_min': 40,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前10天',
+          'notes': '净值≥$1M；出口管制新闻立即暂停；价差/权利金<4%'},
+ 'MA': {'grade': 'A',
+        'sector': '金融',
+        'ivr_min': 32,
+        'ann_min': 10,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': True,
+        'blackout_desc': '财报前10天',
+        'notes': 'MA+V合计≤净值12%；两者不同时超80%'},
+ 'TSM': {'grade': 'A',
+         'sector': '半导体',
+         'ivr_min': 42,
+         'ann_min': 13,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP',
+         'cc_rule': '暂停',
+         'is_official': True,
+         'blackout_desc': '财报前10天',
+         'notes': '地缘监控（台海/chip export）；ADR换算比验证'},
+ 'GOOGL': {'grade': 'A',
+           'sector': '科技',
+           'ivr_min': 35,
+           'ann_min': 11,
+           'otm_buffer': 0.06,
+           'earnings_blackout': 10,
+           'fomc_blackout': 0,
+           'cpi_blackout': 0,
+           'nfp_blackout': 0,
+           'boj_blackout': 0,
+           'structure': 'CSP / C→价差',
+           'cc_rule': '价差',
+           'is_official': False,
+           'blackout_desc': '财报前10天',
+           'notes': '广告收入驱动；与GOOG共财报，二选一开仓'},
+ 'GOOG': {'grade': 'A',
+          'sector': '科技',
+          'ivr_min': 35,
+          'ann_min': 11,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '与GOOGL共财报；不同时持有，二选一'},
+ 'AMZN': {'grade': 'A',
+          'sector': '科技/零售',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': 'AWS+广告双驱动；AWS增速为核心跟踪指标'},
+ 'AVGO': {'grade': 'A',
+          'sector': '半导体',
+          'ivr_min': 42,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': 'AI定制芯片敞口大；与NVDA高相关，注意组合集中度'},
+ 'ORCL': {'grade': 'A',
+          'sector': '科技',
+          'ivr_min': 38,
+          'ann_min': 11,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '云数据库转型；财报RPO指引波动较大'},
+ 'CRM': {'grade': 'A',
+         'sector': '科技SaaS',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': 'SaaS订阅模式；AI Agent商业化进展监控'},
+ 'ADBE': {'grade': 'A',
+          'sector': '科技SaaS',
+          'ivr_min': 40,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '创意软件护城河；AI替代风险与Firefly商业化'},
+ 'QCOM': {'grade': 'A',
+          'sector': '半导体',
+          'ivr_min': 40,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '手机终端敞口；中国市场依赖高，出口管制风险'},
+ 'TXN': {'grade': 'A',
+         'sector': '半导体',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '工业/汽车模拟芯片；强周期性；库存去化节奏'},
+ 'AMAT': {'grade': 'A',
+          'sector': '半导体设备',
+          'ivr_min': 42,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '出口管制监控；与LRCX/KLAC高相关，注意集中度'},
+ 'LRCX': {'grade': 'A',
+          'sector': '半导体设备',
+          'ivr_min': 42,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '出口管制监控；与AMAT/KLAC高相关，二选一'},
+ 'KLAC': {'grade': 'A',
+          'sector': '半导体设备',
+          'ivr_min': 42,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '工艺控制设备垄断；与AMAT相关性高，注意集中'},
+ 'ANET': {'grade': 'A',
+          'sector': '网络设备',
+          'ivr_min': 45,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': 'AI超算网络交换机龙头；云厂商资本支出联动'},
+ 'INTU': {'grade': 'A',
+          'sector': '科技/金融',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '税务SaaS季节性强（1-4月IV升高）；AI竞争监控'},
+ 'NOW': {'grade': 'A',
+         'sector': '科技SaaS',
+         'ivr_min': 45,
+         'ann_min': 13,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '企业IT平台龙头；AI Agent工作流商业化进展'},
+ 'JPM': {'grade': 'A',
+         'sector': '银行',
+         'ivr_min': 30,
+         'ann_min': 10,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '美联储利率决议联动；与XLF/KRE高相关'},
+ 'GS': {'grade': 'A',
+        'sector': '投行',
+        'ivr_min': 35,
+        'ann_min': 11,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': '投行业务周期性强；并购/IPO市场活跃度联动'},
+ 'MS': {'grade': 'A',
+        'sector': '投行',
+        'ivr_min': 35,
+        'ann_min': 11,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': '财富管理+投行双驱动；AUM与市场正相关'},
+ 'BLK': {'grade': 'A',
+         'sector': '资管',
+         'ivr_min': 32,
+         'ann_min': 10,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': 'AUM与市场正相关；VIX高时资产缩水敏感'},
+ 'SCHW': {'grade': 'A',
+          'sector': '券商',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '利率敏感型；存款流失/货币基金转移风险监控'},
+ 'AXP': {'grade': 'A',
+         'sector': '金融',
+         'ivr_min': 32,
+         'ann_min': 10,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '高端消费信用卡；消费景气度直接联动'},
+ 'WFC': {'grade': 'A',
+         'sector': '银行',
+         'ivr_min': 32,
+         'ann_min': 10,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '资产上限松动进展；监管事件敏感度高'},
+ 'KKR': {'grade': 'A',
+         'sector': '另类资管',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': 'PE+信贷双线；市场B/C状态时主动收紧仓位'},
+ 'APO': {'grade': 'A',
+         'sector': '另类资管',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '信贷资管龙头；利率/信用利差高度敏感'},
+ 'BX': {'grade': 'A',
+        'sector': '另类资管',
+        'ivr_min': 40,
+        'ann_min': 12,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': '房地产+私募敞口；流动性事件与赎回风险监控'},
+ 'DIS': {'grade': 'A',
+         'sector': '娱乐/媒体',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '流媒体扭亏+主题公园双驱动；Disney+订阅增速'},
+ 'NXPI': {'grade': 'A',
+          'sector': '半导体',
+          'ivr_min': 45,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '汽车半导体龙头；中国市场依赖度高，出口管制风险'},
+ 'KRE': {'grade': 'A',
+         'sector': 'ETF区域银行',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': '区域银行危机风险监控；与利率/存款外流高度相关'},
+ 'LLY': {'grade': 'A',
+         'sector': '生物制药',
+         'ivr_min': 45,
+         'ann_min': 13,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报/FDA前10天',
+         'notes': 'GLP-1与NVO同赛道竞争；FDA关键数据视同财报'},
+ 'ISRG': {'grade': 'A',
+          'sector': '医疗器械',
+          'ivr_min': 40,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '达芬奇手术机器人垄断；装机量+手术量双跟踪'},
+ 'REGN': {'grade': 'A',
+          'sector': '生物制药',
+          'ivr_min': 45,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报/FDA前10天',
+          'notes': 'FDA临床数据高敏感；Dupixent适应证增速核心'},
+ 'VRTX': {'grade': 'A',
+          'sector': '生物制药',
+          'ivr_min': 45,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报/FDA前10天',
+          'notes': 'CF垄断+镇痛新药pipeline；FDA里程碑监控'},
+ 'BSX': {'grade': 'A',
+         'sector': '医疗器械',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '心脏介入器械；FDA审批敏感度低于biotech'},
+ 'HCA': {'grade': 'A',
+         'sector': '医院',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '医院运营；医保报销政策（Medicaid）联动'},
+ 'UNH': {'grade': 'A',
+         'sector': '医保',
+         'ivr_min': 35,
+         'ann_min': 10,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': 'Medicare Advantage政策风险；医疗损失率监控'},
+ 'ELV': {'grade': 'A',
+         'sector': '医保',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '与UNH高度相关；医保政策同步敏感，不同时超配'},
+ 'CI': {'grade': 'A',
+        'sector': '医保',
+        'ivr_min': 35,
+        'ann_min': 11,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': 'PBM业务监管风险；与UNH/ELV不同时满仓'},
+ 'SYK': {'grade': 'A',
+         'sector': '医疗器械',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '骨科+神经外科机器人；程序量增长稳健'},
+ 'TMO': {'grade': 'A',
+         'sector': '生命科学',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '生命科学仪器+CRO；生物制药客户资本支出联动'},
+ 'DHR': {'grade': 'A',
+         'sector': '生命科学',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '分拆Veralto后更聚焦生科；生物加工需求监控'},
+ 'NKE': {'grade': 'A',
+         'sector': '消费品',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '中国市场依赖度高；品牌定价权与库存周转监控'},
+ 'CMG': {'grade': 'A',
+         'sector': '餐饮',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '同店销售增速+数字化订单；食品安全黑天鹅'},
+ 'LULU': {'grade': 'A',
+          'sector': '服装',
+          'ivr_min': 50,
+          'ann_min': 14,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '高端运动服饰；库存周转率与国际扩张速度'},
+ 'ULTA': {'grade': 'A',
+          'sector': '美妆零售',
+          'ivr_min': 45,
+          'ann_min': 13,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '美妆渠道垄断；亚马逊竞争与同店销售增速'},
+ 'SBUX': {'grade': 'A',
+          'sector': '消费',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '中国市场依赖高；全球同店销售+APP会员数'},
+ 'CAT': {'grade': 'A',
+         'sector': '工业',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '全球基建+矿业周期；中国建设投资联动'},
+ 'DE': {'grade': 'A',
+        'sector': '工业',
+        'ivr_min': 35,
+        'ann_min': 11,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': '农机周期；农产品价格与粮食需求联动'},
+ 'GE': {'grade': 'A',
+        'sector': '航空工业',
+        'ivr_min': 35,
+        'ann_min': 11,
+        'otm_buffer': 0.06,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': 'GE Aerospace纯发动机；订单积压强劲，交付进度'},
+ 'ETN': {'grade': 'A',
+         'sector': '电气化',
+         'ivr_min': 35,
+         'ann_min': 11,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '电气化+数据中心电力基础设施核心受益者'},
+ 'COP': {'grade': 'A',
+         'sector': '能源',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '油价联动；OPEC+决议前谨慎开仓'},
+ 'EOG': {'grade': 'A',
+         'sector': '能源',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '页岩油低成本龙头；WTI油价为核心指标'},
+ 'SLB': {'grade': 'A',
+         'sector': '油服',
+         'ivr_min': 40,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '全球油服龙头；新兴市场油气资本支出联动'},
+ 'SMH': {'grade': 'A',
+         'sector': 'ETF半导体',
+         'ivr_min': 38,
+         'ann_min': 12,
+         'otm_buffer': 0.06,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '无（ETF）',
+         'notes': 'NVDA+TSM+ASML权重高；注意与个股持仓重叠'},
+ 'SOXX': {'grade': 'A',
+          'sector': 'ETF半导体',
+          'ivr_min': 38,
+          'ann_min': 12,
+          'otm_buffer': 0.06,
+          'earnings_blackout': 0,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '无（ETF）',
+          'notes': '与SMH高度相关；二选一开仓；出口管制联动'},
+ 'V': {'grade': 'B',
+       'sector': '金融',
+       'ivr_min': 28,
+       'ann_min': 8,
+       'otm_buffer': 0.05,
+       'earnings_blackout': 10,
+       'fomc_blackout': 0,
+       'cpi_blackout': 0,
+       'nfp_blackout': 0,
+       'boj_blackout': 0,
+       'structure': 'CSP（全天候）',
+       'cc_rule': '允许×0.5',
+       'is_official': True,
+       'blackout_desc': '财报前10天',
+       'notes': 'MA+V合计≤净值12%；IVR<20%不推也非错误'},
+ 'GLD': {'grade': 'B',
+         'sector': 'ETF商品',
+         'ivr_min': 32,
+         'ann_min': 8,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 0,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP',
+         'cc_rule': '强制前置',
+         'is_official': True,
+         'blackout_desc': '无（ETF）',
+         'notes': 'VIX>22或地缘触发才推；VIX<18绝对禁止',
+         'special_rules': ['gld_vix_gate']},
+ 'XLU': {'grade': 'B',
+         'sector': 'ETF公用事业',
+         'ivr_min': 26,
+         'ann_min': 7,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 0,
+         'fomc_blackout': 5,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→×0.5',
+         'cc_rule': '允许×0.5',
+         'is_official': True,
+         'blackout_desc': 'FOMC前5天',
+         'notes': '利率高度敏感；FOMC窗口最严；C状态仓位×0.5'},
+ 'SPGI': {'grade': 'B',
+          'sector': '金融数据',
+          'ivr_min': 28,
+          'ann_min': 9,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '信用评级垄断；低波动防御持仓'},
+ 'CME': {'grade': 'B',
+         'sector': '金融交易所',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '波动率受益者；VIX高时成交量上升反而利好'},
+ 'ICE': {'grade': 'B',
+         'sector': '金融交易所',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '固收市场敞口；利率波动联动；NYSE运营者'},
+ 'MCO': {'grade': 'B',
+         'sector': '金融数据',
+         'ivr_min': 30,
+         'ann_min': 10,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '信用评级+数据分析双业务；低波防御'},
+ 'COST': {'grade': 'B',
+          'sector': '零售',
+          'ivr_min': 30,
+          'ann_min': 9,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 10,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': 'CSP / C→价差',
+          'cc_rule': '价差',
+          'is_official': False,
+          'blackout_desc': '财报前10天',
+          'notes': '会员费护城河；低波动防御型；量贩抗通胀属性'},
+ 'WMT': {'grade': 'B',
+         'sector': '零售',
+         'ivr_min': 28,
+         'ann_min': 8,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '防御零售龙头；广告+金融科技增量业务'},
+ 'MCD': {'grade': 'B',
+         'sector': '餐饮',
+         'ivr_min': 28,
+         'ann_min': 8,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '特许经营模式；全球收入分散；同店销售核心'},
+ 'TJX': {'grade': 'B',
+         'sector': '折扣零售',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '折扣零售；经济下行受益者；库存买手护城河'},
+ 'HON': {'grade': 'B',
+         'sector': '工业',
+         'ivr_min': 30,
+         'ann_min': 10,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '工业多元化龙头；航空+工业自动化防御属性'},
+ 'UNP': {'grade': 'B',
+         'sector': '工业',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '铁路运输垄断；经济先行指标；劳工协议监控'},
+ 'LMT': {'grade': 'B',
+         'sector': '国防',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '国防预算刚性；地缘风险时IV升高有利于卖方'},
+ 'RTX': {'grade': 'B',
+         'sector': '国防/航空',
+         'ivr_min': 28,
+         'ann_min': 9,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 10,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': 'CSP / C→价差',
+         'cc_rule': '价差',
+         'is_official': False,
+         'blackout_desc': '财报前10天',
+         'notes': '发动机+国防双驱动；普惠发动机维修事件监控'},
+ 'GD': {'grade': 'B',
+        'sector': '国防',
+        'ivr_min': 28,
+        'ann_min': 9,
+        'otm_buffer': 0.05,
+        'earnings_blackout': 10,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': 'CSP / C→价差',
+        'cc_rule': '价差',
+        'is_official': False,
+        'blackout_desc': '财报前10天',
+        'notes': '军舰/陆军系统；国防订单能见度高'},
+ 'META': {'grade': 'C',
+          'sector': '科技',
+          'ivr_min': 60,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制Bull Put Spread',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': '持正股禁卖Put；广告/DAU预报视同财报前14天'},
+ 'NVDA': {'grade': 'C',
+          'sector': '半导体',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制Bull Put Spread',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': 'BIS出口管制实时监控；NVDA+TSM+ASML≤净值15%'},
+ 'TSLA': {'grade': 'C',
+          'sector': '电动车',
+          'ivr_min': 80,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制Bull Put Spread',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': '🚨最多2张；仅状态A；>200MA；马斯克声明前14天'},
+ 'HOOD': {'grade': 'C',
+          'sector': '金融科技',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': 'BTC单日跌>8%停开；OI≥5000张；加密组合≤4%'},
+ 'IBIT': {'grade': 'C',
+          'sector': 'ETF比特币',
+          'ivr_min': 60,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 0,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '无',
+          'notes': 'BTC>50MA；SEC监管动作监控；加密组合≤净值4%'},
+ 'COIN': {'grade': 'C',
+          'sector': '加密交易所',
+          'ivr_min': 75,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制Bull Put Spread',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': '仅状态A；与MSTR互斥持仓；COIN≤净值2%'},
+ 'MSTR': {'grade': 'C',
+          'sector': '加密持仓',
+          'ivr_min': 85,
+          'ann_min': 25,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制Bull Put Spread',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': '🚨最多1张；BTC>$60K且>50MA；与COIN互斥；≤净值1.5%'},
+ 'CRCL': {'grade': 'C',
+          'sector': '稳定币',
+          'ivr_min': 80,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': True,
+          'blackout_desc': '财报前14天',
+          'notes': '上市≥180天；OI≥5000；监管立法零容忍；≤净值1%'},
+ 'NFLX': {'grade': 'C',
+          'sector': '流媒体',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '订阅用户+ARPU双指标；广告层级转化率监控'},
+ 'AMD': {'grade': 'C',
+         'sector': '半导体',
+         'ivr_min': 60,
+         'ann_min': 16,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 14,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': '强制价差',
+         'cc_rule': '暂停',
+         'is_official': False,
+         'blackout_desc': '财报前14天',
+         'notes': 'AI GPU份额vs NVDA竞争；MI系列数据中心季报'},
+ 'PANW': {'grade': 'C',
+          'sector': '网络安全',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '平台化ARR增速核心；Billings指引高度敏感'},
+ 'CRWD': {'grade': 'C',
+          'sector': '网络安全',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'ARR增速核心；2024年IT宕机事件后信誉修复进度'},
+ 'SNOW': {'grade': 'C',
+          'sector': '云数据',
+          'ivr_min': 70,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '消费型计费（用量驱动）；RPO+NDR增速监控'},
+ 'DDOG': {'grade': 'C',
+          'sector': '云监控',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'ARR+NDR双指标；AI Workload监控收益变现节奏'},
+ 'NET': {'grade': 'C',
+         'sector': '网络安全',
+         'ivr_min': 65,
+         'ann_min': 18,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 14,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': '强制价差',
+         'cc_rule': '暂停',
+         'is_official': False,
+         'blackout_desc': '财报前14天',
+         'notes': 'SASE/SSE架构；大客户RPO增速为核心指标'},
+ 'SHOP': {'grade': 'C',
+          'sector': '电商SaaS',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'GMV增速+Take Rate；假日季与Q4财报高敏感'},
+ 'UBER': {'grade': 'C',
+          'sector': '出行平台',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'Trips增速+EBITDA利润率；自动驾驶竞争压力'},
+ 'ABNB': {'grade': 'C',
+          'sector': '旅行平台',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'GN增速+ADR；旅游季节性（Q2/Q3峰值窗口）'},
+ 'MU': {'grade': 'C',
+        'sector': '半导体',
+        'ivr_min': 55,
+        'ann_min': 15,
+        'otm_buffer': 0.05,
+        'earnings_blackout': 14,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': '强制价差',
+        'cc_rule': '暂停',
+        'is_official': False,
+        'blackout_desc': '财报前14天',
+        'notes': 'DRAM/HBM内存周期；AI服务器HBM需求联动'},
+ 'MRVL': {'grade': 'C',
+          'sector': '半导体',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '定制AI芯片（ASIC）龙头；云客户集中度风险'},
+ 'ON': {'grade': 'C',
+        'sector': '半导体',
+        'ivr_min': 55,
+        'ann_min': 15,
+        'otm_buffer': 0.05,
+        'earnings_blackout': 14,
+        'fomc_blackout': 0,
+        'cpi_blackout': 0,
+        'nfp_blackout': 0,
+        'boj_blackout': 0,
+        'structure': '强制价差',
+        'cc_rule': '暂停',
+        'is_official': False,
+        'blackout_desc': '财报前14天',
+        'notes': '汽车+工业模拟芯片；EV渗透率下行压力监控'},
+ 'ARM': {'grade': 'C',
+         'sector': '半导体IP',
+         'ivr_min': 70,
+         'ann_min': 20,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 14,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': '强制价差',
+         'cc_rule': '暂停',
+         'is_official': False,
+         'blackout_desc': '财报前14天',
+         'notes': 'ATA授权模式；软银持股集中；AI边缘授权进展'},
+ 'PYPL': {'grade': 'C',
+          'sector': '金融科技',
+          'ivr_min': 55,
+          'ann_min': 15,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'TPV增速+Take Rate；苹果Pay/Google Pay竞争'},
+ 'SMCI': {'grade': 'C',
+          'sector': '服务器',
+          'ivr_min': 80,
+          'ann_min': 22,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '🚨最多2张；会计违规历史，审计风险极高，流动性必验'},
+ 'PLTR': {'grade': 'C',
+          'sector': '数据分析',
+          'ivr_min': 70,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '政府+商业双线；AI Platform商业化速度核心指标'},
+ 'RBLX': {'grade': 'C',
+          'sector': '游戏/元宇宙',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'DAU+消费时长；青少年用户监管与货币化风险'},
+ 'DKNG': {'grade': 'C',
+          'sector': '体育博彩',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'Hold Rate季度波动大；各州执照合规进展监控'},
+ 'DASH': {'grade': 'C',
+          'sector': '外卖平台',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'GOV增速+EBITDA；劳工分类（员工vs承包商）立法风险'},
+ 'RDDT': {'grade': 'C',
+          'sector': '社交媒体',
+          'ivr_min': 70,
+          'ann_min': 20,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': 'IPO较新，历史IV参考有限；AI数据授权收入变现'},
+ 'BABA': {'grade': 'C',
+          'sector': '中概/电商',
+          'ivr_min': 65,
+          'ann_min': 18,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '中概监管/ADR退市风险持续；云分拆进展监控'},
+ 'PDD': {'grade': 'C',
+         'sector': '中概/电商',
+         'ivr_min': 70,
+         'ann_min': 20,
+         'otm_buffer': 0.05,
+         'earnings_blackout': 14,
+         'fomc_blackout': 0,
+         'cpi_blackout': 0,
+         'nfp_blackout': 0,
+         'boj_blackout': 0,
+         'structure': '强制价差',
+         'cc_rule': '暂停',
+         'is_official': False,
+         'blackout_desc': '财报前14天',
+         'notes': 'Temu全球化；美国关税+中概监管双重尾部风险'},
+ 'MARA': {'grade': 'C',
+          'sector': '比特币矿业',
+          'ivr_min': 85,
+          'ann_min': 25,
+          'otm_buffer': 0.05,
+          'earnings_blackout': 14,
+          'fomc_blackout': 0,
+          'cpi_blackout': 0,
+          'nfp_blackout': 0,
+          'boj_blackout': 0,
+          'structure': '强制价差',
+          'cc_rule': '暂停',
+          'is_official': False,
+          'blackout_desc': '财报前14天',
+          'notes': '🚨最多1张；BTC价格1:1联动；哈希率+算力电费成本'}}
+
+OFFICIAL_SYMBOLS = frozenset(_DEFAULT_TICKERS.keys())
+
+
+_REQUIRED_TICKER_DEFAULTS = {
+    "grade":             "C",
+    "ivr_min":           50,
+    "ann_min":           10,
+    "otm_buffer":        0.05,
+    "earnings_blackout": 0,
+    "structure":         "CSP",
 }
 
-CONFIG_PATH = Path(__file__).parent / "tickers_config.json"
-if CONFIG_PATH.exists():
-    try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as _f:
-            TICKERS = json.load(_f)
-        print(f"📂 已加载外部配置：{CONFIG_PATH}（{len(TICKERS)} 个标的）")
-    except Exception as _e:
-        print(f"⚠ 配置文件加载失败，使用内置默认配置：{_e}")
-        TICKERS = _DEFAULT_TICKERS
-else:
-    TICKERS = _DEFAULT_TICKERS
+
+def _normalize_ticker_row(sym: str, cfg: dict) -> dict:
+    """合并内置默认与外部 JSON；补全元数据字段。
+
+    兼容：`is_official` 与 `official` 同义。
+    """
+    base = _DEFAULT_TICKERS.get(sym, {})
+    merged = {**base, **cfg}
+
+    # official / is_official 双写兼容
+    if "official" not in merged and "is_official" in merged:
+        merged["official"] = bool(merged.get("is_official"))
+    if "official" not in merged:
+        merged["official"] = sym in OFFICIAL_SYMBOLS
+
+    merged.setdefault("sector",  base.get("sector",  "Other"))
+    merged.setdefault("cc_rule", base.get("cc_rule", ""))
+    for k in ("cpi_blackout", "nfp_blackout", "boj_blackout", "fomc_blackout"):
+        if k not in merged:
+            merged[k] = base.get(k, 0)
+    # 必填字段兜底，避免外部 JSON 缺字段在 process_ticker 中 KeyError
+    for k, default_v in _REQUIRED_TICKER_DEFAULTS.items():
+        if k not in merged or merged.get(k) is None:
+            merged[k] = base.get(k, default_v)
+    return merged
+
+
+def normalize_tickers(raw: dict) -> dict:
+    return {s: _normalize_ticker_row(s, c) for s, c in raw.items()}
+
+
+TICKERS = normalize_tickers(dict(_DEFAULT_TICKERS))
+
 
 
 # ═══════════════════════════════════════════════════════════
-#  [v7] 改进的重试装饰器（区分可重试与不可重试错误）
+#  重试装饰器（区分可重试与不可重试错误）
 # ═══════════════════════════════════════════════════════════
 
 class _NonRetryableError(Exception):
@@ -454,17 +2159,16 @@ def retry(max_attempts=3, delay=2, backoff=1.5):
 
 
 # ═══════════════════════════════════════════════════════════
-#  [v7] 改进的 MassiveKeyPool（失效密钥追踪 + 等待时间竞态修复）
+#  MassiveKeyPool（失效密钥追踪 + 等待时间竞态修复）
 # ═══════════════════════════════════════════════════════════
 
 class MassiveKeyPool:
     """
-    线程安全的多密钥轮转池（v7改进）。
+    线程安全的多密钥轮转池。
 
-    v7 新增：
-    - mark_invalid()：将401/403失效密钥标记为无效，从轮转中排除
-    - 等待时间计算移入锁内，消除多线程竞态条件
-    - 所有有效密钥均失效时抛出明确异常
+    - mark_invalid()：401/403 时标记密钥失效并排除
+    - 等待时间在锁内计算，避免多线程竞态
+    - 全部密钥失效时抛出明确异常
     """
 
     def __init__(self, keys: list, min_gap: float = 20.0):
@@ -520,7 +2224,7 @@ class MassiveKeyPool:
                     self._slots[idx] = (key, now)
                     return key
 
-                # [v7] 等待时间在锁内计算（消除竞态）
+                # 等待时间在锁内计算（避免竞态）
                 wait_secs = min(self._min_gap - (now - t) for _, _, t in valid)
 
             # 锁外等待
@@ -570,10 +2274,7 @@ class DataSource(ABC):
 # ─── T0 Massive API ─────────────────────────────────────
 
 class MassiveSource(DataSource):
-    """
-    T0 主力数据源：Massive API
-    多密钥轮转；v7改进：401/403时调用 mark_invalid() 排除密钥
-    """
+    """T0 主力数据源：Massive API；401/403 时 mark_invalid() 排除密钥。"""
     name = "massive"
 
     def __init__(self, key_pool: MassiveKeyPool, base_url: str, endpoints: dict):
@@ -583,7 +2284,7 @@ class MassiveSource(DataSource):
         self._session   = requests.Session()
         self._session.headers.update({
             "Accept":     "application/json",
-            "User-Agent": "OpenClaw/7.0",
+            "User-Agent": "OpenClaw/3.0",
         })
 
     def is_available(self) -> bool:
@@ -785,8 +2486,8 @@ class MassiveSource(DataSource):
 
 class AlpacaPaperSource(DataSource):
     """
-    OPTIONS_ROUTER 主数据源：Alpaca Paper API + Market Data Snapshots
-    v7改进：校验 bid/ask 有效性，过滤零价合约
+    OPTIONS_ROUTER 备用数据源：Alpaca Paper API + Market Data Snapshots
+    校验 bid/ask 有效性，过滤零价合约
     """
     name = "alpaca"
 
@@ -802,7 +2503,7 @@ class AlpacaPaperSource(DataSource):
             "APCA-API-KEY-ID":     self._paper_key,
             "APCA-API-SECRET-KEY": self._paper_secret,
         }
-        common = {"Accept": "application/json", "User-Agent": "OpenClaw/7.0"}
+        common = {"Accept": "application/json", "User-Agent": "OpenClaw/3.0"}
         self._paper_session = requests.Session()
         self._data_session  = requests.Session()
         self._paper_session.headers.update({**common, **auth_headers})
@@ -927,7 +2628,7 @@ class AlpacaPaperSource(DataSource):
                 except (TypeError, ValueError):
                     ask = 0.0
 
-                # [v7] 零价合约过滤（Paper数据常见问题）
+                # 零价合约过滤（Paper 等源常见）
                 if bid <= 0 or ask <= 0:
                     logger.debug(f"[alpaca] {sym} bid/ask为零，跳过（Paper数据问题）")
                     continue
@@ -986,6 +2687,151 @@ class AlpacaPaperSource(DataSource):
         if not rows:
             return pd.DataFrame(columns=cols)
         return pd.DataFrame(rows, columns=cols)
+
+
+# ─── CBOE Delayed Quotes（公开端点，无需密钥）────────────
+
+class CboeSource(DataSource):
+    """
+    CBOE 延迟行情公开端点：
+    https://cdn.cboe.com/api/global/delayed_quotes/options/{symbol}.json
+
+    - 无需注册；要求基础 UA/Referer 请求头
+    - 只提供快照，不提供历史 K 线
+    """
+    name = "cboe"
+
+    def __init__(self, request_gap_sec: float = 1.0):
+        self._base = "https://cdn.cboe.com/api/global/delayed_quotes/options"
+        self._session = requests.Session()
+        self._session.headers.update({
+            "User-Agent": "Mozilla/5.0",
+            "Referer": "https://www.cboe.com/",
+            "Accept": "application/json",
+        })
+        self._cache: dict[str, tuple[float, dict]] = {}
+        self._lock = threading.Lock()
+        self._cache_ttl_sec = 20.0
+        self._last_request_ts = 0.0
+        self._request_gap_sec = max(0.0, float(request_gap_sec))
+
+    def is_available(self) -> bool:
+        return True
+
+    @staticmethod
+    def _to_cboe_symbol(ticker: str) -> str:
+        """
+        CBOE 指数路径兼容：
+        - ^VIX -> _VIX
+        - ^SPX -> _SPX
+        """
+        t = str(ticker or "").strip()
+        if t.startswith("^"):
+            return "_" + t[1:]
+        return t
+
+    def _fetch_snapshot(self, ticker: str) -> dict:
+        now = time.time()
+        normalized = self._to_cboe_symbol(ticker)
+        with self._lock:
+            hit = self._cache.get(normalized)
+            if hit and (now - hit[0]) <= self._cache_ttl_sec:
+                return hit[1]
+
+            # 限速：避免高并发触发 CBOE 临时封禁
+            elapsed = now - self._last_request_ts
+            if elapsed < self._request_gap_sec:
+                time.sleep(self._request_gap_sec - elapsed)
+            self._last_request_ts = time.time()
+
+        url = f"{self._base}/{normalized}.json"
+        r = self._session.get(url, timeout=12)
+        r.raise_for_status()
+        data = r.json()
+
+        with self._lock:
+            self._cache[normalized] = (time.time(), data)
+        return data
+
+    @staticmethod
+    def _parse_occ_option_symbol(sym: str):
+        """
+        OCC 格式：SPY260516P00650000
+        返回 (ticker, expiry_yyyy_mm_dd, option_type, strike)
+        """
+        m = re.match(r"^([A-Z]+)(\d{6})([CP])(\d{8})$", str(sym or ""))
+        if not m:
+            return None
+        ticker = m.group(1)
+        expiry = datetime.strptime(m.group(2), "%y%m%d").strftime("%Y-%m-%d")
+        opt_type = "put" if m.group(3) == "P" else "call"
+        strike = int(m.group(4)) / 1000.0
+        return ticker, expiry, opt_type, strike
+
+    def get_price(self, ticker: str) -> Optional[float]:
+        data = self._fetch_snapshot(ticker)
+        d = data.get("data", {}) if isinstance(data, dict) else {}
+        px = d.get("current_price") or d.get("close")
+        return float(px) if px is not None else None
+
+    def get_history(self, ticker: str, period: str) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    def get_option_dates(self, ticker: str) -> list:
+        data = self._fetch_snapshot(ticker)
+        rows = (data.get("data", {}) or {}).get("options", []) if isinstance(data, dict) else []
+        dates = set()
+        for o in rows or []:
+            occ = o.get("option") or o.get("option_symbol") or o.get("symbol")
+            parsed = self._parse_occ_option_symbol(occ)
+            if not parsed:
+                continue
+            _, expiry, opt_type, _ = parsed
+            if opt_type == "put":
+                dates.add(expiry)
+        return sorted(dates)
+
+    def get_option_chain(self, ticker: str, expiry: str) -> pd.DataFrame:
+        data = self._fetch_snapshot(ticker)
+        rows = (data.get("data", {}) or {}).get("options", []) if isinstance(data, dict) else []
+        out = []
+
+        for o in rows or []:
+            occ = o.get("option") or o.get("option_symbol") or o.get("symbol")
+            parsed = self._parse_occ_option_symbol(occ)
+            if not parsed:
+                continue
+            _, exp, opt_type, strike = parsed
+            if opt_type != "put" or exp != expiry:
+                continue
+
+            bid = float(o.get("bid", 0) or 0)
+            ask = float(o.get("ask", 0) or 0)
+            last = float(o.get("last_trade_price", 0) or o.get("last", 0) or 0)
+            iv = float(o.get("iv", 0) or o.get("implied_volatility", 0) or 0)
+            delta = float(o.get("delta", 0) or 0)
+            theta = float(o.get("theta", 0) or 0)
+            oi = int(float(o.get("open_interest", 0) or 0))
+            vol = int(float(o.get("volume", 0) or 0))
+
+            out.append({
+                "strike":            strike,
+                "bid":               bid,
+                "ask":               ask,
+                "lastPrice":         last,
+                "volume":            vol,
+                "openInterest":      oi,
+                "impliedVolatility": iv,
+                "delta":             delta,
+                "theta":             theta,
+                "has_real_greeks":   bool(delta or theta),
+            })
+
+        cols = ["strike", "bid", "ask", "lastPrice", "volume", "openInterest",
+                "impliedVolatility", "delta", "theta", "has_real_greeks"]
+        if not out:
+            return pd.DataFrame(columns=cols)
+        return pd.DataFrame(out, columns=cols)
 
 
 # ─── T1 Tradier ──────────────────────────────────────────
@@ -1221,6 +3067,12 @@ class DataRouter:
                 continue
             try:
                 result = getattr(source, method)(*args, **kwargs)
+                # 期权链/到期日：若当前源返回空结果，继续回退到下一个源
+                if method in ("get_option_chain", "get_option_dates"):
+                    is_empty_df = isinstance(result, pd.DataFrame) and result.empty
+                    is_empty_list = isinstance(result, list) and len(result) == 0
+                    if is_empty_df or is_empty_list:
+                        raise RuntimeError(f"{source.name} 返回空{method}，继续回退")
                 self.health[source.name] = min(100, self.health[source.name] + 5)
                 return result, source.name
             except _NonRetryableError as e:
@@ -1246,6 +3098,7 @@ _MASSIVE_POOL = None
 _SOURCES = []
 ROUTER = None
 _ALPACA_PAPER_SOURCE = None
+_CBOE_SOURCE = None
 OPTIONS_SOURCES = []
 OPTIONS_ROUTER = None
 
@@ -1253,7 +3106,8 @@ OPTIONS_ROUTER = None
 def _auto_workers() -> int:
     if ARGS.workers:
         return ARGS.workers
-    return {"massive": 5, "tradier": 8, "polygon": 2, "yfinance": 4}.get(ROUTER.active_name, 4)
+    # 默认降并发，降低 CBOE/上游限流概率
+    return 2
 
 def _apply_args(args: argparse.Namespace):
     global ARGS, RISK_FREE_RATE, DELTA_MIN, DELTA_MAX
@@ -1274,22 +3128,54 @@ def _apply_args(args: argparse.Namespace):
 
 def _init_runtime():
     global _MASSIVE_POOL, _SOURCES, ROUTER
-    global _ALPACA_PAPER_SOURCE, OPTIONS_SOURCES, OPTIONS_ROUTER, MAX_WORKERS
+    global _ALPACA_PAPER_SOURCE, _CBOE_SOURCE, OPTIONS_SOURCES, OPTIONS_ROUTER, MAX_WORKERS
     _MASSIVE_POOL = MassiveKeyPool(MASSIVE_KEYS_LIST, min_gap=ARGS.massive_gap)
-    _SOURCES = [
-        MassiveSource(_MASSIVE_POOL, MASSIVE_BASE_URL, MASSIVE_ENDPOINTS),
-        TradierSource(TRADIER_TOKEN, TRADIER_SANDBOX),
-        PolygonSource(POLYGON_API_KEY),
-        YFinanceSource(),
-    ]
+    massive_source = MassiveSource(_MASSIVE_POOL, MASSIVE_BASE_URL, MASSIVE_ENDPOINTS)
+    tradier_source = TradierSource(TRADIER_TOKEN, TRADIER_SANDBOX)
+    polygon_source = PolygonSource(POLYGON_API_KEY)
+    yfinance_source = YFinanceSource()
+
+    def _massive_host_resolvable() -> bool:
+        try:
+            host = MASSIVE_BASE_URL.split("://", 1)[-1].split("/", 1)[0].split(":", 1)[0]
+            if not host:
+                return False
+            socket.getaddrinfo(host, 443)
+            return True
+        except Exception:
+            return False
+
+    massive_ok = _massive_host_resolvable()
+    if not massive_ok:
+        logger.warning(
+            f"Massive 域名不可解析，自动降级顺序：{MASSIVE_BASE_URL}（将置后，优先其他数据源）"
+        )
+
+    # Massive 可解析时保持在前；不可解析时自动降级到末位，避免每次调用先报 DNS 错误
+    _SOURCES = (
+        [massive_source, tradier_source, polygon_source, yfinance_source]
+        if massive_ok
+        else [tradier_source, polygon_source, yfinance_source, massive_source]
+    )
     ROUTER = DataRouter(_SOURCES, preferred=ARGS.source)
     _ALPACA_PAPER_SOURCE = AlpacaPaperSource(
         ALPACA_PAPER_KEY, ALPACA_PAPER_SECRET,
         paper_base_url=ALPACA_PAPER_BASE_URL,
         data_base_url=ALPACA_DATA_BASE_URL,
     )
-    OPTIONS_SOURCES = [_ALPACA_PAPER_SOURCE] + _SOURCES
-    OPTIONS_ROUTER = DataRouter(OPTIONS_SOURCES, preferred="alpaca")
+    _CBOE_SOURCE = CboeSource(request_gap_sec=ARGS.cboe_gap)
+    # 期权链同样降噪：Massive DNS 不可解析时放到备用末位
+    options_tail = (
+        [massive_source, tradier_source, polygon_source, yfinance_source]
+        if massive_ok
+        else [tradier_source, polygon_source, yfinance_source, massive_source]
+    )
+    if ARGS.disable_cboe:
+        OPTIONS_SOURCES = [_ALPACA_PAPER_SOURCE] + options_tail
+        OPTIONS_ROUTER = DataRouter(OPTIONS_SOURCES, preferred="alpaca")
+    else:
+        OPTIONS_SOURCES = [_CBOE_SOURCE, _ALPACA_PAPER_SOURCE] + options_tail
+        OPTIONS_ROUTER = DataRouter(OPTIONS_SOURCES, preferred="cboe")
     MAX_WORKERS = _auto_workers()
 
 
@@ -1321,10 +3207,11 @@ def _init_iv_db():
 _init_iv_db()
 
 
-def _iv_history_health_check():
+def _iv_history_health_check(universe_n: Optional[int] = None):
     """
     启动自检：统计 IV 历史库近 30 天内有数据的标的数量。
     若覆盖率 < 50%，提示本轮扫描可能大量退化为 HV 代理。
+    universe_n：本轮计划扫描的标的数；默认 len(TICKERS)。
     """
     if not IV_DB_PATH.exists():
         print("\n" + "=" * 72)
@@ -1344,7 +3231,7 @@ def _iv_history_health_check():
         )
         fresh = cur.fetchone()[0] or 0
         conn.close()
-        total = len(TICKERS)
+        total = universe_n if universe_n is not None else len(TICKERS)
         if total > 0 and fresh < total * 0.5:
             print("\n" + "=" * 72)
             print(f"⚠️  IV 历史库近 30 天覆盖率不足：{fresh}/{total} 标的")
@@ -1392,7 +3279,7 @@ def load_iv_history(ticker: str, days: int = 365):
 
 def get_ivr_5d_ago(ticker: str) -> Optional[float]:
     """
-    [v9] 计算约5个交易日前的IVR（用于Opportunity Alert条件2：IVR涨幅检测）。
+    计算约 5 个交易日前的 IVR（Opportunity Alert 条件2：IVR 涨幅检测）。
     使用与当前IVR相同的历史高低区间，取倒数第6条记录作为5日前基准。
     需要SQLite IV历史库积累≥10条记录才能计算，否则返回None。
     """
@@ -1415,20 +3302,21 @@ def evaluate_opportunity_alert(
     ivr: Optional[float],
     ivr_5d_ago: Optional[float],
     in_blackout: bool,
-    in_fomc_blackout: bool,
+    in_macro_blackout: bool,
     grade: str,
     spx_not_new_20d_low: bool,
 ) -> dict:
     """
-    [v10] 评估Opportunity Alert五项触发条件（连跌触发层）。
+    评估 Opportunity Alert 五项触发条件。
+    in_macro_blackout：FOMC / CPI / NFP / BOJ 合并黑名单窗口。
 
     五项条件：
-      C1  5日跌幅 ≥ 分档阈值 OR 3日跌幅 ≥ 分档阈值（v10重构，替代连跌天数）
+      C1  5日跌幅 ≥ 分档阈值 OR 3日跌幅 ≥ 分档阈值（跌幅触发）
           分档阈值：A+/A → 5日≥5% OR 3日≥3%
                    B   → 5日≥6% OR 3日≥4%
                    C   → 5日≥12% OR 3日≥8%
       C2  IVR较5日前上升 ≥ 15个百分点
-      C3  无财报 / FOMC黑名单
+      C3  无财报 / 宏观事件黑名单（FOMC+CPI+NFP+BOJ 合并窗口）
       C4  标的评级 ≥ B（C级高波标的不触发——已由C4过滤，C级保留高阈值参与C1）
       C5  SPX未创近20日新低（非系统性下跌）
 
@@ -1460,7 +3348,7 @@ def evaluate_opportunity_alert(
         ivr_delta = round(ivr - ivr_5d_ago, 1)
         c2 = ivr_delta >= 15
 
-    c3 = not in_blackout and not in_fomc_blackout
+    c3 = not in_blackout and not in_macro_blackout
     c4 = grade in ("A+", "A", "B")
     c5 = spx_not_new_20d_low
 
@@ -1504,7 +3392,7 @@ def calculate_real_ivr(ticker: str):
     high = max(values)
     low  = min(values)
 
-    # [v7] IV趋势：最近5条 vs 前5条
+    # IV 趋势：最近 5 条 vs 前 5 条
     if len(values) >= 10:
         recent_avg = sum(values[-5:]) / 5
         prior_avg  = sum(values[-10:-5]) / 5
@@ -1527,7 +3415,7 @@ def calculate_ivr(ticker: str):
     """
     IVR 计算：真实 IV 历史优先，HV 代理兜底。
     返回：(ivr, current_iv, high, low, source_label, iv_trend)
-    v7 新增第6个返回值：iv_trend
+    第 6 个返回值：iv_trend
     """
     ivr, curr, high, low, label, iv_trend = calculate_real_ivr(ticker)
     if ivr is not None:
@@ -1643,12 +3531,8 @@ def run_pre_screen_gate(vix_data: dict, sp500: Optional[dict], margin_used: Opti
     """
     返回：(all_passed, delta_adj, [GateResult, ...])
 
-    [v7 Fix] Gate-3 期限结构倒挂调整方向修正：
-    原：eff_d_max = DELTA_MAX + delta_adj（-0.15 + (-0.02) = -0.17）
-        → 排除最安全的 -0.15/-0.16 合约，方向错误
-    修：eff_d_min = DELTA_MIN - delta_adj（-0.30 - (-0.02) = -0.28）
-        → 排除最激进的 -0.30/-0.29 合约，缩窄危险端 ✓
-    delta_adj 现在的语义：DELTA_MIN 的收紧量（正值表示从危险端收紧）
+    Gate-3 倒挂时：delta_adj 为正值，收紧 DELTA_MIN（排除最激进 Delta 端），
+    在 process_ticker 中与 DELTA_MIN 相加生效。
     """
     results   = []
     delta_adj = 0.0
@@ -1681,9 +3565,9 @@ def run_pre_screen_gate(vix_data: dict, sp500: Optional[dict], margin_used: Opti
     else:
         results.append(GateResult(True, "Gate-2 VIX", f"VIX={vix} ≤ 35 ✓"))
 
-    # Gate-3：VIX期限结构（[v7] 修正delta_adj语义：作用于DELTA_MIN，收紧危险端）
+    # Gate-3：VIX 期限结构（倒挂 → 收紧 DELTA_MIN）
     if ts == "INVERTED":
-        delta_adj = 0.02   # [v7] 正值：DELTA_MIN从-0.30收紧至-0.28
+        delta_adj = 0.02   # 正值：例如 DELTA_MIN -0.30 → -0.28
         results.append(GateResult(True, "Gate-3 期限结构",
                                   f"倒挂 VIX({vix})>VIX3M({vix3m})，"
                                   f"DELTA_MIN从{DELTA_MIN}收紧至{DELTA_MIN+delta_adj:.2f}（排除最激进端）",
@@ -1735,8 +3619,7 @@ def norm_pdf(x):
 
 def bs_put_delta(S, K, T, r, sigma) -> Optional[float]:
     """
-    [v7 Fix] sigma 必须是小数形式（0.30 = 30%）。
-    调用前已在 get_put_chain 中完成归一化。
+    sigma 为小数形式（0.30 = 30%）；调用前在 get_put_chain 中已归一化。
     """
     if not all(v and v > 0 for v in [S, K, T, sigma]):
         return None
@@ -1786,7 +3669,7 @@ def get_stock_data(ticker: str) -> Optional[dict]:
         except Exception:
             pass
 
-    # [v9] 连跌天数（保留为辅助参考字段）
+    # 连跌天数（辅助参考）
     closes_list = hist["Close"].tolist()
     consec_down = 0
     for i in range(len(closes_list) - 1, 0, -1):
@@ -1796,7 +3679,7 @@ def get_stock_data(ticker: str) -> Optional[dict]:
             break
     consec_down = min(consec_down, 10)
 
-    # [v10] 5日/3日跌幅（Opportunity Alert C1触发条件）
+    # 5日/3日跌幅（Opportunity Alert C1）
     def _pct_change(closes, n_days_back):
         """取倒数第n_days_back+1条收盘价计算跌幅，数据不足时返回None"""
         idx = -(n_days_back + 1)
@@ -1822,9 +3705,9 @@ def get_stock_data(ticker: str) -> Optional[dict]:
         "price_percentile_52w": pct52,
         "next_earnings":        earnings_date,
         "days_to_earnings":     days_to_earnings,
-        "consecutive_down_days": consec_down,    # [v9] 辅助参考
-        "drop_5d_pct":          drop_5d_pct,     # [v10] 5日涨跌幅%（负=下跌）
-        "drop_3d_pct":          drop_3d_pct,     # [v10] 3日涨跌幅%
+        "consecutive_down_days": consec_down,    # 辅助参考
+        "drop_5d_pct":          drop_5d_pct,     # 5日涨跌幅%（负=下跌）
+        "drop_3d_pct":          drop_3d_pct,     # 3日涨跌幅%
         "data_source":          src,
     }
 
@@ -1904,21 +3787,6 @@ def select_expiry(options_dates: list) -> Optional[dict]:
     return None
 
 
-def _days_to_next_fomc(today=None) -> Optional[int]:
-    """返回距离下一次FOMC的天数；若无未来日期则返回None。"""
-    base = today or datetime.now().date()
-    diffs = []
-    for ds in FOMC_DATES:
-        try:
-            d = datetime.strptime(ds, "%Y-%m-%d").date()
-        except Exception:
-            continue
-        diff = (d - base).days
-        if diff >= 0:
-            diffs.append(diff)
-    return min(diffs) if diffs else None
-
-
 # ═══════════════════════════════════════════════════════════
 #  期权链获取与筛选
 # ═══════════════════════════════════════════════════════════
@@ -1926,13 +3794,7 @@ def _days_to_next_fomc(today=None) -> Optional[int]:
 @retry(max_attempts=3, delay=2)
 def get_put_chain(ticker: str, expiry: str, price: float,
                   dte: int, otm_buffer: float, atm_iv_ref: list) -> list:
-    """
-    获取 Put 期权链并完成质量过滤。
-
-    v7 Bug修复：
-    #1 bid/ask = 0 → 强制跳过（Paper数据问题）
-    #2 BS sigma归一化：iv_raw >= 1.0 时除以100（小数形式传入BS公式）
-    """
+    """获取 Put 期权链并完成质量过滤（零价 bid/ask 跳过；BS 前 sigma 归一化）。"""
     puts, src = OPTIONS_ROUTER.call("get_option_chain", ticker, expiry)
     if puts is None or puts.empty:
         return []
@@ -1961,7 +3823,7 @@ def get_put_chain(ticker: str, expiry: str, price: float,
         if iv_raw <= 0:
             continue
 
-        # [v7 Fix #1] bid/ask 零价过滤
+        # bid/ask 零价过滤
         if bid <= 0 or ask <= 0:
             continue
 
@@ -1982,7 +3844,7 @@ def get_put_chain(ticker: str, expiry: str, price: float,
             theta_seller = round(-theta_raw * 100, 4) if theta_raw else None
             g_src        = "real"
         else:
-            # [v7 Fix #2] BS sigma 归一化（核心Bug修复）
+            # BS sigma 归一化
             # iv_raw 来自 Polygon/yfinance 时是小数（0.30 = 30%）
             # 来自 Massive/部分源时是百分数（30.0 = 30%）
             # 统一归一化为小数后传入 BS 公式
@@ -2029,11 +3891,9 @@ def get_put_chain(ticker: str, expiry: str, price: float,
 def find_best_contracts(puts: list, ann_min: float, d_min: float, d_max: float,
                         otm_buffer_pct: float) -> list:
     """
-    筛选符合 Delta 区间和年化收益要求的最优合约（最多3个）。
+    筛选符合 Delta 区间和年化收益要求的最优合约（最多 3 个）。
 
-    [v7] 排序优先级改为 OTM安全优先：
-    原：(volume>0, OI>100, annualized_yield) → 偏向浅OTM高收益（激进）
-    新：(otm_pct, annualized_yield, open_interest) → 先保安全垫，再优化收益
+    排序：OTM% 深度优先，年化收益次之，流动性（OI）最后。
     """
     qualified = [
         p for p in puts
@@ -2042,7 +3902,7 @@ def find_best_contracts(puts: list, ann_min: float, d_min: float, d_max: float,
         and p.get("annualized_yield", 0) >= ann_min
         and p.get("otm_pct", 0) >= otm_buffer_pct * 100
     ]
-    # [v7] OTM深度优先，收益次之，流动性最后
+    # OTM 深度优先，收益次之，流动性最后
     qualified.sort(key=lambda x: (
         x.get("otm_pct", 0),          # 主：OTM%越深越安全，降序
         x.get("annualized_yield", 0),  # 次：年化收益越高越好，降序
@@ -2057,12 +3917,8 @@ def find_best_contracts(puts: list, ann_min: float, d_min: float, d_max: float,
 
 def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optional[float], sp500_data: Optional[dict] = None) -> tuple:
     """
-    delta_adj 语义（v7修正）：
-    - delta_adj > 0 时：DELTA_MIN 从 DELTA_MIN 收紧至 DELTA_MIN + delta_adj
-    - 即排除最激进（delta绝对值最大）的合约，保留安全端
-    - 例：delta_adj=0.02 → DELTA_MIN从-0.30变为-0.28，排除-0.30/-0.29合约
-
-    sp500_data（v9新增）：由scan_all()传入，用于Opportunity Alert条件5（SPX未创20日新低）
+    delta_adj：倒挂时 >0，与 DELTA_MIN 相加以收紧危险端（排除最激进 Delta）。
+    sp500_data：由 scan_all 传入，用于 Opportunity Alert 条件5（SPX 未创 20 日新低）。
     """
     result = {"config": config, "status": "OK"}
 
@@ -2079,15 +3935,15 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
 
     price = stock["price"]
 
-    # 2. IVR（v7：接收第6个返回值 iv_trend）
+    # 2. IVR（含 iv_trend）
     ivr, curr_iv, iv_high, iv_low, ivr_label, iv_trend = calculate_ivr(symbol)
 
     is_hv_proxy = "hv_proxy" in (ivr_label or "")
     if ARGS.block_hv_proxy and is_hv_proxy:
-        ivr_meets = False  # [v7] --block-hv-proxy：HV代理直接不满足
+        ivr_meets = False  # --block-hv-proxy：HV 代理直接不满足
     else:
         ivr_meets = (ivr >= config["ivr_min"]) if ivr is not None else None
-        # [v7 Fix #4] None 表示IVR未知（数据不足），不等同于通过
+        # None：IVR 未知（数据不足），不等同于通过
         # ivr_meets=None 时信号不产生（has_signal要求 is True）
 
     stock.update({
@@ -2097,7 +3953,7 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
     })
     result["stock"] = stock
 
-    # 3. [v7 Fix #3] 财报黑名单保守处理
+    # 3. 财报黑名单（日期缺失时保守处理）
     dte_to_earn = stock.get("days_to_earnings")
     blackout    = config["earnings_blackout"]
     earnings_na = (stock.get("next_earnings") == "N/A")
@@ -2130,14 +3986,44 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
         fomc_blackout > 0 and dte_to_fomc is not None and 0 <= dte_to_fomc <= fomc_blackout
     )
 
+    cpi_b = int(config.get("cpi_blackout", 0) or 0)
+    nfp_b = int(config.get("nfp_blackout", 0) or 0)
+    boj_b = int(config.get("boj_blackout", 0) or 0)
+    dte_to_cpi = _days_to_next_cpi()
+    dte_to_nfp = _days_to_next_nfp()
+    dte_to_boj = _days_to_next_boj()
+    in_cpi_blackout = bool(
+        cpi_b > 0 and dte_to_cpi is not None and 0 <= dte_to_cpi <= cpi_b
+    )
+    in_nfp_blackout = bool(
+        nfp_b > 0 and dte_to_nfp is not None and 0 <= dte_to_nfp <= nfp_b
+    )
+    in_boj_blackout = bool(
+        boj_b > 0 and dte_to_boj is not None and 0 <= dte_to_boj <= boj_b
+    )
+    in_macro_blackout = bool(
+        in_fomc_blackout or in_cpi_blackout or in_nfp_blackout or in_boj_blackout
+    )
+
+    cc_rule = str(config.get("cc_rule") or "").strip()
+    cc_warnings = [f"cc:{cc_rule}"] if cc_rule else []
+
     result["in_earnings_blackout"] = in_blackout
     result["earnings_unknown_risk"] = earnings_unknown_risk
     result["near_earnings_blackout"] = near_blackout
     result["post_earnings_vol"] = post_earnings_vol
     result["in_fomc_blackout"] = in_fomc_blackout
     result["days_to_fomc"] = dte_to_fomc
+    result["in_cpi_blackout"] = in_cpi_blackout
+    result["in_nfp_blackout"] = in_nfp_blackout
+    result["in_boj_blackout"] = in_boj_blackout
+    result["days_to_cpi"] = dte_to_cpi
+    result["days_to_nfp"] = dte_to_nfp
+    result["days_to_boj"] = dte_to_boj
+    result["in_macro_blackout"] = in_macro_blackout
+    result["cc_warnings"] = cc_warnings
 
-    # [v9] Opportunity Alert 评估
+    # Opportunity Alert
     ivr_5d_ago = get_ivr_5d_ago(symbol)
     spx_not_new_20d_low = True  # 默认通过（无数据时保守允许）
     if sp500_data:
@@ -2147,7 +4033,7 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
         ivr         = ivr,
         ivr_5d_ago  = ivr_5d_ago,
         in_blackout = in_blackout,
-        in_fomc_blackout = in_fomc_blackout,
+        in_macro_blackout = in_macro_blackout,
         grade       = config.get("grade", "C"),
         spx_not_new_20d_low = spx_not_new_20d_low,
     )
@@ -2183,7 +4069,7 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
         best_atm = min(atm_iv_ref, key=lambda x: x[0])
         save_iv_snapshot(symbol, best_atm[1], best_atm[2])
 
-    # [v7 Fix #2] Delta范围：倒挂时收紧 DELTA_MIN（危险端），保留安全端
+    # Delta 范围：倒挂时收紧 DELTA_MIN（危险端）
     eff_d_min = DELTA_MIN + delta_adj   # e.g. -0.30 + 0.02 = -0.28（更严格，排除最激进）
     eff_d_max = DELTA_MAX               # -0.15 不变（安全端保留）
 
@@ -2194,10 +4080,10 @@ def process_ticker(symbol: str, config: dict, delta_adj: float, vix_val: Optiona
     if "gld_vix_gate" in special_rules and vix_val is not None and vix_val < 22:
         gld_vix_blocked = True
 
-    # [v7 Fix #4] has_signal 明确要求 ivr_meets is True
+    # has_signal 要求 ivr_meets is True
     has_signal = (
         not in_blackout
-        and not in_fomc_blackout
+        and not in_macro_blackout
         and not gld_vix_blocked
         and not (ARGS.block_post_earnings and post_earnings_vol)
         and ivr_meets is True           # None（IVR未知）不通过
@@ -2239,7 +4125,9 @@ def write_summary(scan_results: dict, filepath: Path):
         mkt = scan_results.get("market", {})
         sp500 = mkt.get("sp500") or {}
         f.write(f"  VIX：{mkt.get('vix')}  期限结构：{mkt.get('term_structure','N/A')}\n")
-        f.write(f"  距下次FOMC：{mkt.get('days_to_fomc')} 天\n")
+        f.write(f"  距下次FOMC：{mkt.get('days_to_fomc')} 天  "
+                f"CPI：{mkt.get('days_to_cpi')} 天  NFP：{mkt.get('days_to_nfp')} 天  "
+                f"BOJ：{mkt.get('days_to_boj')} 天\n")
 
         gates = scan_results.get("pre_screen_gates", [])
         gate_score = next((g.get("score") for g in gates
@@ -2287,8 +4175,8 @@ def write_summary(scan_results: dict, filepath: Path):
                 )
 
         f.write("\n")
-        f.write(f"{__version__} 变更说明：\n")
-        f.write("  📡=真实Greeks  📐=BS估算（已修复sigma归一化Bug）\n")
+        f.write(f"输出说明（{__version__}）：\n")
+        f.write("  📡=真实Greeks  📐=BS估算（sigma 已归一化）\n")
         f.write("  real_iv ✓=真实IVR  hv_proxy ⚠=HV代理\n")
         f.write("  IV趋势 📈rising / 📉falling / ➡️flat\n")
         f.write("  财报黑名单：获取失败时保守处理为在黑名单内\n")
@@ -2298,11 +4186,11 @@ def write_summary(scan_results: dict, filepath: Path):
 
 
 # ═══════════════════════════════════════════════════════════
-#  [v7] 优化的 LLM 精简输出（Token 消耗降低 ~55%）
+#  LLM 精简输出
 # ═══════════════════════════════════════════════════════════
 
 def _compact_opp(opp: Optional[dict]) -> Optional[dict]:
-    """[v10] 将opportunity_alert精简为LLM友好的紧凑格式"""
+    """将 opportunity_alert 压缩为 LLM 友好结构。"""
     if not opp:
         return None
     triggered = opp.get("triggered")
@@ -2321,11 +4209,64 @@ def _compact_opp(opp: Optional[dict]) -> Optional[dict]:
     if partial and not triggered:
         out["p"]    = True
         out["fail"] = [k for k, v in (opp.get("conds") or {}).items() if not v]
-    return out
+    # 过滤 None 值：d5 在历史数据不足时会是 None，避免 "d5":null 冗余输出
+    return _drop_none(out)
 
 
 def _drop_none(d: dict) -> dict:
     return {k: v for k, v in d.items() if v is not None}
+
+
+def _ivt_short(ivt: Optional[str]) -> str:
+    """IV 趋势压缩给 LLM：unknown→? rising→up falling→dn flat→fl"""
+    m = {"unknown": "?", "rising": "up", "falling": "dn", "flat": "fl"}
+    k = str(ivt).lower() if ivt else "unknown"
+    return m.get(k, "?")
+
+
+# 配置里的 structure 长中文串 → ASCII 短码（节省 token）
+_STRUCTURE_SHORT = {
+    "CSP": "csp",
+    "Bull Put Spread": "bps",
+    "强制Bull Put Spread": "fbps",
+    "强制价差": "fspread",
+    "CSP / C→价差": "csp_spread",
+    "CSP（全天候）": "csp_aw",
+    "CSP / C→×0.5": "csp_x05",
+}
+
+
+def _structure_short(s: Optional[str]) -> str:
+    if not s:
+        return "csp"
+    if s in _STRUCTURE_SHORT:
+        return _STRUCTURE_SHORT[s]
+    t = s.strip()
+    if "强制" in t and "价差" in t:
+        return "fspread"
+    if "Bull Put" in t:
+        return "fbps" if "强制" in t else "bps"
+    if t.startswith("CSP") and "价差" in t:
+        return "csp_spread"
+    if t.startswith("CSP"):
+        return "csp"
+    return "csp"
+
+
+def _format_skip_drop(sym: str, opp: dict) -> Optional[str]:
+    """无信号但有机遇提示时，单独写入 skip.drop，格式 SYM:tag(pct)。"""
+    if not opp:
+        return None
+    if opp.get("triggered"):
+        p5 = opp.get("drop_5d_pct")
+        return f"{sym}:opp5d({p5}%)"
+    if opp.get("partial"):
+        conds = opp.get("conds") or {}
+        if conds.get("c1_drop5d"):
+            return f"{sym}:drop5d({opp.get('drop_5d_pct')}%)"
+        if conds.get("c1_drop3d"):
+            return f"{sym}:drop3d({opp.get('drop_3d_pct')}%)"
+    return None
 
 
 def build_llm_ready_json(raw_scan: dict) -> dict:
@@ -2334,8 +4275,8 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
     - 只要本函数输出结构发生变更，必须同步 bump __version__
     - 并重新导出一次 schema 文档（openclaw_schema_vX.Y.md）供下游模型更新
 
-    v7 输出优化策略：
-    1. 跳过标的：聚合为简短字符串（非 --full-output 模式）
+    输出要点：
+    1. 跳过标的：非 compact 时按原因短键分组（nc/ebl/ivrl/...）；compact 仍为 by_reason
     2. 默认仅保留最优合约；C级高波动标的保留 Top 2 便于人工比较
        （--full-output 时仍保留 Top 3）
     3. 缩短键名（tkr/px/dte/ivr/del/yld/otm/prem）
@@ -2345,8 +4286,8 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
     """
     tickers      = raw_scan.get("tickers", {})
     signals      = []
-    skip_counts  = {}   # 跳过原因统计
-    skip_details = []   # 跳过详情（非compact模式）
+    skip_counts  = {}   # 跳过原因统计（与历史 by_reason 一致）
+    skip_groups  = defaultdict(list)  # 按短键分组，非 compact 时写入 skip
 
     for sym, data in tickers.items():
         cfg        = data.get("config", {})
@@ -2359,7 +4300,8 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
             reason = f"数据异常:{data.get('error','?')}"
             skip_counts[reason] = skip_counts.get(reason, 0) + 1
             if not ARGS.compact_output:
-                skip_details.append({"t": sym, "r": reason})
+                err_s = str(data.get("error", "?")).replace(",", ";")[:120]
+                skip_groups["err"].append(f"{sym}:{err_s}")
             continue
 
         if has_signal:
@@ -2369,6 +4311,7 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
             bcs       = data.get("best_contracts", [])[:max_contracts]
             ivr_src   = "hv" if "hv_proxy" in str(stock.get("ivr_label", "")) else "real"
             iv_trend  = stock.get("iv_trend", "unknown")
+            ivt_out   = _ivt_short(iv_trend)
 
             # 构建警告列表
             warnings = []
@@ -2382,8 +4325,18 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
                 warnings.append("post_earnings_vol")
             if data.get("in_fomc_blackout"):
                 warnings.append("fomc_bl")
+            if data.get("in_cpi_blackout"):
+                warnings.append("cpi_bl")
+            if data.get("in_nfp_blackout"):
+                warnings.append("nfp_bl")
+            if data.get("in_boj_blackout"):
+                warnings.append("boj_bl")
             if data.get("gld_vix_blocked"):
                 warnings.append("gld_vix_blocked")
+            for cw in data.get("cc_warnings") or []:
+                # 跳过 cc:xxx 类条目——cc 字段已单独输出，避免重复
+                if cw and not str(cw).startswith("cc:"):
+                    warnings.append(cw)
             if ivr_src == "hv":
                 warnings.append("hv_proxy")
             if iv_trend == "rising":
@@ -2400,7 +4353,7 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
             for c in bcs:
                 contracts_out.append({
                     "k":    c.get("strike"),                          # strike
-                    "del":  round(float(c.get("delta", 0)), 3),       # delta
+                    "del":  round(float(c.get("delta", 0)), 2),       # delta（2位已足够）
                     "yld":  c.get("annualized_yield"),                 # annualized_yield%
                     "otm":  round(float(c.get("otm_pct", 0)), 2),     # otm%
                     "prem": round(float(c.get("mid", 0)), 2),          # premium
@@ -2409,94 +4362,145 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
                     "oi":   c.get("open_interest"),
                     "vol":  c.get("volume"),
                     "gs":   "r" if c.get("greeks_source") == "real" else "bs",  # greeks_src
-                    "str":  cfg.get("structure", "CSP"),               # strategy structure
+                    "str":  _structure_short(cfg.get("structure", "CSP")),
                 })
 
             earn_days = stock.get("days_to_earnings")
             earn_note = None
             if isinstance(earn_days, (int, float)) and earn_days < 0:
                 earn_note = f"post_earnings_{abs(int(earn_days))}d"
+            # earn > 60 对当前 DTE 无操作价值，省略精确天数
+            earn_out = None
+            if isinstance(earn_days, (int, float)):
+                earn_out = None if earn_days > 60 else earn_days
 
-            signal_item = _drop_none({
+            # ivt 仅在已知趋势时才输出（unknown 已由 warn:ivt_unknown 覆盖）
+            ivt_field = ivt_out if ivt_out != "?" else None
+
+            sig_base = {
                 "tkr":  sym,
                 "g":    cfg.get("grade", "?"),
+                "sec":  cfg.get("sector"),
+                "cc":   (cfg.get("cc_rule") or None),
                 "px":   stock.get("price"),
                 "dte":  dte,
                 "exp":  data.get("expiry"),
                 "ivr":  stock.get("ivr"),
-                "ivs":  ivr_src,               # iv_source: real/hv
-                "ivt":  iv_trend,              # iv_trend
-                "earn": earn_days,             # days_to_earnings
-                "earn_note": earn_note,        # post_earnings_Nd when earn<0
+                "ivs":  ivr_src,
+                "ivt":  ivt_field,
+                "earn": earn_out,
+                "earn_note": earn_note,
                 "warn": warnings or None,
-                "opp":  _compact_opp(data.get("opportunity_alert")),  # [v9] Opportunity Alert
+                "opp":  _compact_opp(data.get("opportunity_alert")),
+                # th 仅在 full-output 时输出（LLM 从 SKILL 已知各标的阈值）
                 "th":   {
                     "ivr_min": cfg.get("ivr_min"),
                     "ann_min": cfg.get("ann_min"),
                     "otm_buf": cfg.get("otm_buffer"),
-                },
+                } if ARGS.full_output else None,
                 "c":    contracts_out,
-            })
+            }
+            if cfg.get("official"):
+                sig_base["off"] = True
+            signal_item = _drop_none(sig_base)
             signals.append(signal_item)
             continue
 
-        # 跳过原因分类
+        # 跳过原因分类（reason 用于 skip_counts；分组键用于压缩 skip 输出）
+        mkt = raw_scan.get("market", {})
         if data.get("gld_vix_blocked"):
-            reason = f"gld_vix({raw_scan.get('market', {}).get('vix')})"
+            vx = mkt.get("vix")
+            reason = f"gld_vix({vx})"
+            skip_groups["gld"].append(f"{sym}({vx})")
+        elif data.get("in_cpi_blackout"):
+            d_cpi = data.get("days_to_cpi")
+            reason = f"cpi_bl({d_cpi}d)"
+            skip_groups["cpi"].append(f"{sym}({d_cpi})")
+        elif data.get("in_nfp_blackout"):
+            d_nfp = data.get("days_to_nfp")
+            reason = f"nfp_bl({d_nfp}d)"
+            skip_groups["nfp"].append(f"{sym}({d_nfp})")
+        elif data.get("in_boj_blackout"):
+            d_boj = data.get("days_to_boj")
+            reason = f"boj_bl({d_boj}d)"
+            skip_groups["boj"].append(f"{sym}({d_boj})")
         elif data.get("in_fomc_blackout"):
-            reason = f"fomc_bl({data.get('days_to_fomc')}d)"
+            d_fm = data.get("days_to_fomc")
+            reason = f"fomc_bl({d_fm}d)"
+            skip_groups["fomc"].append(f"{sym}({d_fm})")
         elif data.get("in_earnings_blackout"):
             if data.get("earnings_unknown_risk"):
-                reason = f"earn_unk({cfg.get('earnings_blackout')}d)"
+                bd = cfg.get("earnings_blackout")
+                reason = f"earn_unk({bd}d)"
+                skip_groups["eunk"].append(f"{sym}({bd})")
             else:
-                reason = f"earn_bl({stock.get('days_to_earnings')}d)"
+                de = stock.get("days_to_earnings")
+                reason = f"earn_bl({de}d)"
+                skip_groups["ebl"].append(f"{sym}({de})")
         elif ARGS.block_post_earnings and data.get("post_earnings_vol"):
-            reason = f"post_earn_bl({stock.get('days_to_earnings')}d)"
+            de = stock.get("days_to_earnings")
+            reason = f"post_earn_bl({de}d)"
+            skip_groups["pebl"].append(f"{sym}({de})")
         elif data.get("ivr_meets_threshold") is False:
             ivr_v = stock.get("ivr")
             reason = f"IVR低({ivr_v}%<{cfg.get('ivr_min')}%)"
+            skip_groups["ivrl"].append(f"{sym}({ivr_v})")
         elif data.get("ivr_meets_threshold") is None:
-            reason = f"IVR未知({'hv' if 'hv_proxy' in str(stock.get('ivr_label','')) else 'no_data'})"
+            tag = "hv" if "hv_proxy" in str(stock.get("ivr_label", "")) else "no_data"
+            reason = f"IVR未知({tag})"
+            skip_groups["ivu"].append(f"{sym}({tag})")
         elif not data.get("best_contracts"):
             reason = "无合格合约"
+            skip_groups["nc"].append(sym)
         else:
             reason = "未触发"
+            skip_groups["nt"].append(sym)
 
         skip_counts[reason] = skip_counts.get(reason, 0) + 1
         if not ARGS.compact_output:
-            opp = data.get("opportunity_alert") or {}
-            # [v10] 若标的C1触发（价格跌幅达标），即使无信号也标注，供人工关注
-            opp_note = ""
-            if opp.get("triggered"):
-                p5 = opp.get("drop_5d_pct")
-                opp_note = f" 🔔OppAlert(5d:{p5}%)"
-            elif opp.get("partial"):
-                conds = opp.get("conds") or {}
-                if conds.get("c1_drop5d"):
-                    opp_note = f" ⚡drop5d({opp.get('drop_5d_pct')}%)"
-                elif conds.get("c1_drop3d"):
-                    opp_note = f" ⚡drop3d({opp.get('drop_3d_pct')}%)"
-            skip_details.append({"t": sym, "r": reason + opp_note})
+            dt = _format_skip_drop(sym, data.get("opportunity_alert") or {})
+            if dt:
+                skip_groups["drop"].append(dt)
 
     market = raw_scan.get("market", {})
     sp500  = market.get("sp500") or {}
     gates  = raw_scan.get("pre_screen_gates", [])
 
-    # 跳过信息：compact模式仅统计，否则含简短明细
+    # ── skip 输出：按类合并计数，去掉逐天细分的冗长 by_reason ──────────────
+    # 类码映射（与 skip_groups 键名一致）
+    _CAT_COUNTS: dict[str, int] = {}
+    for _sk, _lst in skip_groups.items():
+        if _lst:
+            _CAT_COUNTS[_sk] = len(_lst)
+    # 错误类从 skip_counts 里提取
+    _err_total = sum(v for k, v in skip_counts.items() if k.startswith("数据异常"))
+    if _err_total:
+        _CAT_COUNTS["err"] = _err_total
+
+    _total_skip = sum(skip_counts.values())
+
     if ARGS.compact_output:
-        skip_output = {
-            "count": sum(skip_counts.values()),
-            "by_reason": skip_counts,
-        }
+        # compact：只输出总数 + 类码计数（无标的名）
+        skip_output: dict = {"count": _total_skip}
+        _SKIP_KEY_ORDER = ("nc","ebl","eunk","pebl","ivrl","ivu","gld","fomc","cpi","nfp","boj","nt","err")
+        for _sk in _SKIP_KEY_ORDER:
+            if _CAT_COUNTS.get(_sk):
+                skip_output[_sk] = _CAT_COUNTS[_sk]
+    elif ARGS.full_output:
+        # full：输出类码计数 + 各类的标的名列表
+        skip_output = {"count": _total_skip}
+        _SKIP_KEY_ORDER = ("nc","ebl","eunk","pebl","ivrl","ivu","gld","fomc","cpi","nfp","boj","nt","err","drop")
+        for _sk in _SKIP_KEY_ORDER:
+            if skip_groups.get(_sk):
+                skip_output[f"{_sk}_n"] = len(skip_groups[_sk])
+                skip_output[_sk] = ",".join(skip_groups[_sk])
     else:
-        # 将跳过原因格式化为紧凑字符串（GLM的思路）
-        skip_summary_parts = []
-        for d in skip_details:
-            skip_summary_parts.append(f"{d['t']}({d['r']})")
-        skip_output = {
-            "count": sum(skip_counts.values()),
-            "summary": ", ".join(skip_summary_parts) if skip_summary_parts else "none",
-        }
+        # 默认：类码计数（无标的名，比 by_reason 紧凑得多）
+        skip_output = {"count": _total_skip}
+        _SKIP_KEY_ORDER = ("nc","ebl","eunk","pebl","ivrl","ivu","gld","fomc","cpi","nfp","boj","nt","err","drop")
+        for _sk in _SKIP_KEY_ORDER:
+            if _CAT_COUNTS.get(_sk):
+                skip_output[_sk] = _CAT_COUNTS[_sk]
 
     hv_proxy_count_universe = sum(
         1 for _, d in tickers.items()
@@ -2506,6 +4510,22 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
         1 for s in signals
         if "hv_proxy" in str(s.get("warn") or [])
     )
+    total_tickers = len(tickers)
+    # hv_proxy 全量时用 all_hv 标记代替两个计数字段（信息量更低时更紧凑）
+    all_hv = (hv_proxy_count_universe == total_tickers)
+
+    # all_hv=True 时，每条信号的 ivs 字段与 warn 中的 hv_proxy 已由 meta.all_hv 统一表达，
+    # 逐条重复是冗余，此处级联清理以节省 token（116标的/8信号典型场景 ≈ 省 200 字符）
+    if all_hv:
+        for sig in signals:
+            sig.pop("ivs", None)
+            w = sig.get("warn")
+            if isinstance(w, list):
+                w = [x for x in w if x != "hv_proxy"]
+                if w:
+                    sig["warn"] = w
+                else:
+                    sig.pop("warn", None)
 
     gate_score = next((g.get("score") for g in gates if "Gate-5" in str(g.get("name", ""))), None)
     delta_adj = next(
@@ -2521,7 +4541,6 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
     )
 
     meta_out = _drop_none({
-            # meta
             "ts":      raw_scan.get("scan_time"),
             "ver":     __version__,
             "vix":     market.get("vix"),
@@ -2532,11 +4551,17 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
             "gates_ok": all(bool(g.get("passed")) for g in gates) if gates else None,
             "gate_score": gate_score,
             "fomc_d": market.get("days_to_fomc"),
+            "cpi_d":  market.get("days_to_cpi"),
+            "nfp_d":  market.get("days_to_nfp"),
+            "boj_d":  market.get("days_to_boj"),
+            # scope/off_cnt/sug_cnt 固定不变，省略以节省 token
             "margin": {"input": margin_in, "verified": gate4_ok} if margin_in is not None else None,
             "d_adj": delta_adj if delta_adj else None,
-            "sig_cnt": f"{len(signals)}/{len(tickers)}",
-            "hv_proxy_count": hv_proxy_count_universe,
-            "hv_proxy_sig_count": hv_proxy_count_signal,
+            "sig_cnt": f"{len(signals)}/{total_tickers}",
+            # hv_proxy：全量时用 all_hv 标记；部分时才输出具体计数
+            "all_hv":  True if all_hv else None,
+            "hv_proxy_count":     None if all_hv else hv_proxy_count_universe,
+            "hv_proxy_sig_count": None if all_hv else hv_proxy_count_signal,
     })
 
     out = {
@@ -2546,10 +4571,14 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
     }
     if ARGS.with_legend:
         meta_key_desc = {
-            "hv_proxy_count": "count in full ticker universe",
-            "hv_proxy_sig_count": "count within current signals only",
+            "all_hv": "true when ALL tickers use HV-proxy IVR (no real IV data available)",
+            "hv_proxy_count": "hv-proxy count in universe (only when not all_hv)",
+            "hv_proxy_sig_count": "hv-proxy count within signals (only when not all_hv)",
             "gate_score": "Gate-5 three-factor score (0-100, pass>=50)",
             "fomc_d": "days to next FOMC meeting",
+            "cpi_d": "days to next US CPI release (prefilled calendar)",
+            "nfp_d": "days to next US NFP release (prefilled calendar)",
+            "boj_d": "days to next BOJ policy date (prefilled calendar)",
             "margin.input": "user-supplied margin-used%, null if not provided",
             "margin.verified": "true if --margin-used passed and Gate-4 ok",
             "d_adj": "DELTA_MIN tightening when term structure inverted",
@@ -2564,22 +4593,25 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
         out["legend"] = {
             "tkr": "ticker",
             "g": "grade(A+/A/B/C, risk-tier from conservative to aggressive)",
+            "off": "official_watchlist_ticker — key present only when true",
+            "sec": "sector_bucket(theme filter)",
+            "cc": "cc_rule tag(暂停/价差/etc.)",
             "px": "underlying_price",
             "dte": "days_to_expiry",
             "exp": "expiry_date",
             "ivr": "implied_vol_rank_pct",
             "ivs": "ivr_source(real|hv)",
-            "ivt": "iv_trend(rising|flat|falling|unknown)",
-            "earn": "days_to_earnings(>0: before earnings, <0: earnings passed N days ago, null: unknown)",
-            "earn_note": "extra earnings context(post_earnings_Nd when earn<0)",
-            "th": "thresholds(ivr_min/ann_min/otm_buf for this ticker)",
-            "warn": "warnings",
-            "opp": "opportunity_alert_summary(t=triggered,p=partial,cd=consecutive_down,p5d/p3d=price_drop_pct,c1_*=trigger_checks,d5=ivr_delta_5d,fail=failed_conditions)",
+            "ivt": "iv_trend: up=rising,dn=falling,fl=flat — omitted when unknown(see warn:ivt_unknown)",
+            "earn": "days_to_earnings(>0:before,<0:after,omitted when>60 or unknown)",
+            "earn_note": "post_earnings_Nd when earn<0",
+            "th": "thresholds — only in --full-output mode",
+            "warn": "warnings(cc:xxx removed; already in cc field)",
+            "opp": "opportunity_alert_summary",
             "c": "contracts",
             "meta_keys": active_meta_keys,
             "contract_keys": {
                 "k": "strike",
-                "del": "delta",
+                "del": "delta(2dp)",
                 "yld": "annualized_yield_pct",
                 "otm": "otm_pct",
                 "prem": "mid_premium",
@@ -2587,7 +4619,7 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
                 "oi": "open_interest",
                 "vol": "daily_volume",
                 "gs": "greeks_source(r=real,bs=black_scholes)",
-                "str": "strategy_structure",
+                "str": "strategy(csp,csp_spread,bps,fbps,fspread,...)",
             },
             "warn_codes": {
                 "earn_bl": "in earnings blackout window",
@@ -2596,11 +4628,31 @@ def build_llm_ready_json(raw_scan: dict) -> dict:
                 "post_earnings_vol": "within post-earnings elevated vol window",
                 "post_earn_bl": "blocked by --block-post-earnings flag",
                 "fomc_bl": "in FOMC blackout window",
+                "cpi_bl": "in CPI release blackout window",
+                "nfp_bl": "in NFP release blackout window",
+                "boj_bl": "in BOJ policy blackout window",
                 "gld_vix_blocked": "GLD blocked by VIX regime rule",
                 "hv_proxy": "IVR is proxied by historical volatility",
                 "iv_rising": "IV trend is rising",
                 "iv_rising_blocked": "signal blocked due to rising IV and strict flag",
                 "ivt_unknown": "IV trend unavailable/insufficient data",
+            },
+            "skip_codes": {
+                "count": "total skipped tickers",
+                "nc": "no qualifying contracts — count(default) or ticker list(full-output)",
+                "ebl": "earnings blackout — count or SYM(days) list",
+                "eunk": "earnings unknown risk — count or SYM(blackout_days) list",
+                "pebl": "post-earnings vol blocked — count or list",
+                "ivrl": "IVR below min — count or SYM(ivr) list",
+                "ivu": "IVR missing — count or SYM(hv|no_data) list",
+                "gld": "GLD VIX regime — count or SYM(vix) list",
+                "fomc": "FOMC blackout — count or SYM(days) list",
+                "cpi": "CPI blackout — count or list",
+                "nfp": "NFP blackout — count or list",
+                "boj": "BOJ blackout — count or list",
+                "nt": "no signal trigger — count or list",
+                "err": "data error — count or SYM:msg list",
+                "drop": "opportunity hint on skip (full-output only)",
             },
         }
     return out
@@ -2636,6 +4688,40 @@ def cleanup_old_files(directory: Path, keep: int = 200):
         print(f"  🗑  已清理旧文件 {removed} 个（raw:{removed_raw}, llm:{removed_llm}，各保留 {keep} 个）")
 
 
+def _llm_json_text(llm_out: dict) -> str:
+    """与 LLM_*.txt 文件保持一致的 JSON 序列化。"""
+    if ARGS.pretty_json:
+        return json.dumps(llm_out, ensure_ascii=False, indent=2, default=str)
+    return json.dumps(llm_out, ensure_ascii=False, separators=(",", ":"), default=str)
+
+
+def _write_scan_index_html(out_dir: Path, llm_out: dict) -> Path:
+    """在脚本目录生成 index.html，内容与 LLM 输出一致。"""
+    fp = out_dir / "index.html"
+    body_json = _llm_json_text(llm_out)
+    fp.write_text(
+        "<!DOCTYPE html>\n"
+        '<html lang="zh-CN">\n<head>\n'
+        '<meta charset="utf-8"/>\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1"/>\n'
+        f"<title>OpenClaw 扫描结果 {html.escape(__version__)}</title>\n"
+        "<style>\n"
+        "  body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 1rem; "
+        "background: #0f1419; color: #e6edf3; }\n"
+        "  h1 { font-size: 1.1rem; font-weight: 600; color: #58a6ff; }\n"
+        "  .meta { color: #8b949e; font-size: 0.875rem; margin: 0.5rem 0 1rem; }\n"
+        "  pre { white-space: pre-wrap; word-break: break-word; background: #161b22; "
+        "padding: 1rem; border-radius: 8px; border: 1px solid #30363d; overflow-x: auto; }\n"
+        "</style>\n</head>\n<body>\n"
+        f"<h1>OpenClaw 扫描结果（{html.escape(__version__)}）</h1>\n"
+        f"<p class=\"meta\">与本轮 LLM_*.txt 内容一致</p>\n"
+        f"<pre>{html.escape(body_json)}</pre>\n"
+        "</body>\n</html>\n",
+        encoding="utf-8",
+    )
+    return fp
+
+
 # ═══════════════════════════════════════════════════════════
 #  主扫描流程
 # ═══════════════════════════════════════════════════════════
@@ -2664,13 +4750,22 @@ def scan_all():
     if ARGS.full_output:     flags.append("--full-output")
     if ARGS.with_legend:     flags.append("--with-legend")
     if ARGS.pretty_json:     flags.append("--pretty-json")
+    if ARGS.batch_size:      flags.append(f"--batch-size {ARGS.batch_size}")
+    if ARGS.disable_cboe:    flags.append("--disable-cboe")
+    if ARGS.cboe_gap != 1.0: flags.append(f"--cboe-gap {ARGS.cboe_gap}")
     if flags:
-        print(f"  v8选项：{' '.join(flags)}")
+        print(f"  选项：{' '.join(flags)}")
 
     print("=" * 72)
     print()
-    _iv_history_health_check()
     logger.info(f"===== OpenClaw {__version__} 开始（主力：{ROUTER.active_name}）=====")
+
+    # ── Step 0：全量扫描范围 ───────────────────────────────
+    active_tickers = TICKERS
+    print(f"📌 扫描范围：full（全量）  |  标的数 {len(active_tickers)}")
+    print()
+
+    _iv_history_health_check(len(active_tickers))
 
     # ── Step 1：市场环境 ──────────────────────────────────
     print("📊 [1/3] 获取市场环境 + Pre-screen Gate...")
@@ -2705,10 +4800,10 @@ def scan_all():
 
     if delta_adj:
         print(f"⚠  期限结构倒挂，DELTA_MIN收紧至 {DELTA_MIN + delta_adj:.2f}"
-              f"（排除最激进合约，v7修正方向）\n")
+              f"（排除最激进 Delta 端）\n")
 
     # ── Step 2：并发扫描标的 ─────────────────────────────
-    print(f"🔍 [2/3] 并发扫描 {len(TICKERS)} 个标的（{MAX_WORKERS} 线程）...")
+    print(f"🔍 [2/3] 并发扫描 {len(active_tickers)} 个标的（{MAX_WORKERS} 线程）...")
     print()
 
     now      = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -2729,7 +4824,9 @@ def scan_all():
             "block_hv_proxy":        ARGS.block_hv_proxy,
             "block_rising_iv":       ARGS.block_rising_iv,
             "block_post_earnings":   ARGS.block_post_earnings,
+            "scope_mode":            "full",
         },
+        "scope": {"mode": "full", "n": len(active_tickers)},
         "market": {
             "vix":            vix,
             "vix3m":          vix3m,
@@ -2737,6 +4834,9 @@ def scan_all():
             "term_structure": vix_data.get("term_structure"),
             "sp500":          sp500_data,
             "days_to_fomc":   _days_to_next_fomc(),
+            "days_to_cpi":    _days_to_next_cpi(),
+            "days_to_nfp":    _days_to_next_nfp(),
+            "days_to_boj":    _days_to_next_boj(),
         },
         "pre_screen_gates": [
             {
@@ -2752,68 +4852,76 @@ def scan_all():
         "tickers": {}
     }
 
-    total = len(TICKERS)
+    total = len(active_tickers)
     sigs  = 0
     done  = 0
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
-        futures = {
-            exe.submit(process_ticker, sym, cfg, delta_adj, vix, sp500_data): sym
-            for sym, cfg in TICKERS.items()
-        }
-        for fut in as_completed(futures):
-            sym  = futures[fut]
-            done += 1
-            try:
-                symbol, tr = fut.result()
-            except Exception as e:
-                logger.error(f"{sym} 线程异常：{e}", exc_info=True)
-                tr, symbol = {"status": "ERROR", "error": str(e)}, sym
+    ticker_items = list(active_tickers.items())
+    batch_size = ARGS.batch_size if ARGS.batch_size and ARGS.batch_size > 0 else len(ticker_items)
+    if batch_size < len(ticker_items):
+        print(f"  分批扫描：每批 {batch_size} 个标的")
 
-            scan_out["tickers"][symbol] = tr
+    for start in range(0, len(ticker_items), batch_size):
+        batch = ticker_items[start:start + batch_size]
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as exe:
+            futures = {
+                exe.submit(process_ticker, sym, cfg, delta_adj, vix, sp500_data): sym
+                for sym, cfg in batch
+            }
+            for fut in as_completed(futures):
+                sym  = futures[fut]
+                done += 1
+                try:
+                    symbol, tr = fut.result()
+                except Exception as e:
+                    logger.error(f"{sym} 线程异常：{e}", exc_info=True)
+                    tr, symbol = {"status": "ERROR", "error": str(e)}, sym
 
-            grade   = tr.get("config", {}).get("grade", "?")
-            status  = tr.get("status", "ERROR")
-            has_sig = tr.get("has_signal", False)
+                scan_out["tickers"][symbol] = tr
 
-            if status == "OK":
-                if has_sig:
-                    sigs += 1
-                price   = tr.get("stock", {}).get("price", "N/A")
-                stock   = tr.get("stock", {})
-                ivr_v   = stock.get("ivr")
-                ivr_lbl = stock.get("ivr_label", "")
-                iv_trend_v = stock.get("iv_trend", "?")
-                ivr_str = f"IVR≈{ivr_v}%" if ivr_v else "IVR=N/A"
-                if "hv_proxy" in (ivr_lbl or ""):
-                    ivr_str += "⚠"
-                trend_icon = {"rising": "📈", "falling": "📉", "flat": "➡️"}.get(iv_trend_v, "")
-                dte_v = tr.get("dte", "N/A")
-                bcs   = tr.get("best_contracts", [])
+                grade   = tr.get("config", {}).get("grade", "?")
+                status  = tr.get("status", "ERROR")
+                has_sig = tr.get("has_signal", False)
 
-                earn_warn = ""
-                if tr.get("earnings_unknown_risk"):
-                    earn_warn = " 🚨财报未知"
-                elif tr.get("in_earnings_blackout"):
-                    earn_warn = " 🚫财报禁区"
+                if status == "OK":
+                    if has_sig:
+                        sigs += 1
+                    price   = tr.get("stock", {}).get("price", "N/A")
+                    stock   = tr.get("stock", {})
+                    ivr_v   = stock.get("ivr")
+                    ivr_lbl = stock.get("ivr_label", "")
+                    iv_trend_v = stock.get("iv_trend", "?")
+                    ivr_str = f"IVR≈{ivr_v}%" if ivr_v else "IVR=N/A"
+                    if "hv_proxy" in (ivr_lbl or ""):
+                        ivr_str += "⚠"
+                    trend_icon = {"rising": "📈", "falling": "📉", "flat": "➡️"}.get(iv_trend_v, "")
+                    dte_v = tr.get("dte", "N/A")
+                    bcs   = tr.get("best_contracts", [])
 
-                if has_sig:
-                    sig_str = "🟢 有信号"
+                    earn_warn = ""
+                    if tr.get("earnings_unknown_risk"):
+                        earn_warn = " 🚨财报未知"
+                    elif tr.get("in_earnings_blackout"):
+                        earn_warn = " 🚫财报禁区"
+
+                    if has_sig:
+                        sig_str = "🟢 有信号"
+                    else:
+                        sig_str = "🔴 无合格合约"
+
+                    bstr = ""
+                    if bcs:
+                        c    = bcs[0]
+                        icon = "📡" if c.get("greeks_source") == "real" else "📐"
+                        bstr = (f"最优:{c['strike']}@{c['mid']} "
+                                f"Δ{c['delta']} {c['annualized_yield']}% {icon}")
+                    off_star = "★" if tr.get("config", {}).get("official") else " "
+                    print(f"  [{done:02d}/{total}] {off_star}{symbol:<5} ({grade}) "
+                          f"${price} {ivr_str}{trend_icon} DTE={dte_v} "
+                          f"{sig_str}{earn_warn}  {bstr}")
                 else:
-                    sig_str = "🔴 无合格合约"
-
-                bstr = ""
-                if bcs:
-                    c    = bcs[0]
-                    icon = "📡" if c.get("greeks_source") == "real" else "📐"
-                    bstr = (f"最优:{c['strike']}@{c['mid']} "
-                            f"Δ{c['delta']} {c['annualized_yield']}% {icon}")
-                print(f"  [{done:02d}/{total}] {symbol:<6} ({grade}) "
-                      f"${price} {ivr_str}{trend_icon} DTE={dte_v} "
-                      f"{sig_str}{earn_warn}  {bstr}")
-            else:
-                print(f"  [{done:02d}/{total}] {symbol:<6} ({grade}) "
-                      f"⚠ {tr.get('error','未知错误')}")
+                    print(f"  [{done:02d}/{total}] {symbol:<6} ({grade}) "
+                          f"⚠ {tr.get('error','未知错误')}")
 
     # ── Step 3：保存 ─────────────────────────────────────
     print()
@@ -2825,10 +4933,10 @@ def scan_all():
 
     mode_suffix = "_compact" if ARGS.compact_output else ("_full" if ARGS.full_output else "")
     llm_fn      = f"LLM_{date_str}_{time_str}{mode_suffix}.txt"
-    fp_llm      = Path(llm_fn)
+    fp_llm      = SCRIPT_DIR / llm_fn
     llm_out     = build_llm_ready_json(scan_out)
 
-    n_llm_old = remove_existing_llm_files(Path("."))
+    n_llm_old = remove_existing_llm_files(SCRIPT_DIR)
     if n_llm_old:
         print(f"  🗑  已删除历史 LLM 输出 {n_llm_old} 个，仅保留本轮新生成的文件")
     with open(fp_llm, "w", encoding="utf-8") as f:
@@ -2841,15 +4949,16 @@ def scan_all():
     raw_msg = "（默认关闭）"
     if ARGS.save_raw_json:
         fn = f"openclaw_scan_{ts}.json"
-        fp = Path(fn)
+        fp = SCRIPT_DIR / fn
         with open(fp, "w", encoding="utf-8") as f:
             json.dump(scan_out, f, ensure_ascii=False, indent=2, default=str)
         raw_kb  = fp.stat().st_size / 1024
         raw_msg = f"{fp} ({raw_kb:.1f} KB)"
 
-    summary_fp = Path("scan_summary.txt")
+    summary_fp = SCRIPT_DIR / "scan_summary.txt"
     write_summary(scan_out, summary_fp)
-    cleanup_old_files(Path("."), keep=KEEP_FILES)
+    index_fp = _write_scan_index_html(SCRIPT_DIR, llm_out)
+    cleanup_old_files(SCRIPT_DIR, keep=KEEP_FILES)
 
     logger.info(f"JSON已保存：LLM版={llm_fn}({llm_kb:.1f}KB), 原始版={raw_msg}, 信号={sigs}/{total}")
 
@@ -2857,12 +4966,13 @@ def scan_all():
     print("=" * 72)
     print(f"✅ 扫描完成！（OpenClaw {__version__}）")
     print(f"   LLM JSON：{fp_llm}  ({llm_kb:.1f} KB)")
+    print(f"   浏览器汇总页：{index_fp}")
     print(f"   原始JSON：{raw_msg}")
     print(f"   摘要：{summary_fp}")
     print(f"   有信号标的：{sigs} / {total}")
     print()
     print("📊 图标说明：")
-    print("   📡 真实Greeks  📐 BS估算（v7已修复sigma归一化）")
+    print("   📡 真实Greeks  📐 BS 估算（sigma 已归一化）")
     print("   IVR⚠  HV代理  📈IV上升  📉IV下降  ➡️IV平稳")
     print("   🚫 财报禁区（已知日期）  🚨 财报日期未知（保守处理）")
     print()
