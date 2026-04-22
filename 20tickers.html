@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卖PUT权利金策略 · 终极执行手册 · $100万 PM账户</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0D1B2A;
+  --bg2:      #142232;
+  --bg3:      #1A2D42;
+  --bg4:      #101e2e;
+  --border:   #243B55;
+  --border2:  #2b4561;
+  --gold:     #C9A84C;
+  --gold2:    #E8C97A;
+  --gold-dim: rgba(201,169,78,0.12);
+  --text:     #EAE6DE;
+  --text2:    #A8B8C8;
+  --text3:    #6A7F94;
+  --green:    #5CB87A;
+  --green-bg: rgba(92,184,122,0.10);
+  --red:      #E05C5C;
+  --red-bg:   rgba(224,92,92,0.12);
+  --blue:     #5B8DC8;
+  --blue-bg:  rgba(91,141,200,0.12);
+  --amber:    #E07B3C;
+  --amber-bg: rgba(224,123,60,0.12);
+  --purple:   #9B78E8;
+  --purple-bg:rgba(155,120,232,0.12);
+  --tier-a:   #5CB87A;
+  --tier-b:   #5B8DC8;
+  --tier-c:   #E07B3C;
+  --tier-d:   #E05C5C;
+  --r: 6px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.75;min-height:100vh;}
+
+/* NOISE TEXTURE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5;}
+
+/* NAV */
+nav{
+  position:fixed;
+  top:0;
+  left:0;
+  width:250px;
+  height:100vh;
+  z-index:500;
+  background:rgba(20,34,50,0.96);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-right:1px solid var(--border);
+  padding:22px 0;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+nav::-webkit-scrollbar{display:none;}
+.nav-brand{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  color:var(--gold);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  padding:0 20px 14px;
+  margin:0 0 12px;
+  border-bottom:1px solid var(--border2);
+  white-space:nowrap;
+}
+nav a{
+  display:block;
+  padding:10px 20px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text3);
+  text-decoration:none;
+  border-left:3px solid transparent;
+  transition:color .15s,border-color .15s,background .15s;
+  letter-spacing:.3px;
+}
+nav a:hover{
+  color:var(--gold2);
+  border-left-color:var(--gold);
+  background:var(--gold-dim);
+}
+
+/* LAYOUT */
+.page{
+  max-width:1140px;
+  margin:0 auto;
+  padding:0 32px 120px;
+  position:relative;
+  z-index:1;
+  margin-left:250px;
+}
+
+/* HERO */
+.hero{padding:72px 0 56px;border-bottom:1px solid var(--border);margin-bottom:64px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;top:-120px;right:-80px;width:700px;height:700px;background:radial-gradient(ellipse at center,rgba(201,169,78,0.045) 0%,transparent 60%);pointer-events:none;}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:var(--gold-dim);border:1px solid rgba(201,169,78,0.25);border-radius:20px;padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;margin-bottom:22px;}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(30px,4.5vw,52px);font-weight:700;line-height:1.2;color:#fff;margin-bottom:16px;letter-spacing:-0.5px;}
+.hero h1 em{font-style:normal;color:var(--gold2);}
+.hero-desc{font-size:15px;color:var(--text2);max-width:680px;line-height:1.7;margin-bottom:36px;}
+.hero-stats{display:flex;flex-wrap:wrap;gap:12px;}
+.hstat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 22px;min-width:140px;}
+.hstat-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.hstat-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;}
+.hstat-val.g{color:var(--green);}
+.hstat-val.gold{color:var(--gold2);}
+.hstat-val.a{color:var(--amber);}
+.hstat-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* SECTIONS */
+.section{margin-bottom:72px;scroll-margin-top:58px;}
+.sec-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.sec-h{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:#fff;margin-bottom:8px;letter-spacing:-.2px;}
+.sec-sub{font-size:13.5px;color:var(--text2);margin-bottom:28px;max-width:720px;line-height:1.65;}
+.divider{width:36px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);margin-bottom:28px;}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:var(--bg3);}
+thead th{color:var(--text3);font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;padding:11px 14px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,0.015);}
+tbody td{padding:10px 14px;vertical-align:middle;line-height:1.4;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.ticker{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13.5px;color:#fff;}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:.5px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(56,199,146,.2);}
+.badge-gold{background:var(--gold-dim);color:var(--gold2);border:1px solid rgba(201,169,78,.2);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(232,168,58,.2);}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,92,92,.2);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(91,147,240,.2);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(155,120,232,.2);}
+.badge-gray{background:rgba(255,255,255,.04);color:var(--text2);border:1px solid var(--border2);}
+
+/* TIER COLORS */
+.ta{color:var(--tier-a);}
+.tb{color:var(--tier-b);}
+.tc{color:var(--tier-c);}
+.td{color:var(--tier-d);}
+.tier-a-bg{background:rgba(56,199,146,.08);border-left:3px solid var(--tier-a);}
+.tier-b-bg{background:rgba(91,147,240,.08);border-left:3px solid var(--tier-b);}
+.tier-c-bg{background:rgba(232,168,58,.08);border-left:3px solid var(--tier-c);}
+.tier-d-bg{background:rgba(224,92,92,.08);border-left:3px solid var(--tier-d);}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.card-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.card-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;}
+.card-desc{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.55;}
+
+/* ALERT BOXES */
+.alert{border-radius:var(--r);padding:16px 20px;margin-bottom:12px;}
+.alert-red{background:var(--red-bg);border:1px solid rgba(224,92,92,.2);}
+.alert-amber{background:var(--amber-bg);border:1px solid rgba(232,168,58,.2);}
+.alert-green{background:var(--green-bg);border:1px solid rgba(56,199,146,.2);}
+.alert-blue{background:var(--blue-bg);border:1px solid rgba(91,147,240,.2);}
+.alert-gold{background:var(--gold-dim);border:1px solid rgba(201,169,78,.2);}
+.alert-title{font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;margin-bottom:6px;}
+.alert-red .alert-title{color:var(--red);}
+.alert-amber .alert-title{color:var(--amber);}
+.alert-green .alert-title{color:var(--green);}
+.alert-blue .alert-title{color:var(--blue);}
+.alert-gold .alert-title{color:var(--gold2);}
+.alert-body{font-size:12.5px;color:var(--text2);line-height:1.65;}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+@media(max-width:960px){
+  nav{
+    position:sticky;
+    top:0;
+    left:auto;
+    width:100%;
+    height:auto;
+    border-right:none;
+    border-bottom:1px solid var(--border);
+    padding:0 14px;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:2px;
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+  .nav-brand{
+    padding:14px 12px 14px 0;
+    margin-right:10px;
+    border-bottom:none;
+    border-right:1px solid var(--border2);
+  }
+  nav a{
+    display:inline-block;
+    padding:14px 10px;
+    border-left:none;
+    border-bottom:2px solid transparent;
+    white-space:nowrap;
+  }
+  nav a:hover{
+    background:none;
+    border-left:none;
+    border-bottom-color:var(--gold);
+  }
+  .page{
+    margin-left:0;
+    padding:0 18px 88px;
+  }
+}
+
+/* RULE BLOCK */
+.rule-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:10px;}
+.rule-head{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;font-family:'JetBrains Mono',monospace;}
+.rule-body{font-size:13px;color:var(--text);line-height:1.65;}
+.rule-body strong{color:#fff;}
+.rule-body .mono{color:var(--gold2);}
+
+/* DECISION TREE */
+.dtree{display:flex;flex-direction:column;gap:10px;}
+.dnode{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px 18px;}
+.dnode-cond{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);margin-bottom:6px;letter-spacing:.5px;}
+.dnode-action{font-size:13px;color:var(--text);line-height:1.6;}
+.dnode-action strong{color:#fff;}
+.dtree-connector{text-align:center;color:var(--text3);font-size:18px;line-height:1;}
+
+/* VIX MATRIX */
+.vix-matrix{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.vix-row{display:grid;grid-template-columns:120px 110px 130px 1fr;border-bottom:1px solid var(--border);}
+.vix-row:last-child{border-bottom:none;}
+.vix-row.hdr .vix-cell{background:var(--bg4);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.vix-cell{padding:12px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;}
+.vix-cell.range{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;}
+
+/* SIGNAL BOX */
+.signal-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;}
+.sk{color:var(--text3);}
+.sv{color:var(--gold2);}
+.sv-g{color:var(--green);}
+.sv-r{color:var(--red);}
+.sv-b{color:var(--blue);}
+
+/* CHECKLIST */
+.checklist{list-style:none;}
+.checklist li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text);line-height:1.55;}
+.checklist li:last-child{border-bottom:none;}
+.checklist li::before{content:'○';color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:3px;flex-shrink:0;}
+
+/* SCORING */
+.score-bar{height:6px;border-radius:3px;background:var(--border2);overflow:hidden;margin-top:4px;}
+.score-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+
+/* SEPARATOR */
+hr.sep{border:none;border-top:1px solid var(--border);margin:52px 0;}
+
+/* PHASE BLOCKS */
+.phase{display:grid;grid-template-columns:90px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.phase-num{background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:16px;}
+.phase-num .pn{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--gold2);}
+.phase-num .pw{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.phase-body{padding:16px 20px;}
+.phase-title{font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;color:#fff;margin-bottom:5px;}
+.phase-desc{font-size:12.5px;color:var(--text2);line-height:1.6;}
+
+/* SOP TIMELINE */
+.sop-day{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:10px;}
+.sop-day-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+
+/* FOOTER */
+.disclaimer{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px 24px;
+  font-size:12.5px;
+  color:var(--text3);
+  line-height:1.8;
+  margin-top:56px;
+}
+.disclaimer strong{color:var(--text2);}
+footer{margin-top:24px;padding-top:18px;border-top:1px solid var(--border);color:var(--text3);font-size:11.5px;line-height:1.75;}
+
+/* FUSE LEVEL */
+.fuse{border-radius:var(--r);padding:16px 20px;margin-bottom:10px;display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:start;}
+.fuse-level{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;}
+.fuse-body{font-size:13px;color:var(--text2);line-height:1.65;}
+.fuse-body strong{color:var(--text);}
+.fuse-1{background:rgba(232,168,58,.08);border:1px solid rgba(232,168,58,.2);}
+.fuse-1 .fuse-level{color:var(--amber);}
+.fuse-2{background:rgba(224,92,92,.08);border:1px solid rgba(224,92,92,.2);}
+.fuse-2 .fuse-level{color:var(--red);}
+.fuse-3{background:rgba(155,120,232,.08);border:1px solid rgba(155,120,232,.2);}
+.fuse-3 .fuse-level{color:var(--purple);}
+
+/* SCROLL REVEAL */
+.section{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease;}
+.section.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">SELL PUT · PM</div>
+  <a href="#overview">概览</a>
+  <a href="#tiers">标的分层</a>
+  <a href="#gates">开仓条件</a>
+  <a href="#params">交易参数</a>
+  <a href="#vix">VIX矩阵</a>
+  <a href="#risk">风控熔断</a>
+  <a href="#roll">展期决策</a>
+  <a href="#sop">操作SOP</a>
+  <a href="#signal">信号模板</a>
+  <a href="#returns">收益预期</a>
+</nav>
+
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-tag">终极整合版 · 20标的固定 · IBKR PM账户</div>
+  <h1>卖PUT权利金<br><em>机构级执行手册</em></h1>
+  <p class="hero-desc">整合10份AI方案精华，覆盖标的分层、开仓评分、VIX动态仓位、三级熔断、展期决策树与标准化SOP。所有规则量化到参数级别，可直接在IBKR TWS执行。</p>
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-label">总资金</div>
+      <div class="hstat-val gold">$1,000,000</div>
+      <div class="hstat-sub">IBKR PM账户</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">最大部署上限</div>
+      <div class="hstat-val g">$750,000</div>
+      <div class="hstat-sub">75% · 剩余现金缓冲</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">目标DTE</div>
+      <div class="hstat-val gold">30–45天</div>
+      <div class="hstat-sub">Theta衰减最优区间</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">止盈规则</div>
+      <div class="hstat-val g">50%</div>
+      <div class="hstat-sub">权利金回撤即平仓</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">年化目标</div>
+      <div class="hstat-val a">18–30%</div>
+      <div class="hstat-sub">VIX 18–28标准区间</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">最大单月回撤</div>
+      <div class="hstat-val" style="color:var(--red)">≤5%</div>
+      <div class="hstat-sub">即$50,000熔断线</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §1 OVERVIEW ══ -->
+<div class="section" id="overview">
+  <div class="sec-eyebrow">§01 · 策略架构</div>
+  <div class="sec-h">策略核心逻辑</div>
+  <div class="divider"></div>
+  <div class="grid2">
+    <div>
+      <p style="font-size:14px;color:var(--text);line-height:1.8;margin-bottom:16px;">
+        本策略本质是<strong style="color:#fff">以时间换空间</strong>——在高隐含波动率（IV）时段，向市场出售下行风险的保险，收取权利金，同时通过严格的行权价安全垫、结构约束和动态仓位控制，把"被行权"的概率降到25%以下。
+      </p>
+      <p style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:16px;">
+        对于A/B层稳健标的，被行权后接货持股并转卖Covered Call，形成"Wheel策略"闭环。对于C/D层高波动标的，<strong style="color:#fff">强制使用Bull Put Spread结构</strong>锁定最大亏损，严禁裸卖。
+      </p>
+      <div class="alert alert-gold">
+        <div class="alert-title">核心原则</div>
+        <div class="alert-body">纪律 &gt; 预测 · 分散 &gt; 集中 · 流程 &gt; 灵感<br>高IV时积极开仓 · 低IV时宁可按兵不动</div>
+      </div>
+    </div>
+    <div>
+      <div class="rule-block">
+        <div class="rule-head">策略优先层级</div>
+        <div class="rule-body">
+          <strong>① 卖PUT收取权利金</strong>（主线）<br>价外10–20%，Delta -0.15 ~ -0.28，DTE 30–45天<br><br>
+          <strong>② 被行权后卖Covered Call</strong>（Wheel）<br>仅限A/B层，行权价设在成本价以上，Delta 0.20–0.30<br><br>
+          <strong>③ 高波动标的用价差锁定风险</strong>（C/D层）<br>卖出目标Delta的PUT，同时买入低$10–30的保护性PUT
+        </div>
+      </div>
+      <div class="rule-block" style="margin-bottom:0;">
+        <div class="rule-head">与标准Reg-T账户的区别</div>
+        <div class="rule-body">PM账户保证金基于<strong>组合整体风险（压力测试）</strong>而非固定比例。相同头寸的保证金占用约为Reg-T的<strong style="color:var(--green)">20–35%</strong>，但每次下单前必须在TWS中做<strong class="mono">Margin Impact</strong>试算，以实际数字为准。超额流动性低于净值30%时停止新开仓。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §2 TIERS ══ -->
+<div class="section" id="tiers">
+  <div class="sec-eyebrow">§02 · 标的分层</div>
+  <div class="sec-h">20标的四层分级矩阵</div>
+  <div class="sec-sub">按波动率特性、基本面稳健度和接货意愿强度分层。层级决定交易结构、仓位上限和IV门槛，不可混用。</div>
+
+  <!-- 层级说明 -->
+  <div class="grid2" style="margin-bottom:20px;">
+    <div class="rule-block tier-a-bg">
+      <div class="rule-head" style="color:var(--tier-a)">A层 · 稳健蓝筹（7只）</div>
+      <div class="rule-body">超大市值护城河型。<strong>允许裸卖PUT（CSP结构）</strong>。被行权后可放心接货，转Covered Call持续收租。IV通常偏低但权利金质量最高、接货风险最低。</div>
+    </div>
+    <div class="rule-block tier-b-bg">
+      <div class="rule-head" style="color:var(--tier-b)">B层 · 医疗防御（3只）</div>
+      <div class="rule-body">医疗赛道防御性标的。<strong>允许裸卖PUT（CSP结构）</strong>。现金流稳健，周期性温和。注意FDA政策事件，开仓前需额外检查事件日历。</div>
+    </div>
+    <div class="rule-block tier-c-bg">
+      <div class="rule-head" style="color:var(--tier-c)">C层 · 成长波动（6只）</div>
+      <div class="rule-body">高增长但波动较大。<strong>默认使用Bull Put Spread结构</strong>，VIX&lt;20且标的IV Rank&lt;50%时禁止裸卖。单标名义敞口更小，止损更严。</div>
+    </div>
+    <div class="rule-block tier-d-bg">
+      <div class="rule-head" style="color:var(--tier-d)">D层 · 高波动（4只）</div>
+      <div class="rule-body">极高波动/事件驱动。<strong>强制Bull Put Spread，绝对禁止裸卖</strong>。最大亏损必须锁定在单笔$3,000以内。IV Rank门槛最高，仅在黄金窗口期参与。</div>
+    </div>
+  </div>
+
+  <!-- 20标的明细表 -->
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>层级</th><th>代码</th><th>行业</th><th>交易结构</th>
+          <th>单标名义上限</th><th>IV Rank门槛</th><th>Delta目标</th>
+          <th>行权价安全垫</th><th>财报静默期</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="7"><span class="badge badge-green">A层</span></td>
+          <td class="ticker">AAPL</td><td>消费科技</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$80,000</td><td class="mono ta">≥30%</td><td class="mono">-0.15–0.22</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">MSFT</td><td>企业软件</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$80,000</td><td class="mono ta">≥30%</td><td class="mono">-0.15–0.22</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">GOOG</td><td>搜索/云</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$80,000</td><td class="mono ta">≥35%</td><td class="mono">-0.18–0.25</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">MA</td><td>支付</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$70,000</td><td class="mono ta">≥30%</td><td class="mono">-0.15–0.22</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">V</td><td>支付</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$70,000</td><td class="mono ta">≥30%</td><td class="mono">-0.15–0.22</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">COST</td><td>零售/会员</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$60,000</td><td class="mono ta">≥35%</td><td class="mono">-0.15–0.20</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td class="ticker">HON</td><td>工业</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$60,000</td><td class="mono ta">≥30%</td><td class="mono">-0.15–0.22</td><td class="mono">10–15%</td><td>财报前7天</td></tr>
+        <tr><td rowspan="3"><span class="badge badge-blue">B层</span></td>
+          <td class="ticker">LLY</td><td>医药/GLP-1</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$60,000</td><td class="mono tb">≥40%</td><td class="mono">-0.18–0.25</td><td class="mono">12–18%</td><td>财报/FDA前10天</td></tr>
+        <tr><td class="ticker">UNH</td><td>医疗保险</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$60,000</td><td class="mono tb">≥35%</td><td class="mono">-0.18–0.25</td><td class="mono">10–15%</td><td>财报前10天</td></tr>
+        <tr><td class="ticker">HCA</td><td>连锁医院</td><td><span class="badge badge-green">CSP</span></td><td class="mono">$50,000</td><td class="mono tb">≥40%</td><td class="mono">-0.18–0.25</td><td class="mono">12–18%</td><td>财报前10天</td></tr>
+        <tr><td rowspan="6"><span class="badge badge-amber">C层</span></td>
+          <td class="ticker">AMD</td><td>半导体/AI</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$40,000</td><td class="mono tc">≥50%</td><td class="mono">-0.20–0.28</td><td class="mono">15–20%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">KLAC</td><td>半导体设备</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$40,000</td><td class="mono tc">≥50%</td><td class="mono">-0.20–0.28</td><td class="mono">15–20%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">PANW</td><td>网络安全</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$35,000</td><td class="mono tc">≥55%</td><td class="mono">-0.18–0.25</td><td class="mono">15–20%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">CRWD</td><td>网络安全</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$35,000</td><td class="mono tc">≥55%</td><td class="mono">-0.18–0.25</td><td class="mono">15–20%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">SNOW</td><td>云数据</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$30,000</td><td class="mono tc">≥55%</td><td class="mono">-0.15–0.22</td><td class="mono">18–22%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">GE</td><td>工业航空</td><td><span class="badge badge-amber">Spread优先</span></td><td class="mono">$40,000</td><td class="mono tc">≥45%</td><td class="mono">-0.20–0.28</td><td class="mono">12–18%</td><td>财报前14天</td></tr>
+        <tr><td rowspan="4"><span class="badge badge-red">D层</span></td>
+          <td class="ticker">TSLA</td><td>电动车/AI</td><td><span class="badge badge-red">强制Spread</span></td><td class="mono">$20,000</td><td class="mono td">≥65%</td><td class="mono">-0.12–0.18</td><td class="mono">20–25%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">COIN</td><td>加密交易所</td><td><span class="badge badge-red">强制Spread</span></td><td class="mono">$15,000</td><td class="mono td">≥70%</td><td class="mono">-0.10–0.15</td><td class="mono">20–28%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">SMCI</td><td>AI服务器</td><td><span class="badge badge-red">强制Spread</span></td><td class="mono">$15,000</td><td class="mono td">≥70%</td><td class="mono">-0.10–0.15</td><td class="mono">20–28%</td><td>财报前14天</td></tr>
+        <tr><td class="ticker">HOOD</td><td>零售券商</td><td><span class="badge badge-red">强制Spread</span></td><td class="mono">$12,000</td><td class="mono td">≥70%</td><td class="mono">-0.10–0.15</td><td class="mono">20–28%</td><td>财报前14天</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:14px;" class="grid2">
+    <div class="alert alert-amber">
+      <div class="alert-title">⚠ COIN + HOOD 联动规则（来自Kimi方案）</div>
+      <div class="alert-body">二者名义敞口合计 ≤ $25,000。且需满足 <strong>BTC现价 &gt; BTC 50日均线</strong> 方可开仓，否则两者均禁止新建头寸。</div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-title">⚠ SMCI 附加条款</div>
+      <div class="alert-body">每次最多 <strong>1张合约</strong>。开仓前搜索「SMCI SEC」「SMCI auditor」无新增负面监管消息才可操作。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §3 GATES ══ -->
+<div class="section" id="gates">
+  <div class="sec-eyebrow">§03 · 开仓条件</div>
+  <div class="sec-h">6大硬门槛 + 五维评分模型</div>
+  <div class="sec-sub">所有条件必须全部满足方可开仓。评分模型作为辅助筛选工具，低于70分放弃。</div>
+
+  <div class="grid2" style="margin-bottom:24px;">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">六大硬门槛（缺一不可）</div>
+      <div class="rule-block">
+        <div class="rule-head">① IV Rank门槛</div>
+        <div class="rule-body">当前标的IV Rank必须达到对应层级要求（A层≥30%，B层≥35%，C层≥50%，D层≥70%）。<strong>低IV环境宁可不做。</strong></div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">② 行权价安全垫</div>
+        <div class="rule-body">A/B层行权价 ≤ 现价 × 88%；C层 ≤ 现价 × 83%；D层 ≤ 现价 × 80%。<strong>禁止卖ATM或浅虚值。</strong></div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">③ DTE窗口</div>
+        <div class="rule-body"><span class="mono">30 ≤ DTE ≤ 45</span>。不得使用14天以下（Gamma风险）或60天以上（资金占用过长）的合约。</div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">④ 事件隔离</div>
+        <div class="rule-body">距财报日 / FDA决议 / 重大分析师日 须达到对应层级的静默期（A层7天，B层10天，C/D层14天）。</div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">⑤ 年化收益率门槛</div>
+        <div class="rule-body">计算公式：<span class="mono">（权利金/行权价）×（365/DTE）×100%</span>。A层≥10%，B层≥12%，C层≥15%，D层≥20%。</div>
+      </div>
+      <div class="rule-block" style="margin-bottom:0;">
+        <div class="rule-head">⑥ 仓位空间检查</div>
+        <div class="rule-body">新增名义敞口后，单标不超标、总部署不超过$750,000、TWS超额流动性（Excess Liquidity）仍 &gt; $200,000。</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">五维评分模型（满分100，≥70才开仓）</div>
+
+      <div class="rule-block">
+        <div class="rule-head">① IV水平 · 权重25分</div>
+        <div class="rule-body">IV Rank 30%=10分 / 50%=18分 / 70%以上=25分。IV越高权利金越厚，胜率越高。</div>
+        <div class="score-bar"><div class="score-fill" style="width:25%"></div></div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">② 行权价安全垫 · 权重25分</div>
+        <div class="rule-body">安全垫10%=15分 / 15%=22分 / 20%以上=25分。越远越好，但过远权利金太薄。</div>
+        <div class="score-bar"><div class="score-fill" style="width:25%"></div></div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">③ 基本面稳定性 · 权重20分</div>
+        <div class="rule-body">A层标的满分20分；B/C层15分；D层10分。代表接货后的长期持有意愿。</div>
+        <div class="score-bar"><div class="score-fill" style="width:20%"></div></div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">④ 流动性（OI + Volume）· 权重15分</div>
+        <div class="rule-body">期权日均成交量 &gt;5万张=15分 / 1–5万=10分 / &lt;1万=5分。低流动性合约滑点大，慎用。</div>
+        <div class="score-bar"><div class="score-fill" style="width:15%"></div></div>
+      </div>
+      <div class="rule-block" style="margin-bottom:0;">
+        <div class="rule-head">⑤ 年化收益率 · 权重15分</div>
+        <div class="rule-body">满足最低门槛=8分 / 超过门槛5%=12分 / 超过门槛10%+=15分。超高收益率警惕接货风险。</div>
+        <div class="score-bar"><div class="score-fill" style="width:15%"></div></div>
+      </div>
+      <div class="alert alert-gold" style="margin-top:12px;">
+        <div class="alert-title">评分使用方式</div>
+        <div class="alert-body">6大硬门槛全部通过后，用评分模型在多个候选标的中排优先级。同等条件下优先执行评分更高的。总分&lt;70分即使硬门槛通过也放弃该笔。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §4 PARAMS ══ -->
+<div class="section" id="params">
+  <div class="sec-eyebrow">§04 · 交易参数</div>
+  <div class="sec-h">按层级的完整执行参数</div>
+  <div class="sec-sub">下单参数、结构规范与资金分配一览。价差结构要求净权利金必须为正。</div>
+
+  <div class="tbl-wrap" style="margin-bottom:20px;">
+    <table>
+      <thead>
+        <tr><th>层级</th><th>交易结构</th><th>Delta目标</th><th>DTE</th><th>行权价</th><th>价差宽度</th><th>最大单笔亏损</th><th>下单类型</th><th>止盈规则</th></tr>
+      </thead>
+      <tbody>
+        <tr class="tier-a-bg">
+          <td><span class="badge badge-green">A层</span></td>
+          <td>裸卖PUT（CSP）</td>
+          <td class="mono">-0.15 ~ -0.22</td>
+          <td class="mono">30–45天</td>
+          <td class="mono">现价 × 85–90%</td>
+          <td class="mono">N/A</td>
+          <td>接货名义全额（可接受）</td>
+          <td>限价单 Mid Price</td>
+          <td>权利金回撤50%平仓</td>
+        </tr>
+        <tr class="tier-b-bg">
+          <td><span class="badge badge-blue">B层</span></td>
+          <td>裸卖PUT（CSP）</td>
+          <td class="mono">-0.18 ~ -0.25</td>
+          <td class="mono">30–45天</td>
+          <td class="mono">现价 × 82–88%</td>
+          <td class="mono">N/A</td>
+          <td>接货名义全额（可接受）</td>
+          <td>限价单 Mid Price</td>
+          <td>权利金回撤50%平仓</td>
+        </tr>
+        <tr class="tier-c-bg">
+          <td><span class="badge badge-amber">C层</span></td>
+          <td>Bull Put Spread<br><small style="color:var(--text3)">特殊条件可CSP</small></td>
+          <td class="mono">-0.20 ~ -0.28<br><small style="color:var(--text3)">(卖出腿)</small></td>
+          <td class="mono">30–45天</td>
+          <td class="mono">现价 × 80–85%</td>
+          <td class="mono">$10–$20</td>
+          <td>≤ $2,000/张</td>
+          <td>限价单 Mid Price</td>
+          <td>权利金回撤50%平仓</td>
+        </tr>
+        <tr class="tier-d-bg">
+          <td><span class="badge badge-red">D层</span></td>
+          <td>Bull Put Spread<br><strong style="color:var(--red)">强制，不得例外</strong></td>
+          <td class="mono">-0.10 ~ -0.18<br><small style="color:var(--text3)">(卖出腿)</small></td>
+          <td class="mono">30–45天</td>
+          <td class="mono">现价 × 72–80%</td>
+          <td class="mono">$15–$30</td>
+          <td>≤ $3,000/张</td>
+          <td>限价单 Mid Price</td>
+          <td>权利金回撤50%平仓</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="rule-block">
+      <div class="rule-head">价差结构执行规范（C/D层必读）</div>
+      <div class="rule-body">
+        <strong>卖出腿</strong>：目标Delta的PUT（行权价K1）<br>
+        <strong>买入腿</strong>：低$10–$30的PUT（行权价K2）<br>
+        <strong>净权利金</strong> = 收 - 付，<strong>必须 &gt; $0</strong><br>
+        <strong>最大亏损</strong> = (K1 - K2 - 净权利金) × 100<br><br>
+        ⚠ 若无法以正权利金建立价差，该笔交易放弃，不退而求其次做CSP。
+      </div>
+    </div>
+    <div class="rule-block">
+      <div class="rule-head">高价股特殊规定（来自Gemini方案）</div>
+      <div class="rule-body">
+        <strong>COST、LLY、KLAC、SMCI</strong>等单手名义价值超$50,000的高价股，<strong>每次仅开1张</strong>，不得多开。防止单票接货导致仓位集中度超标。<br><br>若要增加该标的敞口，需等上一笔到期/平仓后再重新建仓。
+      </div>
+    </div>
+  </div>
+  
+  <div style="margin-top:14px;">
+    <div class="rule-block">
+      <div class="rule-head">C层裸卖CSP的解锁条件（同时满足全部三条）</div>
+      <div class="rule-body">
+        ① VIX &gt; 22（市场整体波动率处于正常以上水平）&nbsp;&nbsp;
+        ② 该标的IV Rank &gt; 65%（高于历史65%分位）&nbsp;&nbsp;
+        ③ 股价站上200日均线（趋势未被破坏）&nbsp;&nbsp;
+        — 三条不满足则仍使用价差结构。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §5 VIX MATRIX ══ -->
+<div class="section" id="vix">
+  <div class="sec-eyebrow">§05 · 动态仓位</div>
+  <div class="sec-h">VIX宏观仓位矩阵</div>
+  <div class="sec-sub">每个交易日开盘前查看$VIX指数，对照以下矩阵确定当日可部署名义上限和操作倾向。</div>
+
+  <div class="vix-matrix">
+    <div class="vix-row hdr">
+      <div class="vix-cell">VIX区间</div>
+      <div class="vix-cell">市场状态</div>
+      <div class="vix-cell">最大部署上限</div>
+      <div class="vix-cell">操作倾向与层级限制</div>
+    </div>
+    <div class="vix-row">
+      <div class="vix-cell range" style="color:#5b93f0">&lt; 15</div>
+      <div class="vix-cell">极度平静</div>
+      <div class="vix-cell"><span class="mono" style="color:var(--red)">≤ $300K (30%)</span></div>
+      <div class="vix-cell" style="font-size:12.5px;color:var(--text2)">仅A层，IV Rank门槛上调+5%。C/D层禁止新开仓。权利金太薄，宁可持币等待。</div>
+    </div>
+    <div class="vix-row">
+      <div class="vix-cell range" style="color:#5b93f0">15–20</div>
+      <div class="vix-cell">正常偏低</div>
+      <div class="vix-cell"><span class="mono" style="color:var(--amber)">$300K–$450K</span></div>
+      <div class="vix-cell" style="font-size:12.5px;color:var(--text2)">A+B层为主。C层仅选1–2只IV Rank最高的标的。D层最多1笔且需满足所有额外条件。</div>
+    </div>
+    <div class="vix-row" style="background:rgba(56,199,146,.03);">
+      <div class="vix-cell range" style="color:var(--green)">20–28</div>
+      <div class="vix-cell" style="color:var(--green)">✦ 标准执行区</div>
+      <div class="vix-cell"><span class="mono" style="color:var(--green)">$450K–$650K</span></div>
+      <div class="vix-cell" style="font-size:12.5px;color:var(--text2)">全层级按常规参数正常执行。当前最常见市场状态，主力部署窗口。</div>
+    </div>
+    <div class="vix-row" style="background:rgba(201,169,78,.03);">
+      <div class="vix-cell range" style="color:var(--gold2)">28–38</div>
+      <div class="vix-cell" style="color:var(--gold2)">🏆 黄金窗口</div>
+      <div class="vix-cell"><span class="mono" style="color:var(--gold2)">$600K–$750K</span></div>
+      <div class="vix-cell" style="font-size:12.5px;color:var(--text2)">积极开仓，各层IV Rank门槛下调5%。可将行权价略上移1–2%以获更厚权利金。D层可适度参与（仍需满足IV门槛）。</div>
+    </div>
+    <div class="vix-row">
+      <div class="vix-cell range" style="color:var(--red)">&gt; 38</div>
+      <div class="vix-cell" style="color:var(--red)">极度恐慌</div>
+      <div class="vix-cell"><span class="mono" style="color:var(--red)">≤ $500K ⚠</span></div>
+      <div class="vix-cell" style="font-size:12.5px;color:var(--text2)">暂停C/D层一切新开仓。A/B层行权价安全垫加倍（在正常基础上再降5%）。PM保证金可能大幅波动，日内多次检查超额流动性。</div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;" class="alert alert-blue">
+    <div class="alert-title">行业集中度控制（独立于VIX矩阵，每日检查）</div>
+    <div class="alert-body">
+      科技大盘（AAPL+MSFT+GOOG）名义合计 ≤ $200K &nbsp;|&nbsp;
+      支付（MA+V）≤ $120K &nbsp;|&nbsp;
+      网络安全（PANW+CRWD）≤ $60K &nbsp;|&nbsp;
+      加密（COIN+HOOD）≤ $25K &nbsp;|&nbsp;
+      医疗（LLY+UNH+HCA）≤ $150K &nbsp;|&nbsp;
+      半导体（AMD+KLAC+SMCI）≤ $80K
+    </div>
+  </div>
+</div>
+
+<!-- ══ §6 RISK ══ -->
+<div class="section" id="risk">
+  <div class="sec-eyebrow">§06 · 风控熔断</div>
+  <div class="sec-h">三级熔断机制</div>
+  <div class="sec-sub">所有熔断规则机械执行，不允许主观判断延迟。触发即行动，不赌反弹。</div>
+
+  <div class="fuse fuse-1">
+    <div class="fuse-level">LEVEL 1<br>单标预警</div>
+    <div class="fuse-body">
+      <strong>触发条件</strong>：标的股价 ≤ 行权价 × 120%（距离行权价仅剩20%缓冲），或单笔浮亏达权利金 × 200%。<br>
+      <strong>强制动作</strong>：撤销该标的的GTC止盈单，暂停该标的本周内一切新开仓。评估是否进入展期决策树（见§07）。<br>
+      <small style="color:var(--text3)">此时无需平仓，进入观察状态，准备应对后续恶化。</small>
+    </div>
+  </div>
+  <div class="fuse fuse-2">
+    <div class="fuse-level">LEVEL 2<br>账户预警</div>
+    <div class="fuse-body">
+      <strong>触发条件A</strong>：账户总浮亏（按收盘净值）达到 $50,000（净值5%）。<br>
+      <strong>触发条件B</strong>：IBKR超额流动性（Excess Liquidity）低于净值的 25%。<br>
+      <strong>强制动作</strong>：暂停所有新开仓指令。优先将D层头寸全部平仓，C层头寸减半。待净值回升或VIX回落后恢复。
+    </div>
+  </div>
+  <div class="fuse fuse-3">
+    <div class="fuse-level">LEVEL 3<br>极端冻结</div>
+    <div class="fuse-body">
+      <strong>触发条件A</strong>：单日净值损失 ≥ $80,000（8%）。<br>
+      <strong>触发条件B</strong>：VIX单日涨幅 ≥ 40%（类似VIX从18跳升至25+）。<br>
+      <strong>强制动作</strong>：冻结交易24小时。A/B层CSP头寸不追平仓（等待IV回落Theta补偿），价差结构亏损已被锁定。24小时后重新评估市场状态。
+    </div>
+  </div>
+
+  <div style="margin-top:14px;" class="grid2">
+    <div class="rule-block">
+      <div class="rule-head">PM账户保证金日常监控（每日必查）</div>
+      <div class="rule-body">
+        IBKR TWS路径：<span class="mono" style="color:var(--gold2)">账户 → 账户摘要 → 超额流动性</span><br><br>
+        <strong>&gt; 40%净值</strong>：绿灯，正常操作<br>
+        <strong>30–40%净值</strong>：黄灯，停止新开D层<br>
+        <strong>20–30%净值</strong>：橙灯，停止一切新开仓<br>
+        <strong>&lt; 20%净值</strong>：红灯，触发Level 2熔断
+      </div>
+    </div>
+    <div class="rule-block">
+      <div class="rule-head">被行权后的接货应对（Wheel闭环）</div>
+      <div class="rule-body">
+        <strong>A层接货</strong>：48小时内开始卖Covered Call。Delta 0.20–0.30，DTE 20–30天，Strike ≥ 成本价。<br><br>
+        <strong>B层接货</strong>：同上，注意FDA/政策事件静默期。<br><br>
+        <strong>C层接货</strong>：<strong style="color:var(--red)">不建议持股</strong>。若被行权，评估是否立即卖出接受亏损（权利金已部分抵消成本）。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §7 ROLL ══ -->
+<div class="section" id="roll">
+  <div class="sec-eyebrow">§07 · 展期决策</div>
+  <div class="sec-h">Roll决策树（机械化执行）</div>
+  <div class="sec-sub">DTE ≤ 14天时，所有持仓必须进入以下决策流程，不允许躺平到期。</div>
+
+  <div class="grid2">
+    <div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">当 DTE ≤ 14 天，首先判断盈亏状态：</div>
+      <div class="dtree">
+        <div class="dnode">
+          <div class="dnode-cond">场景 A · 价外且盈利 ≥ 50%</div>
+          <div class="dnode-action"><strong>立即平仓</strong>，买入平仓收取剩余价值。释放保证金重新部署。<br><small style="color:var(--text3)">不贪最后几天Theta，避免Gamma风险</small></div>
+        </div>
+        <div class="dtree-connector">↓</div>
+        <div class="dnode">
+          <div class="dnode-cond">场景 B · 价外但盈利 &lt; 50%，DTE ≤ 7天</div>
+          <div class="dnode-action"><strong>直接平仓</strong>，若权利金剩余 &lt; $0.15/张则直接放弃平仓（太小）让其到期。不带仓过周末。</div>
+        </div>
+        <div class="dtree-connector">↓</div>
+        <div class="dnode">
+          <div class="dnode-cond">场景 C · 轻度价内（股价在行权价的95%–100%之间）</div>
+          <div class="dnode-action">
+            <strong>A/B层且看好标的基本面</strong>：接受行权，接货后48h内卖CC。<br>
+            <strong>A/B层但不确定</strong>：Roll Down and Out（降Strike $5–10，向后展期30–45天），必须收取正净权利金。<br>
+            <strong>C层</strong>：优先Roll，若Roll无法以正权利金完成，止损平仓。
+          </div>
+        </div>
+        <div class="dtree-connector">↓</div>
+        <div class="dnode">
+          <div class="dnode-cond">场景 D · 深度价内（股价 &lt; 行权价的95%）</div>
+          <div class="dnode-action"><strong>直接止损平仓</strong>，严禁死扛。D层此情况下无论如何平仓，亏损已被价差结构锁定。</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Roll操作的硬性约束：</div>
+      <div class="rule-block">
+        <div class="rule-head">Roll的必要条件</div>
+        <div class="rule-body">
+          ① <strong>净权利金必须为正</strong>：Roll后新开仓收取的权利金 - 平仓成本 &gt; $0.30（否则无意义）<br><br>
+          ② <strong>新合约仍须满足6大硬门槛</strong>：若Roll后的标的已不满足IV Rank门槛，改为平仓止损<br><br>
+          ③ <strong>Strike只能下调不能上调</strong>：绝不通过调高行权价来获取更多权利金，这会增加风险
+        </div>
+      </div>
+      <div class="rule-block">
+        <div class="rule-head">DTE尚充足时的主动管理（21天规则）</div>
+        <div class="rule-body">
+          距到期还有21天时，即使未触发预警线，也应检查：<br><br>
+          · 盈利已达50% → 主动平仓，释放保证金<br>
+          · 财报在DTE内 → 提前平仓规避事件风险<br>
+          · IV大幅坍塌 → 评估是否提前了结（IV高时卖出的保险，IV低时可以低价买回）
+        </div>
+      </div>
+      <div class="alert alert-green">
+        <div class="alert-title">Roll的最终目标</div>
+        <div class="alert-body">每次Roll都必须降低净持仓成本或提高安全边际。不以"延长时间等待反弹"为目的，而以"用新的权利金补偿亏损"为目的。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §8 SOP ══ -->
+<div class="section" id="sop">
+  <div class="sec-eyebrow">§08 · 操作流程</div>
+  <div class="sec-h">标准化周度SOP</div>
+  <div class="sec-sub">每个交易周的固定操作节奏，确保纪律性执行。</div>
+
+  <div class="sop-day">
+    <div class="sop-day-title">📅 周日晚（盘前准备，30分钟）</div>
+    <ul class="checklist">
+      <li>查阅下周全部20只标的的财报/FDA/重大事件日历，标记本周禁止新开仓的静默期标的</li>
+      <li>检查BTC现价与50日均线关系，判断COIN/HOOD是否具备开仓环境</li>
+      <li>扫描各标的IV Rank（Barchart.com或IBKR扫描仪），按对应层级门槛标记候选池</li>
+      <li>更新持仓到期日清单，标注本周DTE≤14需要处理的合约</li>
+    </ul>
+  </div>
+
+  <div class="sop-day">
+    <div class="sop-day-title">📈 周一至周二 9:30–11:00 ET（核心开仓窗口）</div>
+    <ul class="checklist">
+      <li>盘前查看VIX指数，对照矩阵确定今日总仓位上限和可参与层级</li>
+      <li>检查IBKR账户超额流动性，确认绿灯状态（&gt;40%净值）方可开仓</li>
+      <li>对候选标的逐一验证6大硬门槛，计算五维评分，排序后选择评分最高的2–4只</li>
+      <li>在TWS用「试算订单/Margin Impact」功能验证每笔新开仓后保证金占用，确认合规后下单</li>
+      <li>所有限价单挂Mid Price，成交后<strong>立即</strong>设置GTC止盈单（目标价 = 开仓权利金×50%）</li>
+      <li>记录开仓信号到交易日志（见§09信号模板）</li>
+    </ul>
+  </div>
+
+  <div class="sop-day">
+    <div class="sop-day-title">🔍 周三（中段监控，10分钟）</div>
+    <ul class="checklist">
+      <li>检查持仓中是否有触发Level 1预警的标的（股价≤行权价×120%）</li>
+      <li>检查未成交的限价单：若标的价格已大幅移动，评估是否调整挂单价或取消</li>
+      <li>确认行业集中度未超限</li>
+    </ul>
+  </div>
+
+  <div class="sop-day">
+    <div class="sop-day-title">🔄 周四至周五（到期管理，20分钟）</div>
+    <ul class="checklist">
+      <li>处理所有DTE≤14的合约，逐一按§07决策树判断：平仓/Roll/接货</li>
+      <li>Roll操作在周四执行，给新合约一天时间进入成交；不持仓过周末（DTE≤7且无额外价值的合约直接平仓或让到期）</li>
+      <li>检查本周总P&amp;L，若触发Level 2熔断（累计浮亏≥$50,000）执行相应减仓</li>
+    </ul>
+  </div>
+
+  <div class="sop-day">
+    <div class="sop-day-title">📊 每周日晚（周度复盘，20分钟）</div>
+    <ul class="checklist">
+      <li>更新各标的IV Rank，下调门槛标的主动评估是否维持仓位</li>
+      <li>检查板块集中度：各行业合计名义敞口是否在规定范围内</li>
+      <li>SMCI特别审计：搜索「SMCI SEC」「SMCI auditor」检查是否有新增负面消息</li>
+      <li>单周盈利≥全部权利金30%：考虑主动降半仓，落袋为安</li>
+      <li>记录本周胜率、盈亏比，与目标值（胜率&gt;65%，盈亏比&gt;2.0）对比</li>
+    </ul>
+  </div>
+
+  <div class="sop-day" style="margin-bottom:0;">
+    <div class="sop-day-title">📆 每月末（月度复盘，1小时）</div>
+    <ul class="checklist">
+      <li>计算月收益率、总胜率、平均持仓天数（目标≤18天），与基准对比</li>
+      <li>若连续2个月IV均值下移：上调各层IVR门槛3–5%，或降低行权价比例</li>
+      <li>评估各标的仓位表现，剔除流动性下降/基本面恶化的标的，补充候选</li>
+      <li>若有被行权正股：检查Covered Call策略是否正常运行，计算综合持仓成本</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ §9 SIGNAL ══ -->
+<div class="section" id="signal">
+  <div class="sec-eyebrow">§09 · 信号模板</div>
+  <div class="sec-h">标准化开仓记录格式</div>
+  <div class="sec-sub">每笔开仓必须填写以下格式并存档，作为风控追踪和复盘的依据。</div>
+
+  <div class="grid2">
+    <div>
+      <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-family:'JetBrains Mono',monospace;">CSP裸卖信号（A/B层）</div>
+      <div class="signal-box">
+        <span class="sk">【卖PUT信号 · CSP】</span><br>
+        <span class="sk">标的：</span><span class="sv">AAPL</span> &emsp;<span class="sk">层级：</span><span class="sv">A层</span> &emsp;<span class="sk">日期：</span><span class="sv">2026-04-22</span><br>
+        <span class="sk">──────────────────────────</span><br>
+        <span class="sk">行权价：</span><span class="sv">$232</span> &emsp;<span class="sk">到期日：</span><span class="sv">2026-06-05（DTE 44天）</span><br>
+        <span class="sk">权利金：</span><span class="sv">$2.85/张</span> &emsp;<span class="sk">合约数：</span><span class="sv">3张</span><br>
+        <span class="sk">名义敞口：</span><span class="sv">$69,600</span> &emsp;<span class="sk">单标累计：</span><span class="sv">$69,600 / $80,000 ✓</span><br>
+        <span class="sk">Delta：</span><span class="sv">-0.19</span> &emsp;<span class="sk">IV Rank：</span><span class="sv">48%（门槛30%）✓</span><br>
+        <span class="sk">年化收益率：</span><span class="sv-g">10.2%（门槛10%）✓</span><br>
+        <span class="sk">五维评分：</span><span class="sv">79/100 ✓</span><br>
+        <span class="sk">──────────────────────────</span><br>
+        <span class="sk">止盈目标：</span><span class="sv">$1.43（GTC单已挂）</span><br>
+        <span class="sk">120%预警线：</span><span class="sv">$278.4</span> &emsp;<span class="sk">行权价×95%：</span><span class="sv-r">$220.4</span><br>
+        <span class="sk">接货总成本：</span><span class="sv">$229.15/股（行权价−权利金）</span><br>
+        <span class="sk">事件检查：</span><span class="sv-g">下一财报距到期&gt;7天 ✓</span><br>
+        <span class="sk">保证金占用：</span><span class="sv">$9,240（试算后）</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-family:'JetBrains Mono',monospace;">Bull Put Spread信号（C/D层）</div>
+      <div class="signal-box">
+        <span class="sk">【卖PUT信号 · Spread】</span><br>
+        <span class="sk">标的：</span><span class="sv">AMD</span> &emsp;<span class="sk">层级：</span><span class="sv">C层</span> &emsp;<span class="sk">日期：</span><span class="sv">2026-04-22</span><br>
+        <span class="sk">──────────────────────────</span><br>
+        <span class="sk">卖出腿：</span><span class="sv">$140 PUT</span> &emsp;<span class="sk">买入腿：</span><span class="sv">$125 PUT</span><br>
+        <span class="sk">净权利金：</span><span class="sv-g">$2.10/张（正数 ✓）</span><br>
+        <span class="sk">价差宽度：</span><span class="sv">$15</span> &emsp;<span class="sk">合约数：</span><span class="sv">2张</span><br>
+        <span class="sk">最大亏损：</span><span class="sv-r">$2,580（$(15-2.10)×100×2）</span><br>
+        <span class="sk">占净值：</span><span class="sv-g">0.26% ✓（上限2%）</span><br>
+        <span class="sk">卖出Delta：</span><span class="sv">-0.23</span> &emsp;<span class="sk">IV Rank：</span><span class="sv">61%（门槛50%）✓</span><br>
+        <span class="sk">年化收益率：</span><span class="sv-g">18.3%（门槛15%）✓</span><br>
+        <span class="sk">五维评分：</span><span class="sv">76/100 ✓</span><br>
+        <span class="sk">──────────────────────────</span><br>
+        <span class="sk">止盈目标：</span><span class="sv">$1.05（GTC单已挂）</span><br>
+        <span class="sk">事件检查：</span><span class="sv-g">下一财报距到期&gt;14天 ✓</span><br>
+        <span class="sk">VIX状态：</span><span class="sv-g">22.4（标准执行区 ✓）</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ §10 RETURNS ══ -->
+<div class="section" id="returns">
+  <div class="sec-eyebrow">§10 · 收益预期</div>
+  <div class="sec-h">收益预期与分阶段启动计划</div>
+  <div class="divider"></div>
+
+  <div class="cards" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-label">月度权利金目标</div>
+      <div class="card-val" style="color:var(--gold2)">$15K–$28K</div>
+      <div class="card-desc">基于$45–65万平均部署，VIX 18–28标准区间，每月4–5批次开仓，8–12个活跃头寸。</div>
+    </div>
+    <div class="card">
+      <div class="card-label">年化目标（$100万基准）</div>
+      <div class="card-val" style="color:var(--green)">18–30%</div>
+      <div class="card-desc">VIX黄金窗口可达28–38%。扣除展期摩擦和偶发接货成本后的长期加权均值约22%。</div>
+    </div>
+    <div class="card">
+      <div class="card-label">目标胜率</div>
+      <div class="card-val" style="color:var(--gold2)">&gt; 65%</div>
+      <div class="card-desc">Delta -0.15~-0.28范围内的卖PUT历史统计胜率约为72–80%，设定65%为最低期望。</div>
+    </div>
+    <div class="card">
+      <div class="card-label">最大单月回撤目标</div>
+      <div class="card-val" style="color:var(--red)">≤ 5%</div>
+      <div class="card-desc">即≤$50,000。C/D层价差结构锁定最大亏损，CSP通过熔断机制及时展期/止损。</div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap" style="margin-bottom:24px;">
+    <table>
+      <thead>
+        <tr><th>市场环境</th><th>VIX区间</th><th>月权利金收入</th><th>年化折算</th><th>时间占比</th><th>主力层级</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--gold2)">🏆 黄金窗口</td>
+          <td class="mono">28–38</td>
+          <td class="mono" style="color:var(--green)">$22K–32K</td>
+          <td class="mono" style="color:var(--green)">26–38%</td>
+          <td class="mono">约25%</td>
+          <td>A+B层满配，C层部分</td>
+        </tr>
+        <tr>
+          <td>✦ 标准执行区</td>
+          <td class="mono">20–28</td>
+          <td class="mono" style="color:var(--green)">$15K–22K</td>
+          <td class="mono" style="color:var(--green)">18–26%</td>
+          <td class="mono">约50%</td>
+          <td>A+B层为主，C层选择性</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text2)">正常偏低</td>
+          <td class="mono">15–20</td>
+          <td class="mono" style="color:var(--amber)">$8K–14K</td>
+          <td class="mono" style="color:var(--amber)">10–17%</td>
+          <td class="mono">约20%</td>
+          <td>仅A层IVR高位标的</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text2)">极度平静/极度恐慌</td>
+          <td class="mono">&lt;15 / &gt;38</td>
+          <td class="mono" style="color:var(--text3)">$0–8K / 高风险</td>
+          <td class="mono" style="color:var(--text3)">观望 / 防御</td>
+          <td class="mono">约5%</td>
+          <td>按兵不动 / 防御性操作</td>
+        </tr>
+        <tr style="background:var(--bg3);">
+          <td><strong>加权长期均值</strong></td>
+          <td class="mono">综合</td>
+          <td class="mono" style="color:var(--green)"><strong>$17K–24K/月</strong></td>
+          <td class="mono" style="color:var(--green)"><strong>20–29%/年</strong></td>
+          <td class="mono">—</td>
+          <td>长期稳定运行假设</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">分阶段启动计划</div>
+  <div class="phase">
+    <div class="phase-num"><div class="pn">01</div><div class="pw">第1–2周</div></div>
+    <div class="phase-body">
+      <div class="phase-title">准备期：跑通流程，不追求收益</div>
+      <div class="phase-desc">在IBKR建立20标的观察列表，熟悉TWS期权链和Margin Impact试算功能。可用纸质账户（Paper Trade）模拟全流程。实盘只用$15–25万部署A层2–3个最熟悉的标的（如AAPL / MSFT / V），跑通「开仓→止盈→GTC单」完整流程，记录实际滑点和成交效率。</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-num"><div class="pn">02</div><div class="pw">第3–4周</div></div>
+    <div class="phase-body">
+      <div class="phase-title">试运行期：扩展至A+B层</div>
+      <div class="phase-desc">加入B层（LLY / UNH / HCA），并新增2–3只A层标的，总部署增至$35–45万。重点是验证展期/Roll决策树是否能流畅执行，以及理解PM保证金在持仓波动时的实际行为。全程记录每笔开仓信号。</div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-num"><div class="pn">03</div><div class="pw">第2月</div></div>
+    <div class="phase-body">
+      <div class="phase-title">扩展期：加入C层</div>
+      <div class="phase-desc">选择C层中IV Rank最高的2–3只标的（如AMD / KLAC）用Spread结构试水，每只仅1–2张合约。总部署增至$50–60万。月末做第一次正式复盘，对照胜率&gt;65%、盈亏比&gt;2.0的目标评估。</div>
+    </div>
+  </div>
+  <div class="phase" style="margin-bottom:0;">
+    <div class="phase-num"><div class="pn">04</div><div class="pw">第3月起</div></div>
+    <div class="phase-body">
+      <div class="phase-title">全量运行期：稳定部署$55–75万</div>
+      <div class="phase-desc">D层（TSLA / COIN / SMCI / HOOD）在此阶段才可小量参与（每只仅1张Spread，最大亏损已锁定）。三级熔断机制已经过实战验证，可按VIX矩阵动态调整仓位。每月复盘参数是否需要根据市场环境优化。</div>
+    </div>
+  </div>
+
+  <div class="alert alert-red" style="margin-top:20px;">
+    <div class="alert-title">⚠ 最终风险警示</div>
+    <div class="alert-body">卖PUT策略的最大风险是市场系统性快速下跌（如2020年3月、2022年通胀冲击）。极端行情下，所有标的可能同步大幅下跌，保证金需求剧增，CSP头寸面临巨亏。本手册的所有参数与规则均基于历史统计与当前市场假设，历史表现不代表未来收益。<strong>执行纪律是策略成败的唯一关键变量。</strong>期权交易存在损失全部本金的风险，请确保仅使用您能承受亏损的资金。</div>
+  </div>
+</div>
+
+<hr class="sep">
+<div class="disclaimer">
+  <strong>免责声明</strong><br>
+  本手册基于历史数据与美股期权市场规则整理，由 RHCLOUD AI 生成，<strong>不构成任何投资建议</strong>。期权交易具有高风险，可能导致本金全部损失。市场波动、流动性变化、财报事件及监管政策均可能引发超预期回撤。<br><br>
+  文中涉及的交易参数、风控阈值及执行流程仅用于策略研究与内部学习，不构成收益承诺。交易者应结合自身风险承受能力，独立决策并对交易结果承担全部责任；如涉及税务、合规与账户结构，请咨询持牌专业顾问。<br><br>
+  <strong>版本：20 标的执行手册 · 2026 年 4 月 · 内部学习文件 · 禁止对外传阅</strong>
+</div>
+<footer>
+  <div style="margin-bottom:6px;color:var(--text2);">卖PUT权利金策略终极执行手册 · IBKR Portfolio Margin · $1,000,000 · 整合优化版</div>
+  <div>本文件整合多模型方案并经结构化评审优化，仅供内部学习与研究使用。</div>
+</footer>
+
+</div>
+
+<script>
+// Scroll reveal
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.06 });
+sections.forEach(s => observer.observe(s));
+
+// Nav active state
+const navLinks = document.querySelectorAll('nav a');
+const sectionMap = {};
+sections.forEach(s => { if(s.id) sectionMap[s.id] = s; });
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (s.id && window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--gold2)' : '';
+    a.style.borderBottomColor = a.getAttribute('href') === '#' + current ? 'var(--gold)' : '';
+  });
+});
+</script>
+</body>
+</html>
