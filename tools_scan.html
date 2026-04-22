@@ -1,44 +1,119 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" id="html-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenClaw · 系统运行原理</title>
+<title id="page-title">OpenClaw · 系统运行原理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0f1117;
-    --ink2: #2e3140;
-    --ink3: #5a5f72;
-    --gold: #c8973a;
-    --gold-light: #f0c96b;
-    --gold-pale: #fdf3de;
-    --green: #2a7d5f;
-    --green-pale: #e6f4ee;
-    --red: #b83232;
-    --red-pale: #fceaea;
-    --blue: #1a5fa8;
-    --blue-pale: #e8f0fb;
-    --surface: #fafaf8;
-    --card: #ffffff;
-    --border: rgba(15,17,23,0.1);
-    --border-strong: rgba(15,17,23,0.2);
+    --ink: #EAE6DE;
+    --ink2: #A8B8C8;
+    --ink3: #8FA2B5;
+    --surface: #0D1B2A;
+    --card: #1A2D42;
+    --border: #243B55;
+    --border-strong: #2C4A6A;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-pale: rgba(201,168,76,0.15);
+    --blue-pale: rgba(91,141,200,0.12);
+    --green-pale: rgba(92,184,122,0.12);
+    --red-pale: rgba(224,92,92,0.12);
+    --green: #5cb87a;
+    --red: #e05c5c;
+    --blue: #5b8dc8;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-    background: var(--surface);
-    color: var(--ink);
+    background: #0D1B2A;
+    color: #EAE6DE;
     font-size: 15px;
     line-height: 1.75;
   }
 
+  /* ── Language switching ── */
+  .lang-en .zh { display: none !important; }
+  .lang-zh .en { display: none !important; }
+
+  /* ── Mobile top bar ── */
+  .mobile-topbar {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: #142232;
+    border-bottom: 1px solid #243B55;
+    z-index: 100;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .hamburger-btn {
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .mobile-brand {
+    font-size: 14px;
+    font-weight: 600;
+    color: #EAE6DE;
+    flex: 1;
+    letter-spacing: 0.04em;
+  }
+  .mobile-lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mobile-lang-toggle button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 5px 10px;
+    letter-spacing: 0.05em;
+    transition: background 0.15s;
+  }
+  .mobile-lang-toggle button.active {
+    background: var(--gold);
+    color: #0D1B2A;
+  }
+  .mobile-lang-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(201,168,76,0.3);
+  }
+
+  /* ── Sidebar overlay ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 25;
+  }
+  .sidebar-overlay.active { display: block; }
+
   /* ── Header ── */
   .hero {
-    background: var(--ink);
+    background: #142232;
+    border-bottom: 1px solid #243B55;
     color: #fff;
     padding: 64px 48px 56px;
     position: relative;
@@ -50,10 +125,8 @@
     inset: 0;
     background: repeating-linear-gradient(
       -45deg,
-      transparent,
-      transparent 28px,
-      rgba(200,151,58,0.04) 28px,
-      rgba(200,151,58,0.04) 29px
+      transparent, transparent 28px,
+      rgba(201,168,76,0.06) 28px, rgba(201,168,76,0.06) 29px
     );
   }
   .hero-badge {
@@ -87,7 +160,8 @@
   }
   .hero-meta {
     display: flex;
-    gap: 32px;
+    flex-wrap: wrap;
+    gap: 24px 32px;
     margin-top: 40px;
     position: relative;
   }
@@ -108,6 +182,41 @@
     background: rgba(255,255,255,0.1);
     align-self: stretch;
   }
+  /* Desktop language toggle in hero */
+  .hero-lang-toggle {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(201,168,76,0.10);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 10;
+  }
+  .hero-lang-toggle button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 14px;
+    letter-spacing: 0.06em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .hero-lang-toggle button.active {
+    background: var(--gold);
+    color: #0D1B2A;
+  }
+  .hero-lang-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(201,168,76,0.3);
+    align-self: center;
+  }
 
   /* ── Layout ── */
   .sidebar {
@@ -116,12 +225,11 @@
     background: #142232;
     border-right: 1px solid #243B55;
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    top: 0; left: 0; bottom: 0;
     overflow-y: auto;
     padding: 24px 0;
-    z-index: 20;
+    z-index: 30;
+    transition: transform 0.25s ease;
   }
   .sidebar-title {
     padding: 0 20px 18px;
@@ -148,15 +256,14 @@
     text-decoration: none;
     font-size: 13px;
     border-left: 3px solid transparent;
+    transition: background 0.15s, color 0.15s;
   }
   .nav-item:hover {
     color: #E8C97A;
     background: rgba(201,168,76,0.12);
     border-left-color: #C9A84C;
   }
-  .content-wrap {
-    margin-left: 250px;
-  }
+  .content-wrap { margin-left: 250px; }
   .page { max-width: 960px; margin: 0 auto; padding: 48px 32px 80px; }
 
   /* ── Section titles ── */
@@ -172,23 +279,19 @@
     font-family: 'Noto Serif SC', serif;
     font-size: 26px;
     font-weight: 600;
-    color: var(--ink);
+    color: #EAE6DE;
     margin-bottom: 12px;
     line-height: 1.3;
   }
   .sec-body {
-    color: var(--ink3);
+    color: #A8B8C8;
     font-size: 15px;
     max-width: 680px;
     margin-bottom: 32px;
   }
 
   /* ── Divider ── */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 52px 0;
-  }
+  .divider { border: none; border-top: 1px solid #243B55; margin: 52px 0; }
 
   /* ── Flow pipeline ── */
   .pipeline {
@@ -197,12 +300,13 @@
     gap: 0;
     margin: 36px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .pipe-step {
     flex: 1;
     min-width: 130px;
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: #1A2D42;
+    border: 1px solid #243B55;
     padding: 20px 16px 18px;
     position: relative;
     text-align: center;
@@ -212,187 +316,116 @@
   .pipe-step + .pipe-step::before {
     content: '→';
     position: absolute;
-    left: -14px;
-    top: 50%;
+    left: -14px; top: 50%;
     transform: translateY(-50%);
     font-size: 18px;
-    color: var(--ink3);
+    color: #A8B8C8;
     z-index: 1;
-    background: var(--card);
+    background: #1A2D42;
     padding: 0 2px;
     line-height: 1;
   }
   .pipe-icon {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     background: var(--gold-pale);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     margin: 0 auto 10px;
     font-size: 16px;
   }
   .pipe-step-num {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 4px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 4px;
   }
-  .pipe-step-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-    line-height: 1.3;
-  }
-  .pipe-step-sub {
-    font-size: 11px;
-    color: var(--ink3);
-    margin-top: 4px;
-    line-height: 1.4;
-  }
+  .pipe-step-title { font-size: 13px; font-weight: 600; color: #EAE6DE; line-height: 1.3; }
+  .pipe-step-sub { font-size: 11px; color: #A8B8C8; margin-top: 4px; line-height: 1.4; }
 
   /* ── Gate cards ── */
   .gates-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-    margin: 28px 0;
+    gap: 16px; margin: 28px 0;
   }
   .gate-card {
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: #1A2D42;
+    border: 1px solid #243B55;
     border-radius: 10px;
     padding: 20px 20px 18px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
+    display: flex; gap: 14px; align-items: flex-start;
   }
   .gate-index {
-    width: 28px;
-    height: 28px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     background: var(--ink);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    flex-shrink: 0;
-    margin-top: 2px;
+    color: #0D1B2A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0; margin-top: 2px;
+    background: #EAE6DE;
   }
-  .gate-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 4px;
-  }
-  .gate-desc {
-    font-size: 13px;
-    color: var(--ink3);
-    line-height: 1.55;
-  }
+  .gate-title { font-size: 14px; font-weight: 600; color: #EAE6DE; margin-bottom: 4px; }
+  .gate-desc { font-size: 13px; color: #A8B8C8; line-height: 1.55; }
   .gate-rule {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    background: var(--gold-pale);
-    color: var(--ink2);
-    padding: 3px 8px;
-    border-radius: 4px;
+    display: inline-block; margin-top: 8px;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    background: var(--gold-pale); color: #E8C97A;
+    padding: 3px 8px; border-radius: 4px;
   }
   .gate-action-stop {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--red);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    display: inline-block; margin-top: 6px;
+    font-size: 11px; font-weight: 600;
+    color: var(--red); letter-spacing: 0.05em; text-transform: uppercase;
   }
   .gate-action-adjust {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--blue);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    display: inline-block; margin-top: 6px;
+    font-size: 11px; font-weight: 600;
+    color: var(--blue); letter-spacing: 0.05em; text-transform: uppercase;
   }
 
   /* ── Ticker scan steps ── */
   .scan-steps { margin: 28px 0; }
   .scan-step {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--border);
+    display: flex; gap: 20px; align-items: flex-start;
+    padding: 20px 0; border-bottom: 1px solid #243B55;
   }
   .scan-step:last-child { border-bottom: none; }
   .scan-step-left {
-    width: 44px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
+    width: 44px; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center;
   }
   .scan-circle {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     border-radius: 50%;
-    border: 2px solid var(--border-strong);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ink2);
-    flex-shrink: 0;
-    background: var(--card);
+    border: 2px solid #2C4A6A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600;
+    color: #A8B8C8; flex-shrink: 0;
+    background: #1A2D42;
   }
   .scan-step:nth-child(1) .scan-circle { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
   .scan-step:nth-child(2) .scan-circle { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
   .scan-step:nth-child(3) .scan-circle { border-color: var(--green); color: var(--green); background: var(--green-pale); }
-  .scan-step:nth-child(4) .scan-circle { border-color: #7a4ab5; color: #7a4ab5; background: #f3eeff; }
+  .scan-step:nth-child(4) .scan-circle { border-color: #9b72d0; color: #9b72d0; background: rgba(155,114,208,0.12); }
   .scan-step:nth-child(5) .scan-circle { border-color: var(--red); color: var(--red); background: var(--red-pale); }
-  .scan-step-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 6px;
-    margin-top: 10px;
-  }
-  .scan-step-body {
-    font-size: 14px;
-    color: var(--ink3);
-    line-height: 1.65;
-  }
+  .scan-step-title { font-size: 15px; font-weight: 600; color: #EAE6DE; margin-bottom: 6px; margin-top: 10px; }
+  .scan-step-body { font-size: 14px; color: #A8B8C8; line-height: 1.65; }
   .tag {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin: 2px 2px 2px 0;
-    vertical-align: middle;
+    display: inline-block; font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px;
+    margin: 2px 2px 2px 0; vertical-align: middle;
   }
   .tag-green { background: var(--green-pale); color: var(--green); }
   .tag-red   { background: var(--red-pale); color: var(--red); }
   .tag-blue  { background: var(--blue-pale); color: var(--blue); }
-  .tag-gold  { background: var(--gold-pale); color: #7a5b1c; }
-  .tag-gray  { background: #f0f0ed; color: var(--ink2); }
-  .tag-purple { background: #f3eeff; color: #7a4ab5; }
+  .tag-gold  { background: var(--gold-pale); color: var(--gold-light); }
+  .tag-gray  { background: rgba(106,127,148,0.25); color: #A8B8C8; }
+  .tag-purple { background: rgba(155,114,208,0.15); color: #9b72d0; }
 
   /* ── Contract filter block ── */
   .filter-block {
-    background: var(--ink);
-    color: #fff;
+    background: #142232;
+    border: 1px solid #243B55;
     border-radius: 12px;
     padding: 28px 28px 24px;
     margin: 28px 0;
@@ -403,861 +436,1049 @@
   .filter-header {
     grid-column: 1 / -1;
     font-family: 'Noto Serif SC', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
+    font-size: 18px; font-weight: 600;
+    color: #EAE6DE;
     padding-bottom: 16px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 4px;
   }
   .filter-item-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold-light);
-    margin-bottom: 4px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gold-light); margin-bottom: 4px;
   }
-  .filter-item-value {
-    font-size: 14px;
-    color: rgba(255,255,255,0.85);
-    line-height: 1.55;
-  }
+  .filter-item-value { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.55; }
   .filter-item-mono {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--gold-light);
-    background: rgba(255,255,255,0.06);
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--gold-light); background: rgba(255,255,255,0.06);
+    padding: 2px 6px; border-radius: 4px;
   }
 
   /* ── Signal result cards ── */
-  .result-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 28px 0;
-  }
+  .result-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
   .result-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
+    background: #1A2D42; border: 1px solid #243B55;
+    border-radius: 10px; padding: 20px;
   }
-  .result-card.signal { border-color: var(--green); background: var(--green-pale); }
-  .result-card.no-signal { border-color: rgba(15,17,23,0.12); }
+  .result-card.signal { border-color: rgba(92,184,122,0.35); background: rgba(92,184,122,0.12); }
   .result-card-icon { font-size: 22px; margin-bottom: 10px; }
-  .result-card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .result-card-title { font-size: 15px; font-weight: 600; color: #EAE6DE; margin-bottom: 8px; }
   .result-card-list { list-style: none; padding: 0; }
   .result-card-list li {
-    font-size: 13px;
-    color: var(--ink3);
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 13px; color: #A8B8C8;
+    padding: 4px 0; border-bottom: 1px solid #243B55;
+    display: flex; align-items: center; gap: 8px;
   }
   .result-card-list li:last-child { border-bottom: none; }
   .result-card-list li::before {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--ink3);
-    flex-shrink: 0;
+    content: ''; width: 5px; height: 5px;
+    border-radius: 50%; background: #A8B8C8; flex-shrink: 0;
   }
   .result-card.signal .result-card-list li::before { background: var(--green); }
 
-  /* ── Output format ── */
-  .output-card {
-    background: #1a1d27;
-    border-radius: 12px;
-    padding: 28px;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: rgba(255,255,255,0.8);
-    line-height: 2;
-    margin: 28px 0;
-  }
-  .out-label { color: rgba(255,255,255,0.35); }
-  .out-gold  { color: var(--gold-light); font-weight: 500; }
-  .out-green { color: #6ee7b0; }
-  .out-cyan  { color: #7dd3e8; }
-  .out-red   { color: #f8968a; }
-
   /* ── Concurrency diagram ── */
   .concurrency-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    margin: 28px 0;
+    background: #1A2D42; border: 1px solid #243B55;
+    border-radius: 12px; padding: 28px; margin: 28px 0;
   }
-  .thread-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-  .thread-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ink2);
-    width: 52px;
-    flex-shrink: 0;
-  }
+  .thread-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .thread-label { font-size: 12px; font-weight: 600; color: #A8B8C8; width: 52px; flex-shrink: 0; }
   .thread-bar-wrap {
-    flex: 1;
-    height: 28px;
-    background: #f4f3f0;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+    flex: 1; height: 28px; background: rgba(255,255,255,0.05);
+    border-radius: 4px; overflow: hidden; position: relative;
   }
   .thread-bar {
-    height: 100%;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    position: absolute;
-    left: 0;
+    height: 100%; border-radius: 4px;
+    display: flex; align-items: center; padding-left: 10px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+    position: absolute; left: 0;
     animation: barslide 1.8s cubic-bezier(0.22,1,0.36,1) both;
   }
-  @keyframes barslide {
-    from { width: 0%; opacity: 0; }
-    to   { opacity: 1; }
-  }
-  .t1 { background: #d4eaf9; color: var(--blue); width: 72%; animation-delay: 0.1s; }
-  .t2 { background: #e6f4ee; color: var(--green); width: 58%; animation-delay: 0.3s; }
-  .t3 { background: #fdf3de; color: #7a5b1c; width: 81%; animation-delay: 0.5s; }
-  .t4 { background: #f3eeff; color: #7a4ab5; width: 45%; animation-delay: 0.7s; }
-  .t5 { background: #fceaea; color: var(--red); width: 64%; animation-delay: 0.9s; }
-  .t6 { background: #e6f4ee; color: var(--green); width: 90%; animation-delay: 1.1s; }
+  @keyframes barslide { from { width: 0%; opacity: 0; } to { opacity: 1; } }
+  .t1 { background: rgba(91,141,200,0.25); color: var(--blue); width: 72%; animation-delay: 0.1s; }
+  .t2 { background: rgba(92,184,122,0.20); color: var(--green); width: 58%; animation-delay: 0.3s; }
+  .t3 { background: var(--gold-pale); color: var(--gold-light); width: 81%; animation-delay: 0.5s; }
+  .t4 { background: rgba(155,114,208,0.20); color: #9b72d0; width: 45%; animation-delay: 0.7s; }
+  .t5 { background: rgba(224,92,92,0.20); color: var(--red); width: 64%; animation-delay: 0.9s; }
+  .t6 { background: rgba(92,184,122,0.20); color: var(--green); width: 90%; animation-delay: 1.1s; }
   .concurrency-note {
-    font-size: 13px;
-    color: var(--ink3);
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
+    font-size: 13px; color: #A8B8C8;
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid #243B55;
   }
 
   /* ── Blackout calendar ── */
   .blackout-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin: 24px 0;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin: 24px 0;
   }
   .blackout-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 14px;
-    text-align: center;
+    background: #1A2D42; border: 1px solid #243B55;
+    border-radius: 8px; padding: 16px 14px; text-align: center;
   }
-  .blackout-icon {
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-  .blackout-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 4px;
-  }
-  .blackout-rule {
-    font-size: 11px;
-    color: var(--ink3);
-    line-height: 1.4;
-  }
-  .blackout-tickers {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: center;
-    margin-top: 8px;
-  }
+  .blackout-icon { font-size: 22px; margin-bottom: 8px; }
+  .blackout-name { font-size: 13px; font-weight: 600; color: #EAE6DE; margin-bottom: 4px; }
+  .blackout-rule { font-size: 11px; color: #A8B8C8; line-height: 1.4; }
+  .blackout-tickers { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 8px; }
 
   /* ── Signal formula ── */
   .formula-box {
-    background: var(--gold-pale);
-    border: 1px solid rgba(200,151,58,0.3);
-    border-radius: 10px;
-    padding: 22px 24px;
-    margin: 24px 0;
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    color: var(--ink2);
-    line-height: 2.2;
+    background: rgba(201,168,76,0.10); border: 1px solid rgba(201,168,76,0.30);
+    border-radius: 10px; padding: 22px 24px; margin: 24px 0;
+    font-family: 'DM Mono', monospace; font-size: 14px;
+    color: #EAE6DE; line-height: 2.2;
   }
-  .formula-and {
-    color: var(--gold);
-    font-weight: 700;
-  }
-  .formula-cond {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
+  .formula-cond { display: flex; align-items: flex-start; gap: 8px; }
   .formula-bullet {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--gold);
-    flex-shrink: 0;
-    margin-top: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold); flex-shrink: 0; margin-top: 6px;
   }
 
-  /* ── Skip reason breakdown ── */
-  .skip-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-  }
+  /* ── Skip reason table ── */
+  .skip-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0; }
+  .skip-table { width: 100%; border-collapse: collapse; min-width: 540px; }
   .skip-table th {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink3);
-    text-align: left;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #A8B8C8; text-align: left;
     padding: 10px 14px;
-    border-bottom: 2px solid var(--border-strong);
+    border-bottom: 2px solid #2C4A6A;
+    background: #1A2D42;
   }
   .skip-table td {
-    font-size: 14px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--ink2);
-    vertical-align: top;
+    font-size: 14px; padding: 12px 14px;
+    border-bottom: 1px solid #243B55;
+    color: #A8B8C8; vertical-align: top;
   }
   .skip-table tr:last-child td { border-bottom: none; }
-  .skip-table tr:hover td { background: #fafaf8; }
+  .skip-table tr:hover td { background: rgba(255,255,255,0.02); }
 
   /* ── Risk rules ── */
-  .rules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin: 24px 0;
-  }
-  .rule-item {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
+  .rules-list { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+  .rule-item { display: flex; gap: 14px; align-items: flex-start; }
   .rule-id {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 11px; font-weight: 700;
     font-family: 'DM Mono', monospace;
-    color: var(--card);
-    background: var(--ink2);
-    padding: 3px 8px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    margin-top: 2px;
-    letter-spacing: 0.05em;
+    color: #0D1B2A; background: #A8B8C8;
+    padding: 3px 8px; border-radius: 4px;
+    flex-shrink: 0; margin-top: 2px; letter-spacing: 0.05em;
   }
-  .rule-text {
-    font-size: 14px;
-    color: var(--ink2);
-    line-height: 1.55;
+  .rule-text { font-size: 14px; color: #A8B8C8; line-height: 1.55; }
+
+  /* ── Priority cards ── */
+  .priority-cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+  .priority-card {
+    background: #1A2D42; border: 1px solid #243B55;
+    border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 160px;
   }
+
+  /* ── Data source cards ── */
+  .datasrc-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin: 24px 0;
+  }
+  .datasrc-card {
+    background: #1A2D42; border: 1px solid #243B55;
+    border-radius: 8px; padding: 16px;
+  }
+  .datasrc-label { font-size: 12px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+  .datasrc-val { font-size: 13px; color: #A8B8C8; line-height: 1.6; }
 
   /* ── Footer ── */
   .footer {
-    background: var(--ink);
+    background: #142232; border-top: 1px solid #243B55;
     color: rgba(255,255,255,0.35);
-    text-align: center;
-    font-size: 12px;
-    padding: 24px 32px;
-    line-height: 1.8;
+    text-align: center; font-size: 12px;
+    padding: 24px 32px; line-height: 1.8;
   }
 
-  /* ── Disclaimer (reused from demo style system) ── */
+  /* ── Disclaimer ── */
   .disclaimer {
-    background: #142232;
-    border: 1px solid #243B55;
-    border-radius: 8px;
-    padding: 20px 24px;
-    font-size: 12.5px;
-    color: #A8B8C8;
-    line-height: 1.8;
-    margin-top: 36px;
+    background: #142232; border: 1px solid #243B55;
+    border-radius: 8px; padding: 20px 24px;
+    font-size: 12.5px; color: #A8B8C8; line-height: 1.8; margin-top: 36px;
   }
   .disclaimer strong { color: #EAE6DE; }
 
-  /* ── Demo-like dark theme overrides (keep original content unchanged) ── */
-  :root {
-    --ink: #EAE6DE;
-    --ink2: #A8B8C8;
-    --ink3: #8FA2B5;
-    --surface: #0D1B2A;
-    --card: #1A2D42;
-    --border: #243B55;
-    --border-strong: #2C4A6A;
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --gold-pale: rgba(201,168,76,0.15);
-    --blue-pale: rgba(91,141,200,0.12);
-    --green-pale: rgba(92,184,122,0.12);
-    --red-pale: rgba(224,92,92,0.12);
-  }
-  body {
-    background: #0D1B2A;
-    color: #EAE6DE;
-  }
-  .page { max-width: 960px; }
-  .sec-title { color: #EAE6DE; }
-  .sec-body { color: #A8B8C8; }
-  .divider { border-top-color: #243B55; }
-  .pipe-step,
-  .gate-card,
-  .result-card,
-  .concurrency-box,
-  .blackout-card,
-  .skip-table tr:hover td,
-  .skip-table td,
-  .skip-table th,
-  .thread-bar-wrap,
-  .rule-id,
-  .result-card.no-signal {
-    background: #1A2D42;
-    border-color: #243B55;
-  }
-  .pipe-step + .pipe-step::before { background: #1A2D42; color: #A8B8C8; }
-  .pipe-step-title,
-  .gate-title,
-  .result-card-title,
-  .blackout-name,
-  .scan-step-title,
-  .rule-text { color: #EAE6DE; }
-  .pipe-step-sub,
-  .gate-desc,
-  .scan-step-body,
-  .blackout-rule,
-  .concurrency-note,
-  .result-card-list li,
-  .skip-table td,
-  .skip-table th,
-  .rule-text { color: #A8B8C8; }
-  .scan-step { border-bottom-color: #243B55; }
-  .filter-block,
-  .output-card { background: #142232; border: 1px solid #243B55; }
-  .formula-box {
-    background: rgba(201,168,76,0.10);
-    border-color: rgba(201,168,76,0.30);
-    color: #EAE6DE;
-  }
-  .result-card.signal {
-    background: rgba(92,184,122,0.12);
-    border-color: rgba(92,184,122,0.35);
-  }
-  .tag-gray { background: rgba(106,127,148,0.25); color: #A8B8C8; }
-  .hero {
-    background: #142232;
-    border-bottom: 1px solid #243B55;
-  }
-  .hero::before {
-    background: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 28px,
-      rgba(201,168,76,0.06) 28px,
-      rgba(201,168,76,0.06) 29px
-    );
-  }
-  .footer { background: #142232; border-top: 1px solid #243B55; }
+  /* ── Rules title ── */
+  .rules-title { font-size: 15px; font-weight: 600; color: #EAE6DE; margin-bottom: 16px; margin-top: 8px; }
 
+  /* ── Responsive ── */
   @media (max-width: 1100px) {
-    .sidebar { display: none; }
+    .sidebar {
+      transform: translateX(-100%);
+      top: 0;
+    }
+    .sidebar.open { transform: translateX(0); }
     .content-wrap { margin-left: 0; }
+    .mobile-topbar { display: flex; }
+    .hero { padding-top: 52px; }
+    .hero-lang-toggle { top: 68px; right: 16px; }
+    .content-wrap { padding-top: 52px; }
   }
-  @media (max-width: 640px) {
-    .hero { padding: 40px 24px; }
+  @media (max-width: 768px) {
+    .hero { padding: 16px 20px 40px; }
     .hero h1 { font-size: 28px; }
+    .hero-sub { font-size: 14px; }
+    .hero-badge { font-size: 10px; }
+    .hero-meta { gap: 16px 20px; }
+    .hero-meta-num { font-size: 22px; }
+    .hero-divider { display: none; }
     .filter-block { grid-template-columns: 1fr; }
     .result-row { grid-template-columns: 1fr; }
     .blackout-grid { grid-template-columns: 1fr 1fr; }
-    .pipeline { flex-direction: column; }
-    .pipe-step { border-radius: 0 !important; border-top: 1px solid var(--border); }
+    .pipeline {
+      flex-direction: column;
+      overflow-x: visible;
+    }
+    .pipe-step {
+      border-radius: 0 !important;
+      border-top: 1px solid #243B55;
+    }
     .pipe-step + .pipe-step::before { display: none; }
+    .pipe-step:first-child { border-radius: 10px 10px 0 0 !important; border-top: none; }
+    .pipe-step:last-child  { border-radius: 0 0 10px 10px !important; }
+    .page { padding: 28px 16px 64px; }
+    .sec-title { font-size: 21px; }
+    .gates-grid { grid-template-columns: 1fr; }
+    .hero-lang-toggle { display: none; }
+    .priority-cards { flex-direction: column; }
+    .thread-bar { font-size: 10px; }
+    .concurrency-box { padding: 16px; }
+  }
+  @media (max-width: 480px) {
+    .blackout-grid { grid-template-columns: 1fr 1fr; }
+    .datasrc-grid { grid-template-columns: 1fr 1fr; }
+    .formula-box { font-size: 12px; }
+    .filter-block { padding: 16px; }
   }
 </style>
 </head>
-<body>
+<body class="lang-zh" id="body-root">
 
-<nav class="sidebar">
+<!-- ── Mobile top bar ── -->
+<div class="mobile-topbar">
+  <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">☰</button>
+  <div class="mobile-brand">OpenClaw</div>
+  <div class="mobile-lang-toggle">
+    <button id="m-zh-btn" class="active" onclick="setLang('zh')">中</button>
+    <div class="mobile-lang-sep"></div>
+    <button id="m-en-btn" onclick="setLang('en')">EN</button>
+  </div>
+</div>
+
+<!-- ── Sidebar overlay ── -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar" id="sidebar">
   <div class="sidebar-title">
     <div class="kicker">OpenClaw Docs</div>
-    <div class="name">系统运行原理<br>说明文档</div>
+    <div class="name">
+      <span class="zh">系统运行原理<br>说明文档</span>
+      <span class="en">System Architecture<br>Reference Doc</span>
+    </div>
   </div>
-  <a class="nav-item" href="#s1">01 · 系统整体运行流程</a>
-  <a class="nav-item" href="#s2">02 · 全局风控门</a>
-  <a class="nav-item" href="#s3">03 · 并发扫描标的</a>
-  <a class="nav-item" href="#s4">04 · 合约四维过滤</a>
-  <a class="nav-item" href="#s5">05 · 信号最终判定</a>
-  <a class="nav-item" href="#s6">06 · 无信号原因拆解</a>
-  <a class="nav-item" href="#s7">07 · 输出与风控铁律</a>
-  <a class="nav-item" href="#s8">08 · 数据来源与降级</a>
-  <a class="nav-item" href="#s9">09 · 免责声明</a>
+  <a class="nav-item" href="#s1" onclick="closeSidebar()">
+    <span class="zh">01 · 系统整体运行流程</span>
+    <span class="en">01 · System Overview</span>
+  </a>
+  <a class="nav-item" href="#s2" onclick="closeSidebar()">
+    <span class="zh">02 · 全局风控门</span>
+    <span class="en">02 · Global Risk Gates</span>
+  </a>
+  <a class="nav-item" href="#s3" onclick="closeSidebar()">
+    <span class="zh">03 · 并发扫描标的</span>
+    <span class="en">03 · Concurrent Ticker Scan</span>
+  </a>
+  <a class="nav-item" href="#s4" onclick="closeSidebar()">
+    <span class="zh">04 · 合约四维过滤</span>
+    <span class="en">04 · Four-Dimension Filter</span>
+  </a>
+  <a class="nav-item" href="#s5" onclick="closeSidebar()">
+    <span class="zh">05 · 信号最终判定</span>
+    <span class="en">05 · Signal Determination</span>
+  </a>
+  <a class="nav-item" href="#s6" onclick="closeSidebar()">
+    <span class="zh">06 · 无信号原因拆解</span>
+    <span class="en">06 · Why No Signal</span>
+  </a>
+  <a class="nav-item" href="#s7" onclick="closeSidebar()">
+    <span class="zh">07 · 输出与风控铁律</span>
+    <span class="en">07 · Output & Risk Rules</span>
+  </a>
+  <a class="nav-item" href="#s8" onclick="closeSidebar()">
+    <span class="zh">08 · 数据来源与降级</span>
+    <span class="en">08 · Data Sources & Fallback</span>
+  </a>
+  <a class="nav-item" href="#s9" onclick="closeSidebar()">
+    <span class="zh">09 · 免责声明</span>
+    <span class="en">09 · Disclaimer</span>
+  </a>
 </nav>
 
 <div class="content-wrap">
-<!-- ═══ Hero ═══ -->
+
+<!-- ── Hero ── -->
 <div class="hero">
-  <div class="hero-badge">OpenClaw v3.1 · 系统原理说明</div>
-  <h1>一套自动化的<br><span>期权信号扫描引擎</span></h1>
-  <p class="hero-sub">每日扫描美股期权市场，经过多层过滤筛选出符合 Wheel 卖 Put 策略的高质量信号，借助claude进行解读，人工确认后作为投资参考。</p>
+  <!-- Desktop lang toggle -->
+  <div class="hero-lang-toggle">
+    <button id="d-zh-btn" class="active" onclick="setLang('zh')">中文</button>
+    <div class="hero-lang-sep"></div>
+    <button id="d-en-btn" onclick="setLang('en')">EN</button>
+  </div>
+
+  <div class="hero-badge">
+    <span class="zh">OpenClaw v3.1 · 系统原理说明</span>
+    <span class="en">OpenClaw v3.1 · System Architecture Overview</span>
+  </div>
+  <h1>
+    <span class="zh">一套自动化的<br><span>期权信号扫描引擎</span></span>
+    <span class="en">An Automated<br><span>Options Signal Scanner</span></span>
+  </h1>
+  <p class="hero-sub">
+    <span class="zh">每日扫描美股期权市场，经过多层过滤筛选出符合 Wheel 卖 Put 策略的高质量信号，借助 Claude 进行解读，人工确认后作为投资参考。</span>
+    <span class="en">Daily scans of U.S. options markets, applying multi-layer filters to surface high-quality Wheel Sell-Put signals. Claude AI interprets results; a human confirms before treating as investment reference.</span>
+  </p>
   <div class="hero-meta">
     <div class="hero-meta-item">
       <div class="hero-meta-num">5</div>
-      <div class="hero-meta-label">全局风控关卡</div>
+      <div class="hero-meta-label"><span class="zh">全局风控关卡</span><span class="en">Global Risk Gates</span></div>
     </div>
     <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <div class="hero-meta-num">120+</div>
-      <div class="hero-meta-label">可扫描标的</div>
+      <div class="hero-meta-label"><span class="zh">可扫描标的</span><span class="en">Scannable Tickers</span></div>
     </div>
     <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <div class="hero-meta-num">6</div>
-      <div class="hero-meta-label">单标的判断维度</div>
+      <div class="hero-meta-label"><span class="zh">单标的判断维度</span><span class="en">Per-Ticker Dimensions</span></div>
     </div>
     <div class="hero-divider"></div>
     <div class="hero-meta-item">
       <div class="hero-meta-num">4</div>
-      <div class="hero-meta-label">合约硬性过滤条件</div>
+      <div class="hero-meta-label"><span class="zh">合约硬性过滤条件</span><span class="en">Hard Contract Filters</span></div>
     </div>
   </div>
 </div>
 
+<!-- ── Main content ── -->
 <div class="page">
 
-  <!-- ═══ Section 1 · 整体流程 ═══ -->
+  <!-- ═══ Section 1 ═══ -->
   <div class="sec-label" id="s1">Section 01</div>
-  <h2 class="sec-title">系统整体运行流程</h2>
-  <p class="sec-body">整个系统的工作可以分为三个阶段：首先对市场宏观环境做全局判断，通过后才进入对每支标的的逐一扫描，最后将结果整理输出供 Claude AI 分析并给出开仓建议。</p>
+  <h2 class="sec-title">
+    <span class="zh">系统整体运行流程</span>
+    <span class="en">System Overview Flow</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">整个系统的工作可以分为三个阶段：首先对市场宏观环境做全局判断，通过后才进入对每支标的的逐一扫描，最后将结果整理输出供 Claude AI 分析并给出开仓建议。</span>
+    <span class="en">The system operates in three phases: first a global assessment of macro market conditions; only on passing does it proceed to scan each ticker individually; finally it compiles results for Claude AI analysis and position-opening recommendations.</span>
+  </p>
 
   <div class="pipeline">
     <div class="pipe-step">
       <div class="pipe-icon">🌐</div>
-      <div class="pipe-step-num">阶段 01</div>
-      <div class="pipe-step-title">获取市场数据</div>
-      <div class="pipe-step-sub">VIX 恐慌指数<br>S&P500 均线状态</div>
+      <div class="pipe-step-num"><span class="zh">阶段 01</span><span class="en">Phase 01</span></div>
+      <div class="pipe-step-title"><span class="zh">获取市场数据</span><span class="en">Fetch Market Data</span></div>
+      <div class="pipe-step-sub"><span class="zh">VIX 恐慌指数<br>S&P500 均线状态</span><span class="en">VIX Fear Index<br>S&P 500 MA Status</span></div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔐</div>
-      <div class="pipe-step-num">阶段 02</div>
-      <div class="pipe-step-title">全局风控门 (5关)</div>
-      <div class="pipe-step-sub">任意一关不过则<br>终止全部扫描</div>
+      <div class="pipe-step-num"><span class="zh">阶段 02</span><span class="en">Phase 02</span></div>
+      <div class="pipe-step-title"><span class="zh">全局风控门 (5关)</span><span class="en">Global Risk Gates (5)</span></div>
+      <div class="pipe-step-sub"><span class="zh">任意一关不过则<br>终止全部扫描</span><span class="en">Any failure halts<br>all scanning</span></div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔍</div>
-      <div class="pipe-step-num">阶段 03</div>
-      <div class="pipe-step-title">并发扫描标的</div>
-      <div class="pipe-step-sub">多线程同时处理<br>每支股票/ETF</div>
+      <div class="pipe-step-num"><span class="zh">阶段 03</span><span class="en">Phase 03</span></div>
+      <div class="pipe-step-title"><span class="zh">并发扫描标的</span><span class="en">Concurrent Scan</span></div>
+      <div class="pipe-step-sub"><span class="zh">多线程同时处理<br>每支股票/ETF</span><span class="en">Multi-thread per<br>stock / ETF</span></div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">📋</div>
-      <div class="pipe-step-num">阶段 04</div>
-      <div class="pipe-step-title">生成 LLM 报告</div>
-      <div class="pipe-step-sub">保存结构化 JSON<br>供 AI 分析</div>
+      <div class="pipe-step-num"><span class="zh">阶段 04</span><span class="en">Phase 04</span></div>
+      <div class="pipe-step-title"><span class="zh">生成 LLM 报告</span><span class="en">Generate LLM Report</span></div>
+      <div class="pipe-step-sub"><span class="zh">保存结构化 JSON<br>供 AI 分析</span><span class="en">Save structured JSON<br>for AI analysis</span></div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🧠</div>
-      <div class="pipe-step-num">阶段 05</div>
-      <div class="pipe-step-title">Claude AI 解读</div>
-      <div class="pipe-step-sub">输出推荐信号<br>与开仓建议</div>
+      <div class="pipe-step-num"><span class="zh">阶段 05</span><span class="en">Phase 05</span></div>
+      <div class="pipe-step-title"><span class="zh">Claude AI 解读</span><span class="en">Claude AI Interprets</span></div>
+      <div class="pipe-step-sub"><span class="zh">输出推荐信号<br>与开仓建议</span><span class="en">Signal recommendations<br>and entry guidance</span></div>
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 2 · Pre-screen Gate ═══ -->
+  <!-- ═══ Section 2 ═══ -->
   <div class="sec-label" id="s2">Section 02</div>
-  <h2 class="sec-title">第一道防线：全局风控门</h2>
-  <p class="sec-body">在扫描任何标的之前，系统先对整体市场环境做五项检查。<strong>任意一关失败，本轮扫描立即终止</strong>——无论个股情况多好，都不产生信号。这是防止在危险市场环境中错误开仓的核心机制。</p>
+  <h2 class="sec-title">
+    <span class="zh">第一道防线：全局风控门</span>
+    <span class="en">First Line of Defense: Global Risk Gates</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">在扫描任何标的之前，系统先对整体市场环境做五项检查。<strong>任意一关失败，本轮扫描立即终止</strong>——无论个股情况多好，都不产生信号。这是防止在危险市场环境中错误开仓的核心机制。</span>
+    <span class="en">Before scanning any ticker, the system performs five market-wide checks. <strong>Any single failure immediately halts the scan</strong>—no matter how strong individual stocks look, no signals are generated. This is the core mechanism preventing erroneous entries in dangerous market conditions.</span>
+  </p>
 
   <div class="gates-grid">
     <div class="gate-card">
       <div class="gate-index">1</div>
       <div>
-        <div class="gate-title">市场状态检查</div>
-        <div class="gate-desc">判断当前市场属于 A/B/C/D 哪个等级。只有在合适的市场状态（非 D 级极端风险状态）下才允许继续。</div>
-        <div class="gate-action-stop">● 失败 → 立即终止</div>
+        <div class="gate-title"><span class="zh">市场状态检查</span><span class="en">Market Status Check</span></div>
+        <div class="gate-desc">
+          <span class="zh">判断当前市场属于 A/B/C/D 哪个等级。只有在合适的市场状态（非 D 级极端风险状态）下才允许继续。</span>
+          <span class="en">Determines current market grade A/B/C/D. Only appropriate grades (non-D extreme risk) permit continuation.</span>
+        </div>
+        <div class="gate-action-stop">● <span class="zh">失败 → 立即终止</span><span class="en">Fail → Immediate halt</span></div>
       </div>
     </div>
     <div class="gate-card">
       <div class="gate-index">2</div>
       <div>
-        <div class="gate-title">VIX 硬性上限</div>
-        <div class="gate-desc">实时获取 CBOE 恐慌指数。当 VIX 超过 35，市场波动性过高，卖 Put 的风险回报比不划算，直接停止。</div>
+        <div class="gate-title"><span class="zh">VIX 硬性上限</span><span class="en">VIX Hard Cap</span></div>
+        <div class="gate-desc">
+          <span class="zh">实时获取 CBOE 恐慌指数。当 VIX 超过 35，市场波动性过高，卖 Put 的风险回报比不划算，直接停止。</span>
+          <span class="en">Fetches CBOE fear index in real time. When VIX exceeds 35, volatility is too high; the risk/reward of selling puts is unfavorable.</span>
+        </div>
         <div class="gate-rule">VIX ≤ 35</div>
-        <div><br><div class="gate-action-stop">● 失败 → 立即终止</div></div>
+        <br>
+        <div class="gate-action-stop">● <span class="zh">失败 → 立即终止</span><span class="en">Fail → Immediate halt</span></div>
       </div>
     </div>
     <div class="gate-card">
       <div class="gate-index">3</div>
       <div>
-        <div class="gate-title">VIX 期限结构</div>
-        <div class="gate-desc">比较近月 VIX 与 3 个月 VIX。若近月 VIX 高于远月（倒挂），代表短期恐慌更高，系统自动收紧 Delta 上限，只选更保守的合约。</div>
-        <div class="gate-rule">VIX &gt; VIX3M → Delta 收紧</div>
-        <div><br><div class="gate-action-adjust">● 仅调参，不终止</div></div>
+        <div class="gate-title"><span class="zh">VIX 期限结构</span><span class="en">VIX Term Structure</span></div>
+        <div class="gate-desc">
+          <span class="zh">比较近月 VIX 与 3 个月 VIX。若近月 VIX 高于远月（倒挂），代表短期恐慌更高，系统自动收紧 Delta 上限，只选更保守的合约。</span>
+          <span class="en">Compares near-month VIX with 3-month VIX. If inverted, near-term fear is elevated; the system automatically tightens the Delta ceiling to more conservative contracts.</span>
+        </div>
+        <div class="gate-rule">VIX &gt; VIX3M → <span class="zh">Delta 收紧</span><span class="en">Delta tightened</span></div>
+        <br>
+        <div class="gate-action-adjust">● <span class="zh">仅调参，不终止</span><span class="en">Param adjust, no halt</span></div>
       </div>
     </div>
     <div class="gate-card">
       <div class="gate-index">4</div>
       <div>
-        <div class="gate-title">账户保证金使用率</div>
-        <div class="gate-desc">检查当前账户已用保证金占比。超过 55% 表示仓位已偏重，再开仓风险过大，停止本轮扫描。</div>
-        <div class="gate-rule">已用保证金 &lt; 55%</div>
-        <div><br><div class="gate-action-stop">● 失败 → 立即终止</div></div>
+        <div class="gate-title"><span class="zh">账户保证金使用率</span><span class="en">Account Margin Utilization</span></div>
+        <div class="gate-desc">
+          <span class="zh">检查当前账户已用保证金占比。超过 55% 表示仓位已偏重，再开仓风险过大，停止本轮扫描。</span>
+          <span class="en">Checks ratio of margin used. Above 55% means positions are already heavy; adding more carries excessive risk. Scan halted.</span>
+        </div>
+        <div class="gate-rule"><span class="zh">已用保证金</span><span class="en">Used margin</span> &lt; 55%</div>
+        <br>
+        <div class="gate-action-stop">● <span class="zh">失败 → 立即终止</span><span class="en">Fail → Immediate halt</span></div>
       </div>
     </div>
     <div class="gate-card">
       <div class="gate-index">5</div>
       <div>
-        <div class="gate-title">三因子综合评分</div>
-        <div class="gate-desc">综合 VIX 水平、标普500 趋势、期限结构三个维度，计算宏观环境得分。得分低于 50 分时，整体市场条件不佳，终止扫描。</div>
-        <div class="gate-rule">得分 ≥ 50 分</div>
-        <div><br><div class="gate-action-stop">● 失败 → 立即终止</div></div>
+        <div class="gate-title"><span class="zh">三因子综合评分</span><span class="en">Three-Factor Composite Score</span></div>
+        <div class="gate-desc">
+          <span class="zh">综合 VIX 水平、标普500 趋势、期限结构三个维度，计算宏观环境得分。得分低于 50 分时，整体市场条件不佳，终止扫描。</span>
+          <span class="en">Combines VIX level, S&P 500 trend, and term structure into a macro environment score. Below 50 signals unfavorable conditions; scan halted.</span>
+        </div>
+        <div class="gate-rule"><span class="zh">得分</span><span class="en">Score</span> ≥ 50</div>
+        <br>
+        <div class="gate-action-stop">● <span class="zh">失败 → 立即终止</span><span class="en">Fail → Immediate halt</span></div>
       </div>
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 3 · 并发扫描 ═══ -->
+  <!-- ═══ Section 3 ═══ -->
   <div class="sec-label" id="s3">Section 03</div>
-  <h2 class="sec-title">第二道关卡：并发扫描每支标的</h2>
-  <p class="sec-body">全局风控门通过后，系统使用多线程技术同时处理所有标的——好比同时派出多个分析师，每人负责一支股票，大幅缩短总扫描时间。每支标的独立经历以下五个步骤：</p>
+  <h2 class="sec-title">
+    <span class="zh">第二道关卡：并发扫描每支标的</span>
+    <span class="en">Second Gate: Concurrent Ticker Scan</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">全局风控门通过后，系统使用多线程技术同时处理所有标的——好比同时派出多个分析师，每人负责一支股票，大幅缩短总扫描时间。每支标的独立经历以下五个步骤：</span>
+    <span class="en">Once global risk gates pass, the system uses multi-threading to process all tickers simultaneously—like deploying multiple analysts in parallel, each covering one stock, dramatically cutting total scan time. Each ticker independently goes through five steps:</span>
+  </p>
 
   <div class="concurrency-box">
-    <div style="font-size:13px;font-weight:600;color:var(--ink3);margin-bottom:16px;letter-spacing:0.05em;">多线程并发示意图（各标的同时处理）</div>
-    <div class="thread-row"><div class="thread-label">SPY</div><div class="thread-bar-wrap"><div class="thread-bar t1">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="thread-row"><div class="thread-label">QQQ</div><div class="thread-bar-wrap"><div class="thread-bar t2">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="thread-row"><div class="thread-label">AAPL</div><div class="thread-bar-wrap"><div class="thread-bar t3">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="thread-row"><div class="thread-label">NVDA</div><div class="thread-bar-wrap"><div class="thread-bar t4">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="thread-row"><div class="thread-label">NVO</div><div class="thread-bar-wrap"><div class="thread-bar t5">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="thread-row"><div class="thread-label">MSFT</div><div class="thread-bar-wrap"><div class="thread-bar t6">股价→IVR→财报检查→期权链→合约筛选</div></div></div>
-    <div class="concurrency-note">每支标的在独立线程中完成全部 5 个步骤，互不等待。扫描 120 个标的的耗时约等于扫描单个标的的时间（受 API 限速影响会有差异）。</div>
+    <div style="font-size:13px;font-weight:600;color:var(--ink3);margin-bottom:16px;letter-spacing:0.05em;">
+      <span class="zh">多线程并发示意图（各标的同时处理）</span>
+      <span class="en">Multi-thread concurrency diagram (all tickers processed simultaneously)</span>
+    </div>
+    <div class="thread-row"><div class="thread-label">SPY</div><div class="thread-bar-wrap"><div class="thread-bar t1">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="thread-row"><div class="thread-label">QQQ</div><div class="thread-bar-wrap"><div class="thread-bar t2">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="thread-row"><div class="thread-label">AAPL</div><div class="thread-bar-wrap"><div class="thread-bar t3">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="thread-row"><div class="thread-label">NVDA</div><div class="thread-bar-wrap"><div class="thread-bar t4">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="thread-row"><div class="thread-label">NVO</div><div class="thread-bar-wrap"><div class="thread-bar t5">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="thread-row"><div class="thread-label">MSFT</div><div class="thread-bar-wrap"><div class="thread-bar t6">
+      <span class="zh">股价→IVR→财报检查→期权链→合约筛选</span>
+      <span class="en">Price→IVR→Earnings→Chain→Filter</span>
+    </div></div></div>
+    <div class="concurrency-note">
+      <span class="zh">每支标的在独立线程中完成全部 5 个步骤，互不等待。扫描 120 个标的的耗时约等于扫描单个标的的时间（受 API 限速影响会有差异）。</span>
+      <span class="en">Each ticker completes all 5 steps in its own thread without waiting on others. Scanning 120 tickers takes roughly the same wall-clock time as scanning a single one (subject to API rate-limit variance).</span>
+    </div>
   </div>
 
   <div class="scan-steps">
+    <!-- Step 1 -->
     <div class="scan-step">
       <div class="scan-step-left"><div class="scan-circle">1</div></div>
       <div>
-        <div class="scan-step-title">获取实时股价与均线</div>
-        <div class="scan-step-body">从数据源拉取当前股价、20 日均线、200 日均线等技术指标。若获取失败，该标的直接跳过，标记为 ERROR。</div>
-      </div>
-    </div>
-    <div class="scan-step">
-      <div class="scan-step-left"><div class="scan-circle">2</div></div>
-      <div>
-        <div class="scan-step-title">计算 IVR（隐含波动率排名）</div>
+        <div class="scan-step-title">
+          <span class="zh">获取实时股价与均线</span>
+          <span class="en">Fetch Real-time Price & Moving Averages</span>
+        </div>
         <div class="scan-step-body">
-          IVR = 当前 IV 在过去一年波动率区间中所处的百分位。<br><br>
-          例如：当前 IV 为 35%，过去一年最低 20%、最高 80%，则 IVR = (35-20)/(80-20) × 100 = <strong>25%</strong>。<br><br>
-          IVR 越高，代表目前 IV 相对较贵，卖出期权收到的权利金越丰厚。每支标的都有自己的 ivr_min 门槛（如 SPY 要求 ≥ 25%，AAPL 要求 ≥ 38%），<strong>低于门槛直接无信号</strong>。
-          <br><br>
-          <span class="tag tag-red">IVR 不足</span> 是最常见的无信号原因
+          <span class="zh">从数据源拉取当前股价、20 日均线、200 日均线等技术指标。若获取失败，该标的直接跳过，标记为 ERROR。</span>
+          <span class="en">Pulls current price, 20-day MA, 200-day MA, and other technical indicators. If retrieval fails, the ticker is skipped and marked ERROR.</span>
         </div>
       </div>
     </div>
+    <!-- Step 2 -->
+    <div class="scan-step">
+      <div class="scan-step-left"><div class="scan-circle">2</div></div>
+      <div>
+        <div class="scan-step-title">
+          <span class="zh">计算 IVR（隐含波动率排名）</span>
+          <span class="en">Calculate IVR (Implied Volatility Rank)</span>
+        </div>
+        <div class="scan-step-body">
+          <div class="zh">
+            IVR = 当前 IV 在过去一年波动率区间中所处的百分位。<br><br>
+            例如：当前 IV 为 35%，过去一年最低 20%、最高 80%，则 IVR = (35-20)/(80-20) × 100 = <strong>25%</strong>。<br><br>
+            IVR 越高，代表目前 IV 相对较贵，卖出期权收到的权利金越丰厚。每支标的都有自己的 ivr_min 门槛（如 SPY 要求 ≥ 25%，AAPL 要求 ≥ 38%），<strong>低于门槛直接无信号</strong>。
+            <br><br>
+            <span class="tag tag-red">IVR 不足</span> 是最常见的无信号原因
+          </div>
+          <div class="en">
+            IVR = the percentile of current IV within the past year's IV range.<br><br>
+            Example: current IV 35%, past-year low 20%, high 80% → IVR = (35−20)/(80−20) × 100 = <strong>25%</strong>.<br><br>
+            Higher IVR means current IV is relatively rich; premium collected from selling options is more generous. Each ticker has its own ivr_min threshold (e.g. SPY ≥ 25%, AAPL ≥ 38%); <strong>below threshold → no signal</strong>.
+            <br><br>
+            <span class="tag tag-red">Insufficient IVR</span> is the most common reason for no signal
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Step 3 -->
     <div class="scan-step">
       <div class="scan-step-left"><div class="scan-circle">3</div></div>
       <div>
-        <div class="scan-step-title">检查财报与宏观事件黑名单</div>
+        <div class="scan-step-title">
+          <span class="zh">检查财报与宏观事件黑名单</span>
+          <span class="en">Check Earnings & Macro Event Blacklists</span>
+        </div>
         <div class="scan-step-body">
-          系统维护两类禁区，在禁区内的标的不产生任何信号：<br><br>
-          <strong>财报黑名单：</strong>距离财报发布日不足 N 天（各标的不同，如 AAPL 为 10 天）。财报前期权价格会剧烈波动，风险失控。若财报日期获取失败，保守处理为「在禁区内」。<br><br>
-          <strong>宏观事件黑名单：</strong>
+          <div class="zh">
+            系统维护两类禁区，在禁区内的标的不产生任何信号：<br><br>
+            <strong>财报黑名单：</strong>距离财报发布日不足 N 天（各标的不同，如 AAPL 为 10 天）。财报前期权价格会剧烈波动，风险失控。若财报日期获取失败，保守处理为「在禁区内」。<br><br>
+            <strong>宏观事件黑名单：</strong>
+          </div>
+          <div class="en">
+            The system maintains two blackout zones; tickers within them generate no signals:<br><br>
+            <strong>Earnings blacklist:</strong> Within N days of earnings date (per-ticker; e.g. AAPL = 10 days). Options prices can swing wildly around earnings, making risk uncontrollable. If the earnings date cannot be fetched, treated conservatively as "inside blackout".<br><br>
+            <strong>Macro event blacklist:</strong>
+          </div>
         </div>
         <div class="blackout-grid" style="margin-top:12px;">
           <div class="blackout-card">
             <div class="blackout-icon">🏛️</div>
-            <div class="blackout-name">FOMC 议息会议</div>
-            <div class="blackout-rule">会议前 3 天禁止</div>
+            <div class="blackout-name"><span class="zh">FOMC 议息会议</span><span class="en">FOMC Meeting</span></div>
+            <div class="blackout-rule"><span class="zh">会议前 3 天禁止</span><span class="en">3 days before prohibited</span></div>
             <div class="blackout-tickers"><span class="tag tag-blue">SPY</span><span class="tag tag-blue">QQQ</span><span class="tag tag-blue">XLU</span></div>
           </div>
           <div class="blackout-card">
             <div class="blackout-icon">📊</div>
-            <div class="blackout-name">CPI 通胀数据</div>
-            <div class="blackout-rule">发布前 3 天禁止</div>
-            <div class="blackout-tickers"><span class="tag tag-gold">宏观参考</span></div>
+            <div class="blackout-name"><span class="zh">CPI 通胀数据</span><span class="en">CPI Inflation Data</span></div>
+            <div class="blackout-rule"><span class="zh">发布前 3 天禁止</span><span class="en">3 days before prohibited</span></div>
+            <div class="blackout-tickers"><span class="tag tag-gold"><span class="zh">宏观参考</span><span class="en">Macro Ref</span></span></div>
           </div>
           <div class="blackout-card">
             <div class="blackout-icon">👷</div>
-            <div class="blackout-name">NFP 非农就业</div>
-            <div class="blackout-rule">发布前 3 天禁止</div>
-            <div class="blackout-tickers"><span class="tag tag-gold">宏观参考</span></div>
+            <div class="blackout-name"><span class="zh">NFP 非农就业</span><span class="en">NFP Non-Farm Payrolls</span></div>
+            <div class="blackout-rule"><span class="zh">发布前 3 天禁止</span><span class="en">3 days before prohibited</span></div>
+            <div class="blackout-tickers"><span class="tag tag-gold"><span class="zh">宏观参考</span><span class="en">Macro Ref</span></span></div>
           </div>
           <div class="blackout-card">
             <div class="blackout-icon">🏯</div>
-            <div class="blackout-name">日本央行 BOJ</div>
-            <div class="blackout-rule">前后各 2 天禁止</div>
+            <div class="blackout-name"><span class="zh">日本央行 BOJ</span><span class="en">BOJ Bank of Japan</span></div>
+            <div class="blackout-rule"><span class="zh">前后各 2 天禁止</span><span class="en">±2 days prohibited</span></div>
             <div class="blackout-tickers"><span class="tag tag-purple">EWJ</span></div>
           </div>
         </div>
       </div>
     </div>
+    <!-- Step 4 -->
     <div class="scan-step">
       <div class="scan-step-left"><div class="scan-circle">4</div></div>
       <div>
-        <div class="scan-step-title">选取合适的期权到期日</div>
+        <div class="scan-step-title">
+          <span class="zh">选取合适的期权到期日</span>
+          <span class="en">Select Optimal Expiry</span>
+        </div>
         <div class="scan-step-body">
-          系统优先选取 DTE（距到期天数）在 35–45 天之间的合约（最优持仓窗口）。若无满足条件的日期，退而求其次扩展到 30–60 天（Fallback 区间）。若仍无合适到期日，该标的退出，不产生信号。
-          <br><br>
-          <span class="tag tag-green">35–45 天</span> 优先区间 &nbsp; <span class="tag tag-gold">30–60 天</span> 备用区间
+          <div class="zh">
+            系统优先选取 DTE（距到期天数）在 35–45 天之间的合约（最优持仓窗口）。若无满足条件的日期，退而求其次扩展到 30–60 天（Fallback 区间）。若仍无合适到期日，该标的退出，不产生信号。
+            <br><br>
+            <span class="tag tag-green">35–45 天</span> 优先区间 &nbsp; <span class="tag tag-gold">30–60 天</span> 备用区间
+          </div>
+          <div class="en">
+            The system prefers contracts with DTE (Days to Expiry) between 35–45 days (optimal holding window). If none qualify, it falls back to 30–60 days. If still none, the ticker is dropped with no signal.
+            <br><br>
+            <span class="tag tag-green">35–45 days</span> Priority range &nbsp; <span class="tag tag-gold">30–60 days</span> Fallback range
+          </div>
         </div>
       </div>
     </div>
+    <!-- Step 5 -->
     <div class="scan-step">
       <div class="scan-step-left"><div class="scan-circle">5</div></div>
       <div>
-        <div class="scan-step-title">拉取期权链并筛选合约</div>
-        <div class="scan-step-body">获取该到期日下所有 Put 合约的实时数据，包括行权价、买卖价差、Delta 值、持仓量等，然后进入下一节的四维过滤逻辑。</div>
+        <div class="scan-step-title">
+          <span class="zh">拉取期权链并筛选合约</span>
+          <span class="en">Fetch Option Chain & Filter Contracts</span>
+        </div>
+        <div class="scan-step-body">
+          <span class="zh">获取该到期日下所有 Put 合约的实时数据，包括行权价、买卖价差、Delta 值、持仓量等，然后进入下一节的四维过滤逻辑。</span>
+          <span class="en">Retrieves real-time data for all Put contracts at the chosen expiry—strike, bid-ask spread, Delta, open interest, etc.—then applies the four-dimensional filter logic in the next section.</span>
+        </div>
       </div>
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 4 · 合约筛选 ═══ -->
+  <!-- ═══ Section 4 ═══ -->
   <div class="sec-label" id="s4">Section 04</div>
-  <h2 class="sec-title">第三道关卡：合约四维过滤</h2>
-  <p class="sec-body">在拿到期权链数据后，系统对每一张合约进行四个条件的同时检验。<strong>四个条件必须全部满足</strong>，才算「合格合约」。任意一条不过，该合约被直接淘汰。</p>
+  <h2 class="sec-title">
+    <span class="zh">第三道关卡：合约四维过滤</span>
+    <span class="en">Third Gate: Four-Dimensional Contract Filter</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">在拿到期权链数据后，系统对每一张合约进行四个条件的同时检验。<strong>四个条件必须全部满足</strong>，才算「合格合约」。任意一条不过，该合约被直接淘汰。</span>
+    <span class="en">After retrieving the option chain, the system tests every contract against four conditions simultaneously. <strong>All four must be satisfied</strong> for a contract to be considered "qualified." Failing any one disqualifies it immediately.</span>
+  </p>
 
   <div class="filter-block">
-    <div class="filter-header">合格合约的四项硬性条件</div>
-    <div>
-      <div class="filter-item-label">条件 1 · Delta 区间</div>
-      <div class="filter-item-value">Delta 须落在 <span class="filter-item-mono">-0.30 ~ -0.15</span> 之间。Delta 代表期权的方向敏感度，此区间对应约 15%–30% 的被行权概率，是 Wheel 策略的「甜蜜区间」——既不太近（风险大）也不太远（权利金太低）。若市场期限结构倒挂，上限自动收紧至 -0.28。</div>
+    <div class="filter-header">
+      <span class="zh">合格合约的四项硬性条件</span>
+      <span class="en">Four Hard Conditions for a Qualified Contract</span>
     </div>
     <div>
-      <div class="filter-item-label">条件 2 · 年化收益率</div>
-      <div class="filter-item-value">年化收益率 ≥ 各标的设定门槛。计算公式：<span class="filter-item-mono">(权利金 ÷ 行权价) × (365 ÷ DTE) × 100%</span>。A+ 级标的门槛 10%，A 级 12%，C 级 15%。收益不达标的合约不值得开仓。</div>
+      <div class="filter-item-label"><span class="zh">条件 1 · Delta 区间</span><span class="en">Condition 1 · Delta Range</span></div>
+      <div class="filter-item-value">
+        <span class="zh">Delta 须落在 <span class="filter-item-mono">-0.30 ~ -0.15</span> 之间。Delta 代表期权的方向敏感度，此区间对应约 15%–30% 的被行权概率，是 Wheel 策略的「甜蜜区间」——既不太近（风险大）也不太远（权利金太低）。若市场期限结构倒挂，上限自动收紧至 -0.28。</span>
+        <span class="en">Delta must fall between <span class="filter-item-mono">-0.30 ~ -0.15</span>. Delta measures directional sensitivity; this range corresponds to ~15%–30% probability of assignment—the Wheel strategy's "sweet spot": not too close (high risk) nor too far (premium too low). If term structure is inverted, the ceiling auto-tightens to -0.28.</span>
+      </div>
     </div>
     <div>
-      <div class="filter-item-label">条件 3 · 价外深度（OTM%）</div>
-      <div class="filter-item-value">行权价距当前股价须有一定缓冲距离，通常要求 ≥ 6%–8%（各标的不同）。缓冲越大，股价下跌时被行权的概率越低，提供额外安全垫。</div>
+      <div class="filter-item-label"><span class="zh">条件 2 · 年化收益率</span><span class="en">Condition 2 · Annualized Return</span></div>
+      <div class="filter-item-value">
+        <span class="zh">年化收益率 ≥ 各标的设定门槛。计算公式：<span class="filter-item-mono">(权利金 ÷ 行权价) × (365 ÷ DTE) × 100%</span>。A+ 级标的门槛 10%，A 级 12%，C 级 15%。收益不达标的合约不值得开仓。</span>
+        <span class="en">Annualized return ≥ per-ticker threshold. Formula: <span class="filter-item-mono">(premium ÷ strike) × (365 ÷ DTE) × 100%</span>. A+ tickers: 10%, A tickers: 12%, C tickers: 15%. Contracts that don't meet the bar aren't worth entering.</span>
+      </div>
     </div>
     <div>
-      <div class="filter-item-label">条件 4 · 流动性预筛（期权链阶段）</div>
-      <div class="filter-item-value">在进入四维筛选前，已预先淘汰：买卖价差超过中间价 15% 的合约（流动性差）、持仓量 OI 低于 50 手的合约（成交稀薄，不易成交）。</div>
+      <div class="filter-item-label"><span class="zh">条件 3 · 价外深度（OTM%）</span><span class="en">Condition 3 · OTM Depth</span></div>
+      <div class="filter-item-value">
+        <span class="zh">行权价距当前股价须有一定缓冲距离，通常要求 ≥ 6%–8%（各标的不同）。缓冲越大，股价下跌时被行权的概率越低，提供额外安全垫。</span>
+        <span class="en">The strike must be a sufficient distance below the current price—typically ≥ 6%–8% (varies by ticker). A larger buffer means lower assignment probability if the stock falls, providing an additional safety cushion.</span>
+      </div>
+    </div>
+    <div>
+      <div class="filter-item-label"><span class="zh">条件 4 · 流动性预筛</span><span class="en">Condition 4 · Liquidity Pre-screen</span></div>
+      <div class="filter-item-value">
+        <span class="zh">在进入四维筛选前，已预先淘汰：买卖价差超过中间价 15% 的合约（流动性差）、持仓量 OI 低于 50 手的合约（成交稀薄，不易成交）。</span>
+        <span class="en">Before the four-dimensional filter, contracts already eliminated: bid-ask spread &gt; 15% of mid-price (poor liquidity), open interest OI &lt; 50 contracts (thinly traded; hard to fill).</span>
+      </div>
     </div>
   </div>
 
-  <p class="sec-body" style="margin-top:0;">筛选后，合格合约按以下优先级排序，最多取前 3 名推荐给 Claude：</p>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px;">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;flex:1;min-width:160px;">
-      <div class="filter-item-label" style="color:var(--green);">优先级 1（主）</div>
-      <div style="font-size:14px;font-weight:600;margin-top:4px;">OTM 深度 ↑</div>
-      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">越偏价外越安全</div>
+  <p class="sec-body" style="margin-top:0;">
+    <span class="zh">筛选后，合格合约按以下优先级排序，最多取前 3 名推荐给 Claude：</span>
+    <span class="en">After filtering, qualified contracts are ranked by the following priorities, with the top 3 recommended to Claude:</span>
+  </p>
+  <div class="priority-cards">
+    <div class="priority-card">
+      <div class="filter-item-label" style="color:var(--green);">
+        <span class="zh">优先级 1（主）</span><span class="en">Priority 1 (Primary)</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;margin-top:4px;color:#EAE6DE;">OTM <span class="zh">深度</span><span class="en">Depth</span> ↑</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">
+        <span class="zh">越偏价外越安全</span><span class="en">Deeper OTM = safer</span>
+      </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;flex:1;min-width:160px;">
-      <div class="filter-item-label" style="color:var(--blue);">优先级 2（次）</div>
-      <div style="font-size:14px;font-weight:600;margin-top:4px;">年化收益 ↑</div>
-      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">同等安全性下选收益更高的</div>
+    <div class="priority-card">
+      <div class="filter-item-label" style="color:var(--blue);">
+        <span class="zh">优先级 2（次）</span><span class="en">Priority 2 (Secondary)</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;margin-top:4px;color:#EAE6DE;"><span class="zh">年化收益</span><span class="en">Ann. Return</span> ↑</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">
+        <span class="zh">同等安全性下选收益更高的</span><span class="en">Choose higher yield at equal safety</span>
+      </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;flex:1;min-width:160px;">
-      <div class="filter-item-label" style="color:var(--ink3);">优先级 3（末）</div>
-      <div style="font-size:14px;font-weight:600;margin-top:4px;">持仓量 OI ↑</div>
-      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">流动性更好，更易成交</div>
+    <div class="priority-card">
+      <div class="filter-item-label" style="color:var(--ink3);">
+        <span class="zh">优先级 3（末）</span><span class="en">Priority 3 (Tertiary)</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;margin-top:4px;color:#EAE6DE;"><span class="zh">持仓量</span><span class="en">Open Interest</span> OI ↑</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:4px;">
+        <span class="zh">流动性更好，更易成交</span><span class="en">Better liquidity, easier to fill</span>
+      </div>
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 5 · has_signal 判定 ═══ -->
+  <!-- ═══ Section 5 ═══ -->
   <div class="sec-label" id="s5">Section 05</div>
-  <h2 class="sec-title">信号最终判定逻辑</h2>
-  <p class="sec-body">每支标的完成全部步骤后，系统综合所有检查结果做最终判断。以下六个条件缺一不可——<strong>任意一个不满足，该标的显示「🔴 无合格合约」</strong>。</p>
+  <h2 class="sec-title">
+    <span class="zh">信号最终判定逻辑</span>
+    <span class="en">Signal Final Determination Logic</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">每支标的完成全部步骤后，系统综合所有检查结果做最终判断。以下六个条件缺一不可——<strong>任意一个不满足，该标的显示「🔴 无合格合约」</strong>。</span>
+    <span class="en">After each ticker completes all steps, the system synthesizes all results into a final verdict. The following six conditions are all required—<strong>any single failure causes that ticker to show "🔴 No Qualified Contracts"</strong>.</span>
+  </p>
 
   <div class="formula-box">
-    <div style="font-size:13px;color:var(--ink3);margin-bottom:12px;">有效信号 = 以下六项条件全部为 TRUE</div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>不在财报黑名单内（距财报 > earnings_blackout 天）</div></div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>不在宏观事件黑名单内（FOMC / CPI / NFP / BOJ）</div></div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>未触发特殊规则（如 GLD 在 VIX &lt; 22 时禁止开仓）</div></div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>IVR 明确 ≥ 该标的 ivr_min 门槛（数据缺失也视为不通过）</div></div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>期权链中至少找到 1 个同时满足四维条件的合格合约</div></div>
-    <div class="formula-cond"><div class="formula-bullet"></div><div>财报后 vol crush 窗口已过（如启用 --block-post-earnings 参数）</div></div>
+    <div style="font-size:13px;color:var(--ink3);margin-bottom:12px;">
+      <span class="zh">有效信号 = 以下六项条件全部为 TRUE</span>
+      <span class="en">Valid Signal = All six conditions TRUE</span>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">不在财报黑名单内（距财报 &gt; earnings_blackout 天）</span><span class="en">Not on the earnings blacklist (&gt; earnings_blackout days to earnings)</span></div>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">不在宏观事件黑名单内（FOMC / CPI / NFP / BOJ）</span><span class="en">Not on the macro event blacklist (FOMC / CPI / NFP / BOJ)</span></div>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">未触发特殊规则（如 GLD 在 VIX &lt; 22 时禁止开仓）</span><span class="en">No special rule triggered (e.g., GLD prohibited when VIX &lt; 22)</span></div>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">IVR 明确 ≥ 该标的 ivr_min 门槛（数据缺失也视为不通过）</span><span class="en">IVR definitively ≥ ticker's ivr_min threshold (missing data also counts as fail)</span></div>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">期权链中至少找到 1 个同时满足四维条件的合格合约</span><span class="en">At least 1 contract in the option chain simultaneously satisfies all four filter conditions</span></div>
+    </div>
+    <div class="formula-cond"><div class="formula-bullet"></div>
+      <div><span class="zh">财报后 vol crush 窗口已过（如启用 --block-post-earnings 参数）</span><span class="en">Post-earnings vol crush window has passed (if --block-post-earnings flag is enabled)</span></div>
+    </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 6 · 为什么显示无合格合约 ═══ -->
+  <!-- ═══ Section 6 ═══ -->
   <div class="sec-label" id="s6">Section 06</div>
-  <h2 class="sec-title">为什么大多数标的显示「无合格合约」？</h2>
-  <p class="sec-body">这是正常的、有意为之的结果。系统的设计目标是<strong>宁可错过，不可做错</strong>——只在多重条件同时满足时才产生信号。以下是各类「淘汰」原因的详细解释：</p>
+  <h2 class="sec-title">
+    <span class="zh">为什么大多数标的显示「无合格合约」？</span>
+    <span class="en">Why Do Most Tickers Show "No Qualified Contracts"?</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">这是正常的、有意为之的结果。系统的设计目标是<strong>宁可错过，不可做错</strong>——只在多重条件同时满足时才产生信号。以下是各类「淘汰」原因的详细解释：</span>
+    <span class="en">This is a normal, deliberate outcome. The system is designed around the principle of <strong>"rather miss than err"</strong>—signals are only generated when multiple conditions align simultaneously. Below is a detailed explanation of each elimination reason:</span>
+  </p>
 
-  <table class="skip-table">
-    <thead>
-      <tr>
-        <th>分类代码</th>
-        <th>淘汰原因</th>
-        <th>含义</th>
-        <th>常见性</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="tag tag-red">earn_bl</span></td>
-        <td>财报黑名单</td>
-        <td>距离财报发布日不足设定天数，期权价格可能因业绩暴涨暴跌，卖 Put 风险不可控</td>
-        <td>⭐⭐⭐ 高</td>
-      </tr>
-      <tr>
-        <td><span class="tag tag-blue">macro_bl</span></td>
-        <td>宏观事件窗口</td>
-        <td>FOMC / CPI / NFP / BOJ 等重大事件前后，市场波动不可预测</td>
-        <td>⭐⭐ 中</td>
-      </tr>
-      <tr>
-        <td><span class="tag tag-red">ivrl</span></td>
-        <td>IVR 低于门槛</td>
-        <td>当前期权权利金相对历史偏低，卖出期权的性价比不足，等待更好的时机</td>
-        <td>⭐⭐⭐ 最常见</td>
-      </tr>
-      <tr>
-        <td><span class="tag tag-gold">ivu</span></td>
-        <td>IVR 数据缺失</td>
-        <td>历史波动率数据不足，无法计算准确 IVR，系统保守处理为不通过</td>
-        <td>⭐⭐ 中</td>
-      </tr>
-      <tr>
-        <td><span class="tag tag-gray">nc</span></td>
-        <td>真·无合格合约</td>
-        <td>IVR 达标，但市场上没有同时满足 Delta + 年化收益 + OTM 深度三项条件的合约（可能因价差过宽或行权价稀疏）</td>
-        <td>⭐⭐ 中</td>
-      </tr>
-      <tr>
-        <td><span class="tag tag-purple">pebl</span></td>
-        <td>财报后 vol crush</td>
-        <td>财报刚过，IV 急速下降，此时卖 Put 权利金锁定在低点，不划算（需启用对应参数）</td>
-        <td>⭐ 低</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="skip-table-wrap">
+    <table class="skip-table">
+      <thead>
+        <tr>
+          <th><span class="zh">分类代码</span><span class="en">Category Code</span></th>
+          <th><span class="zh">淘汰原因</span><span class="en">Elimination Reason</span></th>
+          <th><span class="zh">含义</span><span class="en">Meaning</span></th>
+          <th><span class="zh">常见性</span><span class="en">Frequency</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-red">earn_bl</span></td>
+          <td><span class="zh">财报黑名单</span><span class="en">Earnings Blacklist</span></td>
+          <td><span class="zh">距离财报发布日不足设定天数，期权价格可能因业绩暴涨暴跌，卖 Put 风险不可控</span><span class="en">Within N days of earnings release; option prices may spike/crash on results, making sell-put risk uncontrollable</span></td>
+          <td>⭐⭐⭐ <span class="zh">高</span><span class="en">High</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">macro_bl</span></td>
+          <td><span class="zh">宏观事件窗口</span><span class="en">Macro Event Window</span></td>
+          <td><span class="zh">FOMC / CPI / NFP / BOJ 等重大事件前后，市场波动不可预测</span><span class="en">FOMC / CPI / NFP / BOJ and similar major events create unpredictable market swings</span></td>
+          <td>⭐⭐ <span class="zh">中</span><span class="en">Medium</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-red">ivrl</span></td>
+          <td><span class="zh">IVR 低于门槛</span><span class="en">IVR Below Threshold</span></td>
+          <td><span class="zh">当前期权权利金相对历史偏低，卖出期权的性价比不足，等待更好的时机</span><span class="en">Current option premium is relatively low historically; selling puts offers insufficient value—wait for a better setup</span></td>
+          <td>⭐⭐⭐ <span class="zh">最常见</span><span class="en">Most Common</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-gold">ivu</span></td>
+          <td><span class="zh">IVR 数据缺失</span><span class="en">IVR Data Missing</span></td>
+          <td><span class="zh">历史波动率数据不足，无法计算准确 IVR，系统保守处理为不通过</span><span class="en">Insufficient historical IV data to calculate accurate IVR; system conservatively treats as fail</span></td>
+          <td>⭐⭐ <span class="zh">中</span><span class="en">Medium</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-gray">nc</span></td>
+          <td><span class="zh">真·无合格合约</span><span class="en">Truly No Qualified Contracts</span></td>
+          <td><span class="zh">IVR 达标，但市场上没有同时满足 Delta + 年化收益 + OTM 深度三项条件的合约（可能因价差过宽或行权价稀疏）</span><span class="en">IVR passes, but no contract simultaneously satisfies Delta + annualized return + OTM depth (possibly due to wide spreads or sparse strikes)</span></td>
+          <td>⭐⭐ <span class="zh">中</span><span class="en">Medium</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-purple">pebl</span></td>
+          <td><span class="zh">财报后 vol crush</span><span class="en">Post-Earnings Vol Crush</span></td>
+          <td><span class="zh">财报刚过，IV 急速下降，此时卖 Put 权利金锁定在低点，不划算（需启用对应参数）</span><span class="en">Earnings just released, IV collapsing rapidly; selling puts now locks in a low premium (requires flag to be enabled)</span></td>
+          <td>⭐ <span class="zh">低</span><span class="en">Low</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 7 · 输出与风控铁律 ═══ -->
+  <!-- ═══ Section 7 ═══ -->
   <div class="sec-label" id="s7">Section 07</div>
-  <h2 class="sec-title">最终输出格式与风控铁律</h2>
-  <p class="sec-body">有信号的标的会生成标准格式的推荐卡片，同时系统强制执行以下风控规则，这些规则由 Claude AI 在分析时再次核查：</p>
+  <h2 class="sec-title">
+    <span class="zh">最终输出格式与风控铁律</span>
+    <span class="en">Final Output Format & Risk Rules</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">有信号的标的会生成标准格式的推荐卡片，同时系统强制执行以下风控规则，这些规则由 Claude AI 在分析时再次核查：</span>
+    <span class="en">Tickers with signals generate standardized recommendation cards. The system also enforces the following risk rules, which Claude AI re-validates during analysis:</span>
+  </p>
 
   <div class="result-row">
     <div class="result-card signal">
       <div class="result-card-icon">🟢</div>
-      <div class="result-card-title">有信号推荐格式</div>
+      <div class="result-card-title">
+        <span class="zh">有信号推荐格式</span>
+        <span class="en">Signal Recommendation Format</span>
+      </div>
       <ul class="result-card-list">
-        <li>标的代码与等级（A+/A/B/C）</li>
-        <li>推荐行权价与到期日期</li>
-        <li>DTE（距到期天数）</li>
-        <li>年化收益率与每张权利金</li>
-        <li>Delta 值（方向敏感度）</li>
-        <li>推荐结构（CSP / 价差）</li>
-        <li>推荐理由摘要</li>
+        <li><span class="zh">标的代码与等级（A+/A/B/C）</span><span class="en">Ticker symbol and grade (A+/A/B/C)</span></li>
+        <li><span class="zh">推荐行权价与到期日期</span><span class="en">Recommended strike and expiry date</span></li>
+        <li><span class="zh">DTE（距到期天数）</span><span class="en">DTE (Days to Expiry)</span></li>
+        <li><span class="zh">年化收益率与每张权利金</span><span class="en">Annualized return and per-contract premium</span></li>
+        <li><span class="zh">Delta 值（方向敏感度）</span><span class="en">Delta value (directional sensitivity)</span></li>
+        <li><span class="zh">推荐结构（CSP / 价差）</span><span class="en">Recommended structure (CSP / Spread)</span></li>
+        <li><span class="zh">推荐理由摘要</span><span class="en">Recommendation rationale summary</span></li>
       </ul>
     </div>
     <div class="result-card no-signal">
       <div class="result-card-icon">🔴</div>
-      <div class="result-card-title">无信号时的跳过记录</div>
+      <div class="result-card-title">
+        <span class="zh">无信号时的跳过记录</span>
+        <span class="en">Skip Record When No Signal</span>
+      </div>
       <ul class="result-card-list">
-        <li>跳过原因分类代码</li>
-        <li>具体数值（如当前 IVR 多少）</li>
-        <li>距黑名单结束还有几天</li>
-        <li>当前最优合约参数（供参考）</li>
-        <li>Opportunity Alert（机会预警）</li>
+        <li><span class="zh">跳过原因分类代码</span><span class="en">Skip reason category code</span></li>
+        <li><span class="zh">具体数值（如当前 IVR 多少）</span><span class="en">Specific values (e.g., current IVR reading)</span></li>
+        <li><span class="zh">距黑名单结束还有几天</span><span class="en">Days until blackout window ends</span></li>
+        <li><span class="zh">当前最优合约参数（供参考）</span><span class="en">Best available contract params (for reference)</span></li>
+        <li><span class="zh">Opportunity Alert（机会预警）</span><span class="en">Opportunity Alert</span></li>
       </ul>
     </div>
   </div>
 
-  <p style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:16px;margin-top:8px;">风控铁律（Claude AI 在分析时强制执行）</p>
+  <p class="rules-title">
+    <span class="zh">风控铁律（Claude AI 在分析时强制执行）</span>
+    <span class="en">Risk Rules (Enforced by Claude AI during analysis)</span>
+  </p>
   <div class="rules-list">
     <div class="rule-item">
       <div class="rule-id">R-01</div>
-      <div class="rule-text">单笔最大亏损 ≤ 账户净值 1%（用美元金额明确量化）</div>
+      <div class="rule-text"><span class="zh">单笔最大亏损 ≤ 账户净值 1%（用美元金额明确量化）</span><span class="en">Maximum loss per trade ≤ 1% of account NAV (quantified in dollar terms)</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-02</div>
-      <div class="rule-text">单一策略仓位 ≤ 账户净值 5%</div>
+      <div class="rule-text"><span class="zh">单一策略仓位 ≤ 账户净值 5%</span><span class="en">Single strategy position ≤ 5% of account NAV</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-03</div>
-      <div class="rule-text">同一标的持仓不超过 3 笔（避免集中暴露）</div>
+      <div class="rule-text"><span class="zh">同一标的持仓不超过 3 笔（避免集中暴露）</span><span class="en">No more than 3 open positions in the same ticker (avoids concentrated exposure)</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-04</div>
-      <div class="rule-text">财报日前 N 天（各标的不同）禁止开新仓</div>
+      <div class="rule-text"><span class="zh">财报日前 N 天（各标的不同）禁止开新仓</span><span class="en">No new entries within N days before earnings (per-ticker)</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-05</div>
-      <div class="rule-text">VIX > 30 时全部仓位规模减半；VIX > 35 时完全停止开仓</div>
+      <div class="rule-text"><span class="zh">VIX &gt; 30 时全部仓位规模减半；VIX &gt; 35 时完全停止开仓</span><span class="en">When VIX &gt; 30, halve all position sizes; when VIX &gt; 35, stop all new entries</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-06</div>
-      <div class="rule-text">加密相关标的（IBIT / COIN / MSTR / HOOD / CRCL）合计不超过账户净值 4%</div>
+      <div class="rule-text"><span class="zh">加密相关标的（IBIT / COIN / MSTR / HOOD / CRCL）合计不超过账户净值 4%</span><span class="en">Crypto-related tickers (IBIT / COIN / MSTR / HOOD / CRCL) combined ≤ 4% of NAV</span></div>
     </div>
     <div class="rule-item">
       <div class="rule-id">R-07</div>
-      <div class="rule-text">所有信号为分析建议，最终必须在 IBKR 实盘界面人工核验后方可执行</div>
+      <div class="rule-text"><span class="zh">所有信号为分析建议，最终必须在 IBKR 实盘界面人工核验后方可执行</span><span class="en">All signals are analytical suggestions; final execution requires manual verification in IBKR live account</span></div>
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══ Section 8 · 数据源 ═══ -->
+  <!-- ═══ Section 8 ═══ -->
   <div class="sec-label" id="s8">Section 08</div>
-  <h2 class="sec-title">数据来源与降级机制</h2>
-  <p class="sec-body">系统接入多个数据源，采用自动降级策略——主数据源不可用时自动切换备用源，保证扫描不中断。</p>
+  <h2 class="sec-title">
+    <span class="zh">数据来源与降级机制</span>
+    <span class="en">Data Sources & Fallback Mechanism</span>
+  </h2>
+  <p class="sec-body">
+    <span class="zh">系统接入多个数据源，采用自动降级策略——主数据源不可用时自动切换备用源，保证扫描不中断。</span>
+    <span class="en">The system connects to multiple data sources with an automatic fallback strategy—if the primary source is unavailable, it automatically switches to a backup, ensuring scans are never interrupted.</span>
+  </p>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:24px 0;">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
-      <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px;">期权链数据</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">Massive API → Tradier → CBOE → Alpaca → yfinance</div>
+  <div class="datasrc-grid">
+    <div class="datasrc-card">
+      <div class="datasrc-label"><span class="zh">期权链数据</span><span class="en">Options Chain Data</span></div>
+      <div class="datasrc-val">Massive API → Tradier → CBOE → Alpaca → yfinance</div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
-      <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px;">股价 / 均线</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">多源自动路由，优先低延迟源</div>
+    <div class="datasrc-card">
+      <div class="datasrc-label"><span class="zh">股价 / 均线</span><span class="en">Price / Moving Averages</span></div>
+      <div class="datasrc-val"><span class="zh">多源自动路由，优先低延迟源</span><span class="en">Multi-source auto-routing, lowest-latency priority</span></div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
-      <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px;">VIX / VIX3M</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">CBOE 官方 → Polygon → yfinance</div>
+    <div class="datasrc-card">
+      <div class="datasrc-label">VIX / VIX3M</div>
+      <div class="datasrc-val">CBOE <span class="zh">官方</span><span class="en">Official</span> → Polygon → yfinance</div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
-      <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px;">历史 IV 数据库</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">本地 SQLite，每次扫描自动追加 ATM IV 快照</div>
+    <div class="datasrc-card">
+      <div class="datasrc-label"><span class="zh">历史 IV 数据库</span><span class="en">Historical IV Database</span></div>
+      <div class="datasrc-val"><span class="zh">本地 SQLite，每次扫描自动追加 ATM IV 快照</span><span class="en">Local SQLite, auto-appends ATM IV snapshot on each scan</span></div>
     </div>
   </div>
 
 </div>
 
+<!-- ── Disclaimer ── -->
 <div class="page" style="padding-top:0;">
   <div class="disclaimer">
     <span id="s9"></span>
-    <strong>免责声明</strong><br>
-    本文档仅用于系统原理说明与内部学习交流，不构成任何投资建议、要约或收益承诺。期权交易具有高风险，可能导致部分或全部本金损失。<br><br>
-    文中涉及的参数、阈值、示例与流程均可能因市场波动、数据源延迟或缺失、接口异常及执行滑点而失效。任何交易决策须由使用者独立判断，并在券商终端进行最终核验。<br><br>
-    使用者应自行承担由策略执行、风控设置、税务处理及合规义务产生的全部责任。过往表现不代表未来结果。
+    <div class="zh">
+      <strong>免责声明</strong><br>
+      本文档仅用于系统原理说明与内部学习交流，不构成任何投资建议、要约或收益承诺。期权交易具有高风险，可能导致部分或全部本金损失。<br><br>
+      文中涉及的参数、阈值、示例与流程均可能因市场波动、数据源延迟或缺失、接口异常及执行滑点而失效。任何交易决策须由使用者独立判断，并在券商终端进行最终核验。<br><br>
+      使用者应自行承担由策略执行、风控设置、税务处理及合规义务产生的全部责任。过往表现不代表未来结果。
+    </div>
+    <div class="en">
+      <strong>Disclaimer</strong><br>
+      This document is for system architecture explanation and internal learning only. It does not constitute any investment advice, solicitation, or promise of returns. Options trading carries significant risk and may result in partial or total loss of principal.<br><br>
+      Parameters, thresholds, examples, and workflows described herein may be invalidated by market movements, data source delays or outages, API failures, and execution slippage. Any trading decision must be made independently by the user, with final verification in the broker's platform.<br><br>
+      Users bear sole responsibility for all outcomes arising from strategy execution, risk configuration, tax treatment, and regulatory compliance. Past performance does not guarantee future results.
+    </div>
   </div>
 </div>
-</div>
+</div><!-- end content-wrap -->
 
-<!-- ═══ Footer ═══ -->
+<!-- ── Footer ── -->
 <div class="footer">
-  <div>OpenClaw v3.1 · Wheel 卖 Put 期权链扫描器</div>
-  <div style="margin-top:4px;">本文档仅为系统原理说明，不构成任何投资建议。期权交易具有高风险，可能导致全部本金损失。</div>
+  <div class="zh">
+    <div>OpenClaw v3.1 · Wheel 卖 Put 期权链扫描器</div>
+    <div style="margin-top:4px;">本文档仅为系统原理说明，不构成任何投资建议。期权交易具有高风险，可能导致全部本金损失。</div>
+  </div>
+  <div class="en">
+    <div>OpenClaw v3.1 · Wheel Sell-Put Options Chain Scanner</div>
+    <div style="margin-top:4px;">This document is for system architecture purposes only and does not constitute investment advice. Options trading carries significant risk and may result in total loss of principal.</div>
+  </div>
   <div style="margin-top:4px;color:rgba(255,255,255,0.2);">Generated by RHCLOUD · For internal use only</div>
 </div>
+
+<script>
+// ── Language management ──
+function setLang(lang) {
+  const body = document.getElementById('body-root');
+  const htmlEl = document.getElementById('html-root');
+  body.className = 'lang-' + lang;
+  htmlEl.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.getElementById('page-title').textContent =
+    lang === 'zh' ? 'OpenClaw · 系统运行原理' : 'OpenClaw · System Architecture';
+
+  // Desktop toggle buttons
+  const dZh = document.getElementById('d-zh-btn');
+  const dEn = document.getElementById('d-en-btn');
+  if (dZh && dEn) {
+    dZh.classList.toggle('active', lang === 'zh');
+    dEn.classList.toggle('active', lang === 'en');
+  }
+  // Mobile toggle buttons
+  const mZh = document.getElementById('m-zh-btn');
+  const mEn = document.getElementById('m-en-btn');
+  if (mZh && mEn) {
+    mZh.classList.toggle('active', lang === 'zh');
+    mEn.classList.toggle('active', lang === 'en');
+  }
+
+  try { localStorage.setItem('oc-lang', lang); } catch(e) {}
+}
+
+async function detectLangByIP() {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
+    const data = await res.json();
+    return data.country_code === 'CN' ? 'zh' : 'en';
+  } catch {
+    return null;
+  }
+}
+
+(async function initLang() {
+  // 1. Try localStorage first (user preference wins)
+  let saved = null;
+  try { saved = localStorage.getItem('oc-lang'); } catch(e) {}
+  if (saved === 'zh' || saved === 'en') {
+    setLang(saved);
+    return;
+  }
+  // 2. Default: show zh while detecting
+  setLang('zh');
+  // 3. Detect by IP
+  const detected = await detectLangByIP();
+  if (detected) setLang(detected);
+})();
+
+// ── Mobile sidebar ──
+const sidebar   = document.getElementById('sidebar');
+const overlay   = document.getElementById('sidebar-overlay');
+const hamburger = document.getElementById('hamburger-btn');
+
+function openSidebar() {
+  sidebar.classList.add('open');
+  overlay.classList.add('active');
+  hamburger.textContent = '✕';
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('active');
+  hamburger.textContent = '☰';
+  document.body.style.overflow = '';
+}
+function toggleSidebar() {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+}
+hamburger.addEventListener('click', toggleSidebar);
+overlay.addEventListener('click', closeSidebar);
+
+// Close sidebar on nav link click (mobile scroll)
+document.querySelectorAll('.nav-item').forEach(function(link) {
+  link.addEventListener('click', function() {
+    if (window.innerWidth <= 1100) closeSidebar();
+  });
+});
+</script>
 
 </body>
 </html>
