@@ -212,7 +212,18 @@
     }
 
     .corner-flag.flag-a { background: #1a6b3a; }
+    .corner-flag.flag-b { background: #c8922a; }
     .corner-flag.flag-c { background: #8b1a1a; }
+
+    .rank-flag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      font-size: 12px;
+      line-height: 1;
+      z-index: 2;
+      pointer-events: none;
+    }
 
     .t-name {
       font-size: 10.5px;
@@ -522,6 +533,7 @@
     <div class="ticker-grid">
 
       <a href="aapl.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">AAPL</span>
         <span class="t-name">消费电子现金牛<br>生态护城河强</span>
@@ -529,6 +541,7 @@
       </a>
 
       <a href="goog.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">GOOG</span>
         <span class="t-name">搜索广告龙头<br>AI 平台布局深</span>
@@ -536,6 +549,7 @@
       </a>
 
       <a href="ge.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">GE</span>
         <span class="t-name">航空动力核心资产<br>订单周期支撑</span>
@@ -543,6 +557,7 @@
       </a>
 
       <a href="hca.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">HCA</span>
         <span class="t-name">医院运营龙头<br>现金流稳定</span>
@@ -550,6 +565,7 @@
       </a>
 
       <a href="klac.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">KLAC</span>
         <span class="t-name">半导体检测龙头<br>设备壁垒高</span>
@@ -571,6 +587,7 @@
       </a>
 
       <a href="tsla.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">TSLA</span>
         <span class="t-name">高成长高波动<br>情绪驱动明显</span>
@@ -585,6 +602,7 @@
       </a>
 
       <a href="hood.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">HOOD</span>
         <span class="t-name">零售交易入口<br>业绩弹性较大</span>
@@ -592,6 +610,7 @@
       </a>
 
       <a href="coin.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">COIN</span>
         <span class="t-name">加密交易核心平台<br>对币价敏感</span>
@@ -607,6 +626,7 @@
 
       
 <a href="ma.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">MA</span>
         <span class="t-name">全球支付网络<br>轻资产高回报</span>
@@ -632,6 +652,7 @@
       
 
 <a href="amd.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">AMD</span>
         <span class="t-name">算力芯片竞争者<br>景气波动较大</span>
@@ -641,6 +662,7 @@
       
 
 <a href="lly.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">LLY</span>
         <span class="t-name">减重药核心受益<br>产品周期强</span>
@@ -649,6 +671,7 @@
 
       
 <a href="unh.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">UNH</span>
         <span class="t-name">医险一体化龙头<br>盈利模式清晰</span>
@@ -656,13 +679,39 @@
       </a>
 
 <a href="msft.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="rank-flag">🥈</span>
         <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">MSFT</span>
         <span class="t-name">云与软件双引擎<br>现金流稳健</span>
         <div class="t-badges"><span class="t-badge">科技</span><span class="t-badge">云服务</span></div>
       </a>
 
+<a href="cost.html" class="ticker-card" style="--c:#c8922a">
+        <span class="rank-flag">🥉</span>
+        <span class="corner-flag flag-b">B</span>
+        <span class="t-ticker">COST</span>
+        <span class="t-name">会员零售龙头<br>防御属性突出</span>
+        <div class="t-badges"><span class="t-badge">零售</span><span class="t-badge">防御型</span></div>
+      </a>
+
+<a href="hon.html" class="ticker-card" style="--c:#c8922a">
+        <span class="rank-flag">🥉</span>
+        <span class="corner-flag flag-b">B</span>
+        <span class="t-ticker">HON</span>
+        <span class="t-name">工业多元龙头<br>现金流稳定</span>
+        <div class="t-badges"><span class="t-badge">工业</span><span class="t-badge">稳现金</span></div>
+      </a>
+
+<a href="v.html" class="ticker-card" style="--c:#c8922a">
+        <span class="rank-flag">🥉</span>
+        <span class="corner-flag flag-b">B</span>
+        <span class="t-ticker">V</span>
+        <span class="t-name">全球支付网络<br>低波动高质量</span>
+        <div class="t-badges"><span class="t-badge">支付</span><span class="t-badge">低波动</span></div>
+      </a>
+
 <a href="crwd.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥇</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">CRWD</span>
         <span class="t-name">终端安全龙头<br>估值弹性较高</span>
@@ -684,6 +733,7 @@
       </a>
 
 <a href="panw.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥉</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">PANW</span>
         <span class="t-name">平台化安全厂商<br>转型持续推进</span>
@@ -691,6 +741,7 @@
       </a>
 
 <a href="smci.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥉</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">SMCI</span>
         <span class="t-name">AI 服务器链条<br>订单波动较大</span>
@@ -698,6 +749,7 @@
       </a>
 
 <a href="snow.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="rank-flag">🥉</span>
         <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">SNOW</span>
         <span class="t-name">云数据平台代表<br>增长驱动估值</span>
