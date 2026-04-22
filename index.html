@@ -190,6 +190,30 @@
       letter-spacing: 0.5px;
     }
 
+    .corner-flag {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 28px;
+      height: 28px;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 2px 3px 0 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      line-height: 1;
+      color: #fff;
+      letter-spacing: 0.2px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .corner-flag.flag-a { background: #1a6b3a; }
+    .corner-flag.flag-c { background: #8b1a1a; }
+
     .t-name {
       font-size: 10.5px;
       color: var(--muted);
@@ -210,6 +234,15 @@
       border-radius: 2px;
       width: fit-content;
     }
+
+    .t-badges {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .t-badges .t-badge { margin-top: 0; }
 
     /* ETF card variant — slightly different bg to distinguish */
     .ticker-card.etf-card {
@@ -489,294 +522,191 @@
     <div class="ticker-grid">
 
       <a href="aapl.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">AAPL</span>
-        <span class="t-name">苹果公司<br>Apple Inc.</span>
-        <span class="t-badge">科技</span>
+        <span class="t-name">消费电子现金牛<br>生态护城河强</span>
+        <div class="t-badges"><span class="t-badge">科技</span><span class="t-badge">生态闭环</span></div>
+      </a>
+
+      <a href="goog.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="corner-flag flag-a">A</span>
+        <span class="t-ticker">GOOG</span>
+        <span class="t-name">搜索广告龙头<br>AI 平台布局深</span>
+        <div class="t-badges"><span class="t-badge">科技</span><span class="t-badge">广告现流</span></div>
+      </a>
+
+      <a href="ge.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="corner-flag flag-a">A</span>
+        <span class="t-ticker">GE</span>
+        <span class="t-name">航空动力核心资产<br>订单周期支撑</span>
+        <div class="t-badges"><span class="t-badge">工业</span><span class="t-badge">订单驱动</span></div>
+      </a>
+
+      <a href="hca.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="corner-flag flag-a">A</span>
+        <span class="t-ticker">HCA</span>
+        <span class="t-name">医院运营龙头<br>现金流稳定</span>
+        <div class="t-badges"><span class="t-badge">医疗</span><span class="t-badge">防御属性</span></div>
+      </a>
+
+      <a href="klac.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="corner-flag flag-a">A</span>
+        <span class="t-ticker">KLAC</span>
+        <span class="t-name">半导体检测龙头<br>设备壁垒高</span>
+        <div class="t-badges"><span class="t-badge">设备</span><span class="t-badge">技术壁垒</span></div>
       </a>
 
       <a href="meta.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">META</span>
-        <span class="t-name">Meta Platforms</span>
-        <span class="t-badge">科技</span>
+        <span class="t-name">社交广告平台龙头<br>AI 提升效率</span>
+        <div class="t-badges"><span class="t-badge">科技</span><span class="t-badge">社交广告</span></div>
       </a>
 
       <a href="nvda.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">NVDA</span>
-        <span class="t-name">英伟达<br>NVIDIA</span>
-        <span class="t-badge">科技 · AI</span>
+        <span class="t-name">AI 算力核心资产<br>周期弹性较高</span>
+        <div class="t-badges"><span class="t-badge">半导体</span><span class="t-badge">AI算力</span></div>
       </a>
 
       <a href="tsla.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">TSLA</span>
-        <span class="t-name">特斯拉<br>Tesla</span>
-        <span class="t-badge">新能源</span>
+        <span class="t-name">高成长高波动<br>情绪驱动明显</span>
+        <div class="t-badges"><span class="t-badge">新能源</span><span class="t-badge">高波动</span></div>
       </a>
 
       <a href="mstr.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">MSTR</span>
-        <span class="t-name">MicroStrategy</span>
-        <span class="t-badge">比特币代理</span>
+        <span class="t-name">企业软件转型标的<br>高杠杆比特币敞口</span>
+        <div class="t-badges"><span class="t-badge">软件</span><span class="t-badge">高贝塔</span></div>
       </a>
 
       <a href="hood.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">HOOD</span>
-        <span class="t-name">Robinhood</span>
-        <span class="t-badge">金融科技</span>
+        <span class="t-name">零售交易入口<br>业绩弹性较大</span>
+        <div class="t-badges"><span class="t-badge">金融科技</span><span class="t-badge">业绩弹性</span></div>
       </a>
 
       <a href="coin.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">COIN</span>
-        <span class="t-name">Coinbase</span>
-        <span class="t-badge">加密交易所</span>
+        <span class="t-name">加密交易核心平台<br>对币价敏感</span>
+        <div class="t-badges"><span class="t-badge">交易所</span><span class="t-badge">币价敏感</span></div>
       </a>
 
       <a href="tsm.html" class="ticker-card" style="--c:#1a3a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">TSM</span>
-        <span class="t-name">台积电<br>TSMC</span>
-        <span class="t-badge">半导体</span>
+        <span class="t-name">先进制程龙头<br>产业链定价核心</span>
+        <div class="t-badges"><span class="t-badge">半导体</span><span class="t-badge">先进制程</span></div>
       </a>
 
-      <a href="asml.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">ASML</span>
-        <span class="t-name">阿斯麦<br>ASML Holding</span>
-        <span class="t-badge">半导体设备</span>
-      </a>
-
-      <a href="ma.html" class="ticker-card" style="--c:#8b1a1a">
+      
+<a href="ma.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">MA</span>
-        <span class="t-name">万事达卡<br>Mastercard</span>
-        <span class="t-badge">支付</span>
+        <span class="t-name">全球支付网络<br>轻资产高回报</span>
+        <div class="t-badges"><span class="t-badge">支付</span><span class="t-badge">轻资产</span></div>
       </a>
 
-      <a href="v.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">V</span>
-        <span class="t-name">Visa Inc.</span>
-        <span class="t-badge">支付</span>
-      </a>
+      
 
-      <a href="nvo.html" class="ticker-card" style="--c:#1a5a5a">
-        <span class="t-ticker">NVO</span>
-        <span class="t-name">诺和诺德<br>Novo Nordisk</span>
-        <span class="t-badge">制药 · GLP-1</span>
-      </a>
-
-      <a href="crcl.html" class="ticker-card" style="--c:#4a1a6b">
+<a href="crcl.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">CRCL</span>
-        <span class="t-name">Circle Internet<br>基础版</span>
-        <span class="t-badge">加密支付</span>
+        <span class="t-name">稳定币生态受益<br>监管预期敏感</span>
+        <div class="t-badges"><span class="t-badge">加密支付</span><span class="t-badge">稳定币</span></div>
       </a>
 
       <a href="crcl_v.html" class="ticker-card" style="--c:#4a1a6b">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">CRCL_V</span>
-        <span class="t-name">Circle Internet<br>进阶版</span>
-        <span class="t-badge">加密支付 · 进阶</span>
+        <span class="t-name">稳定币生态受益<br>进阶风险收益版本</span>
+        <div class="t-badges"><span class="t-badge">加密支付</span><span class="t-badge">进阶版本</span></div>
       </a>
 
-      <a href="googl.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">GOOGL</span>
-        <span class="t-name">Alphabet<br>谷歌</span>
-        <span class="t-badge">科技</span>
-      </a>
+      
 
-      <a href="amzn.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">AMZN</span>
-        <span class="t-name">亚马逊<br>Amazon</span>
-        <span class="t-badge">消费 · 云</span>
-      </a>
-
-      <a href="avgo.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">AVGO</span>
-        <span class="t-name">博通<br>Broadcom</span>
-        <span class="t-badge">半导体</span>
-      </a>
-
-      <a href="amd.html" class="ticker-card" style="--c:#8b1a1a">
+<a href="amd.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
         <span class="t-ticker">AMD</span>
-        <span class="t-name">超威半导体<br>AMD Inc.</span>
-        <span class="t-badge">半导体</span>
+        <span class="t-name">算力芯片竞争者<br>景气波动较大</span>
+        <div class="t-badges"><span class="t-badge">半导体</span><span class="t-badge">周期弹性</span></div>
       </a>
 
-      <a href="intu.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">INTU</span>
-        <span class="t-name">财捷<br>Intuit</span>
-        <span class="t-badge">软件 · SaaS</span>
-      </a>
+      
 
-      <a href="shop.html" class="ticker-card" style="--c:#4a1a6b">
-        <span class="t-ticker">SHOP</span>
-        <span class="t-name">Shopify Inc.</span>
-        <span class="t-badge">电商 · SaaS</span>
-      </a>
-
-      <a href="jpm.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">JPM</span>
-        <span class="t-name">摩根大通<br>JPMorgan Chase</span>
-        <span class="t-badge">银行</span>
-      </a>
-
-      <a href="gs.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">GS</span>
-        <span class="t-name">高盛<br>Goldman Sachs</span>
-        <span class="t-badge">投行</span>
-      </a>
-
-      <a href="schw.html" class="ticker-card" style="--c:#1a5a5a">
-        <span class="t-ticker">SCHW</span>
-        <span class="t-name">嘉信理财<br>Charles Schwab</span>
-        <span class="t-badge">券商</span>
-      </a>
-
-      <a href="kkr.html" class="ticker-card" style="--c:#4a1a6b">
-        <span class="t-ticker">KKR</span>
-        <span class="t-name">KKR &amp; Co.</span>
-        <span class="t-badge">另类投资</span>
-      </a>
-
-      <a href="pypl.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">PYPL</span>
-        <span class="t-name">PayPal Holdings</span>
-        <span class="t-badge">金融科技</span>
-      </a>
-
-      <a href="dis.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">DIS</span>
-        <span class="t-name">华特迪士尼<br>Walt Disney</span>
-        <span class="t-badge">媒体 · 乐园</span>
-      </a>
-
-      <a href="lly.html" class="ticker-card" style="--c:#1a5a5a">
+<a href="lly.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">LLY</span>
-        <span class="t-name">礼来<br>Eli Lilly</span>
-        <span class="t-badge">制药</span>
+        <span class="t-name">减重药核心受益<br>产品周期强</span>
+        <div class="t-badges"><span class="t-badge">制药</span><span class="t-badge">减重药</span></div>
       </a>
 
-      <a href="vrtx.html" class="ticker-card" style="--c:#1a5a5a">
-        <span class="t-ticker">VRTX</span>
-        <span class="t-name">福泰制药<br>Vertex</span>
-        <span class="t-badge">生物制药</span>
-      </a>
-
-      <a href="unh.html" class="ticker-card" style="--c:#1a5a5a">
+      
+<a href="unh.html" class="ticker-card" style="--c:#1a5a5a">
+        <span class="corner-flag flag-a">A</span>
         <span class="t-ticker">UNH</span>
-        <span class="t-name">联合健康<br>UnitedHealth</span>
-        <span class="t-badge">保险 · 医疗</span>
+        <span class="t-name">医险一体化龙头<br>盈利模式清晰</span>
+        <div class="t-badges"><span class="t-badge">保险医疗</span><span class="t-badge">防御型</span></div>
       </a>
 
-      <a href="elv.html" class="ticker-card" style="--c:#1a5a5a">
-        <span class="t-ticker">ELV</span>
-        <span class="t-name">Elevance Health</span>
-        <span class="t-badge">保险 · 医疗</span>
+<a href="msft.html" class="ticker-card" style="--c:#1a6b3a">
+        <span class="corner-flag flag-a">A</span>
+        <span class="t-ticker">MSFT</span>
+        <span class="t-name">云与软件双引擎<br>现金流稳健</span>
+        <div class="t-badges"><span class="t-badge">科技</span><span class="t-badge">云服务</span></div>
       </a>
 
-      <a href="tmo.html" class="ticker-card" style="--c:#1a5a5a">
-        <span class="t-ticker">TMO</span>
-        <span class="t-name">赛默飞<br>Thermo Fisher</span>
-        <span class="t-badge">生命科学</span>
+<a href="crwd.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">CRWD</span>
+        <span class="t-name">终端安全龙头<br>估值弹性较高</span>
+        <div class="t-badges"><span class="t-badge">网络安全</span><span class="t-badge">高弹性</span></div>
       </a>
 
-      <a href="nke.html" class="ticker-card" style="--c:#8b1a1a">
-        <span class="t-ticker">NKE</span>
-        <span class="t-name">耐克<br>Nike Inc.</span>
-        <span class="t-badge">消费 · 服饰</span>
+<a href="dash.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">DASH</span>
+        <span class="t-name">本地配送平台<br>增长与利润博弈</span>
+        <div class="t-badges"><span class="t-badge">本地生活</span><span class="t-badge">增长博弈</span></div>
       </a>
 
-      <a href="lulu.html" class="ticker-card" style="--c:#8b1a1a">
-        <span class="t-ticker">LULU</span>
-        <span class="t-name">Lululemon</span>
-        <span class="t-badge">消费 · 服饰</span>
+<a href="mar.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">MAR</span>
+        <span class="t-name">酒店管理龙头<br>出行周期受益</span>
+        <div class="t-badges"><span class="t-badge">酒店</span><span class="t-badge">出行复苏</span></div>
       </a>
 
-      <a href="cmg.html" class="ticker-card" style="--c:#c8922a">
-        <span class="t-ticker">CMG</span>
-        <span class="t-name">Chipotle Mexican Grill</span>
-        <span class="t-badge">餐饮</span>
+<a href="panw.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">PANW</span>
+        <span class="t-name">平台化安全厂商<br>转型持续推进</span>
+        <div class="t-badges"><span class="t-badge">网络安全</span><span class="t-badge">平台化</span></div>
       </a>
 
-      <a href="mcd.html" class="ticker-card" style="--c:#c8922a">
-        <span class="t-ticker">MCD</span>
-        <span class="t-name">麦当劳<br>McDonald's</span>
-        <span class="t-badge">餐饮</span>
+<a href="smci.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">SMCI</span>
+        <span class="t-name">AI 服务器链条<br>订单波动较大</span>
+        <div class="t-badges"><span class="t-badge">服务器</span><span class="t-badge">订单波动</span></div>
       </a>
 
-      <a href="cost.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">COST</span>
-        <span class="t-name">好市多<br>Costco</span>
-        <span class="t-badge">零售</span>
+<a href="snow.html" class="ticker-card" style="--c:#8b1a1a">
+        <span class="corner-flag flag-c">C</span>
+        <span class="t-ticker">SNOW</span>
+        <span class="t-name">云数据平台代表<br>增长驱动估值</span>
+        <div class="t-badges"><span class="t-badge">数据云</span><span class="t-badge">成长估值</span></div>
       </a>
 
-      <a href="de.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">DE</span>
-        <span class="t-name">约翰迪尔<br>Deere &amp; Co.</span>
-        <span class="t-badge">工业 · 农机</span>
-      </a>
+      
 
-      <a href="hon.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">HON</span>
-        <span class="t-name">霍尼韦尔<br>Honeywell</span>
-        <span class="t-badge">工业</span>
-      </a>
-
-      <a href="cop.html" class="ticker-card" style="--c:#c8922a">
-        <span class="t-ticker">COP</span>
-        <span class="t-name">康菲石油<br>ConocoPhillips</span>
-        <span class="t-badge">能源</span>
-      </a>
-
-      <a href="lmt.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">LMT</span>
-        <span class="t-name">洛克希德·马丁<br>Lockheed Martin</span>
-        <span class="t-badge">国防航天</span>
-      </a>
-
-      <a href="rtx.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">RTX</span>
-        <span class="t-name">RTX Corp.<br>雷神技术</span>
-        <span class="t-badge">国防航天</span>
-      </a>
-
-      <a href="gd.html" class="ticker-card" style="--c:#1a3a6b">
-        <span class="t-ticker">GD</span>
-        <span class="t-name">通用动力<br>General Dynamics</span>
-        <span class="t-badge">国防航天</span>
-      </a>
-
-      <a href="uber.html" class="ticker-card" style="--c:#1a1a2e">
-        <span class="t-ticker">UBER</span>
-        <span class="t-name">Uber Technologies</span>
-        <span class="t-badge">出行 · 配送</span>
-      </a>
-
-      <a href="abnb.html" class="ticker-card" style="--c:#8b1a1a">
-        <span class="t-ticker">ABNB</span>
-        <span class="t-name">Airbnb Inc.</span>
-        <span class="t-badge">旅游 · 平台</span>
-      </a>
-
-      <a href="dkng.html" class="ticker-card" style="--c:#4a1a6b">
-        <span class="t-ticker">DKNG</span>
-        <span class="t-name">DraftKings Inc.</span>
-        <span class="t-badge">博彩 · 体育</span>
-      </a>
-
-      <a href="rddt.html" class="ticker-card" style="--c:#8b1a1a">
-        <span class="t-ticker">RDDT</span>
-        <span class="t-name">Reddit Inc.</span>
-        <span class="t-badge">社交媒体</span>
-      </a>
-
-      <a href="pdd.html" class="ticker-card" style="--c:#1a6b3a">
-        <span class="t-ticker">PDD</span>
-        <span class="t-name">拼多多<br>PDD Holdings</span>
-        <span class="t-badge">电商</span>
-      </a>
-
-      <a href="mara.html" class="ticker-card" style="--c:#c8922a">
-        <span class="t-ticker">MARA</span>
-        <span class="t-name">Marathon Digital<br>比特币挖矿</span>
-        <span class="t-badge">加密矿企</span>
-      </a>
-
-    </div>
+</div>
   </section>
 
   <!-- ② ETF / 指数期权 -->
@@ -791,76 +721,24 @@
       <a href="qqq.html" class="ticker-card etf-card" style="--c:#1a6b3a">
         <span class="t-ticker">QQQ</span>
         <span class="t-name">纳斯达克100 ETF<br>Invesco QQQ</span>
-        <span class="t-badge">美国 · 科技指数</span>
+        <span class="t-badge">科技指</span>
       </a>
 
       <a href="ibit.html" class="ticker-card etf-card" style="--c:#c8922a">
         <span class="t-ticker">IBIT</span>
         <span class="t-name">贝莱德比特币ETF<br>iShares Bitcoin</span>
-        <span class="t-badge">加密 ETF</span>
+        <span class="t-badge">比特币</span>
       </a>
 
       <a href="ibit_v.html" class="ticker-card etf-card" style="--c:#c8922a">
         <span class="t-ticker">IBIT_V</span>
         <span class="t-name">贝莱德比特币ETF<br>进阶版</span>
-        <span class="t-badge">加密 ETF · 进阶</span>
+        <span class="t-badge">进阶版</span>
       </a>
 
-      <a href="gld.html" class="ticker-card etf-card" style="--c:#c8922a">
-        <span class="t-ticker">GLD</span>
-        <span class="t-name">黄金ETF<br>SPDR Gold Shares</span>
-        <span class="t-badge">大宗 · 黄金</span>
-      </a>
+      
 
-      <a href="xlu.html" class="ticker-card etf-card" style="--c:#1a5a5a">
-        <span class="t-ticker">XLU</span>
-        <span class="t-name">公用事业ETF<br>Utilities Select SPDR</span>
-        <span class="t-badge">防御 · 公用事业</span>
-      </a>
-
-      <a href="ewj.html" class="ticker-card etf-card" style="--c:#8b1a1a">
-        <span class="t-ticker">EWJ</span>
-        <span class="t-name">日本股市ETF<br>iShares MSCI Japan</span>
-        <span class="t-badge">亚洲 · 日本</span>
-      </a>
-
-      <a href="oesx.html" class="ticker-card etf-card" style="--c:#1a3a6b">
-        <span class="t-ticker">OESX</span>
-        <span class="t-name">欧元区宽基指数期权<br>EURO STOXX 50® · Eurex</span>
-        <span class="t-badge">欧洲 · 宽基指数</span>
-      </a>
-
-      <a href="iwm.html" class="ticker-card etf-card" style="--c:#1a6b3a">
-        <span class="t-ticker">IWM</span>
-        <span class="t-name">罗素2000 ETF<br>iShares Russell 2000</span>
-        <span class="t-badge">美国 · 小盘宽基</span>
-      </a>
-
-      <a href="xlk.html" class="ticker-card etf-card" style="--c:#1a3a6b">
-        <span class="t-ticker">XLK</span>
-        <span class="t-name">科技板块 ETF<br>Technology Select SPDR</span>
-        <span class="t-badge">美国 · 行业 · 科技</span>
-      </a>
-
-      <a href="xlf.html" class="ticker-card etf-card" style="--c:#1a5a5a">
-        <span class="t-ticker">XLF</span>
-        <span class="t-name">金融板块 ETF<br>Financial Select SPDR</span>
-        <span class="t-badge">美国 · 行业 · 金融</span>
-      </a>
-
-      <a href="xlv.html" class="ticker-card etf-card" style="--c:#1a5a5a">
-        <span class="t-ticker">XLV</span>
-        <span class="t-name">医疗板块 ETF<br>Health Care Select SPDR</span>
-        <span class="t-badge">美国 · 行业 · 医疗</span>
-      </a>
-
-      <a href="xly.html" class="ticker-card etf-card" style="--c:#8b1a1a">
-        <span class="t-ticker">XLY</span>
-        <span class="t-name">可选消费 ETF<br>Consumer Disc. Select SPDR</span>
-        <span class="t-badge">美国 · 行业 · 消费</span>
-      </a>
-
-    </div>
+</div>
   </section>
 
   <!-- ③ 多标的策略 -->
@@ -978,14 +856,8 @@
         <div class="case-badge">专注虚拟资产 · 实战</div>
       </a>
 
-      <a href="weige.html" class="case-card">
-        <div class="case-num">Case · 02</div>
-        <div class="case-title">MR.WU策略案例</div>
-        <div class="case-desc">客户使用伟哥的策略保护持仓的真实操作，展示如何在持股的同时有效控制下行风险。</div>
-        <div class="case-badge">对冲 · 实战</div>
-      </a>
-
-      <a href="xuelei.html" class="case-card">
+      
+<a href="xuelei.html" class="case-card">
         <div class="case-num">Case · 03</div>
         <div class="case-title">MR.XUE策略案例</div>
         <div class="case-desc">基于XX策略结构的客户实操案例，涵盖建仓逻辑、盈亏分析与完整复盘总结。</div>
