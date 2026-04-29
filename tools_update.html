@@ -686,16 +686,61 @@ body.zh .zh-only { display: block !important; }
 /* Scrollspy active */
 .nav-item.active-section { color: var(--amber) !important; background: var(--amber-bg) !important; border-left-color: var(--amber) !important; }
 
+/* ─── LANGUAGE SWITCHING: section & subsection titles ─── */
+body.en .section-title-zh { display: none !important; }
+body.zh .section-title-en { display: none !important; }
+body.en .section-title-en {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  letter-spacing: 0 !important;
+}
+body.en .arch-label-zh { display: none !important; }
+body.zh .arch-label-en { display: none !important; }
+/* Subsection title en-only inside subsection-title shows inline */
+body.en .subsection-title .en-only {
+  display: inline !important;
+  font-size: inherit;
+  color: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+}
+/* IP detection loading overlay */
+#lang-loading {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.3s;
+}
+#lang-loading.hidden { opacity: 0; pointer-events: none; }
+.lang-loading-dot {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  letter-spacing: 0.2em;
+}
+
 </style>
 </head>
 <body class="zh">
+
+<!-- IP DETECTION LOADING -->
+<div id="lang-loading"><span class="lang-loading-dot">DETECTING REGION ···</span></div>
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">SellPut Pool · SOP v1.0</div>
-    <div class="sidebar-title">美股卖PUT标的池<br>自动化管理方案</div>
-    <div class="sidebar-sub">Automated Pool Management System</div>
+    <div class="sidebar-title">
+      <span class="zh-only">美股卖PUT标的池<br>自动化管理方案</span>
+      <span class="en-only">US Sell-Put Pool<br>Automated Management</span>
+    </div>
+    <div class="sidebar-sub">
+      <span class="zh-only">Automated Pool Management System</span>
+      <span class="en-only">Pool Management System</span>
+    </div>
   </div>
 
   <div class="lang-toggle">
@@ -705,36 +750,36 @@ body.zh .zh-only { display: block !important; }
 
   <div class="nav-group">
     <div class="nav-group-label">Overview · 概览</div>
-    <a class="nav-item" href="#sec0"><span class="nav-num">§0</span> 顶层架构</a>
-    <a class="nav-item" href="#sec1"><span class="nav-num">§1</span> 池子分层</a>
+    <a class="nav-item" href="#sec0"><span class="nav-num">§0</span> <span class="zh-only">顶层架构</span><span class="en-only">Architecture</span></a>
+    <a class="nav-item" href="#sec1"><span class="nav-num">§1</span> <span class="zh-only">池子分层</span><span class="en-only">Pool Hierarchy</span></a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Operations · 运营</div>
-    <a class="nav-item" href="#sec2"><span class="nav-num">§2</span> 每日自动化 SOP</a>
-    <a class="nav-item" href="#sec3"><span class="nav-num">§3</span> 入池/留存/剔除规则</a>
-    <a class="nav-item" href="#sec4"><span class="nav-num">§4</span> 指标体系与评分</a>
+    <a class="nav-item" href="#sec2"><span class="nav-num">§2</span> <span class="zh-only">每日自动化 SOP</span><span class="en-only">Daily Automation SOP</span></a>
+    <a class="nav-item" href="#sec3"><span class="nav-num">§3</span> <span class="zh-only">入池/留存/剔除规则</span><span class="en-only">Entry/Hold/Demotion</span></a>
+    <a class="nav-item" href="#sec4"><span class="nav-num">§4</span> <span class="zh-only">指标体系与评分</span><span class="en-only">Metrics &amp; Scoring</span></a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Reporting · 报告</div>
-    <a class="nav-item" href="#sec5"><span class="nav-num">§5</span> 周报模板</a>
-    <a class="nav-item" href="#sec6"><span class="nav-num">§6</span> 存档机制</a>
+    <a class="nav-item" href="#sec5"><span class="nav-num">§5</span> <span class="zh-only">周报模板</span><span class="en-only">Weekly Report</span></a>
+    <a class="nav-item" href="#sec6"><span class="nav-num">§6</span> <span class="zh-only">存档机制</span><span class="en-only">Archive System</span></a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Risk & Integration · 风控</div>
-    <a class="nav-item" href="#sec7"><span class="nav-num">§7</span> 风控兜底</a>
-    <a class="nav-item" href="#sec8"><span class="nav-num">§8</span> OpenClaw衔接</a>
+    <div class="nav-group-label">Risk &amp; Integration · 风控</div>
+    <a class="nav-item" href="#sec7"><span class="nav-num">§7</span> <span class="zh-only">风控兜底</span><span class="en-only">Risk Overlay</span></a>
+    <a class="nav-item" href="#sec8"><span class="nav-num">§8</span> <span class="zh-only">OpenClaw衔接</span><span class="en-only">OpenClaw Integration</span></a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Deployment · 部署</div>
-    <a class="nav-item" href="#sec9"><span class="nav-num">§9</span> 技术栈</a>
-    <a class="nav-item" href="#sec10"><span class="nav-num">§10</span> 人工决策事项</a>
-    <a class="nav-item" href="#sec11"><span class="nav-num">§11</span> 实施路线图</a>
-    <a class="nav-item" href="#sec12"><span class="nav-num">§12</span> 关键参数集中表</a>
+    <a class="nav-item" href="#sec9"><span class="nav-num">§9</span> <span class="zh-only">技术栈</span><span class="en-only">Tech Stack</span></a>
+    <a class="nav-item" href="#sec10"><span class="nav-num">§10</span> <span class="zh-only">人工决策事项</span><span class="en-only">Manual Decisions</span></a>
+    <a class="nav-item" href="#sec11"><span class="nav-num">§11</span> <span class="zh-only">实施路线图</span><span class="en-only">Roadmap</span></a>
+    <a class="nav-item" href="#sec12"><span class="nav-num">§12</span> <span class="zh-only">关键参数集中表</span><span class="en-only">Parameter Reference</span></a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Appendix · 附录</div>
-    <a class="nav-item" href="#appA"><span class="nav-num">A</span> 规则编码索引</a>
-    <a class="nav-item" href="#appB"><span class="nav-num">B</span> 数据源降级矩阵</a>
+    <a class="nav-item" href="#appA"><span class="nav-num">A</span> <span class="zh-only">规则编码索引</span><span class="en-only">Rule Code Index</span></a>
+    <a class="nav-item" href="#appB"><span class="nav-num">B</span> <span class="zh-only">数据源降级矩阵</span><span class="en-only">Data Fallback Matrix</span></a>
   </div>
 </nav>
 
@@ -1837,27 +1882,93 @@ body.zh .zh-only { display: block !important; }
   <!-- FOOTER -->
   <div class="doc-footer">
     <div class="footer-warn">
-      ⚠ 本方案由 RHCLOUD 自动生成，仅供策略架构设计参考，不构成任何投资建议。<br>
-      期权交易（尤其 PM 账户）具有显著风险，可能导致全部本金损失且损失可超过账户净值。<br>
-      所有阈值需经回测验证后再应用于实盘。<br>
-      <br>
-      ⚠ This document is auto-generated by RHCLOUD for architectural reference only and does not constitute investment advice.<br>
-      Options trading (especially in PM accounts) carries significant risk including total loss of capital exceeding account NLV.<br>
-      All thresholds must be backtested before live deployment.
+      <span class="zh-only">
+        ⚠ 本方案由 RHCLOUD 自动生成，仅供策略架构设计参考，不构成任何投资建议。<br>
+        期权交易（尤其 PM 账户）具有显著风险，可能导致全部本金损失且损失可超过账户净值。<br>
+        所有阈值需经回测验证后再应用于实盘。
+      </span>
+      <span class="en-only">
+        ⚠ This document is auto-generated by RHCLOUD for architectural reference only and does not constitute investment advice.<br>
+        Options trading (especially in PM accounts) carries significant risk including total loss of capital exceeding account NLV.<br>
+        All thresholds must be backtested before live deployment.
+      </span>
     </div>
   </div>
 
 </main>
 
 <script>
+// ─── LANGUAGE FUNCTIONS ───────────────────────────────────────────────
 function setLang(lang) {
   document.body.className = lang;
   document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
   document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+  // Store user preference in session
+  sessionStorage.setItem('lang-override', lang);
 }
 
-// Scrollspy
+// ─── SUBSECTION TITLE TRANSFORM ──────────────────────────────────────
+// Wrap Chinese text nodes in .zh-only, promote subsection-title-en to .en-only
+(function transformSubsectionTitles() {
+  document.querySelectorAll('.subsection-title').forEach(el => {
+    const enSpan = el.querySelector('.subsection-title-en');
+    if (!enSpan) return;
+    // Collect direct text nodes
+    const textNodes = [];
+    el.childNodes.forEach(n => { if (n.nodeType === 3 && n.textContent.trim()) textNodes.push(n); });
+    if (textNodes.length) {
+      const zhSpan = document.createElement('span');
+      zhSpan.className = 'zh-only';
+      el.insertBefore(zhSpan, textNodes[0]);
+      textNodes.forEach(tn => zhSpan.appendChild(tn));
+    }
+    enSpan.className = 'en-only';
+  });
+})();
+
+// ─── IP-BASED AUTO LANGUAGE DETECTION ────────────────────────────────
+async function detectRegionAndSetLang() {
+  // If user has manually toggled, respect their choice
+  const override = sessionStorage.getItem('lang-override');
+  if (override) {
+    setLang(override);
+    hideLangLoading();
+    return;
+  }
+  try {
+    const res = await fetch('https://ip-api.com/json/?fields=countryCode', { signal: AbortSignal.timeout(4000) });
+    const data = await res.json();
+    setLang(data.countryCode === 'CN' ? 'zh' : 'en');
+  } catch {
+    // Fallback: try alternative
+    try {
+      const res2 = await fetch('https://ipapi.co/country_code/', { signal: AbortSignal.timeout(3000) });
+      const cc = (await res2.text()).trim();
+      setLang(cc === 'CN' ? 'zh' : 'en');
+    } catch {
+      setLang('zh'); // default
+    }
+  }
+  hideLangLoading();
+}
+
+function hideLangLoading() {
+  const el = document.getElementById('lang-loading');
+  if (el) {
+    el.classList.add('hidden');
+    setTimeout(() => el.remove(), 350);
+  }
+}
+
+// Override setLang to clear session on manual toggle
+const _origSetLang = setLang;
+window.setLang = function(lang) {
+  sessionStorage.setItem('lang-override', lang);
+  _origSetLang(lang);
+};
+
+// ─── SCROLLSPY ────────────────────────────────────────────────────────
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-item[href^="#"]');
 
@@ -1872,6 +1983,9 @@ const observer = new IntersectionObserver((entries) => {
 }, { rootMargin: '-20% 0px -70% 0px' });
 
 sections.forEach(s => observer.observe(s));
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+detectRegionAndSetLang();
 </script>
 </body>
 </html>
