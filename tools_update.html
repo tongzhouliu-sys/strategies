@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卖PUT标的池 SOP v1.0 | Sell-Put Pool Management SOP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0e14;
+  --bg2: #111520;
+  --bg3: #161c28;
+  --bg4: #1e2535;
+  --border: #2a3347;
+  --border2: #3a4a63;
+  --amber: #f0a500;
+  --amber-dim: #a97200;
+  --amber-bg: rgba(240,165,0,0.08);
+  --amber-bg2: rgba(240,165,0,0.15);
+  --green: #3dba72;
+  --green-bg: rgba(61,186,114,0.08);
+  --blue: #4a9eff;
+  --blue-bg: rgba(74,158,255,0.08);
+  --red: #e85555;
+  --red-bg: rgba(232,85,85,0.08);
+  --gray: #8899aa;
+  --gray2: #6070880;
+  --text: #d4dbe8;
+  --text-dim: #7888a0;
+  --text-muted: #4a5568;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', 'Noto Sans SC', sans-serif;
+  /* Layer colors */
+  --l0: #6888cc;
+  --l0-bg: rgba(104,136,204,0.1);
+  --l1: #4ab0ff;
+  --l1-bg: rgba(74,176,255,0.1);
+  --l2: #f0a500;
+  --l2-bg: rgba(240,165,0,0.1);
+  --l3: #3dba72;
+  --l3-bg: rgba(61,186,114,0.1);
+  --l4: #e85555;
+  --l4-bg: rgba(232,85,85,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: transparent; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-header {
+  padding: 20px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.sidebar-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.lang-toggle {
+  display: flex;
+  margin: 12px 16px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 5px 0;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lang-btn.active {
+  background: var(--amber);
+  color: #000;
+  font-weight: 600;
+}
+
+.nav-group {
+  padding: 12px 0 4px;
+}
+
+.nav-group-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 16px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.12s;
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-left-color: var(--border2);
+}
+
+.nav-item.active {
+  color: var(--amber);
+  background: var(--amber-bg);
+  border-left-color: var(--amber);
+}
+
+.nav-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  min-width: 20px;
+}
+
+/* ─── MAIN CONTENT ─── */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 80px;
+}
+
+#main::-webkit-scrollbar { width: 5px; }
+#main::-webkit-scrollbar-track { background: transparent; }
+#main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Top bar */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--amber);
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.badge-amber { color: var(--amber); border-color: var(--amber-dim); background: var(--amber-bg); }
+.badge-green { color: var(--green); border-color: #1f6b3f; background: var(--green-bg); }
+.badge-blue  { color: var(--blue);  border-color: #1a4e8a; background: var(--blue-bg); }
+.badge-red   { color: var(--red);   border-color: #7a2222; background: var(--red-bg); }
+
+.topbar-right {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Sections */
+.section {
+  padding: 32px 40px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child { border-bottom: none; }
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  min-width: 28px;
+}
+
+.section-title-zh {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.section-title-en {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 400;
+  font-family: var(--mono);
+}
+
+.subsection {
+  margin: 20px 0 0;
+}
+
+.subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--amber);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.subsection-title-en {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+thead {
+  background: var(--bg3);
+}
+
+thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child { border-bottom: none; }
+
+tbody tr:hover { background: var(--bg3); }
+
+tbody td {
+  padding: 8px 12px;
+  color: var(--text);
+  vertical-align: top;
+}
+
+.cell-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+.cell-threshold {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+}
+
+/* Code blocks */
+pre {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #b8c8e0;
+  margin: 12px 0;
+}
+
+pre::-webkit-scrollbar { height: 4px; }
+pre::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.kw  { color: #c792ea; }
+.fn  { color: #82aaff; }
+.st  { color: #c3e88d; }
+.cm  { color: #546e7a; font-style: italic; }
+.nm  { color: var(--amber); }
+.op  { color: #89ddff; }
+
+/* Layer badges */
+.layer-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.l0-badge { background: var(--l0-bg); color: var(--l0); border: 1px solid rgba(104,136,204,0.25); }
+.l1-badge { background: var(--l1-bg); color: var(--l1); border: 1px solid rgba(74,176,255,0.25); }
+.l2-badge { background: var(--l2-bg); color: var(--l2); border: 1px solid rgba(240,165,0,0.25); }
+.l3-badge { background: var(--l3-bg); color: var(--l3); border: 1px solid rgba(61,186,114,0.25); }
+.l4-badge { background: var(--l4-bg); color: var(--l4); border: 1px solid rgba(232,85,85,0.25); }
+
+/* Info boxes */
+.info-box {
+  border-left: 3px solid var(--amber);
+  background: var(--amber-bg);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.warn-box {
+  border-left: 3px solid var(--red);
+  background: var(--red-bg);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.info-box .label, .warn-box .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.info-box .label { color: var(--amber); }
+.warn-box .label { color: var(--red); }
+
+/* Architecture diagram */
+.arch-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  margin: 16px 0;
+}
+
+.arch-layer {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.arch-label {
+  background: var(--bg3);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+
+.arch-label-zh { font-size: 12px; font-weight: 600; color: var(--text); }
+.arch-label-en { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+.arch-content {
+  background: var(--bg2);
+  padding: 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.arch-item {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--bg4);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+/* Pipeline timeline */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+  margin: 16px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--border2);
+}
+
+.tl-item {
+  position: relative;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -19px;
+  top: 14px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 2px solid var(--bg);
+}
+
+.tl-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.tl-task {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.tl-module {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  margin-top: 3px;
+}
+
+/* Score card */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.score-dim {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.score-dim-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.score-dim-en   { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
+.score-weight   {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--amber);
+}
+.score-count    { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* Roadmap */
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.phase-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.phase-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.phase-duration {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.phase-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.phase-deliverable { font-size: 11.5px; color: var(--text-dim); font-family: var(--mono); }
+
+/* State machine viz */
+.states-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 16px 0;
+}
+
+.state-node {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 90px;
+}
+
+.state-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding-top: 6px;
+}
+
+/* Footer */
+.doc-footer {
+  padding: 24px 40px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.footer-warn {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-family: var(--mono);
+  border-left: 2px solid var(--red);
+  padding-left: 12px;
+}
+
+/* Pool capacity visual */
+.pool-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.pool-bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 60px;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-bar-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: right;
+}
+
+.pool-bar-track {
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.pool-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.pool-bar-cap {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin: 1px;
+  border: 1px solid;
+}
+
+.tag-imm  { color: var(--red);   border-color: #7a2222; background: var(--red-bg); }
+.tag-cum  { color: var(--amber); border-color: var(--amber-dim); background: var(--amber-bg); }
+.tag-perm { color: #cc44cc; border-color: #662266; background: rgba(204,68,204,0.08); }
+.tag-hg   { color: var(--blue);  border-color: #1a4e8a; background: var(--blue-bg); }
+
+/* EN mode */
+body.en .zh-only { display: none !important; }
+body.en .en-only { display: block !important; }
+body.zh .en-only { display: none !important; }
+body.zh .zh-only { display: block !important; }
+
+.en-only { display: none; }
+.zh-only { display: block; }
+
+/* Scrollspy active */
+.nav-item.active-section { color: var(--amber) !important; background: var(--amber-bg) !important; border-left-color: var(--amber) !important; }
+
+</style>
+</head>
+<body class="zh">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">SellPut Pool · SOP v1.0</div>
+    <div class="sidebar-title">美股卖PUT标的池<br>自动化管理方案</div>
+    <div class="sidebar-sub">Automated Pool Management System</div>
+  </div>
+
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview · 概览</div>
+    <a class="nav-item" href="#sec0"><span class="nav-num">§0</span> 顶层架构</a>
+    <a class="nav-item" href="#sec1"><span class="nav-num">§1</span> 池子分层</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Operations · 运营</div>
+    <a class="nav-item" href="#sec2"><span class="nav-num">§2</span> 每日自动化 SOP</a>
+    <a class="nav-item" href="#sec3"><span class="nav-num">§3</span> 入池/留存/剔除规则</a>
+    <a class="nav-item" href="#sec4"><span class="nav-num">§4</span> 指标体系与评分</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reporting · 报告</div>
+    <a class="nav-item" href="#sec5"><span class="nav-num">§5</span> 周报模板</a>
+    <a class="nav-item" href="#sec6"><span class="nav-num">§6</span> 存档机制</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Risk & Integration · 风控</div>
+    <a class="nav-item" href="#sec7"><span class="nav-num">§7</span> 风控兜底</a>
+    <a class="nav-item" href="#sec8"><span class="nav-num">§8</span> OpenClaw衔接</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Deployment · 部署</div>
+    <a class="nav-item" href="#sec9"><span class="nav-num">§9</span> 技术栈</a>
+    <a class="nav-item" href="#sec10"><span class="nav-num">§10</span> 人工决策事项</a>
+    <a class="nav-item" href="#sec11"><span class="nav-num">§11</span> 实施路线图</a>
+    <a class="nav-item" href="#sec12"><span class="nav-num">§12</span> 关键参数集中表</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Appendix · 附录</div>
+    <a class="nav-item" href="#appA"><span class="nav-num">A</span> 规则编码索引</a>
+    <a class="nav-item" href="#appB"><span class="nav-num">B</span> 数据源降级矩阵</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">SELLPUT_POOL_SOP_v1.0</span>
+      <span class="badge badge-amber">Portfolio Margin</span>
+      <span class="badge badge-green">08:00 SGT Daily</span>
+      <span class="badge badge-blue">OpenClaw Integrated</span>
+    </div>
+    <div class="topbar-right">Updated: 2026-04-29 · RHCLOUD</div>
+  </div>
+
+  <!-- §0 ARCHITECTURE -->
+  <section class="section" id="sec0">
+    <div class="section-header">
+      <span class="section-num">§0</span>
+      <div>
+        <div class="section-title-zh">顶层架构总览</div>
+        <div class="section-title-en">Top-Level Architecture Overview</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="label">定位 · POSITIONING</div>
+      <span class="zh-only">为 OpenClaw 20 标的核心交易池提供「候选源」与「淘汰路径」的全量化闭环系统。所有阈值均量化、无模糊描述、可直接转 Python/SQL。</span>
+      <span class="en-only">A fully quantified closed-loop system providing "candidate sourcing" and "elimination pathways" for the OpenClaw 20-stock core trading pool. All thresholds are quantified, unambiguous, and directly translatable to Python/SQL.</span>
+    </div>
+
+    <div class="arch-grid">
+      <div class="arch-layer">
+        <div class="arch-label">
+          <div class="arch-label-zh">数据源层</div>
+          <div class="arch-label-en">Data Sources</div>
+        </div>
+        <div class="arch-content">
+          <span class="arch-item">Yahoo Most Active</span>
+          <span class="arch-item">IBKR API</span>
+          <span class="arch-item">Polygon.io</span>
+          <span class="arch-item">EarningsWhispers</span>
+          <span class="arch-item">SEC EDGAR</span>
+          <span class="arch-item">FRED</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">
+          <div class="arch-label-zh">初筛闸门</div>
+          <div class="arch-label-en">Initial Gate</div>
+        </div>
+        <div class="arch-content">
+          <span class="arch-item" style="color:var(--amber)">IG-01～IG-09</span>
+          <span style="font-size:12px;color:var(--text-dim)">9项强制通过 · 任一失败→L4黑名单</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">
+          <div class="arch-label-zh">池子分层</div>
+          <div class="arch-label-en">Pool Layers</div>
+        </div>
+        <div class="arch-content">
+          <span class="layer-badge l0-badge">L0 ≤200</span>
+          <span class="layer-badge l1-badge">L1 =100</span>
+          <span class="layer-badge l2-badge">L2 30-60</span>
+          <span class="layer-badge l3-badge">L3 20-40</span>
+          <span class="layer-badge l4-badge">L4 黑名单</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">
+          <div class="arch-label-zh">闭环运作</div>
+          <div class="arch-label-en">Closed Loop</div>
+        </div>
+        <div class="arch-content">
+          <span style="font-size:12px;color:var(--text-dim)">每日 Daily Loop</span>
+          <span class="arch-item">→</span>
+          <span style="font-size:12px;color:var(--text-dim)">周报 Weekly Report</span>
+          <span class="arch-item">→</span>
+          <span style="font-size:12px;color:var(--text-dim)">存档 Archive</span>
+          <span class="arch-item">→</span>
+          <span style="font-size:12px;color:var(--text-dim)">OpenClaw 衔接</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §1 POOL HIERARCHY -->
+  <section class="section" id="sec1">
+    <div class="section-header">
+      <span class="section-num">§1</span>
+      <div>
+        <div class="section-title-zh">标的池分层结构</div>
+        <div class="section-title-en">Pool Hierarchy</div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        1.1 五层定义
+        <span class="subsection-title-en">Five-Layer Definition</span>
+      </div>
+
+      <div class="pool-bars">
+        <div class="pool-bar-row">
+          <div class="pool-bar-label" style="color:var(--l0)">L0</div>
+          <div class="pool-bar-track"><div class="pool-bar-fill" style="width:100%;background:var(--l0)"></div></div>
+          <div class="pool-bar-cap">≤ 200</div>
+        </div>
+        <div class="pool-bar-row">
+          <div class="pool-bar-label" style="color:var(--l1)">L1</div>
+          <div class="pool-bar-track"><div class="pool-bar-fill" style="width:50%;background:var(--l1)"></div></div>
+          <div class="pool-bar-cap">= 100/日</div>
+        </div>
+        <div class="pool-bar-row">
+          <div class="pool-bar-label" style="color:var(--l2)">L2</div>
+          <div class="pool-bar-track"><div class="pool-bar-fill" style="width:30%;background:var(--l2)"></div></div>
+          <div class="pool-bar-cap">30-60</div>
+        </div>
+        <div class="pool-bar-row">
+          <div class="pool-bar-label" style="color:var(--l3)">L3</div>
+          <div class="pool-bar-track"><div class="pool-bar-fill" style="width:20%;background:var(--l3)"></div></div>
+          <div class="pool-bar-cap">20-40</div>
+        </div>
+        <div class="pool-bar-row">
+          <div class="pool-bar-label" style="color:var(--l4)">L4</div>
+          <div class="pool-bar-track"><div class="pool-bar-fill" style="width:15%;background:var(--l4)"></div></div>
+          <div class="pool-bar-cap">不限</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>层级 / Layer</th>
+              <th>名称 / Name</th>
+              <th>容量 / Capacity</th>
+              <th>来源 / Source</th>
+              <th>用途 / Purpose</th>
+              <th>持久化 / Persistence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="layer-badge l0-badge">L0</span></td>
+              <td><span class="zh-only">全量备选池 Master Pool</span><span class="en-only">Master Pool</span></td>
+              <td class="cell-threshold">≤ 200</td>
+              <td><span class="zh-only">Yahoo Top100 累计沉淀</span><span class="en-only">Yahoo Top100 accumulation</span></td>
+              <td><span class="zh-only">长期跟踪库</span><span class="en-only">Long-term tracking</span></td>
+              <td><span class="zh-only">永久（直到清退）</span><span class="en-only">Permanent until delisted</span></td>
+            </tr>
+            <tr>
+              <td><span class="layer-badge l1-badge">L1</span></td>
+              <td><span class="zh-only">当日候选池 Daily Candidate</span><span class="en-only">Daily Candidate Pool</span></td>
+              <td class="cell-threshold">= 100</td>
+              <td><span class="zh-only">Yahoo 实时抓取</span><span class="en-only">Yahoo real-time scrape</span></td>
+              <td><span class="zh-only">当日初筛入口</span><span class="en-only">Daily screening entry</span></td>
+              <td><span class="zh-only">24h 刷新</span><span class="en-only">24h refresh</span></td>
+            </tr>
+            <tr>
+              <td><span class="layer-badge l2-badge">L2</span></td>
+              <td><span class="zh-only">观察池 Watch List</span><span class="en-only">Watch List</span></td>
+              <td class="cell-threshold">30-60</td>
+              <td><span class="zh-only">L0+L1 交集筛选</span><span class="en-only">L0+L1 intersection filter</span></td>
+              <td><span class="zh-only">准交易，未达全部门槛</span><span class="en-only">Pre-trade, not yet qualifying</span></td>
+              <td><span class="zh-only">滚动</span><span class="en-only">Rolling</span></td>
+            </tr>
+            <tr>
+              <td><span class="layer-badge l3-badge">L3</span></td>
+              <td><span class="zh-only">交易池 Active Pool</span><span class="en-only">Active Trading Pool</span></td>
+              <td class="cell-threshold">20-40</td>
+              <td><span class="zh-only">L2 升级 + OpenClaw 20</span><span class="en-only">L2 promoted + OpenClaw 20</span></td>
+              <td><span class="zh-only">可推 Wheel 信号</span><span class="en-only">Eligible for Wheel signals</span></td>
+              <td><span class="zh-only">滚动</span><span class="en-only">Rolling</span></td>
+            </tr>
+            <tr>
+              <td><span class="layer-badge l4-badge">L4</span></td>
+              <td><span class="zh-only">黑名单 Blacklist</span><span class="en-only">Blacklist</span></td>
+              <td class="cell-threshold">不限</td>
+              <td><span class="zh-only">触发清退规则</span><span class="en-only">Demotion rule triggered</span></td>
+              <td><span class="zh-only">拒入 + 留痕</span><span class="en-only">Reject + audit trail</span></td>
+              <td><span class="zh-only">限时/永久</span><span class="en-only">Timed / Permanent</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        1.2 标的状态机
+        <span class="subsection-title-en">Ticker State Machine</span>
+      </div>
+
+      <div class="states-flow">
+        <div class="state-node" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">UNTRACKED<br><small style="font-size:9px">未追踪</small></div>
+        <div class="state-arrow">→</div>
+        <div class="state-node l1-badge" style="padding:8px 16px">L1 CANDIDATE<br><small style="font-size:9px">候选</small></div>
+        <div class="state-arrow">→</div>
+        <div class="state-node l0-badge" style="padding:8px 16px">L0 MASTER<br><small style="font-size:9px">备选</small></div>
+        <div class="state-arrow">→</div>
+        <div class="state-node l2-badge" style="padding:8px 16px">L2 WATCH<br><small style="font-size:9px">观察</small></div>
+        <div class="state-arrow">→</div>
+        <div class="state-node l3-badge" style="padding:8px 16px">L3 ACTIVE<br><small style="font-size:9px">交易</small></div>
+        <div class="state-arrow">→</div>
+        <div class="state-node" style="background:rgba(61,186,114,0.2);color:#3dba72;border:1px solid rgba(61,186,114,0.4);font-size:10px;padding:8px 12px">OpenClaw<br>20-Pool<br><small style="font-size:9px">人工确认门</small></div>
+      </div>
+      <div style="margin-top:6px;">
+        <span class="layer-badge l4-badge">L4 BLACKLIST</span>
+        <span style="font-size:12px;color:var(--text-dim);margin-left:8px">← 任意层触发 DG 规则即清退</span>
+        <span style="font-size:12px;color:var(--text-dim);margin-left:8px">/ Triggered from any layer via DG rules</span>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        1.3 标的 Schema 字段
+        <span class="subsection-title-en">Ticker Schema</span>
+      </div>
+<pre><span class="cm"># 每只标的在系统中维护以下字段 / Fields maintained per ticker</span>
+{
+  <span class="st">"ticker"</span>: <span class="st">"AAPL"</span>,
+  <span class="st">"layer"</span>: <span class="st">"L3"</span>,                   <span class="cm"># L0/L1/L2/L3/L4</span>
+  <span class="st">"first_seen"</span>: <span class="st">"2026-01-15"</span>,      <span class="cm"># 首次进入L0日期 / First seen in L0</span>
+  <span class="st">"consec_top100_days"</span>: <span class="nm">18</span>,        <span class="cm"># 连续上榜Top100天数</span>
+  <span class="st">"cum_top100_days_30d"</span>: <span class="nm">22</span>,       <span class="cm"># 30交易日内累计上榜</span>
+  <span class="st">"consec_warn_days"</span>: <span class="nm">0</span>,           <span class="cm"># 连续警示天数</span>
+  <span class="st">"score"</span>: <span class="nm">78.5</span>,                   <span class="cm"># 综合评分 0-100 / Composite score</span>
+  <span class="st">"tier_hint"</span>: <span class="st">"B"</span>,                <span class="cm"># 推断OpenClaw层级 A/B/C/D</span>
+  <span class="st">"blacklist_until"</span>: <span class="op">null</span>,         <span class="cm"># null = 永久 / permanent</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- §2 DAILY SOP -->
+  <section class="section" id="sec2">
+    <div class="section-header">
+      <span class="section-num">§2</span>
+      <div>
+        <div class="section-title-zh">每日自动化抓取与更新 SOP</div>
+        <div class="section-title-en">Daily Automated Fetch & Update SOP</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="label">执行时间 · SCHEDULE</div>
+      <span class="zh-only">每日盘前 08:00 SGT（UTC+8），美东开盘前约 90 分钟。失败重试：每步最多 3 次，间隔 60s；连续 2 日失败触发飞书告警。</span>
+      <span class="en-only">Daily pre-market 08:00 SGT (UTC+8), ~90 min before US open. Retry policy: max 3 attempts per step, 60s interval; 2 consecutive failures trigger Feishu alert.</span>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-time">08:00 SGT · T-1</div>
+        <div class="tl-task"><span class="zh-only">抓取 Yahoo Most Active Top100</span><span class="en-only">Fetch Yahoo Most Active Top100</span></div>
+        <div class="tl-module">01_fetch_yahoo.py · 5 min · 降级→Polygon/Tradier</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:05 SGT · T-2</div>
+        <div class="tl-task"><span class="zh-only">合并/更新 L0 全量池（容量管理 ≤200）</span><span class="en-only">Merge/update L0 master pool (capacity ≤200)</span></div>
+        <div class="tl-module">02_master_pool_update.py · 3 min</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:10 SGT · T-3</div>
+        <div class="tl-task"><span class="zh-only">拉取期权链 + Greeks（IBKR API）</span><span class="en-only">Fetch option chain + Greeks (IBKR API)</span></div>
+        <div class="tl-module">03_options_data.py · 10 min · 降级→Tradier/Polygon</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:20 SGT · T-4</div>
+        <div class="tl-task"><span class="zh-only">拉取基本面 + 财报日历 + 事件日历</span><span class="en-only">Fetch fundamentals + earnings calendar + event calendar</span></div>
+        <div class="tl-module">04_fundamentals.py · 5 min</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:25 SGT · T-5</div>
+        <div class="tl-task"><span class="zh-only">全维度校验 + 综合评分计算</span><span class="en-only">Full-dimension screening + composite score calculation</span></div>
+        <div class="tl-module">05_screening.py · 5 min · 26 metrics, 7 dimensions</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:30 SGT · T-6</div>
+        <div class="tl-task"><span class="zh-only">升降级/剔除决策（强制剔除 50 只）</span><span class="en-only">Promote/demote/eviction decisions (mandatory 50 evictions)</span></div>
+        <div class="tl-module">06_promote_demote.py · 3 min · DG Rules</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:35 SGT · T-7</div>
+        <div class="tl-task"><span class="zh-only">风控兜底扫描（妖股/悬崖检测/8-K/加密复核）</span><span class="en-only">Risk overlay scan (memestock/cliff/8-K/crypto audit)</span></div>
+        <div class="tl-module">07_risk_overlay.py · 2 min</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">08:38 SGT · T-8</div>
+        <div class="tl-task"><span class="zh-only">存档 + 推送早报 + 生成 OpenClaw L3 清单</span><span class="en-only">Archive + push morning report + generate OpenClaw L3 list</span></div>
+        <div class="tl-module">08_archive_notify.py · 2 min · 飞书Webhook</div>
+      </div>
+      <div class="tl-item" style="border-color:var(--border2)">
+        <div class="tl-time">21:30 SGT · Intraday（可选）</div>
+        <div class="tl-task"><span class="zh-only">盘中实时监控</span><span class="en-only">Intraday real-time monitoring (optional)</span></div>
+        <div class="tl-module">09_intraday_watch.py · 持续运行</div>
+      </div>
+      <div class="tl-item" style="border-color:var(--border2)">
+        <div class="tl-time">次日 05:30 SGT · EOD</div>
+        <div class="tl-task"><span class="zh-only">美股收盘后日终结算</span><span class="en-only">End-of-day settlement after US market close</span></div>
+        <div class="tl-module">10_eod_settlement.py · 5 min</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §3 GATES -->
+  <section class="section" id="sec3">
+    <div class="section-header">
+      <span class="section-num">§3</span>
+      <div>
+        <div class="section-title-zh">入池标准 / 留存标准 / 量化剔除规则</div>
+        <div class="section-title-en">Entry Gates / Hold Gates / Demotion Gates</div>
+      </div>
+    </div>
+
+    <!-- IG -->
+    <div class="subsection">
+      <div class="subsection-title">
+        3.1 初筛闸门 IG — Yahoo Top100 → L0
+        <span class="subsection-title-en">Initial Gate: Yahoo → L0</span>
+      </div>
+      <div class="warn-box">
+        <div class="label">强制规则 · MANDATORY</div>
+        <span class="zh-only">任一不通过则进入 L4 黑名单（限时 30 天）</span>
+        <span class="en-only">Any failure → L4 Blacklist (30-day timed ban)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>代码</th><th>检查项 / Check</th><th>阈值 / Threshold</th><th>数据源</th><th>失败动作 / Failure</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="cell-code">IG-01</td><td>股价 Price</td><td class="cell-threshold">≥ $10.00</td><td>Yahoo</td><td><span class="tag tag-cum">L4 限时 30d</span></td></tr>
+            <tr><td class="cell-code">IG-02</td><td>市值 Market Cap</td><td class="cell-threshold">≥ $5B</td><td>Yahoo/IBKR</td><td><span class="tag tag-cum">L4 限时 30d</span></td></tr>
+            <tr><td class="cell-code">IG-03</td><td>3M日均成交额 ADV</td><td class="cell-threshold">≥ $200M</td><td>Yahoo</td><td><span class="tag tag-cum">L4 限时 30d</span></td></tr>
+            <tr><td class="cell-code">IG-04</td><td>期权链存在 Options Chain</td><td class="cell-threshold">必须存在</td><td>IBKR</td><td><span class="tag tag-perm">L4 永久</span></td></tr>
+            <tr><td class="cell-code">IG-05</td><td>期权到期日数 Expiries</td><td class="cell-threshold">≥ 4个</td><td>IBKR</td><td><span class="tag tag-cum">L4 限时 60d</span></td></tr>
+            <tr><td class="cell-code">IG-06</td><td>标的类型 SecType</td><td class="cell-threshold">STK/ETF only</td><td>IBKR</td><td><span class="tag tag-perm">L4 永久 (拒SPAC/ADR/OTC)</span></td></tr>
+            <tr><td class="cell-code">IG-07</td><td>上市天数 Listing Age</td><td class="cell-threshold">≥ 180天</td><td>IBKR</td><td><span class="tag tag-cum">L4 限时至180d</span></td></tr>
+            <tr><td class="cell-code">IG-08</td><td>板块过滤 Sector</td><td class="cell-threshold">非生科III期前/非OTC/非Penny</td><td>GICS</td><td><span class="tag tag-perm">L4 永久</span></td></tr>
+            <tr><td class="cell-code">IG-09</td><td>退市/并购传闻</td><td class="cell-threshold">无 None</td><td>SEC 8-K</td><td><span class="tag tag-perm">L4 永久</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PG-A -->
+    <div class="subsection">
+      <div class="subsection-title">
+        3.2a 升级门 PG-A — L0 → L2 观察池
+        <span class="subsection-title-en">Promotion Gate A: L0 → L2 Watch</span>
+      </div>
+      <div class="info-box">
+        <div class="label">AND 逻辑 · ALL CONDITIONS REQUIRED</div>
+        <span class="zh-only">所有条件 AND 满足，且持续 5 个交易日</span>
+        <span class="en-only">All conditions must be met, sustained for 5 consecutive trading days</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>代码</th><th>指标 / Metric</th><th>阈值 / Threshold</th><th>备注</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-code">PG-A-01</td><td>连续上榜 Top100</td><td class="cell-threshold">≥ 5 日</td><td class="cell-code">consec_top100_days ≥ 5</td></tr>
+            <tr><td class="cell-code">PG-A-02</td><td>30日累计上榜</td><td class="cell-threshold">≥ 12 日</td><td class="cell-code">cum_top100_days_30d ≥ 12</td></tr>
+            <tr><td class="cell-code">PG-A-03</td><td>期权日成交量(5日均)</td><td class="cell-threshold">≥ 1,000 张</td><td>日&lt;1000不计</td></tr>
+            <tr><td class="cell-code">PG-A-04</td><td>期权未平仓 OI</td><td class="cell-threshold">≥ 5,000 张</td><td>跨所有到期日</td></tr>
+            <tr><td class="cell-code">PG-A-05</td><td>ATM bid-ask spread</td><td class="cell-threshold">≤ 5%</td><td>(ask-bid)/mid</td></tr>
+            <tr><td class="cell-code">PG-A-06</td><td>5日 ADV 美元</td><td class="cell-threshold">≥ $200M</td><td>含集合竞价</td></tr>
+            <tr><td class="cell-code">PG-A-07</td><td>HV30 历史波动率</td><td class="cell-threshold">15% ≤ HV30 ≤ 80%</td><td>过低无溢价/过高踩雷</td></tr>
+            <tr><td class="cell-code">PG-A-08</td><td>财报距离</td><td class="cell-threshold">≥ 14 天</td><td>EarningsWhispers</td></tr>
+            <tr><td class="cell-code">PG-A-09</td><td>综合评分 Score</td><td class="cell-threshold">≥ 50</td><td>三因子 + 期权流动性</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PG-B -->
+    <div class="subsection">
+      <div class="subsection-title">
+        3.2b 升级门 PG-B — L2 → L3 交易池
+        <span class="subsection-title-en">Promotion Gate B: L2 → L3 Active</span>
+      </div>
+      <div class="info-box">
+        <div class="label">叠加条件 · ADDITIONAL REQUIREMENTS</div>
+        <span class="zh-only">在 PG-A 全部满足基础上，叠加以下条件，持续 3 个交易日</span>
+        <span class="en-only">On top of all PG-A conditions, add the following, sustained 3 trading days</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>代码</th><th>指标 / Metric</th><th>阈值 / Threshold</th><th>备注</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-code">PG-B-01</td><td>期权日成交量(5日均)</td><td class="cell-threshold">≥ 5,000 张</td><td>真正可交易</td></tr>
+            <tr><td class="cell-code">PG-B-02</td><td>期权 OI</td><td class="cell-threshold">≥ 20,000 张</td><td>跨到期日</td></tr>
+            <tr><td class="cell-code">PG-B-03</td><td>ATM bid-ask spread</td><td class="cell-threshold">≤ 2%</td><td>严格滑点控制</td></tr>
+            <tr><td class="cell-code">PG-B-04</td><td>5日 ADV 美元</td><td class="cell-threshold">≥ $500M</td><td>蓝筹门槛</td></tr>
+            <tr><td class="cell-code">PG-B-05</td><td>IVR 隐波排名</td><td class="cell-threshold">30 ≤ IVR ≤ 80</td><td>A/B层范围</td></tr>
+            <tr><td class="cell-code">PG-B-06</td><td>综合评分 Score</td><td class="cell-threshold">≥ 70</td><td>高质量标准</td></tr>
+            <tr><td class="cell-code">PG-B-07</td><td>20池查重</td><td class="cell-threshold">不重复</td><td>新增标的不与20池重叠</td></tr>
+            <tr><td class="cell-code">PG-B-08</td><td>单标的敞口预算</td><td class="cell-threshold">≤ NLV × 10%</td><td>PM-1 单标上限</td></tr>
+            <tr><td class="cell-code">PG-B-09</td><td>行业重仓预算</td><td class="cell-threshold">≤ NLV × 30%</td><td>PM-1 单行业上限</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-box" style="margin-top:12px">
+        <div class="label">PG-C · L3 → OpenClaw 20-Pool</div>
+        <span class="zh-only">不自动升级。每周报告标记 L3 中评分 ≥ 85 的标的作为「20池替补候选」，由用户人工决定是否更换 20 池中的弱者。</span>
+        <span class="en-only">No automatic promotion. Weekly report flags L3 tickers with score ≥ 85 as "20-pool replacement candidates". User manually decides whether to replace weaker members in the 20-pool.</span>
+      </div>
+    </div>
+
+    <!-- HG -->
+    <div class="subsection">
+      <div class="subsection-title">
+        3.3 留存标准 HG — 每日检查
+        <span class="subsection-title-en">Hold Gate: Daily Check</span>
+      </div>
+      <div class="warn-box">
+        <div class="label">警示机制 · WARN MECHANISM</div>
+        <span class="zh-only">L2/L3 每日必须满足，任一不达标进入"警示"状态（warn_day++）</span>
+        <span class="en-only">L2/L3 must satisfy daily. Any failure triggers "warn" state (warn_day++)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>代码</th><th>指标</th><th>L2 阈值</th><th>L3 阈值</th><th>触发</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-code">HG-01</td><td>期权日成交量</td><td class="cell-threshold">≥ 1,000</td><td class="cell-threshold">≥ 3,000</td><td><span class="tag tag-hg">单日不达 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-02</td><td>期权 OI</td><td class="cell-threshold">≥ 5,000</td><td class="cell-threshold">≥ 15,000</td><td><span class="tag tag-hg">单日不达 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-03</td><td>ATM spread</td><td class="cell-threshold">≤ 5%</td><td class="cell-threshold">≤ 3%</td><td><span class="tag tag-hg">超阈 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-04</td><td>单日跌幅</td><td colspan="2" class="cell-threshold" style="text-align:center">≤ 10%</td><td><span class="tag tag-hg">触发 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-05</td><td>5日 ADV</td><td class="cell-threshold">≥ $150M</td><td class="cell-threshold">≥ $400M</td><td><span class="tag tag-hg">单日不达 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-06</td><td>HV30</td><td colspan="2" class="cell-threshold" style="text-align:center">≤ 100%</td><td><span class="tag tag-hg">超过 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-07</td><td>IVR异常飙升</td><td colspan="2" class="cell-threshold" style="text-align:center">ΔIVR ≤ 25/日</td><td><span class="tag tag-hg">事件预警</span></td></tr>
+            <tr><td class="cell-code">HG-08</td><td>距财报天数</td><td class="cell-threshold">≥ 7 天</td><td class="cell-threshold">≥ 14 天</td><td><span class="tag tag-hg">进禁区 → warn</span></td></tr>
+            <tr><td class="cell-code">HG-09</td><td>综合评分</td><td class="cell-threshold">≥ 40</td><td class="cell-threshold">≥ 60</td><td><span class="tag tag-hg">不达 → warn</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DG -->
+    <div class="subsection">
+      <div class="subsection-title">
+        3.4 量化剔除规则 DG
+        <span class="subsection-title-en">Demotion / Delisting Gates</span>
+      </div>
+
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:10px">
+        <span class="zh-only">3.4.1 强制即时剔除 — 任一触发立即清退至 L4</span>
+        <span class="en-only">3.4.1 Immediate Forced Demotion — Any trigger → L4 immediately</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>代码</th><th>条件 / Condition</th><th>黑名单期 / Ban</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-code">DG-IMM-01</td><td>股价跌破 $5</td><td><span class="tag tag-perm">永久（满足IG后90d可申诉）</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-02</td><td>单日跌幅 &gt; 25%</td><td><span class="tag tag-imm">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-03</td><td>Vol Z-score &gt; 5 + 跌幅 &gt; 15%</td><td><span class="tag tag-imm">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-04</td><td>5日 ADV &lt; $50M（流动性悬崖）</td><td><span class="tag tag-imm">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-05</td><td>期权链消失/周合约停牌</td><td><span class="tag tag-imm">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-06</td><td>财报盘后跌幅 &gt; 20%</td><td><span class="tag tag-imm">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-07</td><td>SEC 8-K 重大不利事件</td><td><span class="tag tag-perm">永久</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-08</td><td>妖股：单日涨幅 &gt; 30%，连续 2 日</td><td><span class="tag tag-imm">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-09</td><td>bid-ask spread &gt; 10% 连续 2 日</td><td><span class="tag tag-imm">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-IMM-10</td><td>退市/被收购/合并公告</td><td><span class="tag tag-perm">永久</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="font-size:13px;color:var(--text-dim);margin:14px 0 10px">
+        <span class="zh-only">3.4.2 累计阈值剔除 — 双指标避免单日抖动误杀</span>
+        <span class="en-only">3.4.2 Cumulative Demotion — Dual metric to avoid single-day false positives</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>代码</th><th>条件 / Condition</th><th>动作 / Action</th><th>黑名单期</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-code">DG-CUM-01</td><td>L1候选 连续 3 日掉出 Top100</td><td>不进 L0</td><td>—</td></tr>
+            <tr><td class="cell-code">DG-CUM-02</td><td>L0/L2 连续 5 日掉出 Top100</td><td>降级 + warn</td><td>—</td></tr>
+            <tr><td class="cell-code">DG-CUM-03</td><td>连续 10 日掉出 Top100</td><td>→ L4</td><td><span class="tag tag-cum">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-CUM-04</td><td>30日内累计 20 日掉出 Top100</td><td>→ L4</td><td><span class="tag tag-cum">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-CUM-05</td><td>连续 5 日触发 HG 警示</td><td>降一层</td><td>—</td></tr>
+            <tr><td class="cell-code">DG-CUM-06</td><td>30日累计 10 日触发 HG 警示</td><td>→ L4</td><td><span class="tag tag-cum">60 天</span></td></tr>
+            <tr><td class="cell-code">DG-CUM-07</td><td>连续 3 日 IVR &gt; 90</td><td>→ L4 妖股化</td><td><span class="tag tag-cum">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-CUM-09</td><td>综合评分连续 7 日 &lt; 30</td><td>→ L4</td><td><span class="tag tag-cum">90 天</span></td></tr>
+            <tr><td class="cell-code">DG-CUM-10</td><td>综合评分连续 14 日 &lt; 50</td><td>→ L0 深度观察</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="font-size:13px;color:var(--text-dim);margin:14px 0 8px">
+        <span class="zh-only">3.4.4 每日强制剔除 50 只 — 两阶段算法</span>
+        <span class="en-only">3.4.4 Daily mandatory eviction of 50 — Two-phase algorithm</span>
+      </div>
+<pre><span class="kw">def</span> <span class="fn">daily_eviction_50</span>():
+    <span class="cm"># 阶段1 / Phase 1: 规则触发强制剔除 → L4</span>
+    forced = check_all_dg_rules(pool)   <span class="cm"># DG-IMM + DG-CUM triggered</span>
+    n_forced = len(forced)
+
+    <span class="cm"># 阶段2 / Phase 2: 补足50只 — 恶化分末位淘汰（仅L0/L1）</span>
+    remaining_quota = max(<span class="nm">0</span>, <span class="nm">50</span> - n_forced)
+    <span class="kw">if</span> remaining_quota > <span class="nm">0</span>:
+        worst = sorted(pool_L0_L1, key=<span class="kw">lambda</span> x: x.deter_score)[: -remaining_quota]
+        <span class="cm"># 退回 UNTRACKED，不入黑名单</span>
+        move_back_to_untracked(worst)</pre>
+    </div>
+  </section>
+
+  <!-- §4 SCORING -->
+  <section class="section" id="sec4">
+    <div class="section-header">
+      <span class="section-num">§4</span>
+      <div>
+        <div class="section-title-zh">每日分析指标体系与综合评分</div>
+        <div class="section-title-en">Daily Screening Metrics & Composite Score</div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        4.1 七维度 26 指标
+        <span class="subsection-title-en">7 Dimensions, 26 Metrics</span>
+      </div>
+      <div class="score-grid">
+        <div class="score-dim">
+          <div class="score-dim-name">流动性</div>
+          <div class="score-dim-en">Liquidity</div>
+          <div class="score-weight">20%</div>
+          <div class="score-count">4 指标 · LIQ-01~04</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">期权流动性</div>
+          <div class="score-dim-en">Options Liquidity</div>
+          <div class="score-weight">25%</div>
+          <div class="score-count">4 指标 · OPT-01~04</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">波动率</div>
+          <div class="score-dim-en">Volatility</div>
+          <div class="score-weight">15%</div>
+          <div class="score-count">3 指标 · VOL-01~03</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">基本面</div>
+          <div class="score-dim-en">Fundamentals</div>
+          <div class="score-weight">15%</div>
+          <div class="score-count">4 指标 · FUN-01~04</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">事件风险</div>
+          <div class="score-dim-en">Event Risk</div>
+          <div class="score-weight">10%</div>
+          <div class="score-count">3 指标 · EVT-01~03</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">技术面</div>
+          <div class="score-dim-en">Technical</div>
+          <div class="score-weight">10%</div>
+          <div class="score-count">3 指标 · TEC-01~03</div>
+        </div>
+        <div class="score-dim">
+          <div class="score-dim-name">风控叠加</div>
+          <div class="score-dim-en">Risk Overlay</div>
+          <div class="score-weight">5%</div>
+          <div class="score-count">5 指标 · RSK-01~05</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        4.3 综合评分公式
+        <span class="subsection-title-en">Composite Score Formula</span>
+      </div>
+<pre>score = (
+    liq  * <span class="nm">0.20</span>   <span class="cm"># 流动性 Liquidity</span>
+  + opt  * <span class="nm">0.25</span>   <span class="cm"># 期权流动性 Options Liquidity</span>
+  + vol  * <span class="nm">0.15</span>   <span class="cm"># 波动率U型 Volatility (U-shape, optimal 25-50%)</span>
+  + fun  * <span class="nm">0.15</span>   <span class="cm"># 基本面 Fundamentals</span>
+  + evt  * <span class="nm">0.10</span>   <span class="cm"># 事件 Events (财报/8-K penalty)</span>
+  + tec  * <span class="nm">0.10</span>   <span class="cm"># 技术面 Technical</span>
+  + rsk  * <span class="nm">0.05</span>   <span class="cm"># 风控 Risk Overlay</span>
+)  <span class="cm"># 返回 0-100 / Returns 0-100</span></pre>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        4.4 评分分层映射
+        <span class="subsection-title-en">Score-to-Layer Mapping</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>综合评分 / Score</th><th>推断层级 / Inferred Layer</th><th>推荐动作 / Action</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="cell-threshold">≥ 85</td>
+              <td><span class="zh-only">候补 OpenClaw 20 池 A 层</span><span class="en-only">OpenClaw 20-pool Tier A candidate</span></td>
+              <td><span class="zh-only">周报标记，人工评估</span><span class="en-only">Flag in weekly report, manual review</span></td>
+            </tr>
+            <tr>
+              <td class="cell-threshold">70-84</td>
+              <td><span class="layer-badge l3-badge">L3 交易池</span></td>
+              <td><span class="zh-only">可推 Wheel 信号（需 PG-B 全通过）</span><span class="en-only">Eligible for Wheel signals (requires PG-B)</span></td>
+            </tr>
+            <tr>
+              <td class="cell-threshold">50-69</td>
+              <td><span class="layer-badge l2-badge">L2 观察池</span></td>
+              <td><span class="zh-only">留存观察</span><span class="en-only">Hold and monitor</span></td>
+            </tr>
+            <tr>
+              <td class="cell-threshold">30-49</td>
+              <td><span class="layer-badge l0-badge">L0 备选池</span></td>
+              <td><span class="zh-only">持续跟踪</span><span class="en-only">Continue tracking</span></td>
+            </tr>
+            <tr>
+              <td class="cell-threshold">&lt; 30</td>
+              <td><span class="layer-badge l4-badge">L4 黑名单候选</span></td>
+              <td><span class="zh-only">触发末位淘汰</span><span class="en-only">Bottom-rank eviction trigger</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- §5 WEEKLY REPORT -->
+  <section class="section" id="sec5">
+    <div class="section-header">
+      <span class="section-num">§5</span>
+      <div>
+        <div class="section-title-zh">每周报告模板</div>
+        <div class="section-title-en">Weekly Report Template</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="label">生成时间 · GENERATION SCHEDULE</div>
+      <span class="zh-only">每周五美股收盘后 → 周六 06:00 SGT。格式：HTML + CSV附件 + 飞书卡片摘要。路径：reports/weekly/WW{YYYY-WW}_pool_report.{html,csv}</span>
+      <span class="en-only">Every Friday after US close → Saturday 06:00 SGT. Format: HTML + CSV attachment + Feishu card summary. Path: reports/weekly/WW{YYYY-WW}_pool_report.{html,csv}</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>报告章节 / Section</th><th>内容 / Content</th></tr></thead>
+        <tbody>
+          <tr><td class="cell-code">S1</td><td><span class="zh-only">执行摘要</span><span class="en-only">Executive Summary</span></td><td><span class="zh-only">池子总览、净变化、市场环境VIX/SPX</span><span class="en-only">Pool overview, net changes, market snapshot VIX/SPX</span></td></tr>
+          <tr><td class="cell-code">S2</td><td><span class="zh-only">TOP10 潜力股 (Rising Stars)</span><span class="en-only">TOP10 Rising Stars</span></td><td><span class="zh-only">Δ评分≥+10, 连续上榜≥7日, 期权OI环比≥+20%, IVR 30-70, 距财报≥21天</span><span class="en-only">Δscore≥+10, top100≥7d, OI ≥+20%, IVR 30-70, days-to-earnings≥21</span></td></tr>
+          <tr><td class="cell-code">S3</td><td><span class="zh-only">BOTTOM10 垃圾股 (Falling Stars)</span><span class="en-only">BOTTOM10 Falling Stars</span></td><td><span class="zh-only">Δ评分≤-10, 连续掉榜≥3日, 流动性恶化≥30%</span><span class="en-only">Δscore≤-10, off-top100≥3d, liquidity drop≥30%</span></td></tr>
+          <tr><td class="cell-code">S4</td><td><span class="zh-only">黑名单本周变动</span><span class="en-only">Blacklist Changes</span></td><td><span class="zh-only">新增/解禁/规则码/解禁日期</span><span class="en-only">New entries / releases / rule codes / unban dates</span></td></tr>
+          <tr><td class="cell-code">S5</td><td><span class="zh-only">L3 交易池现状</span><span class="en-only">L3 Active Pool Status</span></td><td><span class="zh-only">全部L3标的：评分/IVR/距财报/是否在20池</span><span class="en-only">All L3 tickers: score/IVR/DTE/in 20-pool?</span></td></tr>
+          <tr><td class="cell-code">S6</td><td><span class="zh-only">OpenClaw 20池替换建议</span><span class="en-only">OpenClaw 20-Pool Replacement</span></td><td><span class="zh-only">仅L3评分≥85且优于20池末位≥10分时输出，需人工确认</span><span class="en-only">Only when L3 score≥85 and beats last in 20-pool by ≥10. Human confirmation required.</span></td></tr>
+          <tr><td class="cell-code">S7</td><td><span class="zh-only">风险预警事件存档</span><span class="en-only">Risk Alert Archive</span></td><td><span class="zh-only">妖股/流动性悬崖/财报暴雷/8-K各计N次 + 操作链路</span><span class="en-only">Memestock/cliff/earnings-bomb/8-K counts + operation trail</span></td></tr>
+          <tr><td class="cell-code">S8</td><td><span class="zh-only">行业分布健康度</span><span class="en-only">Sector Distribution Health</span></td><td><span class="zh-only">各GICS板块在L2+L3数量 + PM-1行业敞口检查</span><span class="en-only">GICS sector counts in L2+L3 + PM-1 sector exposure check</span></td></tr>
+          <tr><td class="cell-code">S9</td><td><span class="zh-only">数据源健康度</span><span class="en-only">Data Source Health</span></td><td><span class="zh-only">各源本周可用率/平均延迟/降级次数</span><span class="en-only">Uptime/latency/fallback counts per source</span></td></tr>
+          <tr><td class="cell-code">S10</td><td><span class="zh-only">下周关注清单</span><span class="en-only">Next Week Watch List</span></td><td><span class="zh-only">财报禁区标的/宏观事件/即将解禁黑名单</span><span class="en-only">Earnings blackout tickers / macro events / upcoming unbans</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- §6 ARCHIVE -->
+  <section class="section" id="sec6">
+    <div class="section-header">
+      <span class="section-num">§6</span>
+      <div>
+        <div class="section-title-zh">全流程存档机制</div>
+        <div class="section-title-en">Full-Process Archive System</div>
+      </div>
+    </div>
+
+<pre>sellput_pool/
+├── data/
+│   ├── raw/            <span class="cm"># Yahoo Top100 / IBKR Options / Earnings Calendar</span>
+│   ├── processed/      <span class="cm"># L0~L3 每日快照 + L4 黑名单总表</span>
+│   ├── metrics/        <span class="cm"># daily_metrics.parquet + scores.csv</span>
+│   └── events/         <span class="cm"># eviction / promotion / alerts / corp_actions</span>
+├── reports/
+│   ├── daily/          <span class="cm"># 早报 HTML</span>
+│   ├── weekly/         <span class="cm"># 周报 HTML + CSV</span>
+│   └── monthly/        <span class="cm"># 月报</span>
+├── logs/               <span class="cm"># pipeline logs (30d) + error logs</span>
+└── state/              <span class="cm"># streak_counters / score_history / pool_state.json</span></pre>
+
+    <div class="table-wrap" style="margin-top:14px">
+      <table>
+        <thead><tr><th>数据类型 / Data Type</th><th>保留期 / Retention</th><th>备份策略 / Backup</th></tr></thead>
+        <tbody>
+          <tr><td>原始抓取 Raw Data</td><td class="cell-threshold">365 天</td><td>每日云端冷备份</td></tr>
+          <tr><td>处理后数据 Processed</td><td class="cell-threshold">永久</td><td>双地域热备</td></tr>
+          <tr><td>指标 Metrics</td><td class="cell-threshold">永久</td><td>双地域热备</td></tr>
+          <tr><td>事件日志 Events</td><td class="cell-threshold">永久</td><td>双地域 + 区块链存证（可选）</td></tr>
+          <tr><td>早报 Daily Reports</td><td class="cell-threshold">90 天</td><td>单地域</td></tr>
+          <tr><td>周报 Weekly Reports</td><td class="cell-threshold">永久</td><td>双地域热备</td></tr>
+          <tr><td>Pipeline 日志</td><td class="cell-threshold">30 天</td><td>单地域</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- §7 RISK OVERLAY -->
+  <section class="section" id="sec7">
+    <div class="section-header">
+      <span class="section-num">§7</span>
+      <div>
+        <div class="section-title-zh">风控兜底条款</div>
+        <div class="section-title-en">Risk Overlay Layer</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="label">核心理念 · PHILOSOPHY</div>
+      <span class="zh-only">在 Pre-screen Gate / PG / HG / DG 之外，多加一层「异常检测」防止边缘情况漏过。每日 T-7 步骤执行。</span>
+      <span class="en-only">An additional anomaly detection layer on top of PG/HG/DG to catch edge cases. Executed at pipeline step T-7 daily.</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>检测器 / Detector</th><th>逻辑 / Logic</th><th>触发规则</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;color:var(--text)"><span class="zh-only">妖股识别</span><span class="en-only">Memestock Detector</span></td>
+            <td><span class="zh-only">连续2日涨幅&gt;30% / IVR单日跳升&gt;40 / Vol Z&gt;5+涨幅&gt;15% / 借券率&gt;25% — 任2项触发</span><span class="en-only">2d run &gt;30% / IVR jump &gt;40 / Vol Z&gt;5+return&gt;15% / borrow rate&gt;25% — Any 2</span></td>
+            <td><span class="tag tag-imm">DG-IMM-08</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text)"><span class="zh-only">流动性悬崖</span><span class="en-only">Liquidity Cliff</span></td>
+            <td><span class="zh-only">5日成交量较30日均跌 &gt; 50%</span><span class="en-only">5d ADV / 30d ADV &lt; 0.50</span></td>
+            <td><span class="tag tag-imm">DG-IMM-04</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text)"><span class="zh-only">财报暴雷监控</span><span class="en-only">Post-Earnings Monitor</span></td>
+            <td><span class="zh-only">盘后跌幅 &gt; 20% → L4；跌幅 &gt; 10% → warn</span><span class="en-only">AH return &lt; -20% → L4; &lt; -10% → warn</span></td>
+            <td><span class="tag tag-imm">DG-IMM-06</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text)">SEC 8-K</td>
+            <td><span class="zh-only">Item 2.04 / 4.01 / 4.02 / 5.02 / 8.01 等负面条款</span><span class="en-only">Items 2.04 / 4.01 / 4.02 / 5.02 / 8.01 negative filings</span></td>
+            <td><span class="tag tag-perm">DG-IMM-07</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text)"><span class="zh-only">加密总控复核</span><span class="en-only">Crypto Overlay</span></td>
+            <td><span class="zh-only">IBIT/COIN/MSTR/HOOD/CRCL/MARA — L3中最多3只，超出按评分降级</span><span class="en-only">Max 3 crypto-related in L3. Excess ranked by score → demote to L2</span></td>
+            <td><span class="tag tag-cum">PM-1 加密子条款</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        7.8 兜底总开关 Kill Switch
+        <span class="subsection-title-en">Master Kill Switch</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>触发条件 / Trigger</th><th>动作 / Action</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-threshold">VIX &gt; 40</td><td><span class="zh-only">L3 全部冻结新晋升，仅维护</span><span class="en-only">Freeze all L3 promotions, maintenance only</span></td></tr>
+            <tr><td class="cell-threshold">SPX 单日 -5%</td><td><span class="zh-only">当日跳过升级，仅做剔除</span><span class="en-only">Skip all promotions for the day, demotion only</span></td></tr>
+            <tr><td>Yahoo + Polygon 双源失败</td><td><span class="zh-only">沿用 T-1 池子 + 飞书告警</span><span class="en-only">Use T-1 pool snapshot + Feishu alert</span></td></tr>
+            <tr><td><span class="zh-only">黑名单当日新增 &gt; 30 只</span><span class="en-only">Blacklist surge &gt; 30 new entries</span></td><td><span class="zh-only">异常告警，人工 review 后才执行</span><span class="en-only">Alert flagged, human review before execution</span></td></tr>
+            <tr><td><span class="zh-only">评分中位数日变化 &gt; ±15</span><span class="en-only">Score median daily change &gt; ±15</span></td><td><span class="zh-only">数据质量异常，暂停升降级</span><span class="en-only">Data quality anomaly, suspend promotions/demotions</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- §8 OPENCLAW INTEGRATION -->
+  <section class="section" id="sec8">
+    <div class="section-header">
+      <span class="section-num">§8</span>
+      <div>
+        <div class="section-title-zh">与 OpenClaw 20 池的衔接</div>
+        <div class="section-title-en">OpenClaw 20-Pool Integration</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>原则 / Principle</th><th>说明 / Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="zh-only">L3 与 20池可重叠</span><span class="en-only">L3 and 20-pool may overlap</span></td>
+            <td><span class="zh-only">20池标的同时存在于L3，但参数严格按 tickers-20pool.md 执行</span><span class="en-only">20-pool tickers also exist in L3, but parameters strictly follow tickers-20pool.md</span></td>
+          </tr>
+          <tr>
+            <td><span class="zh-only">新L3不能直接入20池</span><span class="en-only">New L3 cannot enter 20-pool directly</span></td>
+            <td><span class="zh-only">必须经周报建议 + 用户人工确认</span><span class="en-only">Requires weekly report recommendation + manual user confirmation</span></td>
+          </tr>
+          <tr>
+            <td><span class="zh-only">加密4%总控 / 张数上限 / 财报禁区</span><span class="en-only">Crypto 4% cap / contract limits / earnings blackout</span></td>
+            <td><span class="zh-only">完全沿用 OpenClaw 既定值，不在本系统重新定义</span><span class="en-only">Fully inherited from OpenClaw, not redefined here</span></td>
+          </tr>
+          <tr>
+            <td><span class="zh-only">串行闸门</span><span class="en-only">Serial gates</span></td>
+            <td><span class="zh-only">本系统 PG-A/PG-B 为「池子准入」门，OpenClaw 5项 Pre-screen Gate 为「信号推送」门，串行执行</span><span class="en-only">PG-A/PG-B = "pool admission" gate; OpenClaw 5-item Pre-screen = "signal push" gate. Run in series.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        8.3 反向反馈机制
+        <span class="subsection-title-en">Feedback Loop</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>事件 / Event</th><th>反馈动作 / Feedback Action</th></tr></thead>
+          <tbody>
+            <tr><td><span class="zh-only">信号人工拒绝率连续 5 次 ≥ 80%</span><span class="en-only">Manual reject rate ≥80% for 5 consecutive signals</span></td><td><span class="cell-threshold">评分 penalty -10</span></td></tr>
+            <tr><td><span class="zh-only">信号执行后 30 天内被分配（assigned）</span><span class="en-only">Assigned within 30 days of signal execution</span></td><td><span class="cell-threshold" style="color:var(--green)">评分 bonus +5</span></td></tr>
+            <tr><td><span class="zh-only">信号执行后亏损 &gt; 1R</span><span class="en-only">Loss &gt; 1R after signal execution</span></td><td><span class="cell-threshold">7日降级冷却</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- §9 TECH STACK -->
+  <section class="section" id="sec9">
+    <div class="section-header">
+      <span class="section-num">§9</span>
+      <div>
+        <div class="section-title-zh">部署架构 / 技术栈</div>
+        <div class="section-title-en">Deployment Architecture / Tech Stack</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>层 / Layer</th><th>组件 / Component</th><th>说明 / Notes</th></tr></thead>
+        <tbody>
+          <tr><td>抓取 Scraping</td><td class="cell-code">Playwright + httpx + tenacity</td><td>Yahoo 反爬 + 重试</td></tr>
+          <tr><td>数据存储 Storage</td><td class="cell-code">DuckDB + Parquet / TimescaleDB</td><td>列式 + 时序（轻量/重型）</td></tr>
+          <tr><td>期权数据 Options</td><td class="cell-code">ib_insync / Polygon Python SDK</td><td>主备切换</td></tr>
+          <tr><td>调度 Scheduler</td><td class="cell-code">Prefect 2 / Airflow</td><td>DAG + 重试</td></tr>
+          <tr><td>评分计算 Scoring</td><td class="cell-code">Pandas + NumPy</td><td>向量化批处理</td></tr>
+          <tr><td>推送 Notify</td><td class="cell-code">飞书 Webhook</td><td>早报/警示/异常告警</td></tr>
+          <tr><td>报告 Report</td><td class="cell-code">Jinja2 + Plotly + WeasyPrint</td><td>HTML/PDF 周报</td></tr>
+          <tr><td>日志 Logging</td><td class="cell-code">Loguru + Sentry</td><td>异常监控</td></tr>
+          <tr><td>部署 Deploy</td><td class="cell-code">Docker + pm2</td><td>与 OpenClaw 同栈</td></tr>
+          <tr><td>时区 Timezone</td><td class="cell-code">pytz (SGT/UTC/US-Eastern)</td><td>严格区分三地</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="subsection">
+      <div class="subsection-title">
+        9.1 Crontab (SGT)
+      </div>
+<pre><span class="cm"># 盘前主流水线 / Pre-market main pipeline</span>
+<span class="nm">0 8</span> * * <span class="nm">1-5</span>     /opt/sellput_pool/run_daily_premarket.sh
+
+<span class="cm"># 盘中实时监控（可选）/ Intraday monitoring (optional)</span>
+<span class="nm">*/30 21-23,0-4</span> * * <span class="nm">1-5</span>  /opt/sellput_pool/run_intraday_check.sh
+
+<span class="cm"># 盘后日终结算 / EOD settlement</span>
+<span class="nm">30 5</span> * * <span class="nm">2-6</span>    /opt/sellput_pool/run_eod_settlement.sh
+
+<span class="cm"># 周报 / Weekly report</span>
+<span class="nm">0 6</span> * * <span class="nm">6</span>       /opt/sellput_pool/run_weekly_report.sh
+
+<span class="cm"># 月报 / Monthly report</span>
+<span class="nm">0 7 1</span> * *       /opt/sellput_pool/run_monthly_report.sh</pre>
+    </div>
+  </section>
+
+  <!-- §10 HUMAN IN THE LOOP -->
+  <section class="section" id="sec10">
+    <div class="section-header">
+      <span class="section-num">§10</span>
+      <div>
+        <div class="section-title-zh">待人工决策事项 (Human-in-the-Loop)</div>
+        <div class="section-title-en">Human Decision Items</div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <div class="label">⚠ 永不自动执行 · NEVER AUTOMATED</div>
+      <span class="zh-only">以下事项永不自动执行，需用户手动确认</span>
+      <span class="en-only">The following items are NEVER executed automatically and require manual user confirmation</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>事项 / Item</th><th>触发条件 / Trigger</th><th>决策方 / Decision Owner</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">OpenClaw 20池替换</td>
+            <td><span class="zh-only">L3 评分≥85 且优于20池末位≥10分</span><span class="en-only">L3 score≥85 and beats 20-pool last by ≥10</span></td>
+            <td><span class="zh-only">用户每周确认</span><span class="en-only">User weekly confirmation</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600"><span class="zh-only">永久清退解禁</span><span class="en-only">Permanent ban lift</span></td>
+            <td><span class="zh-only">DG-IMM-07/10/DG-PERM-XX 黑名单</span><span class="en-only">DG-IMM-07/10/DG-PERM-XX blacklist</span></td>
+            <td><span class="zh-only">用户人工 review</span><span class="en-only">Manual user review</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600"><span class="zh-only">黑名单异常激增</span><span class="en-only">Blacklist surge</span></td>
+            <td><span class="zh-only">单日新增 &gt; 30 只</span><span class="en-only">Single day &gt; 30 new entries</span></td>
+            <td><span class="zh-only">用户审核后才执行</span><span class="en-only">Execute only after user review</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600"><span class="zh-only">数据源全部失败</span><span class="en-only">All data sources fail</span></td>
+            <td><span class="zh-only">Yahoo + Polygon 同时不可用</span><span class="en-only">Yahoo + Polygon simultaneously unavailable</span></td>
+            <td><span class="zh-only">用户决定是否沿用 T-1 数据</span><span class="en-only">User decides whether to use T-1 snapshot</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600"><span class="zh-only">加密标的进入 L3</span><span class="en-only">Crypto ticker enters L3</span></td>
+            <td><span class="zh-only">任何加密标的从 L2 升 L3</span><span class="en-only">Any crypto ticker promotes from L2 to L3</span></td>
+            <td><span class="zh-only">用户确认 PM-1 加密子条款不破</span><span class="en-only">User confirms PM-1 crypto clause not violated</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Kill Switch <span class="zh-only">恢复</span><span class="en-only">Recovery</span></td>
+            <td><span class="zh-only">VIX&gt;40 / SPX单日-5% 触发冻结后</span><span class="en-only">After VIX&gt;40 / SPX -5% freeze triggered</span></td>
+            <td><span class="zh-only">用户决定何时恢复</span><span class="en-only">User decides when to resume</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- §11 ROADMAP -->
+  <section class="section" id="sec11">
+    <div class="section-header">
+      <span class="section-num">§11</span>
+      <div>
+        <div class="section-title-zh">实施路线图</div>
+        <div class="section-title-en">Implementation Roadmap</div>
+      </div>
+    </div>
+
+    <div class="roadmap-grid">
+      <div class="phase-card">
+        <div class="phase-label">PHASE 1</div>
+        <div class="phase-duration">1 周 / 1 week</div>
+        <div class="phase-title"><span class="zh-only">数据接入 + L0/L1建立</span><span class="en-only">Data ingestion + L0/L1 setup</span></div>
+        <div class="phase-deliverable">01_fetch_yahoo.py<br>02_master_pool_update.py<br>初版 200 只 L0</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">PHASE 2</div>
+        <div class="phase-duration">2 周 / 2 weeks</div>
+        <div class="phase-title"><span class="zh-only">全维度指标 + 评分 + L2/L3升级</span><span class="en-only">Full metrics + scoring + L2/L3 upgrade</span></div>
+        <div class="phase-deliverable">03~05 模块<br>评分历史回填 30 天</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">PHASE 3</div>
+        <div class="phase-duration">1 周 / 1 week</div>
+        <div class="phase-title"><span class="zh-only">剔除算法 + 黑名单 + DG规则</span><span class="en-only">Eviction algo + blacklist + DG rules</span></div>
+        <div class="phase-deliverable">06_promote_demote.py<br>黑名单总表</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">PHASE 4</div>
+        <div class="phase-duration">1 周 / 1 week</div>
+        <div class="phase-title"><span class="zh-only">风控兜底 + 妖股/悬崖/8-K检测</span><span class="en-only">Risk overlay + memestock/cliff/8-K</span></div>
+        <div class="phase-deliverable">07_risk_overlay.py</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">PHASE 5</div>
+        <div class="phase-duration">1 周 / 1 week</div>
+        <div class="phase-title"><span class="zh-only">周报 + 飞书推送 + OpenClaw衔接</span><span class="en-only">Weekly report + Feishu + OpenClaw link</span></div>
+        <div class="phase-deliverable">weekly_report.py<br>08_archive_notify.py</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">PHASE 6</div>
+        <div class="phase-duration"><span class="zh-only">持续 / Ongoing</span></div>
+        <div class="phase-title"><span class="zh-only">回测 + 参数调优 + 月度复盘</span><span class="en-only">Backtesting + param tuning + monthly review</span></div>
+        <div class="phase-deliverable"><span class="zh-only">月报 + 反馈环</span><span class="en-only">Monthly report + feedback loop</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §12 CONFIG -->
+  <section class="section" id="sec12">
+    <div class="section-header">
+      <span class="section-num">§12</span>
+      <div>
+        <div class="section-title-zh">关键参数集中表</div>
+        <div class="section-title-en">Central Parameter Reference</div>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="label">配置文件 · CONFIG FILE</div>
+      <span class="zh-only">所有可调参数集中维护于 <code style="font-family:var(--mono);color:var(--blue)">config/thresholds.yaml</code>，修改无需改代码。</span>
+      <span class="en-only">All tunable parameters maintained in <code style="font-family:var(--mono);color:var(--blue)">config/thresholds.yaml</code>. No code changes required for threshold adjustments.</span>
+    </div>
+<pre><span class="kw">pool_capacity</span>:
+  L0_max: <span class="nm">200</span>  |  L1_daily: <span class="nm">100</span>  |  L2_max: <span class="nm">60</span>  |  L3_max: <span class="nm">40</span>
+
+<span class="kw">initial_gate</span>:
+  min_price: <span class="nm">10.0</span>          min_market_cap_usd: <span class="nm">5e9</span>
+  min_adv_3m_dollar: <span class="nm">200e6</span>  min_option_expiries: <span class="nm">4</span>
+  min_listing_days: <span class="nm">180</span>
+
+<span class="kw">promotion_L0_to_L2</span>:
+  consec_top100_days: <span class="nm">5</span>   cum_top100_days_30d: <span class="nm">12</span>
+  min_opt_volume_5d: <span class="nm">1000</span>  min_opt_oi: <span class="nm">5000</span>
+  max_atm_spread_pct: <span class="nm">0.05</span> min_adv_5d_dollar: <span class="nm">200e6</span>
+  hv30_range: [<span class="nm">15</span>, <span class="nm">80</span>]      min_days_to_earnings: <span class="nm">14</span>
+  min_score: <span class="nm">50</span>
+
+<span class="kw">promotion_L2_to_L3</span>:
+  consec_satisfy_days: <span class="nm">3</span>  min_opt_volume_5d: <span class="nm">5000</span>
+  min_opt_oi: <span class="nm">20000</span>        max_atm_spread_pct: <span class="nm">0.02</span>
+  min_adv_5d_dollar: <span class="nm">500e6</span> ivr_range: [<span class="nm">30</span>, <span class="nm">80</span>]
+  min_score: <span class="nm">70</span>
+
+<span class="kw">scoring_weights</span>:
+  liquidity: <span class="nm">0.20</span>  options_liquidity: <span class="nm">0.25</span>  volatility: <span class="nm">0.15</span>
+  fundamentals: <span class="nm">0.15</span>  events: <span class="nm">0.10</span>  technicals: <span class="nm">0.10</span>
+  risk_overlay: <span class="nm">0.05</span>
+
+<span class="kw">kill_switch</span>:
+  vix_freeze: <span class="nm">40</span>  spx_daily_drop_freeze: <span class="nm">-0.05</span>
+  blacklist_surge_count: <span class="nm">30</span>
+
+<span class="kw">crypto_overlay</span>:
+  member_tickers: [<span class="st">"IBIT"</span>, <span class="st">"COIN"</span>, <span class="st">"MSTR"</span>, <span class="st">"HOOD"</span>, <span class="st">"CRCL"</span>, <span class="st">"MARA"</span>]
+  max_in_L3: <span class="nm">3</span></pre>
+  </section>
+
+  <!-- APPENDIX A -->
+  <section class="section" id="appA">
+    <div class="section-header">
+      <span class="section-num">A</span>
+      <div>
+        <div class="section-title-zh">完整规则编码索引</div>
+        <div class="section-title-en">Rule Code Index</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>编码 / Code Range</th><th>类型 / Type</th><th>说明 / Description</th></tr></thead>
+        <tbody>
+          <tr><td class="cell-code">IG-01 ~ IG-09</td><td><span class="tag tag-hg">初筛闸门</span></td><td>Yahoo Top100 → L0 准入</td></tr>
+          <tr><td class="cell-code">PG-A-01 ~ PG-A-09</td><td><span class="tag tag-hg">升级 L0→L2</span></td><td>观察池准入</td></tr>
+          <tr><td class="cell-code">PG-B-01 ~ PG-B-09</td><td><span class="tag tag-hg">升级 L2→L3</span></td><td>交易池准入</td></tr>
+          <tr><td class="cell-code">PG-C</td><td><span class="tag tag-hg">升级 L3→20池</span></td><td>仅周报建议，人工确认</td></tr>
+          <tr><td class="cell-code">HG-01 ~ HG-09</td><td><span class="tag tag-hg">留存日检</span></td><td>每日检查，触发 warn 计数</td></tr>
+          <tr><td class="cell-code">DG-IMM-01 ~ 10</td><td><span class="tag tag-imm">即时清退</span></td><td>触发立即 → L4</td></tr>
+          <tr><td class="cell-code">DG-CUM-01 ~ 10</td><td><span class="tag tag-cum">累计清退</span></td><td>连续/累计阈值 → L4 或降级</td></tr>
+          <tr><td class="cell-code">DG-PERM-01 ~ 03</td><td><span class="tag tag-perm">永久清退</span></td><td>解禁需人工</td></tr>
+          <tr><td class="cell-code">PM-1 ~ PM-6</td><td><span class="badge badge-amber" style="font-size:10px">继承OpenClaw</span></td><td>PM 风控铁律</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- APPENDIX B -->
+  <section class="section" id="appB">
+    <div class="section-header">
+      <span class="section-num">B</span>
+      <div>
+        <div class="section-title-zh">数据源失败降级矩阵</div>
+        <div class="section-title-en">Data Source Fallback Matrix</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>主源 / Primary</th><th>降级 1 / Fallback 1</th><th>降级 2 / Fallback 2</th><th>终止条件 / Termination</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Yahoo Most Active</td>
+            <td class="cell-code">Polygon /most_active</td>
+            <td class="cell-code">Tradier /markets/most-active</td>
+            <td><span class="zh-only">三源全失败 → 沿用T-1 + 飞书告警</span><span class="en-only">All 3 fail → use T-1 + Feishu alert</span></td>
+          </tr>
+          <tr>
+            <td>IBKR 期权链</td>
+            <td class="cell-code">Tradier 期权链</td>
+            <td class="cell-code">Polygon options snapshot</td>
+            <td><span class="zh-only">三源全失败 → 跳过期权指标计算</span><span class="en-only">All 3 fail → skip options metrics</span></td>
+          </tr>
+          <tr>
+            <td>EarningsWhispers</td>
+            <td class="cell-code">Yahoo Earnings Calendar</td>
+            <td class="cell-code">Polygon Reference API</td>
+            <td><span class="zh-only">双源失败 → 财报字段标NA + 警示</span><span class="en-only">Both fail → earnings field = NA + warn</span></td>
+          </tr>
+          <tr>
+            <td>SEC EDGAR 8-K</td>
+            <td class="cell-code">EDGAR 备用接口</td>
+            <td class="cell-code">RSS 订阅</td>
+            <td><span class="zh-only">失败 → 跳过当日 DG-IMM-07 检查</span><span class="en-only">Fail → skip DG-IMM-07 for the day</span></td>
+          </tr>
+          <tr>
+            <td>FRED 宏观日历</td>
+            <td class="cell-code">自维护 JSON 日历</td>
+            <td>—</td>
+            <td><span class="zh-only">自维护即兜底</span><span class="en-only">Self-maintained is the final fallback</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <div class="footer-warn">
+      ⚠ 本方案由 RHCLOUD 自动生成，仅供策略架构设计参考，不构成任何投资建议。<br>
+      期权交易（尤其 PM 账户）具有显著风险，可能导致全部本金损失且损失可超过账户净值。<br>
+      所有阈值需经回测验证后再应用于实盘。<br>
+      <br>
+      ⚠ This document is auto-generated by RHCLOUD for architectural reference only and does not constitute investment advice.<br>
+      Options trading (especially in PM accounts) carries significant risk including total loss of capital exceeding account NLV.<br>
+      All thresholds must be backtested before live deployment.
+    </div>
+  </div>
+
+</main>
+
+<script>
+function setLang(lang) {
+  document.body.className = lang;
+  document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+}
+
+// Scrollspy
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-item[href^="#"]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active-section'));
+      const link = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active-section');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
