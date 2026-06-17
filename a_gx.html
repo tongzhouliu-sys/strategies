@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>猎鹰A股波段系统 · 机构级策略手册</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --navy: #0D1B2A;
+    --navy-mid: #142232;
+    --navy-card: #1A2D42;
+    --navy-border: #243B55;
+    --text-primary: #EAE6DE;
+    --text-secondary: #A8B8C8;
+    --text-muted: #6A7F94;
+    --red: #E05C5C;
+    --red-dim: rgba(224,92,92,0.12);
+    --orange: #E07B3C;
+    --orange-dim: rgba(224,123,60,0.12);
+    --yellow: #D4B84A;
+    --yellow-dim: rgba(212,184,74,0.12);
+    --green: #5CB87A;
+    --green-dim: rgba(92,184,122,0.12);
+    --blue: #5B8DC8;
+    --blue-dim: rgba(91,141,200,0.12);
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text-primary); font-size: 15px; line-height: 1.75; min-height: 100vh; }
+  .term { border-bottom: 1px dashed var(--gold); color: var(--gold-light); cursor: help; position: relative; display: inline-block; font-weight: 500; }
+  .term::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: #0A1520; border: 1px solid var(--gold); color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; line-height: 1.6; padding: 10px 14px; border-radius: var(--radius); width: 260px; text-align: left; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.6); white-space: normal; }
+  .term:hover::after { opacity: 1; }
+  .term::before { content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--gold); opacity: 0; transition: opacity 0.2s ease; z-index: 9999; }
+  .term:hover::before { opacity: 1; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 270px; min-width: 270px; background: var(--navy-mid); border-right: 1px solid var(--navy-border); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.25s ease, min-width 0.25s ease; overflow: hidden; }
+  .sidebar.collapsed { width: 56px; min-width: 56px; }
+  .sidebar-logo { padding: 20px 16px 18px; border-bottom: 1px solid var(--navy-border); flex-shrink: 0; display: flex; align-items: flex-start; gap: 10px; min-height: 90px; overflow: hidden; }
+  .sidebar-logo-text { flex: 1; min-width: 0; opacity: 1; transition: opacity 0.2s ease; }
+  .sidebar.collapsed .sidebar-logo-text { opacity: 0; pointer-events: none; }
+  .sidebar-logo .logo-tag { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 5px; white-space: nowrap; }
+  .sidebar-logo .logo-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text-primary); line-height: 1.35; white-space: nowrap; }
+  .sidebar-logo .logo-ver { font-size: 11px; color: var(--text-muted); margin-top: 4px; white-space: nowrap; }
+  .sidebar-toggle { background: none; border: 1px solid var(--navy-border); border-radius: 6px; width: 28px; height: 28px; min-width: 28px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin-top: 2px; flex-shrink: 0; transition: color 0.15s, border-color 0.15s; }
+  .sidebar-toggle:hover { color: var(--gold); border-color: var(--gold); }
+  .sidebar-toggle svg { transition: transform 0.25s ease; }
+  .sidebar.collapsed .sidebar-toggle svg { transform: rotate(180deg); }
+  .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 0 24px; }
+  .sidebar-nav::-webkit-scrollbar { width: 4px; }
+  .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+  .nav-section-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); padding: 12px 20px 6px; white-space: nowrap; overflow: hidden; opacity: 1; transition: opacity 0.2s; }
+  .sidebar.collapsed .nav-section-label { opacity: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; transition: all 0.15s; border-left: 3px solid transparent; line-height: 1.4; white-space: nowrap; overflow: hidden; }
+  .nav-item:hover { color: var(--gold-light); background: var(--gold-dim); border-left-color: var(--gold); }
+  .nav-item .nav-dot { width: 6px; height: 6px; min-width: 6px; border-radius: 50%; background: var(--navy-border); flex-shrink: 0; transition: background 0.15s; }
+  .nav-item:hover .nav-dot, .nav-item.active .nav-dot { background: var(--gold); }
+  .nav-item-text { overflow: hidden; text-overflow: ellipsis; opacity: 1; transition: opacity 0.15s; }
+  .sidebar.collapsed .nav-item-text { opacity: 0; }
+  .nav-item.sub { padding-left: 34px; font-size: 12.5px; color: var(--text-muted); }
+  .nav-item.sub .nav-dot { width: 4px; height: 4px; min-width: 4px; background: rgba(106,127,148,0.4); }
+  .nav-item.sub:hover { color: var(--text-secondary); }
+  .main { flex: 1; max-width: 960px; padding: 48px 52px; overflow-x: hidden; }
+  .mobile-topbar { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: var(--navy-mid); border-bottom: 1px solid var(--navy-border); padding: 0 16px; height: 56px; align-items: center; gap: 12px; }
+  .mobile-topbar .logo-title-sm { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text-primary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hamburger { background: none; border: 1px solid var(--navy-border); border-radius: 6px; width: 36px; height: 36px; cursor: pointer; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex-shrink: 0; }
+  .hamburger span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 1px; transition: transform 0.2s, opacity 0.2s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 150; opacity: 0; transition: opacity 0.25s; }
+  .mobile-overlay.open { opacity: 1; }
+  .mobile-drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: var(--navy-mid); border-right: 1px solid var(--navy-border); z-index: 160; transform: translateX(-100%); transition: transform 0.25s ease; display: flex; flex-direction: column; overflow: hidden; }
+  .mobile-drawer.open { transform: translateX(0); }
+  .mobile-drawer-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--navy-border); flex-shrink: 0; }
+  .mobile-drawer-logo .logo-tag { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 5px; }
+  .mobile-drawer-logo .logo-title { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--text-primary); line-height: 1.35; }
+  .mobile-drawer-logo .logo-ver { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .mobile-drawer-nav { flex: 1; overflow-y: auto; padding: 12px 0 24px; }
+  .mobile-drawer-nav::-webkit-scrollbar { width: 4px; }
+  .mobile-drawer-nav::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+  .hero { border: 1px solid var(--navy-border); border-radius: var(--radius-lg); padding: 40px 44px; background: var(--navy-card); position: relative; overflow: hidden; margin-bottom: 48px; }
+  .hero::before { content: 'FALCON'; position: absolute; right: -10px; top: -20px; font-family: 'Playfair Display', serif; font-size: 130px; font-weight: 700; color: rgba(201,168,76,0.04); line-height: 1; pointer-events: none; user-select: none; }
+  .hero-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; line-height: 1.25; color: var(--text-primary); margin-bottom: 16px; }
+  .hero-sub { color: var(--text-secondary); font-size: 15px; max-width: 600px; margin-bottom: 28px; }
+  .hero-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .hero-meta-item .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .hero-meta-item .value { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+  .section { margin-bottom: 56px; }
+  .section-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; padding-bottom: 18px; border-bottom: 1px solid var(--navy-border); }
+  .section-num { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3); border-radius: 6px; padding: 4px 9px; flex-shrink: 0; margin-top: 4px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+  .section-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  h3 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--gold-light); margin: 28px 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+  h4 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 20px 0 8px; }
+  p { color: var(--text-secondary); margin-bottom: 12px; }
+  .card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 20px; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 18px 20px; }
+  .stat-card .stat-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-card .stat-value { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--gold-light); }
+  .stat-card .stat-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .callout { border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; display: flex; gap: 12px; align-items: flex-start; font-size: 14px; }
+  .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+  .callout.danger  { background: var(--red-dim);    border: 1px solid rgba(224,92,92,0.3);    color: #F0A0A0; }
+  .callout.warning { background: var(--orange-dim); border: 1px solid rgba(224,123,60,0.3);   color: #F0C0A0; }
+  .callout.info    { background: var(--blue-dim);   border: 1px solid rgba(91,141,200,0.3);   color: #A0C0E0; }
+  .callout.success { background: var(--green-dim);  border: 1px solid rgba(92,184,122,0.3);   color: #A0D4B4; }
+  .callout.gold    { background: var(--gold-dim);   border: 1px solid rgba(201,168,76,0.3);   color: var(--gold-light); }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--navy-border); margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: rgba(201,168,76,0.08); border-bottom: 1px solid var(--navy-border); }
+  thead th { padding: 13px 16px; text-align: left; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid rgba(36,59,85,0.6); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td { padding: 12px 16px; color: var(--text-secondary); vertical-align: top; line-height: 1.6; }
+  tbody td:first-child { color: var(--text-primary); font-weight: 500; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .badge-green  { background: var(--green-dim);  color: var(--green);      border: 1px solid rgba(92,184,122,0.3); }
+  .badge-red    { background: var(--red-dim);    color: var(--red);        border: 1px solid rgba(224,92,92,0.3);  }
+  .badge-orange { background: var(--orange-dim); color: var(--orange);     border: 1px solid rgba(224,123,60,0.3); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow);     border: 1px solid rgba(212,184,74,0.3); }
+  .badge-blue   { background: var(--blue-dim);   color: var(--blue);       border: 1px solid rgba(91,141,200,0.3); }
+  .badge-gold   { background: var(--gold-dim);   color: var(--gold-light); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-gray   { background: rgba(106,127,148,0.15); color: var(--text-muted); border: 1px solid rgba(106,127,148,0.3); }
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-secondary); padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--navy-border); border-radius: var(--radius); }
+  .checklist li::before { content: '☐'; font-size: 15px; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; }
+  .checklist li.required::before { color: var(--gold); }
+  .formula-box { background: #0A1520; border: 1px solid rgba(201,168,76,0.25); border-radius: var(--radius); padding: 20px 24px; margin: 16px 0; font-family: 'DM Mono', monospace; font-size: 13.5px; color: var(--gold-light); line-height: 2; }
+  .formula-box .comment { color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 12px; font-style: italic; }
+  .flow-steps { display: flex; flex-direction: column; gap: 0; position: relative; margin: 20px 0; }
+  .flow-steps::before { content: ''; position: absolute; left: 22px; top: 28px; bottom: 28px; width: 2px; background: var(--navy-border); }
+  .flow-step { display: flex; gap: 20px; padding: 14px 0; position: relative; }
+  .flow-step-num { width: 44px; height: 44px; min-width: 44px; background: var(--navy-card); border: 2px solid var(--navy-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); font-weight: 500; z-index: 1; }
+  .flow-step-body { flex: 1; padding-top: 8px; }
+  .flow-step-body strong { display: block; color: var(--text-primary); font-size: 14px; margin-bottom: 4px; }
+  .flow-step-body span { font-size: 13px; color: var(--text-muted); }
+  .state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .state-card { border-radius: var(--radius); padding: 18px 20px; border: 1px solid; }
+  .state-card.state-a { background: var(--green-dim);  border-color: rgba(92,184,122,0.3); }
+  .state-card.state-b { background: var(--blue-dim);   border-color: rgba(91,141,200,0.3); }
+  .state-card.state-c { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .state-card.state-d { background: var(--red-dim);    border-color: rgba(224,92,92,0.3);  }
+  .state-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .state-badge { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
+  .state-a .state-badge { background: rgba(92,184,122,0.2);  color: var(--green); }
+  .state-b .state-badge { background: rgba(91,141,200,0.2);  color: var(--blue);  }
+  .state-c .state-badge { background: rgba(224,123,60,0.2);  color: var(--orange);}
+  .state-d .state-badge { background: rgba(224,92,92,0.2);   color: var(--red);   }
+  .state-card .state-name { font-size: 13px; font-weight: 600; }
+  .state-a .state-name { color: var(--green); }
+  .state-b .state-name { color: var(--blue);  }
+  .state-c .state-name { color: var(--orange);}
+  .state-d .state-name { color: var(--red);   }
+  .state-card ul { list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 5px; }
+  .state-card ul li { color: var(--text-secondary); }
+  .state-card ul li::before { content: '›  '; color: var(--text-muted); }
+  .circuit-level { border-radius: var(--radius); padding: 20px 22px; margin-bottom: 12px; border: 1px solid; }
+  .circuit-level.l1 { background: var(--yellow-dim); border-color: rgba(212,184,74,0.3); }
+  .circuit-level.l2 { background: var(--orange-dim); border-color: rgba(224,123,60,0.3); }
+  .circuit-level.l3 { background: var(--red-dim);    border-color: rgba(224,92,92,0.35); }
+  .circuit-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .circuit-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .l1 .circuit-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .l2 .circuit-dot { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .l3 .circuit-dot { background: var(--red);    box-shadow: 0 0 8px var(--red);    }
+  .circuit-level h4 { margin: 0; }
+  .l1 h4 { color: var(--yellow); }
+  .l2 h4 { color: var(--orange); }
+  .l3 h4 { color: var(--red);    }
+  .circuit-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13.5px; }
+  .trigger-list, .action-list { display: flex; flex-direction: column; gap: 6px; }
+  .trigger-list .label, .action-list .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .trigger-list li, .action-list li { list-style: none; color: var(--text-secondary); padding-left: 14px; position: relative; }
+  .trigger-list li::before { content: '•'; position: absolute; left: 0; color: var(--text-muted); }
+  .action-list li::before  { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 2px; }
+  .redlines { display: flex; flex-direction: column; gap: 10px; }
+  .redline-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; background: var(--red-dim); border: 1px solid rgba(224,92,92,0.25); border-left: 3px solid var(--red); border-radius: var(--radius); }
+  .redline-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--red); background: rgba(224,92,92,0.1); padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+  .redline-text { font-size: 13.5px; color: #F0A0A0; line-height: 1.6; }
+  .sop-steps { display: flex; flex-direction: column; gap: 12px; }
+  .sop-step { display: flex; gap: 18px; background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 16px 20px; align-items: flex-start; transition: border-color 0.2s; }
+  .sop-step:hover { border-color: rgba(201,168,76,0.3); }
+  .sop-step-icon { font-size: 20px; width: 38px; text-align: center; flex-shrink: 0; }
+  .sop-step-content strong { display: block; font-size: 14px; color: var(--text-primary); margin-bottom: 4px; }
+  .sop-step-content .time-badge { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--gold); background: var(--gold-dim); padding: 1px 7px; border-radius: 3px; margin-right: 8px; }
+  .sop-step-content p { font-size: 13px; color: var(--text-muted); margin: 6px 0 0; }
+  .log-field { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); background: var(--gold-dim); padding: 1px 6px; border-radius: 3px; }
+  .disclaimer { background: var(--navy-mid); border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 20px 24px; font-size: 12.5px; color: var(--text-muted); line-height: 1.8; margin-top: 48px; }
+  .disclaimer strong { color: var(--text-secondary); }
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .mobile-topbar { display: flex; }
+    .mobile-overlay { display: block; }
+    .mobile-drawer { display: flex; }
+    .main { max-width: 100%; padding: 80px 24px 32px; }
+  }
+  @media (max-width: 700px) {
+    .card-grid, .card-grid-3, .state-grid, .circuit-body { grid-template-columns: 1fr; }
+    .hero { padding: 24px 20px; }
+    .hero h1 { font-size: 24px; }
+    .hero-meta { gap: 16px; }
+    .main { padding: 68px 16px 32px; }
+  }
+  @media print {
+    .sidebar, .mobile-topbar, .mobile-overlay, .mobile-drawer { display: none; }
+    .main { padding: 20px; }
+  }
+  code { font-family: 'DM Mono', monospace; font-size: 12.5px; background: rgba(201,168,76,0.08); padding: 1px 6px; border-radius: 3px; color: var(--gold-light); }
+  strong { color: var(--text-primary); }
+  .highlight { color: var(--gold-light); font-weight: 500; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .text-red   { color: var(--red);   }
+  .text-green { color: var(--green); }
+  .text-gold  { color: var(--gold-light); }
+  .text-muted { color: var(--text-muted); }
+  ul.bullets { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 7px; }
+  ul.bullets li { padding-left: 16px; position: relative; color: var(--text-secondary); font-size: 14px; }
+  ul.bullets li::before { content: '—'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 3px; }
+  .divider { border: none; border-top: 1px solid var(--navy-border); margin: 32px 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-family: 'DM Mono', monospace; font-weight: 500; }
+  /* Extra: AI block */
+  .ai-block { background: linear-gradient(135deg, rgba(91,141,200,0.07) 0%, rgba(201,168,76,0.07) 100%); border: 1px solid rgba(91,141,200,0.25); border-radius: var(--radius-lg); padding: 24px 28px; margin: 16px 0; }
+  .ai-block-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .ai-badge { background: rgba(91,141,200,0.15); border: 1px solid rgba(91,141,200,0.3); color: var(--blue); font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 10px; border-radius: 4px; font-weight: 600; letter-spacing: 1px; }
+  .code-block { background: #070F18; border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 18px 22px; margin: 12px 0; font-family: 'DM Mono', monospace; font-size: 12.5px; color: #A8C8E8; line-height: 1.8; overflow-x: auto; white-space: pre; }
+  .code-comment { color: #4A6A7A; }
+  .code-keyword { color: #C8A0E8; }
+  .code-string { color: #A8D8A8; }
+  .code-func { color: var(--gold-light); }
+  .arch-diagram { background: #070F18; border: 1px solid var(--navy-border); border-radius: var(--radius-lg); padding: 28px; margin: 20px 0; }
+  .arch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .arch-box { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .arch-box.gold { border-color: rgba(201,168,76,0.4); background: var(--gold-dim); }
+  .arch-box.blue { border-color: rgba(91,141,200,0.4); background: var(--blue-dim); }
+  .arch-box.green { border-color: rgba(92,184,122,0.4); background: var(--green-dim); }
+  .arch-box.red { border-color: rgba(224,92,92,0.4); background: var(--red-dim); }
+  .arch-arrow { color: var(--text-muted); font-size: 18px; flex-shrink: 0; }
+  .scoring-bar { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+  .scoring-label { width: 180px; font-size: 13px; color: var(--text-secondary); flex-shrink: 0; }
+  .scoring-bar-bg { flex: 1; height: 8px; background: var(--navy-border); border-radius: 4px; overflow: hidden; }
+  .scoring-bar-fill { height: 100%; border-radius: 4px; }
+  .scoring-pts { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold-light); width: 55px; text-align: right; }
+  .fix-tag { display: inline-block; font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 7px; border-radius: 3px; margin-right: 6px; font-weight: 600; vertical-align: middle; }
+  .fix-tag.bug { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .fix-tag.fix { background: var(--green-dim); color: var(--green); border: 1px solid rgba(92,184,122,0.3); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<div class="mobile-topbar">
+  <button class="hamburger" id="hamburgerBtn" aria-label="打开导航"><span></span><span></span><span></span></button>
+  <div class="logo-title-sm">猎鹰A股波段系统 v2.0</div>
+</div>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">猎鹰 A股波段系统</div>
+    <div class="logo-ver">V2.0 · AI增强版 · 2026</div>
+  </div>
+  <div class="mobile-drawer-nav">
+    <div class="nav-section-label">概览</div>
+    <a href="#s0" class="nav-item">原版缺陷修复清单</a>
+    <a href="#s1" class="nav-item">系统架构总览</a>
+    <div class="nav-section-label">核心引擎</div>
+    <a href="#s2" class="nav-item">数据API接入层</a>
+    <a href="#s3" class="nav-item">市场环境引擎</a>
+    <a href="#s4" class="nav-item">AI智能选股系统</a>
+    <a href="#s4a" class="nav-item sub">评分模型 v2</a>
+    <a href="#s4b" class="nav-item sub">负面过滤器</a>
+    <div class="nav-section-label">交易执行</div>
+    <a href="#s5" class="nav-item">T+1合规入场规则</a>
+    <a href="#s6" class="nav-item">量化出场规则</a>
+    <a href="#s7" class="nav-item">仓位与账户风控</a>
+    <div class="nav-section-label">AI辅助</div>
+    <a href="#s8" class="nav-item">AI决策辅助层</a>
+    <a href="#s8a" class="nav-item sub">Prompt模板库</a>
+    <div class="nav-section-label">运营</div>
+    <a href="#s9" class="nav-item">每日SOP流程</a>
+    <a href="#s10" class="nav-item">技术实现代码</a>
+    <a href="#s11" class="nav-item">回测框架</a>
+    <a href="#s12" class="nav-item">铁律红线</a>
+  </div>
+</div>
+
+<nav class="sidebar" id="desktopSidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">
+      <span class="logo-tag">Private Strategy</span>
+      <div class="logo-title">猎鹰 A股波段系统</div>
+      <div class="logo-ver">V2.0 · AI增强版 · 2026</div>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="折叠导航">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">概览</div>
+    <a href="#s0" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">原版缺陷修复清单</span></a>
+    <a href="#s1" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">系统架构总览</span></a>
+    <div class="nav-section-label">核心引擎</div>
+    <a href="#s2" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">数据API接入层</span></a>
+    <a href="#s3" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">市场环境引擎</span></a>
+    <a href="#s4" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">AI智能选股系统</span></a>
+    <a href="#s4a" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">评分模型 v2</span></a>
+    <a href="#s4b" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">负面过滤器</span></a>
+    <div class="nav-section-label">交易执行</div>
+    <a href="#s5" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">T+1合规入场规则</span></a>
+    <a href="#s6" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">量化出场规则</span></a>
+    <a href="#s7" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">仓位与账户风控</span></a>
+    <div class="nav-section-label">AI辅助</div>
+    <a href="#s8" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">AI决策辅助层</span></a>
+    <a href="#s8a" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">Prompt模板库</span></a>
+    <div class="nav-section-label">运营</div>
+    <a href="#s9" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">每日SOP流程</span></a>
+    <a href="#s10" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">技术实现代码</span></a>
+    <a href="#s11" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">回测框架</span></a>
+    <a href="#s12" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">铁律红线</span></a>
+  </div>
+</nav>
+
+<main class="main">
+
+<div class="hero">
+  <div class="hero-eyebrow">A股波段策略 · 机构级内部文件</div>
+  <h1>猎鹰波段捕捉系统<br>V2.0 · AI增强版</h1>
+  <p class="hero-sub">在原版"至尊版散户系统"基础上，修复T+1止损盲区、评分模型漏洞等七大结构性缺陷，并接入AkShare/Tushare数据API + DeepSeek AI决策辅助，构建一套可自动化运行、人机协作的A股波段交易系统。</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">版本</span><span class="value">V2.0</span></div>
+    <div class="hero-meta-item"><span class="label">策略类型</span><span class="value">波段 / 强势股跟踪</span></div>
+    <div class="hero-meta-item"><span class="label">AI模型</span><span class="value">DeepSeek-V3</span></div>
+    <div class="hero-meta-item"><span class="label">数据源</span><span class="value">AkShare + Tushare Pro</span></div>
+    <div class="hero-meta-item"><span class="label">通知</span><span class="value">飞书 Webhook</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════ SECTION 0 ══════════════════ -->
+<section class="section" id="s0">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <div>
+      <div class="section-title">原版缺陷修复清单</div>
+      <div class="section-subtitle">本版本针对原策略七大结构性漏洞的逐项修复方案</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>缺陷编号</th><th>原版问题</th><th>本版修复</th><th>优先级</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="mono">BUG-01</span></td>
+          <td>止损设为"买入当日K线最低点"，T+1制度下当日无法卖出，止损形同虚设</td>
+          <td>止损锚点改为<strong>"入场日收盘价以下N%"</strong>，触发条件为"次日收盘确认破位，第三日开盘止损"</td>
+          <td><span class="badge badge-red">P0 致命</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-02</span></td>
+          <td>自由流通市值 &lt;10亿得15分 反而低于 10-50亿的30分，与策略偏好小市值强势股相矛盾</td>
+          <td>评分模型重构：引入"流动性适配评分"替代单纯市值评分，&lt;10亿须通过日均成交额门槛才得高分</td>
+          <td><span class="badge badge-red">P0 致命</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-03</span></td>
+          <td>两个买点（开盘+缺口低吸）可同时触发，实质变成越跌越摊平</td>
+          <td>两买点改为<strong>互斥逻辑</strong>：优先级制度，买点1触发则买点2取消，反之亦然</td>
+          <td><span class="badge badge-red">P0 致命</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-04</span></td>
+          <td>主线板块用10日涨幅排序，已是滞后指标，易买在热点尾端</td>
+          <td>改用<strong>"板块动能加速度"</strong>：3日涨幅 / 10日涨幅之比 ≥ 0.45 判定为"正在加速"</td>
+          <td><span class="badge badge-orange">P1 重要</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-05</span></td>
+          <td>RPS用20日涨幅，与"缩量整理中的票"形态要求自相矛盾</td>
+          <td>RPS改为<strong>双时间窗口验证</strong>：60日RPS反映中期强势，近5日相对走势反映是否处于整理期</td>
+          <td><span class="badge badge-orange">P1 重要</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-06</span></td>
+          <td>"放量巨阴""不创新高"等出场条件完全主观，无法系统执行</td>
+          <td>全部量化：放量 = 成交量 &gt; 5日均量 × 1.5，巨阴 = 跌幅 &gt; 4%，不创新高 = 连续3日最高价 &lt; 前高</td>
+          <td><span class="badge badge-orange">P1 重要</span></td>
+        </tr>
+        <tr>
+          <td><span class="mono">BUG-07</span></td>
+          <td>缺乏基本面负面过滤，ST、大股东减持、高商誉等风险完全暴露</td>
+          <td>增加<strong>自动负面过滤器</strong>（AkShare API拉取减持公告、ST状态、商誉占净资产比）</td>
+          <td><span class="badge badge-yellow">P2 提升</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 1 ══════════════════ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div>
+      <div class="section-title">系统架构总览</div>
+      <div class="section-subtitle">四层架构：数据层 → 分析层 → AI辅助层 → 执行与通知层</div>
+    </div>
+  </div>
+
+  <div class="arch-diagram">
+    <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px;">SYSTEM ARCHITECTURE</p>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px;">LAYER 1 · 数据采集（15:05 自动触发）</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="arch-box blue">📊 AkShare <span style="color:var(--text-muted);font-size:11px;">免费 · 实时行情/资金流</span></div>
+        <div class="arch-arrow">+</div>
+        <div class="arch-box blue">📈 Tushare Pro <span style="color:var(--text-muted);font-size:11px;">专业 · 减持/财报/北向</span></div>
+        <div class="arch-arrow">+</div>
+        <div class="arch-box blue">📰 新闻API <span style="color:var(--text-muted);font-size:11px;">东方财富/同花顺</span></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px;">LAYER 2 · Python分析引擎（规则确定性逻辑）</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="arch-box gold">🔴 市场环境引擎<br><span style="font-size:11px;color:var(--text-muted);">5因子评分</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box gold">🔍 技术形态筛选<br><span style="font-size:11px;color:var(--text-muted);">涨停+缺口+整理</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box gold">📐 量化评分排序<br><span style="font-size:11px;color:var(--text-muted);">100分制 ≥75入围</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box gold">🛡️ 负面过滤器<br><span style="font-size:11px;color:var(--text-muted);">ST/减持/商誉</span></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px;">LAYER 3 · AI决策辅助（DeepSeek API）</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="arch-box" style="border-color:rgba(91,141,200,0.4);background:rgba(91,141,200,0.08);">🤖 市场情绪简报</div>
+        <div class="arch-arrow">+</div>
+        <div class="arch-box" style="border-color:rgba(91,141,200,0.4);background:rgba(91,141,200,0.08);">📝 个股舆情打分</div>
+        <div class="arch-arrow">+</div>
+        <div class="arch-box" style="border-color:rgba(91,141,200,0.4);background:rgba(91,141,200,0.08);">⚖️ 持仓健康诊断</div>
+        <div class="arch-arrow">+</div>
+        <div class="arch-box" style="border-color:rgba(91,141,200,0.4);background:rgba(91,141,200,0.08);">📊 复盘归因分析</div>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px;">LAYER 4 · 输出与执行</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="arch-box green">🔔 飞书推送<br><span style="font-size:11px;color:var(--text-muted);">候选信号卡片</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box green">👤 人工决策<br><span style="font-size:11px;color:var(--text-muted);">最终确认 ≤5支</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box green">📱 券商APP<br><span style="font-size:11px;color:var(--text-muted);">手动执行 T+1</span></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box green">📋 交易台账<br><span style="font-size:11px;color:var(--text-muted);">自动记录/周复盘</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <span class="callout-icon">💡</span>
+    <div><strong>人机分工铁律</strong>：Python负责所有<strong>确定性规则</strong>（数据拉取、评分计算、止损监控）；AI负责<strong>模糊判断</strong>（新闻情绪、板块逻辑持续性）；人类负责<strong>最终拍板</strong>（是否实际开仓）。AI的任何建议不得直接触发买卖，必须经人工确认。</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 2 ══════════════════ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div>
+      <div class="section-title">数据 API 接入层</div>
+      <div class="section-subtitle">AkShare（免费）+ Tushare Pro（专业数据）双轨并行，成本极低</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔓 AkShare（主力，免费）</h4>
+      <p>覆盖90%+日常所需数据，无需付费。</p>
+      <ul class="bullets">
+        <li>沪深实时行情、日K/周K/分钟K</li>
+        <li>北向资金日净流入（陆股通）</li>
+        <li>两融余额（沪深合计）</li>
+        <li>行业板块涨跌幅（同花顺、申万分类）</li>
+        <li>涨停板数据（每日涨停名单）</li>
+        <li>个股新闻（东方财富接口）</li>
+        <li>指数成分权重、市场宽度数据</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>💎 Tushare Pro（辅助，专业）</h4>
+      <p>约500积分/月免费额度，以下数据AkShare无法获取：</p>
+      <ul class="bullets">
+        <li>大股东/高管减持计划公告</li>
+        <li>商誉明细（每股商誉/占净资产比）</li>
+        <li>机构持股变化（季报口径）</li>
+        <li>可转债强赎公告（影响正股流动性）</li>
+        <li>ST/退市风险警示状态变更</li>
+        <li>业绩预告（预减/预亏）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>关键数据字段映射</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>数据需求</th><th>AkShare接口</th><th>更新频率</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>涨停板数据</td>
+          <td><code>ak.stock_zt_pool_em()</code></td>
+          <td>每日收盘后</td>
+          <td>技术形态初选（近20日有涨停）</td>
+        </tr>
+        <tr>
+          <td>行业板块涨幅</td>
+          <td><code>ak.stock_board_industry_hist_em()</code></td>
+          <td>每日收盘后</td>
+          <td>主线板块动能加速度计算</td>
+        </tr>
+        <tr>
+          <td>北向资金</td>
+          <td><code>ak.stock_hsgt_north_net_flow_in_em()</code></td>
+          <td>盘中实时</td>
+          <td>市场环境评分因子</td>
+        </tr>
+        <tr>
+          <td>两融余额</td>
+          <td><code>ak.stock_margin_detail_szse()</code></td>
+          <td>每日收盘后</td>
+          <td>市场情绪杠杆水位</td>
+        </tr>
+        <tr>
+          <td>日K行情</td>
+          <td><code>ak.stock_zh_a_hist(symbol, adjust='qfq')</code></td>
+          <td>每日收盘后</td>
+          <td>技术指标计算（均线/ATR/缺口）</td>
+        </tr>
+        <tr>
+          <td>个股新闻</td>
+          <td><code>ak.stock_news_em(symbol)</code></td>
+          <td>实时</td>
+          <td>喂入DeepSeek做情绪评分</td>
+        </tr>
+        <tr>
+          <td>减持公告</td>
+          <td>Tushare <code>stk_holdertrade</code></td>
+          <td>公告日</td>
+          <td>负面过滤器（一票否决）</td>
+        </tr>
+        <tr>
+          <td>ST状态</td>
+          <td>Tushare <code>stock_basic</code></td>
+          <td>每日</td>
+          <td>负面过滤器（一票否决）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>推荐部署方式：<strong>GitHub Actions</strong> 定时任务（每个交易日15:05触发），与现有OpenClaw架构完全一致。Python环境安装 <code>akshare</code> + <code>tushare</code> + <code>openai</code> 三个包即可运行全套系统。</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 3 ══════════════════ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div>
+      <div class="section-title">市场环境引擎</div>
+      <div class="section-subtitle">五因子综合评分取代原版单一20日均线红绿灯</div>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚡</span>
+    <div>原版只用"指数是否站上20日线"作为唯一开关，过于粗糙。指数在20日线上方时可能市场宽度极差（只有少数权重股拉动），或板块轮动已进入尾声。本引擎用五个独立因子，综合得分决定仓位上限。</div>
+  </div>
+
+  <h3>五因子评分模型</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>因子</th><th>满分</th><th>评分标准</th><th>数据来源</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>F1 · 趋势方向</td>
+          <td>25分</td>
+          <td>上证+创业板 均收盘 &gt; 20MA且斜率向上：25分<br>收盘 &gt; 20MA但斜率走平：15分<br>收盘 &lt; 20MA：0分</td>
+          <td>AkShare日K</td>
+        </tr>
+        <tr>
+          <td>F2 · 市场宽度</td>
+          <td>25分</td>
+          <td>全A涨跌比（上涨家数/下跌家数）<br>&gt; 2.0: 25分 · 1.0-2.0: 15分 · &lt; 1.0: 0分</td>
+          <td>AkShare实时</td>
+        </tr>
+        <tr>
+          <td>F3 · 北向资金</td>
+          <td>20分</td>
+          <td>近5日北向净流入 &gt; +30亿: 20分<br>-10亿 ~ +30亿: 10分 · &lt; -10亿: 0分</td>
+          <td>AkShare北向</td>
+        </tr>
+        <tr>
+          <td>F4 · 杠杆水位</td>
+          <td>15分</td>
+          <td>两融余额 / 近一年峰值 &lt; 0.75: 15分（安全区）<br>0.75-0.90: 8分（谨慎）· &gt; 0.90: 0分（危险）</td>
+          <td>AkShare两融</td>
+        </tr>
+        <tr>
+          <td>F5 · 波动率环境</td>
+          <td>15分</td>
+          <td>上证5日ATR / 5日ATR均值（20日）<br>&lt; 1.2: 15分（低波，适合建仓）<br>1.2-1.8: 8分 · &gt; 1.8: 0分（高波，收缩）</td>
+          <td>计算所得</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>综合得分 → 仓位上限映射</h3>
+  <div class="state-grid">
+    <div class="state-card state-a">
+      <div class="state-card-header">
+        <span class="state-badge">A</span>
+        <span class="state-name">积极进攻 · 75-100分</span>
+      </div>
+      <ul>
+        <li>最大持仓：总资金 <strong>80%</strong></li>
+        <li>单票上限：<strong>30%</strong>（最多3票）</li>
+        <li>可同时建新仓</li>
+        <li>加仓确认后可满仓</li>
+      </ul>
+    </div>
+    <div class="state-card state-b">
+      <div class="state-card-header">
+        <span class="state-badge">B</span>
+        <span class="state-name">稳健参与 · 50-74分</span>
+      </div>
+      <ul>
+        <li>最大持仓：总资金 <strong>50%</strong></li>
+        <li>单票上限：<strong>20%</strong>（最多2票）</li>
+        <li>只做评分最高的1-2支</li>
+        <li>暂缓加仓</li>
+      </ul>
+    </div>
+    <div class="state-card state-c">
+      <div class="state-card-header">
+        <span class="state-badge">C</span>
+        <span class="state-name">防守轻仓 · 25-49分</span>
+      </div>
+      <ul>
+        <li>最大持仓：总资金 <strong>20%</strong></li>
+        <li>只持已有盈利仓位</li>
+        <li>禁止新开仓</li>
+        <li>收紧止损到10日线</li>
+      </ul>
+    </div>
+    <div class="state-card state-d">
+      <div class="state-card-header">
+        <span class="state-badge">D</span>
+        <span class="state-name">空仓观察 · 0-24分</span>
+      </div>
+      <ul>
+        <li>清仓或接近清仓</li>
+        <li>禁止任何新建仓</li>
+        <li>专注复盘和等待</li>
+        <li>连续5日D级强制清仓</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula-box">
+    市场综合得分 = F1(趋势) + F2(宽度) + F3(北向) + F4(杠杆) + F5(波动率)<br>
+    <span class="comment">// 满分100分 · 每交易日收盘后自动计算并推送飞书</span><br>
+    <span class="comment">// F1缺失或API故障时：F1降权为15分，其余因子权重等比上调</span>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 4 ══════════════════ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div>
+      <div class="section-title">AI 智能选股系统</div>
+      <div class="section-subtitle">技术形态初筛 → 量化评分 → AI情绪验证 → 负面过滤</div>
+    </div>
+  </div>
+
+  <h3>第一步：技术形态初筛（全自动）</h3>
+  <p>以下条件全部满足方可进入候选池（Python自动筛选，无需人工）：</p>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">①</div>
+      <div class="flow-step-body">
+        <strong>近20个交易日内出现首次涨停</strong>
+        <span>排除已涨停超过3次的票（炒作过度），排除连续涨停未整理的票（买入时机过早）。涨停定义：当日收盘涨幅 ≥ 9.9%（排除ST股的±5%上限）。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">②</div>
+      <div class="flow-step-body">
+        <strong>涨停后形成向上跳空缺口且3日内未完全回补</strong>
+        <span>缺口定义：涨停次日开盘价 > 涨停当日最高价。回补定义：缺口形成后3个交易日内，任意一日的最低价 ≤ 涨停日最高价。未回补则保留候选资格。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">③</div>
+      <div class="flow-step-body">
+        <strong>缺口上方出现2-7天缩量整理</strong>
+        <span>缩量定义：整理期日均成交量 ≤ 涨停日成交量的60%。整理定义：高低点均在缺口上沿之上，无新高出现（否则已启动，错过最佳时机）。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">④</div>
+      <div class="flow-step-body">
+        <strong>属于"板块动能加速"的主线板块</strong>
+        <span>计算各行业板块的动能加速度 = 近3日涨幅 / 近10日涨幅。取加速度排名前10的板块作为合法选股范围。比原版10日涨幅排序提前捕捉板块启动节点。</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="s4a">
+  <h3>第二步：量化评分模型 v2（满分100分，门槛75分）</h3>
+
+  <div class="scoring-bar"><span class="scoring-label">板块新鲜度（最高30分）</span><div class="scoring-bar-bg"><div class="scoring-bar-fill" style="width:30%;background:var(--green);"></div></div><span class="scoring-pts">0-30 pts</span></div>
+  <div class="scoring-bar"><span class="scoring-label">60日RPS强度（最高25分）</span><div class="scoring-bar-bg"><div class="scoring-bar-fill" style="width:25%;background:var(--blue);"></div></div><span class="scoring-pts">0-25 pts</span></div>
+  <div class="scoring-bar"><span class="scoring-label">底部距离（最高25分）</span><div class="scoring-bar-bg"><div class="scoring-bar-fill" style="width:25%;background:var(--gold);"></div></div><span class="scoring-pts">0-25 pts</span></div>
+  <div class="scoring-bar"><span class="scoring-label">流动性适配（最高12分）</span><div class="scoring-bar-bg"><div class="scoring-bar-fill" style="width:12%;background:var(--orange);"></div></div><span class="scoring-pts">0-12 pts</span></div>
+  <div class="scoring-bar"><span class="scoring-label">AI情绪加分（最高8分）</span><div class="scoring-bar-bg"><div class="scoring-bar-fill" style="width:8%;background:var(--blue);"></div></div><span class="scoring-pts">0-8 pts</span></div>
+
+  <br>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>指标定义</th><th>满分</th><th>分档标准</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>板块新鲜度</td>
+          <td>所属板块动能加速度<br>= 3日涨幅 / 10日涨幅</td>
+          <td>30分</td>
+          <td>≥ 0.55: 30分（板块正在加速启动）<br>0.35-0.55: 20分（适中）<br>&lt; 0.35: 5分（板块已跑远或停滞）</td>
+        </tr>
+        <tr>
+          <td>RPS强度</td>
+          <td>60日涨幅在全市场的百分位排名（修正原版20日窗口）</td>
+          <td>25分</td>
+          <td>前10%: 25分 · 前25%: 18分<br>前40%: 10分 · 后40%: 0分</td>
+        </tr>
+        <tr>
+          <td>底部距离</td>
+          <td>当前价格距一年最低价涨幅</td>
+          <td>25分</td>
+          <td>≤ 30%: 25分（刚从底部启动）<br>30-50%: 15分 · &gt; 50%: 0分</td>
+        </tr>
+        <tr>
+          <td>流动性适配</td>
+          <td>自由流通市值 + 计划仓位 / 日均成交量适配度（修复原版市值评分逻辑错误）</td>
+          <td>12分</td>
+          <td>计划仓位金额 ≤ 日均成交额 8%: 12分<br>8%-15%: 6分 · &gt; 15%: 0分（流动性风险）</td>
+        </tr>
+        <tr>
+          <td>AI情绪</td>
+          <td>DeepSeek对近7日新闻/公告情绪评分（0-8分，由AI自主打分）</td>
+          <td>8分</td>
+          <td>正面（催化剂明确，无风险信号）: 8分<br>中性: 4分 · 负面/不确定: 0分</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">✅</span>
+    <div>评分模型修复要点：① 板块新鲜度替代滞后的"10日涨幅排序"；② RPS改为60日窗口，避免与整理期形态矛盾；③ 流动性适配彻底替代原版自相矛盾的市值评分；④ AI情绪分为增量信息，不替代任何规则维度。</div>
+  </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="s4b">
+  <h3>第三步：负面过滤器（一票否决，全部自动执行）</h3>
+  <div class="redlines">
+    <div class="redline-item">
+      <span class="redline-num">NF-01</span>
+      <span class="redline-text"><strong>ST / *ST / 退市风险警示（Tushare stock_basic.list_status）。</strong><br>任何ST前缀股票直接排除，无论图形多强。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">NF-02</span>
+      <span class="redline-text"><strong>大股东/高管存在未完成减持计划（Tushare stk_holdertrade）。</strong><br>减持计划起始日至结束日之间，禁止建仓。减持完成后解除。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">NF-03</span>
+      <span class="redline-text"><strong>商誉 / 净资产 &gt; 40%（Tushare balance sheet goodwill字段）。</strong><br>年报季（1-4月）高商誉公司存在集中暴雷风险，一律排除。其余时间阈值放宽至50%。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">NF-04</span>
+      <span class="redline-text"><strong>近30日内有业绩预减/预亏公告（Tushare forecast）。</strong><br>业绩雷往往领先于图形反应，提前排除。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">NF-05</span>
+      <span class="redline-text"><strong>上市不足12个月的次新股。</strong><br>价格发现机制不充分，波动模型不适用，且解禁风险不可预测。</span>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 5 ══════════════════ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div>
+      <div class="section-title">T+1合规入场规则</div>
+      <div class="section-subtitle">完整修复原版T+1盲区，两买点改为互斥逻辑</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>T+1核心约束</strong>：所有买入操作均基于收盘后的筛选结果，次日执行。当日买入的仓位当日不可卖出。因此，止损不能设为"当日K线最低点"，必须以"收盘价"为锚点，允许次日确认，第三日执行。</div>
+  </div>
+
+  <h3>入场触发条件（次日开盘前确认）</h3>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">Pre</div>
+      <div class="flow-step-body">
+        <strong>9:15 盘前确认三个"放行条件"</strong>
+        <span>① 市场环境引擎综合得分 ≥ 50分（B级以上）；② 该股无临时停牌；③ 该股未触发任何新的负面过滤器（减持公告等）。三项全部满足方可下单。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">A</div>
+      <div class="flow-step-body">
+        <strong>买点A（主买点）：开盘价确认入场</strong>
+        <span>开盘价在昨收 <strong>±2%</strong> 以内（相比原版±1.5%略放宽），竞价结束后9:30立即买入 <strong>1/2标准仓位</strong>。若开盘跳空超过+2%，放弃当日买入，等候回踩。若低开超过-2%，同样放弃，等候企稳确认。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">B</div>
+      <div class="flow-step-body">
+        <strong>买点B（替代买点，与A互斥）：缺口上沿低吸</strong>
+        <span>若买点A未触发（开盘超过±2%），则转为买点B：将缺口上沿价格设为<strong>限价单挂单</strong>，等候股价盘中回踩至该位置时买入1/2标准仓位。同日如果股价未触发B，当日不入场，次日重新评估。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">C</div>
+      <div class="flow-step-body">
+        <strong>加仓确认（独立于A/B之外）</strong>
+        <span>初始仓位建立后，股价放量（当日成交量 &gt; 5日均量×1.3）突破整理平台上沿，且次日开盘不破昨日收盘价，确认后追加至满仓（标准仓位的剩余1/2）。加仓后平均成本自动更新，止损位同步上移。</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>T+1合规止损规则（最重要的修复）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>止损类型</th><th>触发条件</th><th>执行动作</th><th>执行时间</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>价格止损</td>
+          <td>入场后任意<strong>收盘日</strong>，收盘价跌破入场当日收盘价的 <strong>-6%</strong>（非当日最低点！）</td>
+          <td>次日开盘前15分钟挂跌停板-2%以上的限价卖单，确保成交</td>
+          <td>确认日次日开盘</td>
+        </tr>
+        <tr>
+          <td>时间止损</td>
+          <td>入场后<strong>7个交易日</strong>内（扩展自原版5日），收盘价涨幅未超过 <strong>+4%</strong></td>
+          <td>第8个交易日开盘卖出，不等待更好价格</td>
+          <td>第8日开盘</td>
+        </tr>
+        <tr>
+          <td>形态止损</td>
+          <td>缺口被<strong>完全回补</strong>（收盘价低于涨停日最高价）</td>
+          <td>次日开盘无条件止损，技术形态逻辑已破坏</td>
+          <td>确认日次日开盘</td>
+        </tr>
+        <tr>
+          <td>板块止损</td>
+          <td>所属主线板块<strong>连续2日</strong>从强势板块排名前20%跌出至后50%</td>
+          <td>次日收盘后评估，若形态仍完整可宽限1日；否则第三日开盘止损</td>
+          <td>灵活（2-3日内）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout gold">
+    <span class="callout-icon">💡</span>
+    <div><strong>T+1止损操作规程</strong>：由于当日买入不可卖出，"止损"在实操中是一个两天流程：D日确认收盘触发 → D+1日开盘执行卖出。因此选股时要更加严格，入场后第一夜的风险是无法规避的，必须通过更高的入场质量来对冲。</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 6 ══════════════════ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div>
+      <div class="section-title">量化出场规则</div>
+      <div class="section-subtitle">移动止盈阶梯全量化，消除原版所有主观词汇</div>
+    </div>
+  </div>
+
+  <h3>移动止盈阶梯（完整量化版）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>浮盈区间</th><th>止盈锚点</th><th>触发条件（量化定义）</th><th>执行动作</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">0%-4%</span></td>
+          <td>入场收盘价 × (1 - 6%)</td>
+          <td>收盘价跌破此价格</td>
+          <td>次日开盘全部止损</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-yellow">4%-8%</span></td>
+          <td>成本价（保本线）</td>
+          <td>收盘价跌破成本价</td>
+          <td>次日开盘全部止损</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">8%-15%</span></td>
+          <td>10日收盘均线</td>
+          <td>收盘价<strong>跌破10日均线</strong>当日 → 减仓1/2；次日收盘仍在10日线下方 → 清仓剩余</td>
+          <td>两步清仓</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">15%-25%</span></td>
+          <td>20日收盘均线</td>
+          <td>收盘价跌破20日均线 → 全部清仓</td>
+          <td>次日开盘止盈</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">25%以上</span></td>
+          <td>20日均线 + 暴利止盈</td>
+          <td>触发以下<strong>任意一项</strong>暴利止盈信号：<br>① 单日成交量 &gt; 5日均量×1.5 且 收盘跌幅 &gt; 4%（放量巨阴）<br>② 连续3个交易日收盘最高价未超过前3日最高价（量化"不创新高"）<br>③ 20日均线跌破</td>
+          <td>次日开盘全部清仓</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula-box">
+    放量巨阴 = (当日成交量 &gt; MA(成交量,5) × 1.5) AND (当日跌幅 &gt; 4%)<br>
+    连续不创新高 = MAX(High, 3) &lt;= MAX(High[-3:-1], 3)<br>
+    <span class="comment">// 以上条件均可用Python pandas一行计算，无需人工判断</span>
+  </div>
+
+  <h3>主动离场信号（额外触发，不依赖止盈线）</h3>
+  <ul class="bullets">
+    <li>所属主线板块当日<strong>涨跌家数全面逆转</strong>：原主线板块当日跌幅超过1.5%，且全市场涨跌比 &lt; 0.5，无论盈亏直接离场</li>
+    <li>持股期间出现<strong>新增减持公告或ST预警</strong>，无论盈亏，次日开盘无条件清仓</li>
+    <li>市场环境引擎当日跌入<strong>D级（0-24分）</strong>，所有持仓次日逐步清仓（允许2日内完成，避免集中踩踏）</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ SECTION 7 ══════════════════ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div>
+      <div class="section-title">仓位管理与账户风控</div>
+      <div class="section-subtitle">三级熔断机制，解决原版"高点"定义模糊问题</div>
+    </div>
+  </div>
+
+  <h3>标准仓位规则</h3>
+  <div class="card-grid-3">
+    <div class="stat-card">
+      <div class="stat-label">单票最大仓位</div>
+      <div class="stat-value">30%</div>
+      <div class="stat-note">A级市场状态下上限，B级降至20%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">最多同时持仓</div>
+      <div class="stat-value">3支</div>
+      <div class="stat-note">总仓位不超过当前市场状态上限</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">初始建仓比例</div>
+      <div class="stat-value">1/2</div>
+      <div class="stat-note">单次买点最多买入标准仓位的一半</div>
+    </div>
+  </div>
+
+  <h3>三级熔断机制（修复原版高点定义不清问题）</h3>
+  <p>高点定义：<strong>每日收盘后计算账户总市值，取过去60个自然日内的最高收盘净值</strong>作为高水位线。回撤基于此滚动高水位线计算，不使用盘中价格。</p>
+
+  <div class="circuit-level l1">
+    <div class="circuit-header">
+      <div class="circuit-dot"></div>
+      <h4>L1 · 预警熔断（回撤 5%）</h4>
+    </div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>账户收盘净值 / 60日高水位 ≤ 0.95</li>
+        <li>连续2日满足即触发（单日可能是正常波动）</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>次日开始禁止新开仓</li>
+        <li>现有持仓止损位全部上移一档</li>
+        <li>当日推送飞书预警通知</li>
+      </div>
+    </div>
+  </div>
+
+  <div class="circuit-level l2">
+    <div class="circuit-header">
+      <div class="circuit-dot"></div>
+      <h4>L2 · 强制减仓（回撤 7%）</h4>
+    </div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>账户收盘净值 / 60日高水位 ≤ 0.93</li>
+        <li>当日收盘即触发，无需连续确认</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>次日开盘卖出盈利最少的持仓，总仓位降至50%以下</li>
+        <li>禁止新开仓，直至回撤恢复至5%以内</li>
+        <li>审查各持仓是否需要提前止损</li>
+      </div>
+    </div>
+  </div>
+
+  <div class="circuit-level l3">
+    <div class="circuit-header">
+      <div class="circuit-dot"></div>
+      <h4>L3 · 无条件清仓（回撤 10%）</h4>
+    </div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>账户收盘净值 / 60日高水位 ≤ 0.90</li>
+        <li>当日收盘即触发</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>次日开盘全部清仓，不留任何仓位</li>
+        <li>强制空仓复盘期：最少10个交易日</li>
+        <li>复盘期结束后，重新完成市场环境评分，方可重新开仓</li>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 8 ══════════════════ -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div>
+      <div class="section-title">AI 决策辅助层</div>
+      <div class="section-subtitle">DeepSeek API 四个接入点，全部为辅助角色，不替代规则判断</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="ai-block">
+      <div class="ai-block-header">
+        <span class="ai-badge">AI-01</span>
+        <strong>每日市场环境简报</strong>
+      </div>
+      <p style="font-size:13px;">每日15:30自动触发。将五因子得分数据、北向资金、两融变化、涨跌比、主要指数K线特征喂入DeepSeek，生成约200字的市场环境判断，包括主要风险点和次日需关注的事件。推送至飞书。</p>
+    </div>
+    <div class="ai-block">
+      <div class="ai-block-header">
+        <span class="ai-badge">AI-02</span>
+        <strong>个股舆情情绪打分</strong>
+      </div>
+      <p style="font-size:13px;">对进入候选池的每支股票，拉取近7日新闻标题和公告摘要，喂入DeepSeek，要求返回0-8分的情绪评分和关键风险点。此分数计入量化评分模型AI情绪维度。</p>
+    </div>
+    <div class="ai-block">
+      <div class="ai-block-header">
+        <span class="ai-badge">AI-03</span>
+        <strong>持仓健康诊断</strong>
+      </div>
+      <p style="font-size:13px;">每日收盘后，将当前持仓状态（入场价/现价/浮盈/止损位/持仓天数/板块状态）喂入AI，要求逐票输出"继续持有/关注/建议止损"三档建议及原因。人工参考后决策。</p>
+    </div>
+    <div class="ai-block">
+      <div class="ai-block-header">
+        <span class="ai-badge">AI-04</span>
+        <strong>周度复盘归因分析</strong>
+      </div>
+      <p style="font-size:13px;">每周五收盘后，将本周所有已平仓交易（入场原因/出场原因/盈亏/市场状态）喂入AI，要求识别盈亏模式、执行偏差、参数调整建议。形成可迭代的策略进化闭环。</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="s8a">
+  <h3>Prompt 模板库</h3>
+
+  <h4>AI-01 每日市场简报 Prompt</h4>
+  <div class="code-block"><span class="code-comment"># 系统提示词</span>
+你是一位A股量化分析师，专注于短线波段交易的市场环境研判。
+语言简洁、数据驱动，不使用模糊语言，每段结论必须有数据支撑。
+
+<span class="code-comment"># 用户输入模板（每日自动填充）</span>
+今日市场环境数据：
+- 上证指数: {close}点，20日均线: {ma20}，偏离: {deviation:.1f}%
+- 创业板指: {cyb_close}点，20日均线: {cyb_ma20}
+- 市场宽度（涨跌比）: {up_count} / {down_count} = {ratio:.2f}
+- 北向资金净流入: {north_flow:.1f}亿（近5日累计: {north_5d:.1f}亿）
+- 两融余额: {margin:.0f}亿（占60日峰值: {margin_pct:.0f}%）
+- 环境综合评分: {env_score}分（{env_grade}级）
+- 今日涨停家数: {zt_count}，昨日: {zt_yesterday}
+
+请输出：① 今日市场环境核心判断（50字内）② 当前主要风险点（3条，各15字内）
+③ 明日需关注事件或数据 ④ 建议仓位上限百分比</div>
+
+  <h4>AI-02 个股舆情评分 Prompt</h4>
+  <div class="code-block"><span class="code-comment"># 系统提示词</span>
+你是A股个股风险评估专家。根据近期新闻和公告，从短线交易视角（7-20日持仓）
+评估该股的情绪和风险状态。输出必须包含JSON格式评分。
+
+<span class="code-comment"># 用户输入模板</span>
+股票代码: {symbol}，名称: {name}，所属板块: {sector}
+近7日新闻标题列表:
+{news_list}
+
+请评估并返回JSON格式：
+{
+  "score": 0-8,  // 情绪分：8=极度正面，0=极度负面
+  "sentiment": "正面/中性/负面",
+  "key_catalyst": "最主要的正面催化剂（20字内）",
+  "key_risk": "最主要的风险点（20字内）",
+  "recommendation": "适合短线持有/谨慎/回避"
+}</div>
+
+  <h4>AI-03 持仓健康诊断 Prompt</h4>
+  <div class="code-block"><span class="code-comment"># 用户输入模板</span>
+当前持仓诊断请求：
+市场环境评分: {env_score}分（{env_grade}级）
+
+持仓列表:
+| 代码 | 名称 | 入场价 | 现收盘 | 浮盈% | 持仓天 | 止损位 | 当前止盈档位 |
+{positions_table}
+
+请逐票输出：
+1. 状态评估: 继续持有 / 密切关注 / 建议止损
+2. 核心理由（20字内）
+3. 下一个关键观察点（价格或时间）</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 9 ══════════════════ -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <div>
+      <div class="section-title">每日 SOP 操作流程</div>
+      <div class="section-subtitle">全自动化任务 + 人工决策节点清单</div>
+    </div>
+  </div>
+
+  <h3>收盘后（15:00 - 17:30）</h3>
+  <div class="sop-steps">
+    <div class="sop-step">
+      <div class="sop-step-icon">⚙️</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:05</span>数据采集脚本启动（自动）</strong>
+        <p>GitHub Actions触发。拉取当日行情、涨停数据、北向资金、两融余额、板块涨跌。约2分钟完成。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">🔢</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:08</span>市场环境引擎计算（自动）</strong>
+        <p>计算五因子得分，判断市场级别（A/B/C/D），确定次日最高可用仓位上限。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">🔍</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:12</span>技术形态筛选（自动）</strong>
+        <p>全市场扫描：涨停+缺口+缩量整理+板块动能加速度。通过负面过滤器（ST/减持/商誉）。生成候选池（通常5-20支）。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">🤖</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:20</span>AI舆情评分（自动）</strong>
+        <p>对候选池每支股票调用DeepSeek API，获取情绪分。候选池 &gt; 10支时，先用量化分过滤至前10，再做AI评分节省token。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">📊</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:30</span>综合评分排序 + 飞书推送（自动）</strong>
+        <p>合并量化评分+AI情绪分，取top 3-5支，生成结构化信号卡片推送飞书。同时推送当日市场环境简报和持仓诊断。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">👤</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">17:00</span>人工复核（必须）</strong>
+        <p>查看飞书推送的信号卡片。逐支确认：① 图形是否符合预期 ② 板块逻辑是否成立 ③ 是否有系统未识别的风险。最终确定次日实际操作名单（通常1-3支）。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>次日盘前（9:00 - 9:30）</h3>
+  <div class="sop-steps">
+    <div class="sop-step">
+      <div class="sop-step-icon">🌅</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">9:00</span>早间风险扫描（自动）</strong>
+        <p>重新检查昨晚至今的减持公告、停牌公告、重大事项。如有新增，立即从操作名单剔除。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">📋</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">9:20</span>核对盘前条件（人工，3分钟）</strong>
+        <p>确认昨日收盘止损是否需要今日执行。确认市场期货（IF/IC）走势，判断今日开盘方向。准备好对应的挂单价格。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">⚡</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">9:25</span>集合竞价观察（人工）</strong>
+        <p>观察目标股竞价情况。若竞价结果在±2%以内，准备9:30买点A入场。若竞价大幅偏离，启动买点B限价挂单逻辑。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">✅</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">9:30</span>执行开仓或止损（人工）</strong>
+        <p>按照前一日确定的计划执行。新仓买入1/2标准仓位。已触发止损的仓位优先处理（T+1约束下，当日买入的不可卖，其余正常止损）。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>持仓期间（每日收盘后5分钟）</h3>
+  <ul class="checklist">
+    <li class="required">检查每个持仓的收盘价是否触发移动止盈阶梯的任一止损线</li>
+    <li class="required">检查是否触发账户级别熔断（L1/L2/L3）</li>
+    <li class="required">查看AI-03持仓健康诊断推送，作为参考（非执行依据）</li>
+    <li>检查是否有加仓确认信号（放量突破平台，明日可追加）</li>
+    <li>更新交易台账：记录当日高低收盘价和持仓天数</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ SECTION 10 ══════════════════ -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <div>
+      <div class="section-title">技术实现 · 核心代码片段</div>
+      <div class="section-subtitle">可直接集成进 GitHub Actions 的 Python 示例</div>
+    </div>
+  </div>
+
+  <h4>安装依赖</h4>
+  <div class="code-block"><span class="code-comment"># requirements.txt</span>
+akshare>=1.14.0
+tushare>=1.4.0
+openai>=1.0.0          <span class="code-comment"># DeepSeek兼容</span>
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+python-dotenv>=1.0.0</div>
+
+  <h4>市场环境引擎（核心函数）</h4>
+  <div class="code-block"><span class="code-keyword">import</span> akshare <span class="code-keyword">as</span> ak
+<span class="code-keyword">import</span> pandas <span class="code-keyword">as</span> pd
+<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-func">calc_market_environment</span>():
+    score = 0
+    details = {}
+
+    <span class="code-comment"># F1: 趋势方向（25分）</span>
+    sh = ak.stock_zh_index_daily(symbol="sh000001").tail(25)
+    sh[<span class="code-string">"ma20"</span>] = sh[<span class="code-string">"close"</span>].rolling(20).mean()
+    sh[<span class="code-string">"slope"</span>] = sh[<span class="code-string">"ma20"</span>].diff(3)
+    f1 = 25 <span class="code-keyword">if</span> (sh[<span class="code-string">"close"</span>].iloc[-1] > sh[<span class="code-string">"ma20"</span>].iloc[-1] <span class="code-keyword">and</span> sh[<span class="code-string">"slope"</span>].iloc[-1] > 0) <span class="code-keyword">else</span> \
+         15 <span class="code-keyword">if</span> sh[<span class="code-string">"close"</span>].iloc[-1] > sh[<span class="code-string">"ma20"</span>].iloc[-1] <span class="code-keyword">else</span> 0
+    score += f1; details[<span class="code-string">"F1_trend"</span>] = f1
+
+    <span class="code-comment"># F2: 市场宽度（25分）</span>
+    adv_dec = ak.stock_advance_decline()  <span class="code-comment"># 涨跌家数</span>
+    ratio = adv_dec[<span class="code-string">"上涨家数"</span>].iloc[-1] / max(adv_dec[<span class="code-string">"下跌家数"</span>].iloc[-1], 1)
+    f2 = 25 <span class="code-keyword">if</span> ratio > 2.0 <span class="code-keyword">else</span> 15 <span class="code-keyword">if</span> ratio > 1.0 <span class="code-keyword">else</span> 0
+    score += f2; details[<span class="code-string">"F2_breadth"</span>] = f2
+
+    <span class="code-comment"># F3: 北向资金（20分）</span>
+    north = ak.stock_hsgt_north_net_flow_in_em(symbol=<span class="code-string">"沪深港通"</span>).tail(5)
+    north_5d = north[<span class="code-string">"净流入"</span>].sum()  <span class="code-comment"># 单位：亿</span>
+    f3 = 20 <span class="code-keyword">if</span> north_5d > 30 <span class="code-keyword">else</span> 10 <span class="code-keyword">if</span> north_5d > -10 <span class="code-keyword">else</span> 0
+    score += f3; details[<span class="code-string">"F3_north"</span>] = f3
+
+    <span class="code-comment"># F4 & F5 类似逻辑省略...</span>
+    grade = <span class="code-string">"A"</span> <span class="code-keyword">if</span> score >= 75 <span class="code-keyword">else</span> <span class="code-string">"B"</span> <span class="code-keyword">if</span> score >= 50 <span class="code-keyword">else</span> <span class="code-string">"C"</span> <span class="code-keyword">if</span> score >= 25 <span class="code-keyword">else</span> <span class="code-string">"D"</span>
+    <span class="code-keyword">return</span> {<span class="code-string">"score"</span>: score, <span class="code-string">"grade"</span>: grade, <span class="code-string">"details"</span>: details}</div>
+
+  <h4>DeepSeek AI情绪评分（API调用）</h4>
+  <div class="code-block"><span class="code-keyword">from</span> openai <span class="code-keyword">import</span> OpenAI
+
+client = OpenAI(
+    api_key=<span class="code-string">"your-deepseek-api-key"</span>,
+    base_url=<span class="code-string">"https://api.deepseek.com"</span>
+)
+
+<span class="code-keyword">def</span> <span class="code-func">ai_sentiment_score</span>(symbol: str, name: str, sector: str, news: list) -> dict:
+    news_text = <span class="code-string">"\n"</span>.join([f<span class="code-string">"- {n}"</span> <span class="code-keyword">for</span> n <span class="code-keyword">in</span> news[:10]])
+    prompt = f<span class="code-string">"""股票: {symbol} {name}，板块: {sector}
+近7日新闻:
+{news_text}
+
+返回JSON（只返回JSON，不要其他文字）:
+{{"score": 0-8, "sentiment": "正面/中性/负面",
+  "key_catalyst": "催化剂20字内", "key_risk": "风险20字内",
+  "recommendation": "适合短线持有/谨慎/回避"}}"""</span>
+
+    resp = client.chat.completions.create(
+        model=<span class="code-string">"deepseek-chat"</span>,
+        messages=[
+            {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: <span class="code-string">"你是A股个股风险评估专家，只返回JSON。"</span>},
+            {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: prompt}
+        ],
+        max_tokens=200
+    )
+    <span class="code-keyword">import</span> json
+    <span class="code-keyword">return</span> json.loads(resp.choices[0].message.content)</div>
+
+  <h4>量化止损监控（每日收盘后执行）</h4>
+  <div class="code-block"><span class="code-keyword">def</span> <span class="code-func">check_stop_loss</span>(position: dict, current_close: float) -> dict:
+    <span class="code-string">"""
+    position = {
+        "symbol": "000001",
+        "entry_close": 10.00,    # 入场日收盘价（T+1锚点）
+        "avg_cost": 10.05,       # 平均成本
+        "days_held": 3,
+        "entry_day_low": 9.80    # 仅用于形态判断，不用于止损执行
+    }
+    """</span>
+    pnl_pct = (current_close - position[<span class="code-string">"avg_cost"</span>]) / position[<span class="code-string">"avg_cost"</span>]
+    entry_close = position[<span class="code-string">"entry_close"</span>]
+
+    <span class="code-comment"># 时间止损（7日内未涨4%）</span>
+    <span class="code-keyword">if</span> position[<span class="code-string">"days_held"</span>] >= 7 <span class="code-keyword">and</span> pnl_pct < 0.04:
+        <span class="code-keyword">return</span> {<span class="code-string">"action"</span>: <span class="code-string">"STOP_TIME"</span>, <span class="code-string">"reason"</span>: <span class="code-string">"7日时间止损"</span>}
+
+    <span class="code-comment"># 价格止损（入场收盘价 -6%）</span>
+    <span class="code-keyword">if</span> current_close < entry_close * 0.94:
+        <span class="code-keyword">return</span> {<span class="code-string">"action"</span>: <span class="code-string">"STOP_PRICE"</span>, <span class="code-string">"reason"</span>: <span class="code-string">"价格止损 -6%"</span>}
+
+    <span class="code-comment"># 移动止盈阶梯</span>
+    <span class="code-keyword">if</span> pnl_pct < 0.04:
+        stop = entry_close * 0.94
+    <span class="code-keyword">elif</span> pnl_pct < 0.08:
+        stop = position[<span class="code-string">"avg_cost"</span>]  <span class="code-comment"># 保本线</span>
+    <span class="code-keyword">elif</span> pnl_pct < 0.15:
+        stop = calc_ma(position[<span class="code-string">"symbol"</span>], 10)  <span class="code-comment"># 10日均线</span>
+    <span class="code-keyword">else</span>:
+        stop = calc_ma(position[<span class="code-string">"symbol"</span>], 20)  <span class="code-comment"># 20日均线</span>
+
+    <span class="code-keyword">if</span> current_close < stop:
+        <span class="code-keyword">return</span> {<span class="code-string">"action"</span>: <span class="code-string">"STOP_TRAIL"</span>, <span class="code-string">"reason"</span>: f<span class="code-string">"移动止盈触发 止损位={stop:.2f}"</span>}
+    <span class="code-keyword">return</span> {<span class="code-string">"action"</span>: <span class="code-string">"HOLD"</span>, <span class="code-string">"pnl_pct"</span>: pnl_pct}</div>
+</section>
+
+<!-- ══════════════════ SECTION 11 ══════════════════ -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <div>
+      <div class="section-title">回测框架</div>
+      <div class="section-subtitle">上线前必须完成的历史验证步骤</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div>原版策略从未提及回测，所有参数（门槛70分、5日时间止损、7%熔断）均为经验判断。本系统所有参数必须经过历史回测验证后方可实盘，否则参数组合只是假设。</div>
+  </div>
+
+  <h3>推荐回测工具：vnpy / backtrader / 纯pandas</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>回测阶段</th><th>测试内容</th><th>目标指标</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>选股信号质量</td>
+          <td>技术形态初筛 + 量化评分，历史上信号触发后N日涨幅分布</td>
+          <td>5日胜率 &gt; 55%，盈亏比 &gt; 1.5:1</td>
+          <td>用2021-2024年数据</td>
+        </tr>
+        <tr>
+          <td>止损参数优化</td>
+          <td>入场收盘 -4% / -6% / -8% 三个止损档位的对比</td>
+          <td>最大化期望值（胜率×平均盈利 - 败率×平均亏损）</td>
+          <td>包含2022年熊市数据</td>
+        </tr>
+        <tr>
+          <td>时间止损参数</td>
+          <td>5日 / 7日 / 10日不涨4%止损的效果对比</td>
+          <td>避免过早止损好票的同时减少资金占用</td>
+          <td>分牛熊市分别测试</td>
+        </tr>
+        <tr>
+          <td>市场环境过滤</td>
+          <td>有/无市场环境引擎过滤，全体信号胜率对比</td>
+          <td>环境过滤应提升胜率 &gt; 8%</td>
+          <td>验证五因子模型有效性</td>
+        </tr>
+        <tr>
+          <td>完整策略</td>
+          <td>选股→建仓→移动止盈→止损全流程模拟</td>
+          <td>年化收益 &gt; 20%，最大回撤 &lt; 20%，Sharpe &gt; 1.0</td>
+          <td>2021-2024年样本外测试</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div><strong>重要提示</strong>：回测必须包含2022年全年熊市数据，这是真正检验策略有效性的压力测试。如果策略在2022年回撤超过30%，说明市场环境过滤器仍需加强。AkShare提供充足的历史数据，无需购买额外数据源。</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SECTION 12 ══════════════════ -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <div>
+      <div class="section-title">铁律红线</div>
+      <div class="section-subtitle">永不触碰的绝对边界，无论市场如何诱惑</div>
+    </div>
+  </div>
+
+  <div class="redlines">
+    <div class="redline-item">
+      <span class="redline-num">RL-01</span>
+      <span class="redline-text"><strong>AI建议不得直接触发买卖指令。</strong><br>DeepSeek的任何输出只作为参考信息，实际买卖决定必须经人工确认。系统不设任何全自动交易路径。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-02</span>
+      <span class="redline-text"><strong>市场环境D级时，禁止任何新开仓操作。</strong><br>即使信号评分再高，市场环境不支持时不得入场。只能维护现有止损。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-03</span>
+      <span class="redline-text"><strong>买入ST/退市警示股票，零容忍。</strong><br>无论评分多高，无论是否通过技术分析认为图形强势，ST股票一律排除在外。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-04</span>
+      <span class="redline-text"><strong>L3熔断触发后，不得在空仓复盘期（10个交易日）内以任何理由重新开仓。</strong><br>市场"看起来好转"不是理由。必须完成10日复盘，并重新完整计算市场环境评分后方可重开。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-05</span>
+      <span class="redline-text"><strong>单日亏损超过总资金2%时，当日停止所有新操作。</strong><br>亏损扩大后的情绪状态不适合继续交易，强制冷却，次日复盘后重新评估。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-06</span>
+      <span class="redline-text"><strong>不做量化评分低于75分的票，哪怕AI情绪分很高。</strong><br>AI情绪加分是加分项，不能用来弥补基础量化分的不足。基础分不过线就是不合格。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-07</span>
+      <span class="redline-text"><strong>T+1止损两天流程不得因"感觉明天会反弹"而延迟执行。</strong><br>D日确认收盘破位 → D+1日必须开盘止损。这条纪律是整个系统最重要的执行纪律。</span>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>免责声明</strong><br>
+    本策略文档为个人研究和策略框架参考，不构成任何投资建议。A股市场存在固有风险，历史回测表现不代表未来收益。所有API数据可能存在延迟或错误，投资者须自行验证关键数据。本文档中的代码示例仅用于演示框架逻辑，不保证在生产环境中的稳定性。投资有风险，操作需谨慎。<br><br>
+    <strong>猎鹰A股波段系统 V2.0 · AI增强版 · 2026年 · 内部研究文件</strong>
+  </div>
+</main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('desktopSidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
+
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileDrawer = document.getElementById('mobileDrawer');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openDrawer() { mobileDrawer.classList.add('open'); mobileOverlay.classList.add('open'); hamburgerBtn.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer() { mobileDrawer.classList.remove('open'); mobileOverlay.classList.remove('open'); hamburgerBtn.classList.remove('open'); document.body.style.overflow = ''; }
+  hamburgerBtn.addEventListener('click', () => { mobileDrawer.classList.contains('open') ? closeDrawer() : openDrawer(); });
+  mobileOverlay.addEventListener('click', closeDrawer);
+  mobileDrawer.querySelectorAll('.nav-item').forEach(link => { link.addEventListener('click', closeDrawer); });
+
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const allNavItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        allNavItems.forEach(item => { item.style.borderLeftColor = 'transparent'; item.style.background = ''; item.style.color = ''; item.classList.remove('active'); });
+        const id = entry.target.id;
+        document.querySelectorAll(`.nav-item[href="#${id}"]`).forEach(active => { active.style.borderLeftColor = 'var(--gold)'; active.style.background = 'var(--gold-dim)'; active.style.color = 'var(--gold-light)'; active.classList.add('active'); });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>猎鹰 V3.0 · A股波段策略</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,0.15);
+    --navy:#0D1B2A;--navy-mid:#142232;--navy-card:#1A2D42;--navy-border:#243B55;
+    --text-primary:#EAE6DE;--text-secondary:#A8B8C8;--text-muted:#6A7F94;
+    --red:#E05C5C;--red-dim:rgba(224,92,92,0.12);
+    --orange:#E07B3C;--orange-dim:rgba(224,123,60,0.12);
+    --yellow:#D4B84A;--yellow-dim:rgba(212,184,74,0.12);
+    --green:#5CB87A;--green-dim:rgba(92,184,122,0.12);
+    --blue:#5B8DC8;--blue-dim:rgba(91,141,200,0.12);
+    --radius:8px;--radius-lg:14px;
+    --shadow:0 4px 24px rgba(0,0,0,0.4);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text-primary);font-size:15px;line-height:1.75;min-height:100vh}
+  /* TOOLTIP */
+  .term{border-bottom:1px dashed var(--gold);color:var(--gold-light);cursor:help;position:relative;display:inline-block;font-weight:500}
+  .term::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#0A1520;border:1px solid var(--gold);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;line-height:1.6;padding:10px 14px;border-radius:var(--radius);width:260px;text-align:left;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.2s ease;box-shadow:0 8px 32px rgba(0,0,0,0.6);white-space:normal}
+  .term:hover::after{opacity:1}
+  .term::before{content:'';position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--gold);opacity:0;transition:opacity 0.2s ease;z-index:9999}
+  .term:hover::before{opacity:1}
+  /* LAYOUT */
+  .layout{display:flex;min-height:100vh}
+  .sidebar{width:270px;min-width:270px;background:var(--navy-mid);border-right:1px solid var(--navy-border);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;flex-shrink:0;transition:width .25s ease,min-width .25s ease;overflow:hidden}
+  .sidebar.collapsed{width:56px;min-width:56px}
+  .sidebar-logo{padding:20px 16px 18px;border-bottom:1px solid var(--navy-border);flex-shrink:0;display:flex;align-items:flex-start;gap:10px;min-height:90px;overflow:hidden}
+  .sidebar-logo-text{flex:1;min-width:0;opacity:1;transition:opacity .2s ease}
+  .sidebar.collapsed .sidebar-logo-text{opacity:0;pointer-events:none}
+  .sidebar-logo .logo-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:5px;white-space:nowrap}
+  .sidebar-logo .logo-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--text-primary);line-height:1.35;white-space:nowrap}
+  .sidebar-logo .logo-ver{font-size:11px;color:var(--text-muted);margin-top:4px;white-space:nowrap}
+  .sidebar-toggle{background:none;border:1px solid var(--navy-border);border-radius:6px;width:28px;height:28px;min-width:28px;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0;transition:color .15s,border-color .15s}
+  .sidebar-toggle:hover{color:var(--gold);border-color:var(--gold)}
+  .sidebar-toggle svg{transition:transform .25s ease}
+  .sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg)}
+  .sidebar-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 0 24px}
+  .sidebar-nav::-webkit-scrollbar{width:4px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:var(--navy-border);border-radius:2px}
+  .nav-section-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);padding:12px 20px 6px;white-space:nowrap;overflow:hidden;opacity:1;transition:opacity .2s}
+  .sidebar.collapsed .nav-section-label{opacity:0}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--text-secondary);text-decoration:none;font-size:13.5px;transition:all .15s;border-left:3px solid transparent;line-height:1.4;white-space:nowrap;overflow:hidden}
+  .nav-item:hover{color:var(--gold-light);background:var(--gold-dim);border-left-color:var(--gold)}
+  .nav-item .nav-dot{width:6px;height:6px;min-width:6px;border-radius:50%;background:var(--navy-border);flex-shrink:0;transition:background .15s}
+  .nav-item:hover .nav-dot,.nav-item.active .nav-dot{background:var(--gold)}
+  .nav-item-text{overflow:hidden;text-overflow:ellipsis;opacity:1;transition:opacity .15s}
+  .sidebar.collapsed .nav-item-text{opacity:0}
+  .nav-item.sub{padding-left:34px;font-size:12.5px;color:var(--text-muted)}
+  .nav-item.sub .nav-dot{width:4px;height:4px;min-width:4px;background:rgba(106,127,148,0.4)}
+  .nav-item.sub:hover{color:var(--text-secondary)}
+  .main{flex:1;max-width:960px;padding:48px 52px;overflow-x:hidden}
+  /* MOBILE */
+  .mobile-topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:200;background:var(--navy-mid);border-bottom:1px solid var(--navy-border);padding:0 16px;height:56px;align-items:center;gap:12px}
+  .mobile-topbar .logo-title-sm{font-family:'Playfair Display',serif;font-size:15px;color:var(--text-primary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hamburger{background:none;border:1px solid var(--navy-border);border-radius:6px;width:36px;height:36px;cursor:pointer;color:var(--text-secondary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
+  .hamburger span{display:block;width:18px;height:2px;background:currentColor;border-radius:1px;transition:transform .2s,opacity .2s}
+  .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .hamburger.open span:nth-child(2){opacity:0}
+  .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+  .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:150;opacity:0;transition:opacity .25s}
+  .mobile-overlay.open{opacity:1}
+  .mobile-drawer{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--navy-mid);border-right:1px solid var(--navy-border);z-index:160;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden}
+  .mobile-drawer.open{transform:translateX(0)}
+  .mobile-drawer-logo{padding:20px 20px 16px;border-bottom:1px solid var(--navy-border);flex-shrink:0}
+  .mobile-drawer-logo .logo-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:5px}
+  .mobile-drawer-logo .logo-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--text-primary);line-height:1.35}
+  .mobile-drawer-logo .logo-ver{font-size:11px;color:var(--text-muted);margin-top:3px}
+  .mobile-drawer-nav{flex:1;overflow-y:auto;padding:12px 0 24px}
+  /* HERO */
+  .hero{border:1px solid var(--navy-border);border-radius:var(--radius-lg);padding:40px 44px;background:var(--navy-card);position:relative;overflow:hidden;margin-bottom:48px}
+  .hero::before{content:'V3';position:absolute;right:-10px;top:-20px;font-family:'Playfair Display',serif;font-size:140px;font-weight:700;color:rgba(201,168,76,0.04);line-height:1;pointer-events:none;user-select:none}
+  .hero-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  .hero h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1.25;color:var(--text-primary);margin-bottom:16px}
+  .hero-sub{color:var(--text-secondary);font-size:15px;max-width:620px;margin-bottom:28px}
+  .hero-meta{display:flex;gap:32px;flex-wrap:wrap}
+  .hero-meta-item{display:flex;flex-direction:column;gap:2px}
+  .hero-meta-item .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+  .hero-meta-item .value{font-size:14px;color:var(--text-secondary);font-weight:500}
+  /* SECTION */
+  .section{margin-bottom:60px}
+  .section-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--navy-border)}
+  .section-num{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:6px;padding:4px 9px;flex-shrink:0;margin-top:4px}
+  .section-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--text-primary);line-height:1.3}
+  .section-subtitle{font-size:13px;color:var(--text-muted);margin-top:4px}
+  h3{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--gold-light);margin:28px 0 12px;text-transform:uppercase;letter-spacing:1px}
+  h4{font-size:14px;font-weight:600;color:var(--text-primary);margin:20px 0 8px}
+  p{color:var(--text-secondary);margin-bottom:12px}
+  /* CARDS */
+  .card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius-lg);padding:24px 28px;margin-bottom:20px}
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+  .stat-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius);padding:18px 20px}
+  .stat-card .stat-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  .stat-card .stat-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--gold-light)}
+  .stat-card .stat-note{font-size:12px;color:var(--text-muted);margin-top:4px}
+  /* CALLOUTS */
+  .callout{border-radius:var(--radius);padding:16px 20px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;font-size:14px}
+  .callout-icon{flex-shrink:0;font-size:16px;margin-top:1px}
+  .callout.danger{background:var(--red-dim);border:1px solid rgba(224,92,92,0.3);color:#F0A0A0}
+  .callout.warning{background:var(--orange-dim);border:1px solid rgba(224,123,60,0.3);color:#F0C0A0}
+  .callout.info{background:var(--blue-dim);border:1px solid rgba(91,141,200,0.3);color:#A0C0E0}
+  .callout.success{background:var(--green-dim);border:1px solid rgba(92,184,122,0.3);color:#A0D4B4}
+  .callout.gold{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);color:var(--gold-light)}
+  /* TABLES */
+  .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--navy-border);margin:16px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead tr{background:rgba(201,168,76,0.08);border-bottom:1px solid var(--navy-border)}
+  thead th{padding:13px 16px;text-align:left;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600;white-space:nowrap}
+  tbody tr{border-bottom:1px solid rgba(36,59,85,0.6);transition:background .15s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:rgba(255,255,255,0.025)}
+  tbody td{padding:12px 16px;color:var(--text-secondary);vertical-align:top;line-height:1.6}
+  tbody td:first-child{color:var(--text-primary);font-weight:500}
+  /* BADGES */
+  .badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.5px}
+  .badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(92,184,122,0.3)}
+  .badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,92,92,0.3)}
+  .badge-orange{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(224,123,60,0.3)}
+  .badge-yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(212,184,74,0.3)}
+  .badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,141,200,0.3)}
+  .badge-gold{background:var(--gold-dim);color:var(--gold-light);border:1px solid rgba(201,168,76,0.3)}
+  .badge-gray{background:rgba(106,127,148,0.15);color:var(--text-muted);border:1px solid rgba(106,127,148,0.3)}
+  /* CHECKLIST */
+  .checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-secondary);padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--navy-border);border-radius:var(--radius)}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--text-muted);flex-shrink:0;margin-top:1px}
+  .checklist li.required::before{color:var(--gold)}
+  /* FORMULA BOX */
+  .formula-box{background:#070F18;border:1px solid rgba(201,168,76,0.25);border-radius:var(--radius);padding:20px 24px;margin:16px 0;font-family:'DM Mono',monospace;font-size:13px;color:var(--gold-light);line-height:2;overflow-x:auto}
+  .formula-box .comment{color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:12px;font-style:italic}
+  /* FLOW STEPS */
+  .flow-steps{display:flex;flex-direction:column;gap:0;position:relative;margin:20px 0}
+  .flow-steps::before{content:'';position:absolute;left:22px;top:28px;bottom:28px;width:2px;background:var(--navy-border)}
+  .flow-step{display:flex;gap:20px;padding:14px 0;position:relative}
+  .flow-step-num{width:44px;height:44px;min-width:44px;background:var(--navy-card);border:2px solid var(--navy-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);font-weight:500;z-index:1}
+  .flow-step-body{flex:1;padding-top:8px}
+  .flow-step-body strong{display:block;color:var(--text-primary);font-size:14px;margin-bottom:4px}
+  .flow-step-body span{font-size:13px;color:var(--text-muted)}
+  /* STATE MATRIX */
+  .state-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0}
+  .state-card{border-radius:var(--radius);padding:18px 20px;border:1px solid}
+  .state-card.state-a{background:var(--green-dim);border-color:rgba(92,184,122,0.3)}
+  .state-card.state-b{background:var(--yellow-dim);border-color:rgba(212,184,74,0.3)}
+  .state-card.state-d{background:var(--red-dim);border-color:rgba(224,92,92,0.3)}
+  .state-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .state-badge{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:3px 10px;border-radius:4px}
+  .state-a .state-badge{background:rgba(92,184,122,0.2);color:var(--green)}
+  .state-b .state-badge{background:rgba(212,184,74,0.2);color:var(--yellow)}
+  .state-d .state-badge{background:rgba(224,92,92,0.2);color:var(--red)}
+  .state-card .state-name{font-size:13px;font-weight:600}
+  .state-a .state-name{color:var(--green)}
+  .state-b .state-name{color:var(--yellow)}
+  .state-d .state-name{color:var(--red)}
+  .state-card ul{list-style:none;font-size:13px;display:flex;flex-direction:column;gap:5px}
+  .state-card ul li{color:var(--text-secondary)}
+  .state-card ul li::before{content:'›  ';color:var(--text-muted)}
+  /* CIRCUIT BREAKER */
+  .circuit-level{border-radius:var(--radius);padding:20px 22px;margin-bottom:12px;border:1px solid}
+  .circuit-level.l1{background:var(--yellow-dim);border-color:rgba(212,184,74,0.3)}
+  .circuit-level.l2{background:var(--orange-dim);border-color:rgba(224,123,60,0.3)}
+  .circuit-level.l3{background:var(--red-dim);border-color:rgba(224,92,92,0.35)}
+  .circuit-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .circuit-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+  .l1 .circuit-dot{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+  .l2 .circuit-dot{background:var(--orange);box-shadow:0 0 8px var(--orange)}
+  .l3 .circuit-dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .circuit-level h4{margin:0}
+  .l1 h4{color:var(--yellow)}
+  .l2 h4{color:var(--orange)}
+  .l3 h4{color:var(--red)}
+  .circuit-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13.5px}
+  .trigger-list,.action-list{display:flex;flex-direction:column;gap:6px}
+  .trigger-list .label,.action-list .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block}
+  .trigger-list li,.action-list li{list-style:none;color:var(--text-secondary);padding-left:14px;position:relative}
+  .trigger-list li::before{content:'•';position:absolute;left:0;color:var(--text-muted)}
+  .action-list li::before{content:'→';position:absolute;left:0;color:var(--gold);font-size:11px;top:2px}
+  /* RED LINES */
+  .redlines{display:flex;flex-direction:column;gap:10px}
+  .redline-item{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;background:var(--red-dim);border:1px solid rgba(224,92,92,0.25);border-left:3px solid var(--red);border-radius:var(--radius)}
+  .redline-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--red);background:rgba(224,92,92,0.1);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+  .redline-text{font-size:13.5px;color:#F0A0A0;line-height:1.6}
+  /* SOP STEPS */
+  .sop-steps{display:flex;flex-direction:column;gap:12px}
+  .sop-step{display:flex;gap:18px;background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius);padding:16px 20px;align-items:flex-start;transition:border-color .2s}
+  .sop-step:hover{border-color:rgba(201,168,76,0.3)}
+  .sop-step-icon{font-size:20px;width:38px;text-align:center;flex-shrink:0}
+  .sop-step-content strong{display:block;font-size:14px;color:var(--text-primary);margin-bottom:4px}
+  .sop-step-content .time-badge{font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);background:var(--gold-dim);padding:1px 7px;border-radius:3px;margin-right:8px}
+  .sop-step-content p{font-size:13px;color:var(--text-muted);margin:6px 0 0}
+  /* MISC */
+  .disclaimer{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:var(--radius);padding:20px 24px;font-size:12.5px;color:var(--text-muted);line-height:1.8;margin-top:48px}
+  .disclaimer strong{color:var(--text-secondary)}
+  code{font-family:'DM Mono',monospace;font-size:12.5px;background:rgba(201,168,76,0.08);padding:1px 6px;border-radius:3px;color:var(--gold-light)}
+  strong{color:var(--text-primary)}
+  .highlight{color:var(--gold-light);font-weight:500}
+  .mono{font-family:'DM Mono',monospace}
+  .text-red{color:var(--red)}.text-green{color:var(--green)}.text-gold{color:var(--gold-light)}.text-muted{color:var(--text-muted)}
+  ul.bullets{list-style:none;padding-left:0;display:flex;flex-direction:column;gap:7px}
+  ul.bullets li{padding-left:16px;position:relative;color:var(--text-secondary);font-size:14px}
+  ul.bullets li::before{content:'—';position:absolute;left:0;color:var(--gold);font-size:11px;top:3px}
+  .divider{border:none;border-top:1px solid var(--navy-border);margin:32px 0}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .log-field{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);background:var(--gold-dim);padding:1px 6px;border-radius:3px}
+  /* CODE BLOCK */
+  .code-block{background:#070F18;border:1px solid var(--navy-border);border-radius:var(--radius);padding:18px 22px;margin:12px 0;font-family:'DM Mono',monospace;font-size:12.5px;color:#A8C8E8;line-height:1.85;overflow-x:auto;white-space:pre}
+  .kw{color:#C8A0E8}.st{color:#A8D8A8}.fn{color:var(--gold-light)}.cm{color:#4A6A7A}
+  /* PRINCIPLE CARDS */
+  .principle-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius-lg);padding:22px 26px;margin-bottom:14px;border-left:3px solid var(--gold)}
+  .principle-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+  .principle-title{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+  .principle-body{font-size:13.5px;color:var(--text-secondary);line-height:1.7}
+  /* SCORING BAR */
+  .scoring-row{display:flex;align-items:center;gap:12px;margin:8px 0}
+  .scoring-label{width:200px;font-size:13px;color:var(--text-secondary);flex-shrink:0}
+  .scoring-bg{flex:1;height:8px;background:var(--navy-border);border-radius:4px;overflow:hidden}
+  .scoring-fill{height:100%;border-radius:4px}
+  .scoring-pts{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold-light);width:55px;text-align:right}
+  /* OVERRIDE TABLE */
+  .override-table{border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--navy-border);margin:16px 0}
+  .override-row{display:grid;grid-template-columns:2fr 1fr;border-bottom:1px solid var(--navy-border)}
+  .override-row:last-child{border-bottom:none}
+  .override-action{padding:12px 18px;font-size:13.5px;color:var(--text-secondary)}
+  .override-perm{padding:12px 18px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--navy-border)}
+  .perm-yes{background:var(--green-dim);color:var(--green)}
+  .perm-no{background:var(--red-dim);color:var(--red)}
+  /* RESPONSIVE */
+  @media(max-width:1100px){.sidebar{display:none}.mobile-topbar{display:flex}.mobile-overlay{display:block}.mobile-drawer{display:flex}.main{max-width:100%;padding:80px 24px 32px}}
+  @media(max-width:700px){.card-grid,.card-grid-3,.state-grid,.circuit-body,.two-col{grid-template-columns:1fr}.hero{padding:24px 20px}.hero h1{font-size:24px}.main{padding:68px 16px 32px}}
+  @media print{.sidebar,.mobile-topbar,.mobile-overlay,.mobile-drawer{display:none}.main{padding:20px}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<div class="mobile-topbar">
+  <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+  <div class="logo-title-sm">猎鹰 V3.0 · A股波段策略</div>
+</div>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-logo">
+    <span class="logo-tag">Private Strategy</span>
+    <div class="logo-title">猎鹰 A股波段系统</div>
+    <div class="logo-ver">V3.0 · 批评驱动版 · 2026</div>
+  </div>
+  <div class="mobile-drawer-nav">
+    <div class="nav-section-label">基础</div>
+    <a href="#s0" class="nav-item">三条根本原则</a>
+    <a href="#s1" class="nav-item">系统架构</a>
+    <div class="nav-section-label">环境判断</div>
+    <a href="#s2" class="nav-item">市场状态引擎</a>
+    <a href="#s2a" class="nav-item sub">小盘/大盘解耦</a>
+    <a href="#s3" class="nav-item">资金质量识别</a>
+    <div class="nav-section-label">选股与建仓</div>
+    <a href="#s4" class="nav-item">选股系统 v3</a>
+    <a href="#s4a" class="nav-item sub">评分模型</a>
+    <a href="#s4b" class="nav-item sub">行业分散规则</a>
+    <a href="#s5" class="nav-item">仓位定价模型</a>
+    <a href="#s6" class="nav-item">分级入场规则</a>
+    <div class="nav-section-label">风险控制</div>
+    <a href="#s7" class="nav-item">止损体系</a>
+    <a href="#s8" class="nav-item">移动止盈</a>
+    <a href="#s9" class="nav-item">状态熔断机制</a>
+    <div class="nav-section-label">纪律</div>
+    <a href="#s10" class="nav-item">人机分工边界</a>
+    <a href="#s11" class="nav-item">参数稳健性</a>
+    <a href="#s12" class="nav-item">每日SOP</a>
+    <a href="#s13" class="nav-item">核心代码</a>
+    <a href="#s14" class="nav-item">铁律红线</a>
+  </div>
+</div>
+
+<nav class="sidebar" id="desktopSidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">
+      <span class="logo-tag">Private Strategy</span>
+      <div class="logo-title">猎鹰 A股波段系统</div>
+      <div class="logo-ver">V3.0 · 批评驱动版 · 2026</div>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">基础</div>
+    <a href="#s0" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">三条根本原则</span></a>
+    <a href="#s1" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">系统架构</span></a>
+    <div class="nav-section-label">环境判断</div>
+    <a href="#s2" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">市场状态引擎</span></a>
+    <a href="#s2a" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">小盘/大盘解耦</span></a>
+    <a href="#s3" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">资金质量识别</span></a>
+    <div class="nav-section-label">选股与建仓</div>
+    <a href="#s4" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">选股系统 v3</span></a>
+    <a href="#s4a" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">评分模型</span></a>
+    <a href="#s4b" class="nav-item sub"><span class="nav-dot"></span><span class="nav-item-text">行业分散规则</span></a>
+    <a href="#s5" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">仓位定价模型</span></a>
+    <a href="#s6" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">分级入场规则</span></a>
+    <div class="nav-section-label">风险控制</div>
+    <a href="#s7" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">止损体系</span></a>
+    <a href="#s8" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">移动止盈</span></a>
+    <a href="#s9" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">状态熔断机制</span></a>
+    <div class="nav-section-label">纪律</div>
+    <a href="#s10" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">人机分工边界</span></a>
+    <a href="#s11" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">参数稳健性</span></a>
+    <a href="#s12" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">每日SOP</span></a>
+    <a href="#s13" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">核心代码</span></a>
+    <a href="#s14" class="nav-item"><span class="nav-dot"></span><span class="nav-item-text">铁律红线</span></a>
+  </div>
+</nav>
+
+<main class="main">
+
+<div class="hero">
+  <div class="hero-eyebrow">A股波段策略 · 批评驱动版 · 第三次迭代</div>
+  <h1>猎鹰波段捕捉系统<br>V3.0 · 从批评中重建</h1>
+  <p class="hero-sub">本版本针对前两版在讨论中暴露的十个结构性问题进行根本性重构：引入资金质量识别层区分上涨原因；用市场状态替代P&L触发熔断；波动率自适应止损；行业分散规则防止主题集中；明确人工不可干预清单；并设立参数稳健性测试框架。</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="label">版本</span><span class="value">V3.0</span></div>
+    <div class="hero-meta-item"><span class="label">核心改变</span><span class="value">状态熔断 · 资金质量 · 行业分散</span></div>
+    <div class="hero-meta-item"><span class="label">仓位设计</span><span class="value">5-8支 × 10-15%</span></div>
+    <div class="hero-meta-item"><span class="label">AI角色</span><span class="value">异常标注（不参与评分）</span></div>
+  </div>
+</div>
+
+<!-- ═══ S0 ═══ -->
+<section class="section" id="s0">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <div>
+      <div class="section-title">三条根本性设计原则</div>
+      <div class="section-subtitle">在写任何具体规则之前，先确立不可违背的哲学基础</div>
+    </div>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-num">原则一 · 风险管理先于收益追求</div>
+    <div class="principle-title">永远不做让自己"输不起"的操作</div>
+    <div class="principle-body">A股单股政策风险、隔夜跌停风险是客观存在的结构性约束，无法通过更好的系统消除，只能通过仓位定价和分散来吸收。任何一笔交易的最坏结果，必须是账户可以承受并继续正常运作的。这意味着：<strong>任何单一持仓的最大可能亏损（包含隔夜缺口风险）≤ 总资金的3%</strong>。这条约束决定仓位上限，而不是反过来。</div>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-num">原则二 · 机械执行先于主观判断</div>
+    <div class="principle-title">人工干预只能让系统更保守，不能让它更激进</div>
+    <div class="principle-body">前两版暴露的最大执行漏洞是：人工确认环节在极端情绪下会系统性地推翻正确决策。解决方案不是消除人工干预，而是<strong>明确划定人工干预的边界</strong>：可以拒绝开仓（只做更保守的选择），可以提前止损（只让风险更小），但不能延迟已触发的机械止损，不能在熔断期内加仓。规则是在情绪平静时制定的，必须在情绪激动时执行。</div>
+  </div>
+
+  <div class="principle-card">
+    <div class="principle-num">原则三 · 简单参数先于精确优化</div>
+    <div class="principle-title">参数来自逻辑推导，而非历史数据拟合</div>
+    <div class="principle-body">止损-8%是因为"A股日内波动约1.5%，允许4-5天整理期的误差"，而不是因为回测时-8%比-7%或-9%效果更好。所有参数必须能用一句话解释其逻辑来源，且经过<strong>±20%敏感性测试</strong>：参数变化20%，策略结论不应根本性改变。满足这两个条件的参数才是稳健的，否则是过拟合。</div>
+  </div>
+</section>
+
+<!-- ═══ S1 ═══ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div>
+      <div class="section-title">系统架构总览</div>
+      <div class="section-subtitle">V3核心变化：状态引擎驱动熔断，资金质量替代AI评分，行业分散硬约束</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>模块</th><th>V1 原版</th><th>V2 修复版</th><th>V3 重建版</th></tr></thead>
+      <tbody>
+        <tr><td>市场环境</td><td>20日线 开/关</td><td>五因子100分制，4级</td><td><strong>三状态 + 小盘/大盘解耦因子</strong></td></tr>
+        <tr><td>上涨原因识别</td><td>无</td><td>无</td><td><strong>资金质量层：大单/散单比，机构 vs 游资</strong></td></tr>
+        <tr><td>选股评分</td><td>100分，AI加分</td><td>100分，AI情绪8分</td><td><strong>100分，AI完全移出评分，只做异常标注</strong></td></tr>
+        <tr><td>行业分散</td><td>无</td><td>无</td><td><strong>硬约束：每申万一级行业最多1个持仓</strong></td></tr>
+        <tr><td>持仓数量</td><td>最多3支</td><td>最多3支 @30%</td><td><strong>5-8支 @10-15%，波动率定仓</strong></td></tr>
+        <tr><td>仓位大小</td><td>固定30%</td><td>固定30%</td><td><strong>目标风险金额 / (止损距离 × 缺口倍数)</strong></td></tr>
+        <tr><td>入场规则</td><td>2个互斥买点</td><td>主买点 + 替代，±2%</td><td><strong>状态分级入场 ±3%/±2%，+盘中二次确认</strong></td></tr>
+        <tr><td>止损锚点</td><td>当日最低点（T+1错误）</td><td>入场收盘价 -6%</td><td><strong>入场收盘价 -8%（更宽），缺口风险已定价入仓位</strong></td></tr>
+        <tr><td>熔断触发</td><td>账户P&L -7%/-10%</td><td>账户P&L -5%/-7%/-10%</td><td><strong>市场状态切换驱动，账户-15%仅作紧急兜底</strong></td></tr>
+        <tr><td>AI角色</td><td>无</td><td>情绪评分8分</td><td><strong>只标注减持/ST/业绩雷等异常，不参与评分</strong></td></tr>
+        <tr><td>人工干预</td><td>随意</td><td>有限制但模糊</td><td><strong>可干预列表 + 禁止干预列表（明文固化）</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ S2 ═══ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div>
+      <div class="section-title">市场状态引擎</div>
+      <div class="section-subtitle">三状态判定，新增小盘/大盘解耦因子，区分"涨的是谁"</div>
+    </div>
+  </div>
+
+  <p>V1/V2最大批评之一：<strong>指标太笼统，没有区分上涨的真实原因</strong>。银行股拉动大盘突破20日线，与小盘科技股获得主力资金介入，是完全不同的市场环境，但前两版的引擎给出相同的"绿灯"信号。V3增加F2"小盘/大盘解耦度"作为核心区分因子。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>因子</th><th>满分</th><th>评分规则</th><th>设计逻辑</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>F1 · 趋势方向</td>
+          <td>20分</td>
+          <td>上证+创业板均 &gt; 20MA且斜率向上: 20分<br>仅价格 &gt; 20MA: 12分<br>&lt; 20MA: 0分</td>
+          <td>基础趋势筛选，不变</td>
+        </tr>
+        <tr>
+          <td><strong>F2 · 小盘/大盘解耦</strong></td>
+          <td><strong>25分</strong></td>
+          <td><span class="badge badge-gold">新增</span> 中证1000近5日涨幅 − 沪深300近5日涨幅<br>差值 &gt; +1.5%: 25分（小盘领涨，适合本策略）<br>差值 -0.5% ~ +1.5%: 12分（同步）<br>差值 &lt; -0.5%: 0分（大盘股主导，策略失效环境）</td>
+          <td><strong>直接回应批评①</strong>：区分"谁在涨"。本策略选小市值强势股，只有小盘股领涨的环境才是真正的利好环境</td>
+        </tr>
+        <tr>
+          <td>F3 · 资金流向</td>
+          <td>20分</td>
+          <td>北向近5日净流入 &gt; +20亿: 20分<br>0 ~ +20亿: 12分<br>&lt; 0: 0分</td>
+          <td>北向资金代表外资意愿</td>
+        </tr>
+        <tr>
+          <td>F4 · 市场宽度</td>
+          <td>20分</td>
+          <td>全市场上涨家数 / 下跌家数<br>&gt; 2.5: 20分 · 1.5-2.5: 12分 · &lt; 1.5: 0分</td>
+          <td>上涨是否具有普遍性</td>
+        </tr>
+        <tr>
+          <td>F5 · 波动率状态</td>
+          <td>15分</td>
+          <td>上证近5日实现波动率 / 近60日均值<br>比值 &lt; 0.8（低波，筑底）: 15分<br>0.8-1.4（正常）: 8分<br>&gt; 1.4（高波，恐慌）: 0分</td>
+          <td>低波动往往是机构建仓阶段，高波动是情绪主导</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="s2a">
+  <h3>三状态划分与仓位上限</h3>
+  <div class="state-grid">
+    <div class="state-card state-a">
+      <div class="state-card-header"><span class="state-badge">进攻</span><span class="state-name">72-100分</span></div>
+      <ul>
+        <li>最多持仓: <strong>8支</strong></li>
+        <li>单票上限: <strong>15%</strong></li>
+        <li>允许开新仓、加仓</li>
+        <li>入场窗口: <strong>±3%</strong></li>
+        <li>可使用盘中二次入场</li>
+      </ul>
+    </div>
+    <div class="state-card state-b">
+      <div class="state-card-header"><span class="state-badge">观望</span><span class="state-name">40-71分</span></div>
+      <ul>
+        <li>最多持仓: <strong>4支</strong></li>
+        <li>单票上限: <strong>12%</strong></li>
+        <li>只允许开新仓，暂停加仓</li>
+        <li>入场窗口: <strong>±2%</strong></li>
+        <li>禁止盘中追高入场</li>
+      </ul>
+    </div>
+    <div class="state-card state-d">
+      <div class="state-card-header"><span class="state-badge">防守</span><span class="state-name">0-39分</span></div>
+      <ul>
+        <li>最多持仓: <strong>2支</strong>（仅现有）</li>
+        <li>禁止开任何新仓</li>
+        <li>现有持仓止损上移一档</li>
+        <li>连续3日防守状态: 触发L2熔断</li>
+        <li>等待状态恢复观望再评估</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+
+  <div class="callout gold">
+    <span class="callout-icon">💡</span>
+    <div><strong>F2是本版最重要的新增因子</strong>。大盘银行/地产轮动拉升，创业板/中证1000滞涨或下跌，此时系统整体得分不高，不会错误发出进攻信号。这正是前两版策略在"指数涨但小盘股跌"的结构性分化行情中容易踏空或被套的根本原因。</div>
+  </div>
+</section>
+
+<!-- ═══ S3 ═══ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div>
+      <div class="section-title">资金质量识别层</div>
+      <div class="section-subtitle">区分机构建仓、游资炒作、散户追高三种上涨性质</div>
+    </div>
+  </div>
+
+  <p>这是V3新增的核心层，直接回应<strong>"指标太笼统，没有区分上涨真实原因"</strong>的批评。同样是涨停+缺口+缩量整理，如果整理期间大单净流入为正（机构悄悄吸筹），后续主升行情的概率远高于大单出货期间散单勉强撑价的情形。</p>
+
+  <h3>三种资金性质的特征矩阵</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>资金性质</th><th>涨停特征</th><th>整理期特征</th><th>大单净买入</th><th>策略评分</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong class="text-green">机构建仓</strong></td>
+          <td>放量涨停，换手率15-25%</td>
+          <td>缩量整理，日均量≤涨停日40%，股价波幅&lt;3%</td>
+          <td><span class="badge badge-green">正且稳定</span> 大单净买入/成交额 &gt; 8%</td>
+          <td>D2得满分25分</td>
+        </tr>
+        <tr>
+          <td><strong class="text-yellow">游资炒作</strong></td>
+          <td>高换手涨停，龙虎榜出现游资席位</td>
+          <td>量能不规则，有小幅放量反弹</td>
+          <td><span class="badge badge-yellow">中性偏正</span> 大单0-8%，小单活跃</td>
+          <td>D2得12-15分</td>
+        </tr>
+        <tr>
+          <td><strong class="text-red">散户接盘</strong></td>
+          <td>低换手或异常高换手（炒作过度）</td>
+          <td>整理期小单买入，大单净卖出</td>
+          <td><span class="badge badge-red">负值</span> 大单净卖出，散户在撑价</td>
+          <td>D2得0分，一票降档</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>数据获取方式</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>方式A：AkShare个股资金流向</h4>
+      <p>接口：<code>ak.stock_individual_fund_flow(symbol)</code></p>
+      <p>字段：超大单净买入、大单净买入、中单、小单净买入（元）。取整理期（涨停后2-7日）的大单净买入额 / 同期总成交额，得到大单占比。</p>
+      <p class="text-muted" style="font-size:12px;">优点：免费，每日更新。局限：T+1发布，无法盘中参考。</p>
+    </div>
+    <div class="card">
+      <h4>方式B：龙虎榜席位判断</h4>
+      <p>接口：<code>ak.stock_lhb_detail_em(date)</code></p>
+      <p>若涨停当日或次日出现机构专用席位（"机构席位"），性质升级为机构主导，D2直接加5分；若出现多个游资席位，保持中性评分。</p>
+      <p class="text-muted" style="font-size:12px;">优点：直接识别机构参与。局限：只有涨停日才有龙虎榜。</p>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>整理期内连续3日大单净卖出，无论其他评分多高，该候选直接从当日列表移除。这不是评分降低，而是性质判断失败——持仓主体在出货，不应该接盘。</div>
+  </div>
+</section>
+
+<!-- ═══ S4 ═══ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div>
+      <div class="section-title">选股系统 V3</div>
+      <div class="section-subtitle">技术形态初筛 → 负面过滤 → 量化评分（AI移出）→ 行业分散检查</div>
+    </div>
+  </div>
+
+  <h3>技术形态初筛（条件不变，定义更精确）</h3>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">①</div>
+      <div class="flow-step-body">
+        <strong>近15个交易日内出现第1次（且不超过2次）涨停</strong>
+        <span>涨停 = 收盘涨幅 ≥ 9.9%。排除：连续涨停（超过2次连板）；ST股的±5%。"近15日"而非20日：缩短窗口过滤掉时机已过的信号。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">②</div>
+      <div class="flow-step-body">
+        <strong>涨停次日开盘价 &gt; 涨停当日最高价，且跳空缺口5日内未完全回补</strong>
+        <span>跳空缺口体现主力不急于回补的控盘意图。"5日未完全回补"：回补定义为任意收盘价 ≤ 涨停当日最高价。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">③</div>
+      <div class="flow-step-body">
+        <strong>缺口上方缩量整理2-7天</strong>
+        <span>整理期日均量 ≤ 涨停日量的50%（比V2的60%更严格）；整理期内无收盘新高（出现新高说明已启动，失去低吸时机）。</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">④</div>
+      <div class="flow-step-body">
+        <strong>所属板块动能加速度排名前15</strong>
+        <span>加速度 = 近3日板块涨幅 / 近10日板块涨幅。取全市场板块加速度前15名，确保股票所在板块正在加速而非已经见顶。</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="s4a">
+  <h3>量化评分模型 V3（满分100分，门槛72分）</h3>
+  <p>V3最重要的评分变化：<strong>AI情绪分完全移除</strong>（不稳定、不可复现、不反映盘口），用"整理期资金质量"（D2，25分）替代。</p>
+
+  <div class="scoring-row"><span class="scoring-label">D1 · 板块加速度新鲜度</span><div class="scoring-bg"><div class="scoring-fill" style="width:25%;background:var(--green)"></div></div><span class="scoring-pts">0-25 pts</span></div>
+  <div class="scoring-row"><span class="scoring-label">D2 · 整理期资金质量</span><div class="scoring-bg"><div class="scoring-fill" style="width:25%;background:var(--blue)"></div></div><span class="scoring-pts">0-25 pts</span></div>
+  <div class="scoring-row"><span class="scoring-label">D3 · 60日RPS强度</span><div class="scoring-bg"><div class="scoring-fill" style="width:20%;background:var(--gold)"></div></div><span class="scoring-pts">0-20 pts</span></div>
+  <div class="scoring-row"><span class="scoring-label">D4 · 底部距离</span><div class="scoring-bg"><div class="scoring-fill" style="width:20%;background:var(--orange)"></div></div><span class="scoring-pts">0-20 pts</span></div>
+  <div class="scoring-row"><span class="scoring-label">D5 · 流动性适配</span><div class="scoring-bg"><div class="scoring-fill" style="width:10%;background:var(--text-muted)"></div></div><span class="scoring-pts">0-10 pts</span></div>
+
+  <br>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>满分</th><th>分档</th><th>V3变化</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>D1 · 板块加速度</td>
+          <td>25分</td>
+          <td>加速度 ≥ 0.5: 25分<br>0.3-0.5: 15分<br>&lt; 0.3: 5分</td>
+          <td>权重从30→25，为D2让路</td>
+        </tr>
+        <tr>
+          <td><strong>D2 · 整理期资金质量</strong></td>
+          <td><strong>25分</strong></td>
+          <td>大单净买入/成交额 &gt; 8%: 25分<br>0%-8%: 15分<br>&lt; 0%（大单净出）: 0分<br>机构席位龙虎榜: +5分加成</td>
+          <td><span class="badge badge-gold">全新替代AI评分</span></td>
+        </tr>
+        <tr>
+          <td>D3 · RPS 60日</td>
+          <td>20分</td>
+          <td>前15%: 20分<br>前30%: 12分<br>前50%: 5分<br>后50%: 0分</td>
+          <td>窗口从20日改为60日（与整理形态不冲突）</td>
+        </tr>
+        <tr>
+          <td>D4 · 底部距离</td>
+          <td>20分</td>
+          <td>一年最低点以上 ≤ 35%: 20分<br>35%-60%: 12分<br>&gt; 60%: 0分</td>
+          <td>上限从50%放宽至60%，适应A股弹性</td>
+        </tr>
+        <tr>
+          <td>D5 · 流动性适配</td>
+          <td>10分</td>
+          <td>计划仓位金额 ≤ 20日均成交额的5%: 10分<br>5%-10%: 5分<br>&gt; 10%: 0分（+一票否决考虑降档）</td>
+          <td>改为20日均成交额（而非单日），更稳定</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="s4b">
+  <h3>行业分散硬约束（回应批评③：持仓集中度）</h3>
+  <div class="callout warning">
+    <span class="callout-icon">⚡</span>
+    <div>前两版最被批评的结构性问题之一：可能同时持有3支AI板块股票，本质是一个押注，而非分散。行业相关性在板块轮动时会同时崩溃。</div>
+  </div>
+  <div class="redlines">
+    <div class="redline-item">
+      <span class="redline-num">硬规则</span>
+      <span class="redline-text"><strong>同一申万一级行业，最多同时持有1个仓位。</strong><br>例：已持有"电子"板块A股，系统不得再推荐同属"电子"的候选股，即使其评分更高。评分排名第2的候选中，如果行业不冲突，优先选入。</span>
+    </div>
+  </div>
+  <p style="margin-top:16px;">行业归属通过 <code>ak.stock_board_industry_cons_em(symbol)</code> 或 Tushare <code>stock_basic</code> 的 <code>industry</code> 字段获取，每日自动检查持仓行业分布。</p>
+  </div>
+
+  <hr class="divider">
+  <h3>负面过滤器（一票否决，不变）</h3>
+  <div class="two-col">
+    <div>
+      <ul class="bullets">
+        <li>ST / *ST / 退市警示（自动排除）</li>
+        <li>有效减持计划执行期内（Tushare）</li>
+        <li>商誉/净资产 &gt; 40%（年报季 &gt; 35%）</li>
+      </ul>
+    </div>
+    <div>
+      <ul class="bullets">
+        <li>近30日有业绩预减/预亏公告</li>
+        <li>上市不足12个月</li>
+        <li>整理期连续3日大单净卖出（新增）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ S5 ═══ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div>
+      <div class="section-title">仓位定价模型</div>
+      <div class="section-subtitle">从"固定30%"改为基于风险预算和缺口概率的动态定仓</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div>前两版批评：固定30%仓位没有考虑A股缺口风险。当股票因负面消息跳空-10%开盘时，你的计划止损-6%已经失效，实际亏损比预期大40%以上。正确做法是<strong>把缺口风险定价进仓位大小</strong>，而不是假装它不存在。</div>
+  </div>
+
+  <h3>仓位定价公式</h3>
+  <div class="formula-box">
+<span class="comment">// 目标：每笔交易最坏情况下，亏损不超过总资金的2%</span>
+
+计划止损距离  = 8%        <span class="comment">// 从入场收盘价，基于逻辑（4-5日正常波动容错）</span>
+缺口风险倍数  = 1.5       <span class="comment">// 实际亏损可能是计划的1.5倍（隔夜跳空 -10% 很常见）</span>
+预期最大亏损  = 8% × 1.5  = 12%   <span class="comment">// 每笔交易预期最坏情况</span>
+单笔风险预算  = 总资金 × 2%       <span class="comment">// 每笔最多亏2%总资金</span>
+
+仓位比例 = 单笔风险预算 / 预期最大亏损
+         = 2% / 12%
+         = 16.7%  →  取整为 <strong>15%</strong>（保守取整）
+
+<span class="comment">// 即：每个仓位最大15%，而非固定30%</span>
+<span class="comment">// 进攻状态最多8支×15% = 120% 理论值，实际总仓位上限80%</span>
+<span class="comment">// 观望状态最多4支×12% = 48%，留出足够现金缓冲</span></div>
+
+  <h3>波动率调整（高波期自动缩仓）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>当日个股ATR / 20日均ATR</th><th>仓位系数</th><th>实际仓位上限</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>&lt; 0.8（低波）</td><td>1.2×</td><td>min(18%, 状态上限)</td><td>低波期可略加仓</td></tr>
+        <tr><td>0.8 - 1.3（正常）</td><td>1.0×</td><td>标准仓位</td><td>标准执行</td></tr>
+        <tr><td>1.3 - 2.0（高波）</td><td>0.7×</td><td>标准仓位 × 70%</td><td>波动扩大，自动缩仓</td></tr>
+        <tr><td>&gt; 2.0（极端波动）</td><td>0.5×</td><td>标准仓位 × 50%</td><td>极端波动，大幅缩仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">✅</span>
+    <div>这个定仓模型解决了两个问题：① 缺口风险被定价进仓位（不假装-6%止损一定能执行）；② 波动率自动调整意味着高风险期系统自我收缩，而非等到账户亏损后被迫熔断。这从根本上减少了熔断被误触发的概率。</div>
+  </div>
+</section>
+
+<!-- ═══ S6 ═══ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div>
+      <div class="section-title">分级入场规则</div>
+      <div class="section-subtitle">状态决定入场窗口宽度，盘中二次确认降低踏空概率</div>
+    </div>
+  </div>
+
+  <p>前版批评：<strong>入场条件太死板，容易踏空强势股</strong>。V3的解决思路不是无限制追高，而是<strong>用市场状态决定容忍度</strong>，同时增加盘中二次入场机制应对跳空情形。</p>
+
+  <h3>主入场（次日开盘，T+1合规）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>市场状态</th><th>开盘入场窗口</th><th>买入比例</th><th>逻辑</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">进攻</span></td><td>开盘价在昨收 <strong>±3%</strong> 以内</td><td>计划仓位的 <strong>1/2</strong></td><td>进攻期放宽至±3%，捕捉强势跳空小缺口</td></tr>
+        <tr><td><span class="badge badge-yellow">观望</span></td><td>开盘价在昨收 <strong>±2%</strong> 以内</td><td>计划仓位的 <strong>1/2</strong></td><td>观望期收窄，谨慎入场</td></tr>
+        <tr><td><span class="badge badge-red">防守</span></td><td>禁止新开仓</td><td>—</td><td>防守期无论多好的信号都不开新仓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>盘中二次入场（应对错过主入场的情形）</h3>
+  <div class="callout info">
+    <span class="callout-icon">ℹ️</span>
+    <div>如果开盘跳空超出入场窗口（如大幅高开+5%），主入场放弃。但股票并非必然失去机会——若盘中回落至昨收+1.5%以内，且回落过程中量能萎缩（缩量回调而非放量出货），可视为二次买点。</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>条件</th><th>要求</th><th>执行</th></tr></thead>
+      <tbody>
+        <tr><td>价格回落</td><td>盘中价格回落至昨收 <strong>+1.5%</strong> 以内（仅在开盘高开超出窗口后适用）</td><td rowspan="3" style="vertical-align:middle">满足全部条件 → 买入计划仓位1/2<br><br>不满足任一 → 放弃当日，次日重新评估</td></tr>
+        <tr><td>时间窗口</td><td>发生在开盘后 <strong>前90分钟</strong> 以内（9:30-11:00）</td></tr>
+        <tr><td>量能验证</td><td>回落期间分时成交量 &lt; 同期5日均量（说明是缩量回调，非出货）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>加仓确认（建立初始仓位后）</h3>
+  <ul class="bullets">
+    <li>股价放量突破整理平台上沿：当日成交量 &gt; 5日均量 × 1.3，且收盘创整理期新高</li>
+    <li>次日开盘不低于突破日收盘 -1%（确认不是假突破）</li>
+    <li>满足以上两条：次日追加至完整仓位（加入剩余1/2）</li>
+    <li>加仓后成本价更新，所有止损线同步重新计算</li>
+  </ul>
+</section>
+
+<!-- ═══ S7 ═══ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div>
+      <div class="section-title">止损体系</div>
+      <div class="section-subtitle">宽止损 + 小仓位，而非窄止损 + 大仓位</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>核心认知修正</strong>：A股T+1制度下，止损的本质不是"在恰好-6%时卖出"，而是"在状态确认破坏后的第一个可执行时间点离场"。止损线宽（-8%）+ 仓位小（≤15%）= 最大亏损可控（-8% × 15% = -1.2%总资金），同时给予足够的整理容忍度。</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>止损类型</th><th>触发条件（精确量化）</th><th>T+1执行方式</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>价格止损</strong></td>
+          <td>任意收盘日，收盘价 &lt; 入场日收盘价 × <strong>0.92</strong><br><span class="text-muted">(止损 -8%，设为-8%的逻辑：A股日内波动约1.5%，允许4日正常误差3×1.5%≈5%，加上缺口容错=8%)</span></td>
+          <td>确认日（D）收盘触发 → <strong>D+1日开盘前5分钟挂单</strong>（不等到9:25竞价，提前挂出比前日收盘低2%的限价卖单，确保快速成交）</td>
+        </tr>
+        <tr>
+          <td><strong>时间止损</strong></td>
+          <td>入场后 <strong>8个交易日</strong>，收盘价涨幅 &lt; <strong>5%</strong><br><span class="text-muted">(8日是因为正常整理期2-7天，加1天容错；5%是覆盖建仓手续费后的最低确认信号)</span></td>
+          <td>第8日收盘确认触发 → <strong>第9日开盘卖出</strong>，无需等待更好价格</td>
+        </tr>
+        <tr>
+          <td><strong>形态止损</strong></td>
+          <td>技术形态完全破坏：缺口被完全回补（收盘价 ≤ 涨停当日最高价）</td>
+          <td>形态破坏日收盘确认 → <strong>次日开盘止损</strong>。策略的选股逻辑已失效，缺口消失意味着此轮行情分析错误。</td>
+        </tr>
+        <tr>
+          <td><strong>事件止损</strong></td>
+          <td>持仓期间出现：① 新增减持公告；② 监管问询函；③ 业绩预减 &gt; 50%；④ 临时停牌超2日</td>
+          <td>公告当日确认 → <strong>次日开盘无条件止损</strong>，不管当时浮盈/浮亏如何</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>缺口风险的诚实评估</h3>
+  <p>前版批评说得准确：<strong>止损挂次日开盘，实际亏损会远大于计划</strong>。这个问题无法通过系统设计完全消除，只能管理。V3的处理方式是：</p>
+  <ul class="bullets">
+    <li>在仓位定价时已将缺口倍数（1.5×）纳入计算，接受"最坏情况-12%"</li>
+    <li>绝不持有临近重大事件（财报、监管听证、央行决议）的仓位过夜</li>
+    <li>绝不在已有负面信号（减持计划公告、商誉警告）后继续持有</li>
+    <li>缺口风险是A股的结构性成本，接受它，而不是用更复杂的规则假装能规避</li>
+  </ul>
+</section>
+
+<!-- ═══ S8 ═══ -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div>
+      <div class="section-title">移动止盈阶梯</div>
+      <div class="section-subtitle">完整量化，消灭所有主观词汇，在保护利润的同时给空间</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>浮盈区间</th><th>止盈锚点</th><th>触发条件（量化）</th><th>执行</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">0%-5%</span></td>
+          <td>入场收盘价 × 0.92</td>
+          <td>收盘价 &lt; 入场收盘 × 0.92</td>
+          <td>次日开盘全部止损</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-yellow">5%-12%</span></td>
+          <td>成本价（保本线）</td>
+          <td>收盘价 &lt; 平均建仓成本</td>
+          <td>次日开盘全部止损</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">12%-22%</span></td>
+          <td>10日收盘均线</td>
+          <td>收盘价跌破10日MA → 减仓1/2；次日收盘仍低于10日MA → 清仓剩余</td>
+          <td>两步清仓（容错一日）</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">22%-35%</span></td>
+          <td>20日收盘均线</td>
+          <td>收盘价跌破20日MA</td>
+          <td>次日开盘全部止盈</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">35%以上</span></td>
+          <td>20日MA + 暴利止盈</td>
+          <td>触发<strong>任意一项</strong>：<br>① 成交量 &gt; MA(量,5) × 1.5 且当日跌幅 &gt; 4%（放量大阴）<br>② MAX(近3日High) ≤ MAX(再前3日High)（连续3日不创新高）<br>③ 收盘价 &lt; 20日MA</td>
+          <td>次日开盘全部止盈</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula-box">
+<span class="comment">// 所有止盈条件量化为Python一行代码，无任何主观判断</span>
+
+放量大阴 = (vol &gt; vol.rolling(5).mean() * 1.5) & (close/open - 1 &lt; -0.04)
+连续不创新高 = high.rolling(3).max() &lt;= high.shift(3).rolling(3).max()
+止盈触发 = 放量大阴 | 连续不创新高 | (close &lt; ma20)</div>
+</section>
+
+<!-- ═══ S9 ═══ -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <div>
+      <div class="section-title">状态熔断机制</div>
+      <div class="section-subtitle">用"市场状态变化"触发熔断，而非"账户已经亏损多少"</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>根本性重设计</strong>：V1/V2批评最强烈的两个问题——<strong>"熔断线与A股波动不匹配"</strong>和<strong>"熔断在连续下跌中加速亏损"</strong>——都源于同一个设计错误：用账户P&L的后验指标来触发风险减量操作。更好的逻辑是：当市场状态本身恶化时（前向指标），主动减仓；而不是等到账户已经亏损后（后验指标），被迫卖在最低点。</div>
+  </div>
+
+  <div class="circuit-level l1">
+    <div class="circuit-header"><div class="circuit-dot"></div><h4>L1 · 预警冻结（市场状态：进攻 → 观望）</h4></div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>市场状态引擎得分从 ≥72 跌至 40-71</li>
+        <li>当日收盘计算，即时生效</li>
+        <li>不需要持续确认（单日切换即触发）</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>次日起：禁止开任何新仓</li>
+        <li>所有止损线提高一档（如：在用20日MA的提升至10日MA）</li>
+        <li>暂停所有加仓计划</li>
+        <li>飞书推送L1预警通知</li>
+      </div>
+    </div>
+  </div>
+
+  <div class="circuit-level l2">
+    <div class="circuit-header"><div class="circuit-dot"></div><h4>L2 · 减量清理（市场状态进入防守 OR 防守持续2日）</h4></div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>状态引擎得分跌至 &lt;40（防守状态）</li>
+        <li>OR：连续2个交易日维持观望状态（40-55分）且有下行趋势</li>
+        <li>当日收盘即触发</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>在2个交易日内，卖出评分最低的50%持仓</li>
+        <li>（允许2日分散卖出，避免同时砸盘）</li>
+        <li>剩余仓位止损全部上移至成本价以上</li>
+        <li>等待状态恢复至观望后才重新评估</li>
+      </div>
+    </div>
+  </div>
+
+  <div class="circuit-level l3">
+    <div class="circuit-header"><div class="circuit-dot"></div><h4>L3 · 全面撤退（防守状态持续3日）</h4></div>
+    <div class="circuit-body">
+      <div class="trigger-list">
+        <span class="label">触发条件</span>
+        <li>状态引擎连续3个交易日维持防守（&lt;40分）</li>
+        <li>第3日收盘确认触发</li>
+      </div>
+      <div class="action-list">
+        <span class="label">强制动作</span>
+        <li>3个交易日内完成全部清仓</li>
+        <li>（分3天执行，避免集中踩踏自己的仓位）</li>
+        <li>强制空仓观察期：10个交易日</li>
+        <li>观察期结束后重新运行市场状态引擎</li>
+      </div>
+    </div>
+  </div>
+
+  <h3>账户级紧急兜底（更宽，避免误触发）</h3>
+  <p>状态熔断是主要机制。账户P&L熔断仅作为极端异常情况的最后保障，设置大幅放宽，避免正常波动误触发：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>触发条件</th><th>执行动作</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>账户净值从60日高水位回撤 <strong>15%</strong></td><td>次日开盘全部清仓</td><td>此时状态熔断应已早先触发，此为最终兜底</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">✅</span>
+    <div>V3熔断机制的核心改进：<strong>触发时间提前了3-5个交易日</strong>（状态变差 vs 账户已亏损），意味着减仓操作发生在市场趋势刚开始恶化时，而非已经下跌一段后。这从根本上解决了"被迫在最低点卖出"的恶性循环问题。</div>
+  </div>
+</section>
+
+<!-- ═══ S10 ═══ -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <div>
+      <div class="section-title">人机分工边界</div>
+      <div class="section-subtitle">明文固化哪些操作人工可以做，哪些绝对不能做</div>
+    </div>
+  </div>
+
+  <p>批评⑩说得最透彻：<strong>人工确认在极端行情下会推翻既定规则，导致纪律失效</strong>。解决方案不是完全自动化，而是<strong>把人工可干预的边界明文写死</strong>。人工永远只能选择"更保守"的方向。</p>
+
+  <div class="override-table">
+    <div class="override-row" style="background:rgba(201,168,76,0.05)">
+      <div class="override-action" style="font-weight:600;color:var(--text-muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase">人工干预动作</div>
+      <div class="override-perm" style="border-left:1px solid var(--navy-border);font-size:11px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;justify-content:center;background:rgba(201,168,76,0.05)">是否允许</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">拒绝开新仓（系统推荐但人工认为不合适）</div>
+      <div class="override-perm perm-yes">✅ 允许</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">提前止损（在机械止损触发前主动离场）</div>
+      <div class="override-perm perm-yes">✅ 允许</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">将止损线收紧（比规则更保守）</div>
+      <div class="override-perm perm-yes">✅ 允许</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">因临时重要信息（政策突变等）提前清仓</div>
+      <div class="override-perm perm-yes">✅ 允许</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">延迟已触发的价格止损（"感觉会反弹"）</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">延迟已触发的时间止损（"再观察两天"）</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">超越当前市场状态上限加仓</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">在L2/L3熔断期内开新仓</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">在L3空仓期结束前重新入场</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">违反行业分散规则开仓（"这支值得例外"）</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+    <div class="override-row">
+      <div class="override-action">持有触发负面过滤器的股票不止损</div>
+      <div class="override-perm perm-no">❌ 禁止</div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <span class="callout-icon">💡</span>
+    <div>这个列表需要打印出来贴在显示器旁边。交易纪律在平静时容易维持，在极端恐慌或贪婪时才是真正的考验。禁止列表里的每一项，都是历史上真实发生过的"因情绪破坏纪律"场景。</div>
+  </div>
+</section>
+
+<!-- ═══ S11 ═══ -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <div>
+      <div class="section-title">参数稳健性测试框架</div>
+      <div class="section-subtitle">回应批评：参数可能是为凑历史数据而精心挑选的</div>
+    </div>
+  </div>
+
+  <p>每个关键参数都需要通过<strong>两项测试</strong>才能采用：① 逻辑测试（能用一句话解释为什么是这个数字）；② 敏感性测试（±20%变化后结论不根本性改变）。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>当前值</th><th>逻辑来源</th><th>±20%敏感性检查</th></tr></thead>
+      <tbody>
+        <tr><td>价格止损距离</td><td>-8%</td><td>A股日内波动约1.5%，允许4-5日整理容错</td><td>-6.4% / -9.6% → 结论方向不变，期望值略有差异</td></tr>
+        <tr><td>时间止损天数</td><td>8日</td><td>正常整理期2-7天，加1天容错</td><td>6日 / 10日 → 选股质量更重要，±2天影响有限</td></tr>
+        <tr><td>缺口风险倍数</td><td>1.5×</td><td>隔夜跳空-10%在A股约发生概率15%，平均缺口1.5× 计划止损</td><td>1.3× / 1.8× → 仓位微调，整体框架不变</td></tr>
+        <tr><td>行业分散上限</td><td>每行业1支</td><td>消除同行业相关性，防板块轮动集体杀跌</td><td>这是硬约束而非优化参数，不做敏感性测试</td></tr>
+        <tr><td>评分门槛</td><td>72分</td><td>接近3/4总分，选取前15-20%候选</td><td>65 / 80 → 候选数量变化，但平均质量不应根本改变</td></tr>
+        <tr><td>状态L2触发</td><td>防守持续2日</td><td>单日异常波动不代表趋势，2日确认避免过激反应</td><td>1日 / 3日 → 反应速度差异，不影响最终保护效果</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>回测必须涵盖的市场情景</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>📉 2022年全年熊市</h4>
+      <p>最重要的压力测试。如果策略在2022年最大回撤超过25%，说明市场状态引擎在识别趋势性下跌时存在滞后，需要重新调整F1/F5权重。</p>
+    </div>
+    <div class="card">
+      <h4>📊 2023-2024年结构性分化</h4>
+      <p>大盘涨但小盘股分化严重的环境。F2因子（小盘/大盘解耦）的有效性验证。如果F2在此区间有效降低了错误信号，说明设计成立。</p>
+    </div>
+    <div class="card">
+      <h4>🚀 2020年/2021年牛市</h4>
+      <p>验证策略能否在真正的强势行情中赚到足够多的钱。如果牛市中表现平平，说明止盈过早或入场太保守。</p>
+    </div>
+    <div class="card">
+      <h4>⚡ 2024年9月急涨行情</h4>
+      <p>极端快速拉升场景。验证入场条件（开盘窗口）是否在行情启动的第一周就能抓到，以及止盈机制是否过早离场。</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <span class="callout-icon">⚡</span>
+    <div>如果没有时间进行完整回测，<strong>至少做参数敏感性测试</strong>：将表格中每个参数依次调整±20%，观察信号数量和平均评分是否平稳变化（而非崖式崩溃）。崩溃说明参数在拟合噪声，而非真实规律。</div>
+  </div>
+</section>
+
+<!-- ═══ S12 ═══ -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <div>
+      <div class="section-title">每日 SOP 操作流程</div>
+      <div class="section-subtitle">精简到执行者能在30分钟内完成全部人工步骤</div>
+    </div>
+  </div>
+
+  <h3>自动化流程（无需人工，GitHub Actions定时执行）</h3>
+  <div class="sop-steps">
+    <div class="sop-step">
+      <div class="sop-step-icon">⚙️</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:05</span>数据采集</strong>
+        <p>拉取当日行情、涨停池、北向资金、两融、板块涨幅、个股大单流向（AkShare），减持公告更新（Tushare）。约3分钟。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">🧮</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:10</span>状态引擎 + 候选池生成</strong>
+        <p>计算五因子市场状态得分，判断进攻/观望/防守。扫描技术形态初筛，通过负面过滤器，计算D1-D5评分。输出候选列表（≥72分）。</p>
+      </div>
+    </div>
+    <div class="sop-step">
+      <div class="sop-step-icon">🔔</div>
+      <div class="sop-step-content">
+        <strong><span class="time-badge">15:25</span>飞书推送日报</strong>
+        <p>推送：① 市场状态卡片（分数+级别+熔断状态）；② 候选信号卡片（每支含D1-D5评分、资金质量评级、计划仓位）；③ 当前持仓止损监控结果（是否触发任何止损）。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>人工步骤（目标：每日30分钟内完成）</h3>
+  <ul class="checklist">
+    <li class="required">【5分钟】阅读飞书日报，确认市场状态和持仓止损状态</li>
+    <li class="required">【10分钟】逐支查看候选信号：图形复核（缺口/整理是否符合预期）、行业分散检查（是否与现有持仓重行业）</li>
+    <li class="required">【5分钟】确定次日实际操作清单：新建仓几支、是否有触发止损的仓位需次日执行</li>
+    <li>【5分钟】确认计划仓位大小（代入波动率调整系数）</li>
+    <li>【5分钟】设置次日手机提醒：开盘观察目标股竞价情况</li>
+  </ul>
+
+  <h3>次日盘前（9:15-9:30，约15分钟）</h3>
+  <ul class="checklist">
+    <li class="required">确认有无隔夜公告触发事件止损（减持、业绩预警等）</li>
+    <li class="required">观察目标股9:15竞价价格，判断走哪个入场路径（主入场 or 等盘中二次确认）</li>
+    <li class="required">优先执行已触发的止损操作（止损先于建仓）</li>
+    <li>9:30准时执行开仓指令（不等待）</li>
+  </ul>
+</section>
+
+<!-- ═══ S13 ═══ -->
+<section class="section" id="s13">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <div>
+      <div class="section-title">核心代码片段</div>
+      <div class="section-subtitle">可直接用于生产环境的关键函数</div>
+    </div>
+  </div>
+
+  <h4>市场状态引擎（含F2小盘/大盘解耦）</h4>
+  <div class="code-block"><span class="kw">import</span> akshare <span class="kw">as</span> ak
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">def</span> <span class="fn">calc_market_state</span>() -> dict:
+    score, details = 0, {}
+
+    <span class="cm"># F1: 趋势方向（20分）</span>
+    sh = ak.stock_zh_index_daily(symbol=<span class="st">"sh000001"</span>).tail(25)
+    ma20 = sh[<span class="st">"close"</span>].rolling(20).mean().iloc[-1]
+    slope = sh[<span class="st">"close"</span>].rolling(20).mean().diff(3).iloc[-1]
+    f1 = 20 <span class="kw">if</span> (sh[<span class="st">"close"</span>].iloc[-1] > ma20 <span class="kw">and</span> slope > 0) <span class="kw">else</span> 12 <span class="kw">if</span> sh[<span class="st">"close"</span>].iloc[-1] > ma20 <span class="kw">else</span> 0
+    score += f1; details[<span class="st">"F1"</span>] = f1
+
+    <span class="cm"># F2: 小盘/大盘解耦（25分）—— V3 核心新增</span>
+    zz1000 = ak.index_zh_a_hist(symbol=<span class="st">"000852"</span>).tail(6)[<span class="st">"收盘"</span>]
+    hs300  = ak.index_zh_a_hist(symbol=<span class="st">"000300"</span>).tail(6)[<span class="st">"收盘"</span>]
+    r1000 = zz1000.iloc[-1] / zz1000.iloc[0] - 1
+    r300  = hs300.iloc[-1]  / hs300.iloc[0]  - 1
+    spread = r1000 - r300    <span class="cm"># 中证1000 vs 沪深300 近5日收益差</span>
+    f2 = 25 <span class="kw">if</span> spread > 0.015 <span class="kw">else</span> 12 <span class="kw">if</span> spread > -0.005 <span class="kw">else</span> 0
+    score += f2; details[<span class="st">"F2_spread"</span>] = round(spread*100, 2)
+
+    <span class="cm"># F3: 北向资金（20分）</span>
+    north_df = ak.stock_hsgt_north_net_flow_in_em(symbol=<span class="st">"沪深港通"</span>).tail(5)
+    north_5d = north_df[<span class="st">"净买入额"</span>].sum() / 1e8    <span class="cm"># 转换为亿</span>
+    f3 = 20 <span class="kw">if</span> north_5d > 20 <span class="kw">else</span> 12 <span class="kw">if</span> north_5d > 0 <span class="kw">else</span> 0
+    score += f3
+
+    <span class="cm"># F4/F5 逻辑类似，省略...</span>
+
+    grade = <span class="st">"进攻"</span> <span class="kw">if</span> score >= 72 <span class="kw">else</span> <span class="st">"观望"</span> <span class="kw">if</span> score >= 40 <span class="kw">else</span> <span class="st">"防守"</span>
+    max_pos = {<span class="st">"进攻"</span>: 8, <span class="st">"观望"</span>: 4, <span class="st">"防守"</span>: 0}
+    <span class="kw">return</span> {<span class="st">"score"</span>: score, <span class="st">"grade"</span>: grade, <span class="st">"max_positions"</span>: max_pos[grade], <span class="st">"details"</span>: details}</div>
+
+  <h4>仓位定价函数（含波动率调整）</h4>
+  <div class="code-block"><span class="kw">def</span> <span class="fn">calc_position_size</span>(total_capital: float, symbol: str, state_grade: str) -> float:
+    <span class="cm"># 基础仓位上限（来自市场状态）</span>
+    base_limit = {<span class="st">"进攻"</span>: 0.15, <span class="st">"观望"</span>: 0.12, <span class="st">"防守"</span>: 0.0}[state_grade]
+
+    <span class="cm"># 风险预算定仓</span>
+    risk_budget_pct = 0.02       <span class="cm"># 每笔最多亏2%总资金</span>
+    stop_distance   = 0.08       <span class="cm"># 止损 -8%</span>
+    gap_multiplier  = 1.5        <span class="cm"># 缺口风险倍数</span>
+    risk_based_pos  = risk_budget_pct / (stop_distance * gap_multiplier)  <span class="cm"># = 16.7%</span>
+
+    <span class="cm"># 取较小值（风险预算 vs 状态上限）</span>
+    base_pos = min(risk_based_pos, base_limit)
+
+    <span class="cm"># 波动率调整</span>
+    hist = ak.stock_zh_a_hist(symbol=symbol, period=<span class="st">"daily"</span>, adjust=<span class="st">"qfq"</span>).tail(25)
+    hist[<span class="st">"atr"</span>] = (hist[<span class="st">"最高"</span>] - hist[<span class="st">"最低"</span>]) / hist[<span class="st">"收盘"</span>]
+    atr_ratio = hist[<span class="st">"atr"</span>].iloc[-1] / hist[<span class="st">"atr"</span>].tail(20).mean()
+    vol_factor = 1.2 <span class="kw">if</span> atr_ratio < 0.8 <span class="kw">else</span> 1.0 <span class="kw">if</span> atr_ratio < 1.3 <span class="kw">else</span> 0.7 <span class="kw">if</span> atr_ratio < 2.0 <span class="kw">else</span> 0.5
+
+    final_pos_pct = min(base_pos * vol_factor, base_limit)
+    final_pos_amt = total_capital * final_pos_pct
+    <span class="kw">return</span> round(final_pos_pct, 4), int(final_pos_amt)</div>
+
+  <h4>整理期资金质量评分（D2）</h4>
+  <div class="code-block"><span class="kw">def</span> <span class="fn">calc_fund_quality_score</span>(symbol: str, consol_start: str, consol_end: str) -> int:
+    <span class="cm"># 拉取整理期内的资金流向</span>
+    flow = ak.stock_individual_fund_flow(stock=symbol, market=<span class="st">"sh"</span>)  <span class="cm"># or "sz"</span>
+    flow[<span class="st">"date"</span>] = pd.to_datetime(flow[<span class="st">"日期"</span>])
+    mask = (flow[<span class="st">"date"</span>] >= consol_start) & (flow[<span class="st">"date"</span>] <= consol_end)
+    period = flow[mask]
+
+    <span class="kw">if</span> len(period) == 0:
+        <span class="kw">return</span> 15  <span class="cm"># 数据缺失给中性分</span>
+
+    big_net = period[<span class="st">"超大单净额"</span>].sum() + period[<span class="st">"大单净额"</span>].sum()
+    total_vol = period[<span class="st">"主力净额"</span>].abs().sum() + period[<span class="st">"小单净额"</span>].abs().sum()
+    ratio = big_net / max(total_vol, 1)
+
+    <span class="cm"># D2评分逻辑</span>
+    <span class="kw">if</span> ratio > 0.08:
+        <span class="kw">return</span> 25   <span class="cm"># 明显机构吸筹</span>
+    <span class="kw">elif</span> ratio > 0:
+        <span class="kw">return</span> 15   <span class="cm"># 中性，无明显大单方向</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> 0    <span class="cm"># 大单在出货，整理期是散户撑价</span></div>
+
+  <h4>状态熔断检查</h4>
+  <div class="code-block"><span class="kw">def</span> <span class="fn">check_circuit_breaker</span>(state_history: list) -> str:
+    <span class="cm">"""
+    state_history: 最近N天的状态列表，如 ["进攻","观望","防守","防守","防守"]
+    返回: "正常" / "L1" / "L2" / "L3"
+    """</span>
+    today   = state_history[-1]
+    yest    = state_history[-2] <span class="kw">if</span> len(state_history) >= 2 <span class="kw">else</span> today
+    recent3 = state_history[-3:] <span class="kw">if</span> len(state_history) >= 3 <span class="kw">else</span> state_history
+
+    <span class="cm"># L3: 连续3日防守</span>
+    <span class="kw">if</span> all(s == <span class="st">"防守"</span> <span class="kw">for</span> s <span class="kw">in</span> recent3):
+        <span class="kw">return</span> <span class="st">"L3"</span>
+
+    <span class="cm"># L2: 今日进入防守，或连续2日观望且低位</span>
+    <span class="kw">if</span> today == <span class="st">"防守"</span>:
+        <span class="kw">return</span> <span class="st">"L2"</span>
+
+    <span class="cm"># L1: 从进攻切换至观望</span>
+    <span class="kw">if</span> yest == <span class="st">"进攻"</span> <span class="kw">and</span> today == <span class="st">"观望"</span>:
+        <span class="kw">return</span> <span class="st">"L1"</span>
+
+    <span class="kw">return</span> <span class="st">"正常"</span></div>
+</section>
+
+<!-- ═══ S14 ═══ -->
+<section class="section" id="s14">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <div>
+      <div class="section-title">铁律红线</div>
+      <div class="section-subtitle">永不触碰的边界，无论市场给出多强的诱惑</div>
+    </div>
+  </div>
+
+  <div class="redlines">
+    <div class="redline-item">
+      <span class="redline-num">RL-01</span>
+      <span class="redline-text"><strong>防守状态下，禁止任何新开仓，无论信号评分多高。</strong><br>市场状态决定策略开关，不是信号质量。在市场结构性下行时，再好的个股信号也只是在错误的时间做对的事。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-02</span>
+      <span class="redline-text"><strong>已触发的价格止损和时间止损，T+1内必须执行，无任何延迟理由。</strong><br>"感觉会反弹"不是理由。"明天可能有好消息"不是理由。止损是在平静时做出的理性决定，必须在情绪激动时机械执行。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-03</span>
+      <span class="redline-text"><strong>整理期大单净卖出的候选，不得入场，无论图形多完美。</strong><br>技术图形是过去的轨迹，资金性质是当下的意图。当持仓主体在悄悄出货，技术形态是给散户看的。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-04</span>
+      <span class="redline-text"><strong>同一申万一级行业不得同时持有2个仓位，无例外。</strong><br>再好的第二支同行业股票也不能突破这条规则。行业集中的代价在板块轮动时才会显现，届时后悔已晚。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-05</span>
+      <span class="redline-text"><strong>L3空仓期（10个交易日）内，不得因"行情太好"提前重新入场。</strong><br>L3触发时市场已经连续3天防守状态。急于回场通常是在恐慌低点之后的第一次反弹时FOMO入场，恰好是再次被套的最佳时机。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-06</span>
+      <span class="redline-text"><strong>单笔交易在最坏情况下，亏损不超过总资金3%（含缺口风险）。</strong><br>仓位定价公式的存在意义正在于此。如果一笔交易"感觉太好"而想突破仓位上限，这是贪婪，不是判断。</span>
+    </div>
+    <div class="redline-item">
+      <span class="redline-num">RL-07</span>
+      <span class="redline-text"><strong>任何参数调整都需要逻辑理由和敏感性测试，不得基于最近几笔交易的表现进行微调。</strong><br>最近几笔盈亏是噪声而非信号。根据噪声调整参数，等于在用历史数据过拟合未来。参数保持3个月以上稳定才有意义。</span>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>免责声明</strong><br>
+    本策略文档为个人研究框架，不构成任何投资建议。A股市场存在固有风险，历史分析不代表未来表现。所有参数均需通过独立回测验证后方可实盘。任何单一策略都有其失效条件，本策略亦不例外，请在充分理解风险后决定是否采用。<br><br>
+    <strong>猎鹰A股波段系统 V3.0 · 批评驱动版 · 2026年 · 内部研究文件</strong>
+  </div>
+</main>
+</div>
+
+<script>
+  const sidebar=document.getElementById('desktopSidebar');
+  const toggle=document.getElementById('sidebarToggle');
+  toggle.addEventListener('click',()=>sidebar.classList.toggle('collapsed'));
+
+  const btn=document.getElementById('hamburgerBtn');
+  const drawer=document.getElementById('mobileDrawer');
+  const overlay=document.getElementById('mobileOverlay');
+  const open=()=>{drawer.classList.add('open');overlay.classList.add('open');btn.classList.add('open');document.body.style.overflow='hidden'};
+  const close=()=>{drawer.classList.remove('open');overlay.classList.remove('open');btn.classList.remove('open');document.body.style.overflow=''};
+  btn.addEventListener('click',()=>drawer.classList.contains('open')?close():open());
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('.nav-item').forEach(l=>l.addEventListener('click',close));
+
+  const sections=document.querySelectorAll('section[id],div[id]');
+  const navs=document.querySelectorAll('.nav-item');
+  new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        navs.forEach(n=>{n.style.borderLeftColor='transparent';n.style.background='';n.style.color='';n.classList.remove('active')});
+        document.querySelectorAll(`.nav-item[href="#${e.target.id}"]`).forEach(a=>{a.style.borderLeftColor='var(--gold)';a.style.background='var(--gold-dim)';a.style.color='var(--gold-light)';a.classList.add('active')});
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px',threshold:0}).observe||sections.forEach(s=>new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){navs.forEach(n=>{n.style.borderLeftColor='transparent';n.style.background='';n.style.color='';n.classList.remove('active')});document.querySelectorAll(`.nav-item[href="#${e.target.id}"]`).forEach(a=>{a.style.borderLeftColor='var(--gold)';a.style.background='var(--gold-dim)';a.style.color='var(--gold-light)';a.classList.add('active')});}});},{rootMargin:'-20% 0px -70% 0px',threshold:0}).observe(s));
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){navs.forEach(n=>{n.style.borderLeftColor='transparent';n.style.background='';n.style.color='';n.classList.remove('active')});document.querySelectorAll(`.nav-item[href="#${e.target.id}"]`).forEach(a=>{a.style.borderLeftColor='var(--gold)';a.style.background='var(--gold-dim)';a.style.color='var(--gold-light)';a.classList.add('active')});}});},{rootMargin:'-20% 0px -70% 0px',threshold:0});
+  sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
