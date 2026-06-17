@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        var s = localStorage.getItem('wm-theme');
+        var light = s ? s === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (light) document.documentElement.classList.add('theme-light');
+      } catch (e) {}
+    })();
+  </script>
+  <title>SPCX（SpaceX）波动率溢价增强策略 — 机构级操作手册 V1.0 · IPO 特别版</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,0.15);--navy:#0D1B2A;--navy-mid:#142232;--navy-card:#1A2D42;--navy-border:#243B55;--text-primary:#EAE6DE;--text-secondary:#A8B8C8;--text-muted:#6A7F94;--red:#E05C5C;--red-dim:rgba(224,92,92,0.12);--orange:#E07B3C;--orange-dim:rgba(224,123,60,0.12);--yellow:#D4B84A;--yellow-dim:rgba(212,184,74,0.12);--green:#5CB87A;--green-dim:rgba(92,184,122,0.12);--blue:#5B8DC8;--blue-dim:rgba(91,141,200,0.12);--radius:8px;--radius-lg:14px;--shadow:0 4px 24px rgba(0,0,0,0.4);--shadow-card:0 2px 12px rgba(0,0,0,0.3)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text-primary);font-size:15px;line-height:1.75;min-height:100vh}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:270px;min-width:270px;background:var(--navy-mid);border-right:1px solid var(--navy-border);position:sticky;top:0;height:100vh;overflow-y:auto;padding:32px 0;flex-shrink:0}
+    .sidebar::-webkit-scrollbar{width:4px}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--navy-border);border-radius:2px}
+    .sidebar-logo{padding:0 24px 28px;border-bottom:1px solid var(--navy-border);margin-bottom:20px}
+    .sidebar-logo .logo-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+    .sidebar-logo .logo-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text-primary);line-height:1.3}
+    .sidebar-logo .logo-ver{font-size:11px;color:var(--text-muted);margin-top:4px}
+    .nav-section-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);padding:12px 24px 6px}
+    .nav-item{display:block;padding:9px 24px;color:var(--text-secondary);text-decoration:none;font-size:13.5px;transition:all 0.15s;border-left:3px solid transparent;line-height:1.4}
+    .nav-item:hover{color:var(--gold-light);background:var(--gold-dim);border-left-color:var(--gold)}
+    .nav-item.sub{padding-left:38px;font-size:12.5px;color:var(--text-muted)}
+    .main{flex:1;max-width:960px;padding:48px 52px;overflow-x:hidden}
+    .hero{border:1px solid var(--navy-border);border-radius:var(--radius-lg);padding:40px 44px;background:var(--navy-card);position:relative;overflow:hidden;margin-bottom:48px}
+    .hero::before{content:'SPCX';font-family:'Playfair Display',serif;font-size:120px;font-weight:700;color:rgba(201,168,76,0.04);position:absolute;right:-10px;bottom:-20px;line-height:1;pointer-events:none}
+    .hero-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+    .hero h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1.25;color:var(--text-primary);margin-bottom:16px;position:relative}
+    .hero-sub{color:var(--text-secondary);font-size:15px;max-width:620px;margin-bottom:28px;position:relative}
+    .hero-meta{display:flex;gap:32px;flex-wrap:wrap;position:relative}
+    .hero-meta-item{display:flex;flex-direction:column;gap:2px}
+    .hero-meta-item .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+    .hero-meta-item .value{font-size:14px;color:var(--text-secondary);font-weight:500}
+    .section{margin-bottom:56px}
+    .section-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--navy-border)}
+    .section-num{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:6px;padding:4px 9px;flex-shrink:0;margin-top:4px}
+    .section-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--text-primary);line-height:1.3}
+    .section-subtitle{font-size:13px;color:var(--text-muted);margin-top:4px}
+    h3{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--gold-light);margin:28px 0 12px;text-transform:uppercase;letter-spacing:1px}
+    h4{font-size:14px;font-weight:600;color:var(--text-primary);margin:20px 0 8px}
+    p{color:var(--text-secondary);margin-bottom:12px}
+    strong{color:var(--text-primary)}
+    .card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius-lg);padding:24px 28px;margin-bottom:20px}
+    .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    .card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+    .stat-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius);padding:18px 20px}
+    .stat-card .stat-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+    .stat-card .stat-value{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--gold-light)}
+    .stat-card .stat-note{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .callout{border-radius:var(--radius);padding:16px 20px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;font-size:14px}
+    .callout-icon{flex-shrink:0;font-size:16px;margin-top:1px}
+    .callout.danger{background:var(--red-dim);border:1px solid rgba(224,92,92,0.3);color:#F0A0A0}
+    .callout.warning{background:var(--orange-dim);border:1px solid rgba(224,123,60,0.3);color:#F0C0A0}
+    .callout.info{background:var(--blue-dim);border:1px solid rgba(91,141,200,0.3);color:#A0C0E0}
+    .callout.success{background:var(--green-dim);border:1px solid rgba(92,184,122,0.3);color:#A0D4B4}
+    .callout.gold{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);color:var(--gold-light)}
+    .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--navy-border);margin:16px 0}
+    table{width:100%;border-collapse:collapse;font-size:13.5px}
+    thead tr{background:rgba(201,168,76,0.08);border-bottom:1px solid var(--navy-border)}
+    thead th{padding:13px 16px;text-align:left;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600;white-space:nowrap}
+    tbody tr{border-bottom:1px solid rgba(36,59,85,0.6);transition:background 0.15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:rgba(255,255,255,0.025)}
+    tbody td{padding:12px 16px;color:var(--text-secondary);vertical-align:top;line-height:1.6}
+    tbody td:first-child{color:var(--text-primary);font-weight:500}
+    .badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.5px}
+    .badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(92,184,122,0.3)}
+    .badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,92,92,0.3)}
+    .badge-orange{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(224,123,60,0.3)}
+    .badge-yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(212,184,74,0.3)}
+    .badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,141,200,0.3)}
+    .badge-gold{background:var(--gold-dim);color:var(--gold-light);border:1px solid rgba(201,168,76,0.3)}
+    .badge-gray{background:rgba(106,127,148,0.15);color:var(--text-muted);border:1px solid rgba(106,127,148,0.3)}
+    code{font-family:'DM Mono',monospace;font-size:12.5px;background:rgba(201,168,76,0.08);padding:1px 6px;border-radius:3px;color:var(--gold-light)}
+    .formula-box{background:#0A1520;border:1px solid rgba(201,168,76,0.25);border-radius:var(--radius);padding:20px 24px;margin:16px 0;font-family:'DM Mono',monospace;font-size:13.5px;color:var(--gold-light);line-height:2}
+    .formula-box .comment{color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:12px;font-style:italic}
+    .flow-steps{display:flex;flex-direction:column;gap:0;position:relative;margin:20px 0}
+    .flow-steps::before{content:'';position:absolute;left:22px;top:28px;bottom:28px;width:2px;background:var(--navy-border)}
+    .flow-step{display:flex;gap:20px;padding:14px 0;position:relative}
+    .flow-step-num{width:44px;height:44px;min-width:44px;background:var(--navy-card);border:2px solid var(--navy-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);font-weight:500;z-index:1}
+    .flow-step-body{flex:1;padding-top:8px}
+    .flow-step-body strong{display:block;color:var(--text-primary);font-size:14px;margin-bottom:4px}
+    .flow-step-body span{font-size:13px;color:var(--text-muted)}
+    .term{border-bottom:1px dashed var(--gold);color:var(--gold-light);cursor:help;font-weight:500}
+    #doc-tip{position:fixed;z-index:99999;max-width:280px;background:#0A1520;border:1px solid var(--gold);color:var(--text-primary);font:400 13px/1.6 'DM Sans',sans-serif;text-align:left;padding:10px 14px;border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,0.6);pointer-events:none;opacity:0;transition:opacity 0.15s ease}
+    #doc-tip.show{opacity:1}
+    #doc-tip::after{content:'';position:absolute;left:50%;margin-left:-6px;border:6px solid transparent}
+    #doc-tip:not(.below)::after{top:100%;border-top-color:var(--gold)}
+    #doc-tip.below::after{bottom:100%;border-bottom-color:var(--gold)}
+    .checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .checklist li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-secondary);padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--navy-border);border-radius:var(--radius)}
+    .checklist li::before{content:'☐';font-size:15px;color:var(--text-muted);flex-shrink:0}
+    .checklist li.required::before{color:var(--gold)}
+    .divider{border:none;border-top:1px solid var(--navy-border);margin:32px 0}
+    .highlight{color:var(--gold-light);font-weight:500}
+    .log-field{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);background:var(--gold-dim);padding:1px 6px;border-radius:3px}
+    .disclaimer{background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:20px 24px;margin-top:48px;font-size:12.5px;color:var(--text-muted);line-height:1.8}
+    .disclaimer strong{color:var(--gold)}
+    /* state matrix */
+    .state-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+    .state-card{border-radius:var(--radius);padding:18px 20px;border:1px solid}
+    .state-card.state-a{background:var(--green-dim);border-color:rgba(92,184,122,0.3)}
+    .state-card.state-b{background:var(--blue-dim);border-color:rgba(91,141,200,0.3)}
+    .state-card.state-c{background:var(--orange-dim);border-color:rgba(224,123,60,0.3)}
+    .state-card.state-d{background:var(--red-dim);border-color:rgba(224,92,92,0.3)}
+    .state-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .state-badge{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:3px 10px;border-radius:4px}
+    .state-a .state-badge{background:rgba(92,184,122,0.2);color:var(--green)}
+    .state-b .state-badge{background:rgba(91,141,200,0.2);color:var(--blue)}
+    .state-c .state-badge{background:rgba(224,123,60,0.2);color:var(--orange)}
+    .state-d .state-badge{background:rgba(224,92,92,0.2);color:var(--red)}
+    .state-card .state-name{font-size:13px;font-weight:600}
+    .state-a .state-name{color:var(--green)}
+    .state-b .state-name{color:var(--blue)}
+    .state-c .state-name{color:var(--orange)}
+    .state-d .state-name{color:var(--red)}
+    .state-card ul{list-style:none;font-size:13px;display:flex;flex-direction:column;gap:5px}
+    .state-card ul li{color:var(--text-secondary)}
+    .state-card ul li::before{content:'›  ';color:var(--text-muted)}
+    /* circuit breaker */
+    .circuit-level{border-radius:var(--radius);padding:20px 22px;margin-bottom:12px;border:1px solid}
+    .circuit-level.l1{background:var(--yellow-dim);border-color:rgba(212,184,74,0.3)}
+    .circuit-level.l2{background:var(--orange-dim);border-color:rgba(224,123,60,0.3)}
+    .circuit-level.l3{background:var(--red-dim);border-color:rgba(224,92,92,0.35)}
+    .circuit-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .circuit-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+    .l1 .circuit-dot{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+    .l2 .circuit-dot{background:var(--orange);box-shadow:0 0 8px var(--orange)}
+    .l3 .circuit-dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+    .circuit-level h4{margin:0}
+    .l1 h4{color:var(--yellow)}.l2 h4{color:var(--orange)}.l3 h4{color:var(--red)}
+    .circuit-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13.5px}
+    .trigger-list,.action-list{display:flex;flex-direction:column;gap:6px}
+    .trigger-list .label,.action-list .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block}
+    .trigger-list li,.action-list li{list-style:none;color:var(--text-secondary);padding-left:14px;position:relative}
+    .trigger-list li::before{content:'•';position:absolute;left:0;color:var(--text-muted)}
+    .action-list li::before{content:'→';position:absolute;left:0;color:var(--gold);font-size:11px;top:2px}
+    /* capital tiers */
+    .tier-card{border-radius:var(--radius-lg);border:1px solid var(--navy-border);overflow:hidden;margin-bottom:16px}
+    .tier-header{padding:16px 22px;display:flex;align-items:center;gap:14px}
+    .tier-1 .tier-header{background:rgba(92,184,122,0.07);border-bottom:1px solid rgba(92,184,122,0.2)}
+    .tier-2 .tier-header{background:rgba(91,141,200,0.07);border-bottom:1px solid rgba(91,141,200,0.2)}
+    .tier-3 .tier-header{background:rgba(201,168,76,0.07);border-bottom:1px solid rgba(201,168,76,0.2)}
+    .tier-icon{font-size:22px;width:40px;text-align:center}
+    .tier-header-info .tier-range{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+    .tier-1 .tier-range{color:var(--green)}.tier-2 .tier-range{color:var(--blue)}.tier-3 .tier-range{color:var(--gold-light)}
+    .tier-header-info .tier-desc{font-size:12px;color:var(--text-muted)}
+    .tier-body{padding:18px 22px;background:var(--navy-card)}
+    .alloc-bar-wrap{margin:12px 0 8px}
+    .alloc-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}
+    .alloc-label{width:190px;color:var(--text-secondary);flex-shrink:0}
+    .alloc-bar-bg{flex:1;height:6px;background:var(--navy-border);border-radius:3px;overflow:hidden}
+    .alloc-bar{height:100%;border-radius:3px}
+    .alloc-pct{width:48px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)}
+    /* red lines */
+    .redlines{display:flex;flex-direction:column;gap:10px}
+    .redline-item{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;background:var(--red-dim);border:1px solid rgba(224,92,92,0.25);border-left:3px solid var(--red);border-radius:var(--radius)}
+    .redline-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--red);background:rgba(224,92,92,0.1);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+    .redline-text{font-size:13.5px;color:#F0A0A0;line-height:1.6}
+    .redline-text strong{color:#F5C0C0}
+    /* sop */
+    .sop-steps{display:flex;flex-direction:column;gap:12px}
+    .sop-step{display:flex;gap:18px;background:var(--navy-card);border:1px solid var(--navy-border);border-radius:var(--radius);padding:16px 20px;align-items:flex-start;transition:border-color 0.2s}
+    .sop-step:hover{border-color:rgba(201,168,76,0.3)}
+    .sop-step-icon{font-size:20px;width:38px;text-align:center;flex-shrink:0}
+    .sop-step-content strong{display:block;font-size:14px;color:var(--text-primary);margin-bottom:4px}
+    .sop-step-content .time-badge{font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);background:var(--gold-dim);padding:1px 7px;border-radius:3px;margin-right:8px}
+    .sop-step-content p{font-size:13px;color:var(--text-muted);margin:6px 0 0}
+    .sop-step-content ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--text-muted)}
+    .sop-step-content ul li{margin-bottom:3px}
+    ul.bullets{list-style:none;padding-left:0;display:flex;flex-direction:column;gap:7px}
+    ul.bullets li{padding-left:16px;position:relative;color:var(--text-secondary);font-size:14px}
+    ul.bullets li::before{content:'—';position:absolute;left:0;color:var(--gold);font-size:11px;top:3px}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .text-red{color:var(--red)}
+    .text-green{color:var(--green)}
+    .mobile-header{display:none;position:sticky;top:0;z-index:100;background:var(--navy-mid);border-bottom:1px solid var(--navy-border);padding:14px 20px;align-items:center;justify-content:space-between}
+    .mobile-header-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--text-primary)}
+    .mobile-menu-btn{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);color:var(--gold-light);padding:6px 12px;border-radius:var(--radius);cursor:pointer;font-size:16px}
+    .mobile-menu{display:none;position:fixed;top:49px;left:0;right:0;background:var(--navy-mid);border-bottom:1px solid var(--navy-border);z-index:99;padding:8px 0;max-height:60vh;overflow-y:auto}
+    .mobile-menu.open{display:block}
+    .theme-toggle{position:fixed;top:18px;right:18px;z-index:1000;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--navy-card);border:1px solid var(--navy-border);color:var(--gold);cursor:pointer;box-shadow:var(--shadow-card);transition:color .2s,border-color .2s,background .2s}
+    .theme-toggle:hover{border-color:var(--gold);color:var(--gold-light)}
+    .theme-toggle svg{width:19px;height:19px}
+    .theme-toggle .ic-moon{display:none}
+    html.theme-light .theme-toggle .ic-sun{display:none}
+    html.theme-light .theme-toggle .ic-moon{display:inline}
+    @media(max-width:1100px){
+      .sidebar{display:none}
+      .main{max-width:100%;padding:32px 28px}
+      .mobile-header{display:flex}
+      .theme-toggle{top:14px;right:14px;width:36px;height:36px}
+    }
+    @media(max-width:700px){
+      .main{padding:20px 16px}
+      .hero{padding:24px 20px;margin-bottom:32px}
+      .hero h1{font-size:22px}
+      .hero-sub{font-size:14px}
+      .hero-meta{gap:16px}
+      .hero::before{font-size:70px}
+      .section{margin-bottom:36px}
+      .section-title{font-size:18px}
+      .card-grid,.card-grid-3,.state-grid,.circuit-body,.two-col{grid-template-columns:1fr}
+      .card{padding:16px 18px}
+      .stat-card{padding:14px 16px}
+      .alloc-label{width:150px}
+      .table-wrap{-webkit-overflow-scrolling:touch}
+      table{font-size:12.5px}
+      thead th{padding:10px 12px}
+      tbody td{padding:10px 12px}
+      .callout{padding:12px 14px;font-size:13px}
+      .flow-step-num{width:36px;height:36px;min-width:36px;font-size:12px}
+      .flow-steps::before{left:18px}
+      #doc-tip{max-width:220px;font-size:12px}
+      .sop-step{padding:12px 14px;gap:12px}
+      .formula-box{font-size:12px;padding:14px 16px}
+      .disclaimer{padding:16px 18px;font-size:12px;margin-top:32px}
+      .tier-body{padding:14px 16px}
+      .tier-header{padding:12px 16px}
+    }
+    @media print{.sidebar,.theme-toggle,.mobile-header,.mobile-menu{display:none}#doc-tip{display:none}.main{padding:20px}}
+    /* LIGHT THEME */
+    html.theme-light{--gold:#9A7B28;--gold-light:#7F6220;--gold-dim:rgba(154,123,40,0.10);--navy:#F7F4EC;--navy-mid:#F0EBDF;--navy-card:#FFFFFF;--navy-border:#E2DAC8;--text-primary:#22272F;--text-secondary:#55606C;--text-muted:#8C887E;--red:#C0392B;--red-dim:rgba(192,57,43,0.10);--orange:#C0612A;--orange-dim:rgba(192,97,42,0.10);--yellow:#A8862E;--yellow-dim:rgba(168,134,46,0.12);--green:#2E8B57;--green-dim:rgba(46,139,87,0.10);--blue:#2E6FB0;--blue-dim:rgba(46,111,176,0.10);--shadow:0 4px 24px rgba(70,60,30,0.10);--shadow-card:0 2px 12px rgba(70,60,30,0.08)}
+    html.theme-light #doc-tip{background:#FFFFFF;box-shadow:0 8px 32px rgba(70,60,30,0.18)}
+    html.theme-light tbody tr:hover{background:rgba(154,123,40,0.05)}
+    html.theme-light .checklist li{background:rgba(154,123,40,0.04)}
+    html.theme-light .formula-box{background:#F3EEE0}
+    html.theme-light .callout.danger{color:#B0362A}
+    html.theme-light .callout.warning{color:#B5621F}
+    html.theme-light .callout.info{color:#2A5F9E}
+    html.theme-light .callout.success{color:#25754A}
+    html.theme-light .redline-text{color:#B0362A}
+    html.theme-light .redline-text strong{color:#922a20}
+    html.theme-light .formula-box{color:#6b531a}
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" aria-label="切换深浅色" title="切换深浅色">
+    <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+    <svg class="ic-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
+  <div class="mobile-header">
+    <div class="mobile-header-title">SPCX 期权增强手册</div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#s1" class="nav-item" onclick="closeMobileMenu()">01 · 策略定位与核心逻辑</a>
+    <a href="#s2" class="nav-item" onclick="closeMobileMenu()">02 · NRA 合规与税务</a>
+    <a href="#s3" class="nav-item" onclick="closeMobileMenu()">03 · 资金分层与仓位架构</a>
+    <a href="#s4" class="nav-item" onclick="closeMobileMenu()">04 · 市场状态决策引擎</a>
+    <a href="#s5" class="nav-item" onclick="closeMobileMenu()">05 · 核心交易策略</a>
+    <a href="#s6" class="nav-item" onclick="closeMobileMenu()">06 · 三级熔断机制</a>
+    <a href="#s7" class="nav-item" onclick="closeMobileMenu()">07 · 极端切换机制</a>
+    <a href="#s8" class="nav-item" onclick="closeMobileMenu()">08 · 尾部对冲配置</a>
+    <a href="#s9" class="nav-item" onclick="closeMobileMenu()">09 · 标准化操作 SOP</a>
+    <a href="#s10" class="nav-item" onclick="closeMobileMenu()">10 · 绩效台账模板</a>
+    <a href="#s11" class="nav-item" onclick="closeMobileMenu()">11 · 纪律红线</a>
+    <a href="#s12" class="nav-item" onclick="closeMobileMenu()">12 · 应急预案</a>
+  </div>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-tag">Private Strategy</span>
+        <div class="logo-title">SPCX 期权增强<br>操作手册</div>
+        <div class="logo-ver">V1.0 · IPO 特别版 · 2026 年 6 月</div>
+      </div>
+      <div class="nav-section-label">策略框架</div>
+      <a href="#s1" class="nav-item">01 · 策略定位与核心逻辑</a>
+      <a href="#s2" class="nav-item">02 · NRA 合规与税务</a>
+      <a href="#s3" class="nav-item">03 · 资金分层与仓位架构</a>
+      <div class="nav-section-label">交易决策</div>
+      <a href="#s4" class="nav-item">04 · 市场状态决策引擎</a>
+      <a href="#s4a" class="nav-item sub">— 状态矩阵</a>
+      <a href="#s4b" class="nav-item sub">— 绝对 IV 硬约束</a>
+      <a href="#s4c" class="nav-item sub">— 事件风控日历</a>
+      <a href="#s5" class="nav-item">05 · 核心交易策略</a>
+      <a href="#s5a" class="nav-item sub">— Put Spread</a>
+      <a href="#s5b" class="nav-item sub">— Covered Call</a>
+      <a href="#s5c" class="nav-item sub">— 修正版 EV 公式</a>
+      <a href="#s5d" class="nav-item sub">— IPO 三阶段适配</a>
+      <div class="nav-section-label">风险管理</div>
+      <a href="#s6" class="nav-item">06 · 三级熔断机制</a>
+      <a href="#s7" class="nav-item">07 · 极端切换机制</a>
+      <a href="#s8" class="nav-item">08 · 尾部对冲配置</a>
+      <div class="nav-section-label">执行与记录</div>
+      <a href="#s9" class="nav-item">09 · 标准化操作 SOP</a>
+      <a href="#s10" class="nav-item">10 · 绩效台账模板</a>
+      <a href="#s11" class="nav-item">11 · 纪律红线</a>
+      <a href="#s12" class="nav-item">12 · 应急预案</a>
+    </nav>
+    <main class="main">
+      <div class="hero">
+        <div class="hero-eyebrow">机构级卖方策略 · 客户内部文件 · IPO 特别版</div>
+        <h1>SPCX（SpaceX）单一标的<br>波动率溢价增强策略</h1>
+        <p class="hero-sub">围绕 Space Exploration Technologies Corp.（SpaceX）构建「分层卖波动率 + 尾部保护 + IPO 三阶段闸门」体系。本标的为 2026 年 6 月 12 日上市的史上最大 IPO，期权 6 月 16 日首日挂牌——在无 IV 锚、无 IVR 历史、超低流通盘的极端环境下，以"先存活、后增强"为最高准则，系统性卖出期权收取超额保费。</p>
+        <div class="hero-meta">
+          <div class="hero-meta-item"><span class="label">核心标的</span><span class="value">SPCX · Nasdaq</span></div>
+          <div class="hero-meta-item"><span class="label">适用对象</span><span class="value">NRA · IBKR PM 账户</span></div>
+          <div class="hero-meta-item"><span class="label">资金规模</span><span class="value">$50 万 — $1,000 万+</span></div>
+          <div class="hero-meta-item"><span class="label">编制日期</span><span class="value">2026 年 6 月 17 日</span></div>
+          <div class="hero-meta-item"><span class="label">版本</span><span class="value">V1.0 · IPO 特别版</span></div>
+        </div>
+      </div>
+
+      <section class="section" id="s1">
+        <div class="section-header">
+          <span class="section-num">01</span>
+          <div>
+            <div class="section-title">策略定位与核心逻辑</div>
+            <div class="section-subtitle">理解"承保商"角色，并正视这是一只 5 个交易日次新股的现实</div>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>开工前的现实核查（本手册的第一性原则）。</strong>SPCX 于 <strong>2026-06-12</strong> 上市，期权于 <strong>2026-06-16</strong> 首日挂牌——截至本手册编制日，标的仅有 4 个交易日、期权仅有 1 个交易日的历史。这意味着：① <strong class="text-red">IVR（隐含波动率百分位）在数学上无法计算</strong>（需约 252 个交易日的 IV 序列），META 手册赖以运转的"IVR 决策引擎"在此<strong>完全失效</strong>，必须以"绝对 IV 区间引擎"替代；② 无历史波动率、无 Gamma 定位、无 Call/Put Wall，做市商正在"摸黑建簿"，报价价差与权利金均处于历史极端；③ 流通盘仅约 <strong>4%</strong>，做市商大概率<span class="term" data-tip="做市商卖出看涨期权后为对冲会买入正股；当其净 Gamma 为负（short gamma）时，股价上涨需追买、下跌需追卖，对冲行为放大而非平抑价格波动。在 4% 超低流通盘上，这种放大效应极端。">空 Gamma</span>，对冲行为<strong>放大</strong>波动而非平抑。<br><br>因此，<strong>本手册的默认建议是：Phase 0 阶段（约未来 3–4 周）以"观察 + 极小仓位/纸面交易"为主，不投入有意义的资金</strong>。Wheel 策略的根基是"我愿意在行权价持有这只股票"——而 SPCX 当前股价（约 $200）已<strong>高于卖方分析师 12 个月平均目标价（约 $164）</strong>，公司 2025 年仍净亏损，且 7 月起有连续的指数纳入与解禁供给冲击。在这一前提未改善前，"接货"意味着以高位承接一只高估值、未盈利、供给即将放大的次新股，须极度审慎。</div>
+        </div>
+
+        <div class="callout gold">
+          <span class="callout-icon">◆</span>
+          <div><strong>核心定位：</strong>您不是 SPCX 股价的短期投机者，而是一家以 SpaceX 股票为<em>潜在</em>核心资产的<strong>「专业风险承保商」</strong>。在这只波动率极高的次新股上，市场愿意为"保险"支付远超常态的保费——您的工作是<strong>在严格限定最大亏损的前提下，系统性卖出这份保险</strong>，用时间价值与波动率溢价换取现金流；当极端行情出现时，通过预设的"再保险"机制确保核心资本安全。在 SPCX 上，<strong class="highlight">活下来比赚得多重要一个数量级</strong>。</div>
+        </div>
+
+        <div class="card-grid-3">
+          <div class="stat-card"><div class="stat-label">年化权利金目标</div><div class="stat-value">15–30%</div><div class="stat-note">Phase 1 净额（已扣价差成本与尾部储备）；不含正股涨幅</div></div>
+          <div class="stat-card"><div class="stat-label">最大回撤控制</div><div class="stat-value">≤ 12–15%</div><div class="stat-note">通过更严熔断 + 强制价差 + 尾部对冲</div></div>
+          <div class="stat-card"><div class="stat-label">SPCX 期权隐含波动率</div><div class="stat-value">≈ 100%+</div><div class="stat-note">次新巨型 IPO 首周典型水平；无 IVR 可参照，须按绝对值管理</div></div>
+        </div>
+
+        <div class="callout warning">
+          <span class="callout-icon">◷</span>
+          <div><strong>关于"15–30% 年化"的诚实说明：</strong>SPCX 的<em>表观</em>权利金极其诱人——一张 20% 价外的 Put 仍可能给出很高的年化报价。但<strong>表观权利金 ≠ 已实现收益</strong>。5–15% 的买卖价差、跳空击穿、以及为对冲尾部所付的高昂保费，会显著侵蚀回报。本目标是"在生存约束下尽量多收"的结果，而非追求的上限。任何把目标设到 40%+ 的做法，在 SPCX 上等同于隐性加杠杆赌博。</div>
+        </div>
+
+        <h3>SPCX 关键波动特性（必须理解）</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>特性</th><th>具体表现（截至 2026-06-17）</th><th>策略含义</th></tr></thead>
+            <tbody>
+              <tr><td>极端波动</td><td>$135 发行价 → 数日内冲高至约 $226，单日盘中振幅常达 ±20%~30%；上市初期相关报价区间一度出现 600%+ 的极端摆动</td><td><strong>绝对禁止裸卖 Put</strong>；任何 8% 的价外缓冲都可在一天内被击穿，OTM 缓冲须大幅放宽至 18–22%+</td></tr>
+              <tr><td>无 IV 锚 / 无 IVR</td><td>期权仅 1 日历史，无法构建 IV 百分位；做市商无定位历史，价差 5–15%、权利金"历史级"</td><td>以<strong>绝对 IV 区间</strong>替代 IVR；约 6 个月（≈ 126 交易日，约 2026 年 12 月）后才逐步切换至真实 IVR</td></tr>
+              <tr><td>超低流通盘 + 空 Gamma</td><td>可交易流通盘仅约 4%；若散户买 Call 主导，做市商空 Gamma，对冲放大波动，存在向上"Gamma 挤压"（有观点喊到 $400）</td><td>向上挤压会令<strong>已卖出的 Covered Call 被快速逼近/行权</strong>；向下时对冲砸盘加剧跳空。两个方向都要预案</td></tr>
+              <tr><td>指数纳入机械买盘</td><td>FTSE Russell（6/26）、MSCI（6/29）、Nasdaq-100（约 7/1–7/7）快速纳入；被动资金在上市 15 个交易日内或持有约 30% 流通股</td><td>近端（6 月底–7 月初）存在结构性<strong>买盘托底</strong>，对卖 Put 短期有利；但纳入完成后买盘真空 + 解禁来临，是风险拐点</td></tr>
+              <tr><td>锁定期供给冲击</td><td>解禁与 Q2 财报挂钩：财报后约 2 个交易日首批解禁（20%，若股价高于发行价 30% 再 +10%）；180 天全部解禁（约 2026 年 12 月）。Musk 受全程锁定（一说 366 天）</td><td>解禁是<strong>已知的供给利空</strong>；财报前后与解禁窗口须<strong>提前主动降险</strong>，不可在其中新开卖方仓位</td></tr>
+              <tr><td>基本面未定 / 首份财报</td><td>2025 年营收 $186.7 亿、净亏 $49.4 亿（调整后 EBITDA 转正，Starlink 已盈利）；首份公开财报约 <strong>2026-09-02</strong>，为首个真正基本面锚</td><td>S&P 500 因未达 GAAP 盈利要求拒绝快速纳入（至少推迟到 2027 年中）；"愿意接货"的前提尚未被基本面验证</td></tr>
+              <tr><td>双层股权 / 控制权</td><td>Musk 持约 36–42% 经济权益、约 82% 投票权（超级投票权结构）</td><td>关键人风险集中；任何关于 Musk 的消息（含其他公司、政治、健康）都可引发跳空，须纳入事件日历</td></tr>
+              <tr><td>比特币关联</td><td>资产负债表持有 18,712 枚 BTC，形成 SPCX 与比特币价格的非常规联动</td><td>新增一条<strong>加密相关风险传导链</strong>；BTC 急跌可成为 SPCX 的额外下行催化，对冲与熔断需考虑此变量</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>三大核心优势（SPCX 适配版）</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h4>① 历史级波动率溢价</h4>
+            <p style="margin:0;font-size:13.5px">作为史上最大、流通盘最薄的次新股之一，SPCX 期权的隐含波动率与权利金远超任何成熟大盘股。<strong>对纪律严明、限定风险的卖方而言，这是罕见的高保费环境</strong>——前提是把仓位与缓冲压到足以承受跳空。</p>
+          </div>
+          <div class="card">
+            <h4>② NRA 税务结构优势（且无股息拖累）</h4>
+            <p style="margin:0;font-size:13.5px">个股期权权利金与资本利得在 NRA 身份下<strong>均免征美国联邦预扣税</strong>。更关键的是 <strong>SpaceX 不派息</strong>，因此 META 手册中"除息前停开仓 / 30% 股息预扣"这条硬成本与限制在 SPCX 上<strong>完全不存在</strong>，是结构性净优势。</p>
+          </div>
+          <div class="card">
+            <h4>③ IBKR 组合保证金执行效率</h4>
+            <p style="margin:0;font-size:13.5px">利用 IBKR 的<span class="term" data-tip="Portfolio Margin（组合保证金/PM）：基于全账户整体风险（TIMS 模型）计算保证金，而非逐仓相加，资金效率更高；但在极端波动中保证金会瞬时跳升，必须预留 Excess Liquidity 缓冲。">组合保证金（PM）</span>、低佣金与价差组合单功能，实现高效的价差管理与滚动。<strong>注意：PM 下 SPCX 的保证金会随 IV 飙升而瞬时放大，须预留更厚的 Excess Liquidity。</strong></p>
+          </div>
+          <div class="card">
+            <h4>④ 近端指数买盘托底</h4>
+            <p style="margin:0;font-size:13.5px">6 月底至 7 月初的 Russell / MSCI / Nasdaq-100 机械买盘，为近端提供了一层结构性需求。<strong>这使"温和价外、限定风险的卖 Put"在该窗口的胜率短期偏高</strong>——但必须在纳入完成、买盘真空来临前主动了结，不可贪恋。</p>
+          </div>
+        </div>
+
+        <h3>IPO 三阶段闸门（本手册的中枢，区别于成熟标的）</h3>
+        <p>成熟标的（如 META）可直接套用 IVR 引擎与"接货即长期持有"逻辑。SPCX 不行。本手册以<strong>时间 + 数据成熟度</strong>设三道闸门，<strong class="highlight">未跨过前一阶段的条件，不得进入后一阶段</strong>：</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>阶段</th><th>时间窗（约）</th><th>核心动作</th><th>仓位 / 结构</th><th>毕业条件</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-red">Phase 0</span><br>IV 发现期</td>
+                <td>期权首日 → 约 T+20<br>（现在 — 约 7 月中）</td>
+                <td>观察 IV 期限结构、做市商定位、价差收敛；<strong>仅纸面交易或 ≤ 净值 0.5% 的微仓试单</strong></td>
+                <td>仅 Bull Put Spread；DTE 视可得合约；Delta ≤ 0.08；OTM ≥ 22%</td>
+                <td>① 期权满约 20 交易日 ② 买卖价差稳定收敛至 &lt; 10% ③ 主要指数纳入（含 Nasdaq-100）已落地</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">Phase 1</span><br>结构化磨合期</td>
+                <td>约 T+20 → 首份财报<br>（约 7 月中 — 9/2）</td>
+                <td>以小博稳，积累<strong>合成 IV 百分位</strong>样本；按绝对 IV 引擎正常执行价差</td>
+                <td>仅价差；半仓；Delta ≤ 0.12；OTM ≥ 18%；单笔风险 ≤ 净值 2%</td>
+                <td>① 首份财报（约 9/2）落地且无重大基本面爆雷 ② 已积累 ≥ 60 交易日 IV 样本 ③ 解禁首批冲击已消化</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">Phase 2</span><br>常态化期</td>
+                <td>首份财报后 且 全解禁后<br>（约 2026 年 12 月起）</td>
+                <td>当 IV 历史 ≥ 约 126 交易日，切换至<strong>真实 IVR 引擎</strong>，逐步靠拢成熟标的框架；此时"接货并长期持有 + Covered Call"才真正成立</td>
+                <td>可引入温和裸卖（仅大资金、严格 EV）；正常 Delta 矩阵；单笔风险 ≤ 净值 3%</td>
+                <td>—（进入常态运营，定期复审）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ</span>
+          <div><strong>本手册的参数默认面向 Phase 1。</strong>第 4–5 节的 Delta / OTM / IV 区间均以 Phase 1 为基准；Phase 0 在其上更保守（更低 Delta、更宽 OTM、更小仓），Phase 2 在其上逐步放宽并切换至 IVR。每次开仓前，先确认"当前处于哪个阶段"，再读对应参数。</div>
+        </div>
+      </section>
+
+      <section class="section" id="s2">
+        <div class="section-header">
+          <span class="section-num">02</span>
+          <div>
+            <div class="section-title">NRA 合规与税务防火墙</div>
+            <div class="section-subtitle">强制前置核查 — 合规风险高于市场风险</div>
+          </div>
+        </div>
+
+        <div class="callout warning">
+          <span class="callout-icon">⚠</span>
+          <div><strong>关键前提：</strong>作为 NRA，您最大的风险不是市场波动，而是<strong>遗产税</strong>与<strong>预扣税误判</strong>。SPCX 为美国本土证券（US-situs），以下所有合规确认项须在开始任何交易前由持牌 CPA 及律师书面确认。<strong>好消息：SpaceX 不派息，META 手册中最棘手的股息预扣条款在此完全不适用。</strong></div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>确认事项</th><th>核心要求</th><th>执行标准</th><th>违规后果</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><strong>W-8BEN 有效性</strong></td><td>确保 IBKR 账户内 <span class="term" data-tip="W-8BEN：非美国人向预扣义务人声明外国身份、享受税收协定优惠的表格，有效期通常为签署年加之后 3 个完整公历年。过期将触发默认预扣。">W-8BEN</span> 在有效期（3 年）内</td><td>每年 1 月 15 日前复核；过期立即暂停所有期权交易</td><td>权利金/收益可能被预扣<strong>最高 30%</strong></td></tr>
+              <tr><td>2</td><td><strong>遗产税红线</strong></td><td>个人账户持有 SPCX 正股市值<strong>严禁超过 $60,000</strong></td><td>超额部分须在 5 个交易日内减持或转至离岸公司账户</td><td>超额资产面临最高 <strong>40%</strong> 美国遗产税</td></tr>
+              <tr><td>3</td><td><strong class="text-red">接货集中度（IPO 特别项）</strong></td><td>因 SPCX 波动极大，一次价差被行权即可能瞬间建立较大正股头寸，极易越过 $60K 遗产税线</td><td><strong>价差行权后须在当日评估并处置</strong>；个人账户若已临近 $60K，应优先了结/上滚而非被动接货</td><td>遗产税敞口 + 集中度风险叠加</td></tr>
+              <tr><td>4</td><td><strong>权利金税务性质</strong></td><td>SPCX 个股期权权利金属于资本利得，免征联邦预扣税</td><td>IBKR 不对权利金预扣；保留台账供 CPA 核查</td><td>无风险，但需完整留痕</td></tr>
+              <tr><td>5</td><td><strong class="text-green">股息预扣（不适用）</strong></td><td><strong>SpaceX 当前不派发股息</strong>，无除息日、无 30% 股息预扣</td><td>无需"除息前停开仓"限制——相对 META 的结构性优势</td><td>—</td></tr>
+              <tr><td>6</td><td><strong>离岸架构（大资金）</strong></td><td>净值 &gt; $50 万 或个人正股 &gt; $6 万时，须通过 BVI/开曼离岸公司持有正股</td><td>提前联系跨境律师 + CPA 联合设立，维护年费约 $3,000–$5,000</td><td>资产传承风险、税务合规风险</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>台账记录强制要求（每笔交易必填）</h3>
+        <ul class="bullets">
+          <li>交易日期 / 合约代码 / 操作类型（开仓/平仓/滚动）/ 张数</li>
+          <li>权利金净收入或支出（美元），以及买卖价差与佣金的实际损耗</li>
+          <li>税务标记：<span class="log-field">权利金收入</span> / <span class="log-field">接货成本调整</span> / <span class="log-field">资本利得</span></li>
+          <li>CNY 折算金额：按交易当日中国人民银行中间价折算，用于境内税务申报</li>
+          <li>开仓时的<strong>阶段标记（Phase 0/1/2）</strong>、市场状态（A/B/C/D）、<strong>绝对 IV 水平</strong>（因 IVR 暂不可用）、Delta、OTM%</li>
+          <li>EV 计算结果及合格状态（含所用肥尾系数）</li>
+        </ul>
+      </section>
+
+      <section class="section" id="s3">
+        <div class="section-header">
+          <span class="section-num">03</span>
+          <div>
+            <div class="section-title">资金分层与仓位架构</div>
+            <div class="section-subtitle">按资金规模动态适配 — SPCX 总名义敞口上限远低于成熟标的</div>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <span class="callout-icon">◈</span>
+          <div><strong>铁律：</strong>SPCX 总名义敞口（正股 + 期权 Delta 敞口）在 <strong>Phase 0/1 严禁超过账户净值的 15%</strong>，Phase 2 常态化后方可放宽至 20%。这一上限远低于 META 的 30%——因为 SPCX 单日 ±20%+ 的跳空，在 15% 敞口下即可造成单日净值 3%+ 的损耗；若按 30% 敞口，单日 L3 紧急熔断几乎必然触发。<strong>所有档位、所有阶段一律强制 Put Spread，全程禁止裸卖 Put（Phase 2 大资金例外见第 5 节）。</strong></div>
+        </div>
+
+        <div class="tier-card tier-1">
+          <div class="tier-header">
+            <div class="tier-icon">🌱</div>
+            <div class="tier-header-info">
+              <div class="tier-range">$50 万 — $200 万</div>
+              <div class="tier-desc">验证期 · Phase 0/1 学习与磨合</div>
+            </div>
+            <div style="margin-left:auto"><span class="badge badge-green">小中资金</span></div>
+          </div>
+          <div class="tier-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>存活第一，收益第二。强制 Put Spread，单笔风险压到极低，先用最小代价把 SPCX 的"脾气"摸清。</p>
+            <div class="alloc-bar-wrap">
+              <div class="alloc-row"><span class="alloc-label">现金 + <span class="term" data-tip="SGOV：iShares 0-3 Month Treasury Bond ETF，持有极短期美国国债，收益率接近联邦基金利率，风险极低，常作为期权保证金的底层资产。">SGOV 短债</span></span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:80%;background:var(--green)"></div></div><span class="alloc-pct">≥80%</span></div>
+              <div class="alloc-row"><span class="alloc-label">期权保证金（仅价差）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:15%;background:var(--blue)"></div></div><span class="alloc-pct">≤15%</span></div>
+              <div class="alloc-row"><span class="alloc-label">SPCX 正股（个人账户）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:6%;background:var(--gold)"></div></div><span class="alloc-pct">≤$6万</span></div>
+              <div class="alloc-row"><span class="alloc-label">尾部对冲预算</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:5%;background:var(--red)"></div></div><span class="alloc-pct">0.5–1%</span></div>
+            </div>
+            <ul class="bullets" style="margin-top:8px">
+              <li>不使用杠杆；仅 Bull Put Spread，同时持仓 ≤ 3 个</li>
+              <li>单笔最大风险 ≤ 净值 <strong>2%</strong>（Phase 0 为 0.5%）</li>
+              <li>强烈建议在 Phase 0 全程以纸面交易演练，跑通至少一个完整指数纳入与解禁窗口再上实盘</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tier-card tier-2">
+          <div class="tier-header">
+            <div class="tier-icon">📈</div>
+            <div class="tier-header-info">
+              <div class="tier-range">$200 万 — $500 万</div>
+              <div class="tier-desc">结构化增强期 · Phase 1 稳定现金流</div>
+            </div>
+            <div style="margin-left:auto"><span class="badge badge-blue">中大资金</span></div>
+          </div>
+          <div class="tier-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>稳定现金流，分层卖 Delta。正股仅在 Phase 2 经离岸账户少量承接。</p>
+            <div class="alloc-bar-wrap">
+              <div class="alloc-row"><span class="alloc-label">现金 + SGOV 短债</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:70%;background:var(--green)"></div></div><span class="alloc-pct">≥70%</span></div>
+              <div class="alloc-row"><span class="alloc-label">期权保证金（价差组合）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:20%;background:var(--blue)"></div></div><span class="alloc-pct">≤20%</span></div>
+              <div class="alloc-row"><span class="alloc-label">SPCX 正股（离岸持有）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:8%;background:var(--gold)"></div></div><span class="alloc-pct">≤8%</span></div>
+              <div class="alloc-row"><span class="alloc-label">尾部对冲预算</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:15%;background:var(--red)"></div></div><span class="alloc-pct">1–2%</span></div>
+            </div>
+            <ul class="bullets" style="margin-top:8px">
+              <li>个人账户正股 ≤ $6 万；超额部分通过 BVI 离岸公司持有</li>
+              <li>分层卖 Delta：0.08 / 0.10 / 0.12，形成多层次权利金收入</li>
+              <li>可开始使用 IBKR PM 模式，但须为 SPCX 的 IV 跳升预留更厚 Excess Liquidity</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tier-card tier-3">
+          <div class="tier-header">
+            <div class="tier-icon">🏛</div>
+            <div class="tier-header-info">
+              <div class="tier-range">$500 万 — $1,000 万+</div>
+              <div class="tier-desc">机构化保险期 · 系统对冲（含本手册目标用户 ~$6.4M NLV）</div>
+            </div>
+            <div style="margin-left:auto"><span class="badge badge-gold">大资金</span></div>
+          </div>
+          <div class="tier-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px"><strong>核心原则：</strong>单一标的集中度严格管控，对冲层<strong>必配</strong>，向家族办公室结构演进。</p>
+            <div class="alloc-bar-wrap">
+              <div class="alloc-row"><span class="alloc-label">现金 + SGOV 短债</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:70%;background:var(--green)"></div></div><span class="alloc-pct">≥70%</span></div>
+              <div class="alloc-row"><span class="alloc-label">期权保证金</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:12%;background:var(--blue)"></div></div><span class="alloc-pct">≤12%</span></div>
+              <div class="alloc-row"><span class="alloc-label">SPCX 正股（离岸）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:6%;background:var(--gold)"></div></div><span class="alloc-pct">≤6%</span></div>
+              <div class="alloc-row"><span class="alloc-label">尾部对冲（必配）</span><div class="alloc-bar-bg"><div class="alloc-bar" style="width:30%;background:var(--red)"></div></div><span class="alloc-pct">2–4%</span></div>
+            </div>
+            <ul class="bullets" style="margin-top:8px">
+              <li>SPCX 总名义敞口（含所有账户）≤ 净值 <strong>15%</strong>（Phase 2 后 ≤ 20%）</li>
+              <li>对冲工具：QQQ 远月 Put（SPCX 将纳入 Nasdaq-100，相关性高）+ 少量 VIX Call + 定额 SPCX 反向 ETF（详见第 8 节）</li>
+              <li>季度再平衡：若 SPCX 敞口超限，必须减持或加对冲</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="s4">
+        <div class="section-header">
+          <span class="section-num">04</span>
+          <div>
+            <div class="section-title">市场状态决策引擎</div>
+            <div class="section-subtitle">每周一美东 9:30 执行判定；SPCX 以"绝对 IV"替代 IVR</div>
+          </div>
+        </div>
+
+        <div id="s4a"></div>
+        <h3>4.1 SPCX 市场状态矩阵（趋势 + ADX 双因子）</h3>
+        <div class="callout warning">
+          <span class="callout-icon">⚠</span>
+          <div><strong>次新股专属警告：</strong>SPCX 仅有数个交易日，<span class="term" data-tip="MA20/MA50 需要 20/50 个交易日的收盘价才有意义。在仅 4 个交易日的次新股上，移动均线尚不存在或严重失真。">MA20 / MA50 在数据上尚不成立</span>。在累计 ≥ 20 个日线收盘前，<strong>不得依赖均线判定状态</strong>，改用以下代理：① <span class="term" data-tip="VWAP（成交量加权平均价）：以成交量加权的平均成交价。自 IPO 起累计的 VWAP 是次新股早期最可靠的多空分界线之一。">自 IPO 起累计 VWAP</span> 作为多空分界；② 指数纳入日程作为结构性买盘的方向指引；③ 当日相对发行价（$135）与首周高点（约 $226）的位置。待均线成立后，再回归标准矩阵。</div>
+        </div>
+        <div class="state-grid">
+          <div class="state-card state-a">
+            <div class="state-card-header"><span class="state-badge">A</span><span class="state-name">强势上涨</span><span class="badge badge-green" style="margin-left:auto">1.0×</span></div>
+            <ul>
+              <li>股价 &gt; 累计 VWAP（或成立后 &gt; MA20 &gt; MA50）</li>
+              <li>ADX &gt; 25（趋势明确）/ 处于指数纳入买盘窗口</li>
+              <li>绝对 IV 处于 90–130% 的"卖方黄金带"</li>
+              <li>积极开仓，但缓冲仍须 ≥ 18%；警惕向上 Gamma 挤压</li>
+            </ul>
+          </div>
+          <div class="state-card state-b">
+            <div class="state-card-header"><span class="state-badge">B</span><span class="state-name">震荡偏多</span><span class="badge badge-blue" style="margin-left:auto">0.8×</span></div>
+            <ul>
+              <li>股价在累计 VWAP 上方窄幅波动</li>
+              <li>ADX 15–25（趋势一般）</li>
+              <li>绝对 IV 60–110%</li>
+              <li>标准参数，正常执行</li>
+            </ul>
+          </div>
+          <div class="state-card state-c">
+            <div class="state-card-header"><span class="state-badge">C</span><span class="state-name">震荡偏空</span><span class="badge badge-orange" style="margin-left:auto">0.4×</span></div>
+            <ul>
+              <li>股价跌破累计 VWAP，但未跌破发行价 $135</li>
+              <li>ADX 15–25</li>
+              <li>绝对 IV 110–140%（恐慌升温）</li>
+              <li><strong>强制更宽价差 + 更低 Delta</strong>，仓位减半</li>
+            </ul>
+          </div>
+          <div class="state-card state-d">
+            <div class="state-card-header"><span class="state-badge">D</span><span class="state-name">强势下跌</span><span class="badge badge-red" style="margin-left:auto">0×</span></div>
+            <ul>
+              <li>股价跌破发行价 $135 或自高点回撤 &gt; 35%</li>
+              <li>ADX &gt; 30（下跌趋势明确）/ 处于解禁供给冲击中</li>
+              <li>绝对 IV &gt; 140%</li>
+              <li><strong>全面禁止新开仓，仅管理存量</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div id="s4b"></div>
+        <h3>4.2 绝对 IV 独立硬约束（替代 IVR · 优先级高于状态判断）</h3>
+        <div class="callout info">
+          <span class="callout-icon">ℹ</span>
+          <div>因 SPCX 无 IVR 可用，本表以<strong>绝对隐含波动率</strong>分区。阈值显著高于成熟标的，因为 SPCX 的基准 IV 结构性偏高。<strong>这些阈值为 Phase 1 临时设定，须随 IV 历史积累每两周校准一次</strong>；约 2026 年 12 月（IV 历史 ≥ 126 交易日）后切换为真实 IVR 分位。开仓前务必在 IBKR 中读取该合约到期对应的实际 IV。</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>绝对 IV 水平</th><th>含义解读</th><th>执行动作</th><th>开仓系数</th></tr></thead>
+            <tbody>
+              <tr><td>&lt; 60%</td><td>对 SPCX 而言偏薄，卖方性价比下降（次新股早期较少出现）</td><td>仅允许极小仓位价差；优先等待 IV 回升或转向更高 Delta</td><td><code>0.5×</code></td></tr>
+              <tr><td>60 – 90%</td><td>SPCX 的"正常"区间，统计优势相对稳定</td><td>按市场状态正常执行价差</td><td><code>1.0×</code></td></tr>
+              <tr><td>90 – 130%</td><td>卖方黄金窗口，权利金极丰厚（须确认非事件前夕）</td><td>可积极开仓；务必核对是否临近指数纳入/解禁/财报</td><td><code>1.0–1.2×</code></td></tr>
+              <tr><td>&gt; 130%</td><td>极端恐慌/事件期，统计优势消失，尾部风险急剧升高</td><td><strong>立即暂停</strong>所有新开卖方仓位；检查并补充现有仓位对冲</td><td><code>0×</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="s4c"></div>
+        <h3>4.3 事件风控前置日历（SPCX 专属 · 禁开仓窗口）</h3>
+        <div class="callout danger">
+          <span class="callout-icon">🚫</span>
+          <div>SPCX 未来 6 个月是<strong>"事件密集雷区"</strong>——指数纳入、解禁、首份财报接踵而至。下列窗口期间<strong>禁止新开任何卖方仓位</strong>。请注意：部分日期市场尚有分歧（已在表中标注），<strong>遇分歧时一律按"更早、更长"的保守口径执行黑名单</strong>。</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>事件</th><th>日期（约）</th><th>性质</th><th>禁开仓窗口 / 处置</th></tr></thead>
+            <tbody>
+              <tr><td>FOMC 决议 + Warsh 首场记者会</td><td>2026-06-17（今日）</td><td>宏观波动</td><td>当日及前 1 日不新开；待落地后评估</td></tr>
+              <tr><td>Juneteenth 休市</td><td>2026-06-19</td><td>流动性中断</td><td>休市前一日不留高 Gamma 短仓</td></tr>
+              <tr><td>CRSP 系（VTI/VUG）纳入</td><td>约 6/18–6/22</td><td><span class="badge badge-green">机械买盘</span></td><td>买盘托底，<strong>价差卖 Put 短期占优</strong>，但缓冲仍须 ≥18%</td></tr>
+              <tr><td>FTSE Russell 1000 / Top 200 纳入</td><td>2026-06-26 收盘后</td><td><span class="badge badge-green">机械买盘</span></td><td>纳入生效日当天波动加大，新仓避开当日竞价</td></tr>
+              <tr><td>MSCI 标准 / 大盘指数纳入</td><td>2026-06-29</td><td><span class="badge badge-green">机械买盘</span></td><td>同上；MSCI 跟踪资金体量巨大</td></tr>
+              <tr><td><strong>Nasdaq-100（QQQ）快速纳入</strong></td><td>约 7/1–<strong>7/7</strong>（15 个交易日，存分歧）</td><td><span class="badge badge-gold">最大机械买盘</span></td><td>约 $220–270 亿被动买盘的<strong>峰值</strong>；纳入<strong>完成后</strong>买盘真空，是关键风险拐点——完成日起 5 个交易日内主动降险</td></tr>
+              <tr><td><strong>Q2 财报 + 首批解禁</strong></td><td>约 7 月下旬（一说 ~7/22 或 7/29，存分歧）</td><td><span class="badge badge-red">事件 + 供给</span></td><td>财报后约 2 个交易日首批解禁（20%，若高于发行价 30% 再 +10%）；<strong>财报前 10 个交易日 — 财报后第 1 个交易日禁开仓</strong></td></tr>
+              <tr><td><strong>首份公开财报（交易所日历口径）</strong></td><td>约 <strong>2026-09-02</strong></td><td><span class="badge badge-red">基本面锚</span></td><td>首个真正基本面检验，二元风险；同上财报黑名单口径。注：与上行"Q2 财报"口径存在冲突，两段窗口都按禁开仓处理</td></tr>
+              <tr><td>后续解禁批次</td><td>IPO 后 70/90/105/120/135 天</td><td><span class="badge badge-orange">供给</span></td><td>每批解禁前 5 个交易日降低敞口</td></tr>
+              <tr><td><strong>180 天全部解禁</strong></td><td>约 2026 年 12 月</td><td><span class="badge badge-red">最大供给冲击</span></td><td>Musk 受全程锁定；全解禁是已知供给利空，提前主动减仓（见第 7 节）</td></tr>
+              <tr><td>Musk / xAI / 收购相关重大消息</td><td>不定（如 Anysphere $60 亿收购约 Q3 交割）</td><td><span class="badge badge-orange">关键人/事件</span></td><td>关键人风险集中；出现重大消息当日及前 1 日不新开</td></tr>
+              <tr><td>比特币剧烈波动</td><td>不定</td><td><span class="badge badge-orange">加密关联</span></td><td>SPCX 持 18,712 枚 BTC；BTC 单日急跌 &gt;10% 视同 SPCX 下行催化，收紧风控</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="s5">
+        <div class="section-header">
+          <span class="section-num">05</span>
+          <div>
+            <div class="section-title">核心交易策略</div>
+            <div class="section-subtitle">Bull Put Spread（核心）+ Covered Call（接股后）双引擎</div>
+          </div>
+        </div>
+
+        <div id="s5a"></div>
+        <h3>5.1 策略一：Bull Put Spread（看跌价差）— 核心首选</h3>
+        <div class="callout info">
+          <span class="callout-icon">ℹ</span>
+          <div><strong>Bull Put Spread</strong>：同时卖出较高行权价 Put（K1）并买入较低行权价 Put（K2），将最大亏损锁定在价差宽度内。<strong class="text-red">在 SPCX 上，所有阶段、所有档位强制使用价差，全程禁止裸卖 Put</strong>（Phase 2 大资金例外见 5.4）。原因：SPCX 单日 ±20%+ 跳空 + 空 Gamma 放大效应，裸卖 Put 的尾部损失不可控。</div>
+        </div>
+
+        <h4>开仓 Delta 矩阵（Phase 1 基准 · DTE 30–45 天）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>股价位置（相对累计 VWAP）</th><th>状态 A</th><th>状态 B</th><th>状态 C</th><th>状态 D</th></tr></thead>
+            <tbody>
+              <tr><td>高位区（&gt; VWAP × 1.10）</td><td>0.06 – 0.09</td><td>0.07 – 0.10</td><td>不开仓</td><td>禁止</td></tr>
+              <tr><td>中位区（VWAP ± 8%）</td><td>0.08 – 0.11</td><td>0.09 – 0.12</td><td>0.06 – 0.09（仅极宽价差）</td><td>禁止</td></tr>
+              <tr><td>低位区（VWAP × 0.85–0.92，但 &gt; $135）</td><td>0.09 – 0.12</td><td>0.10 – 0.12</td><td>暂停</td><td>禁止</td></tr>
+              <tr><td>极端区（&lt; $135 发行价 或 自高点 −35%）</td><td colspan="4" style="text-align:center;color:var(--red)">全部禁止新开 —— 进入第 7 节极端切换流程</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted)">Phase 0 在此基础上：Delta 上限再降 0.02、OTM ≥ 22%；Phase 2 常态化后可逐步上移至成熟标的水平（Delta 0.10–0.20）。</p>
+
+        <h4>价差宽度矩阵（按绝对 IV · 用股价百分比，适应高价区间）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>绝对 IV 水平</th><th>价差宽度（股价百分比）</th><th>约合金额示例（$200 股价）</th><th>权利金 / 最大亏损比目标</th></tr></thead>
+            <tbody>
+              <tr><td>IV 60 – 90%</td><td>4% – 6%</td><td>约 $8–$12</td><td>20% – 35%</td></tr>
+              <tr><td>IV 90 – 130%</td><td>6% – 9%</td><td>约 $12–$18</td><td>25% – 45%</td></tr>
+              <tr><td>IV &gt; 130%</td><td>暂停（如必须，9% – 12%）</td><td>约 $18–$24</td><td>≥ 35%（否则不开）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warning">
+          <span class="callout-icon">◷</span>
+          <div><strong>价差宽度的两难：</strong>SPCX 价差越窄，单位保证金权利金率越高，但 K2 保护腿离 K1 越近、越易被一同击穿；价差越宽，最大亏损越大。<strong>在 SPCX 高跳空环境下，宁可略宽以确保保护腿真正在"灾难价位"之下，也不要为多收一点权利金而把 K2 设得过近。</strong></div>
+        </div>
+
+        <h4>开仓执行流程</h4>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><strong>确认阶段 + 状态 + 绝对 IV</strong><span>先确认当前 Phase（0/1/2）→ 状态须为 A/B/C → 读取该到期实际 IV，须在允许区间 → 无事件禁开仓窗口 → 行权价距现价 ≥ <strong>18%</strong>（Phase 0 ≥ 22%）</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><strong>选择行权价 K1（卖出腿）</strong><span>按 Delta 矩阵选定，确保 Delta 在目标区间内，且 OTM ≥ 18%。优先把 K1 放在心理整数关口/前低之下</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><strong>选择保护腿 K2（买入腿）</strong><span>K2 = K1 − 价差宽度（按绝对 IV 矩阵）。<strong>强制执行，无例外</strong></span></div></div>
+          <div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><strong>计算修正版 EV，达标方可开仓</strong><span>EV &gt; 0 且 EV / 权利金 &gt; <strong>35%</strong>（Phase 0 为 45%；财报/解禁窗口附近一律不开）。详见 5.3</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">5</div><div class="flow-step-body"><strong>确定张数（分批 + 价差组合单）</strong><span>单批名义敞口 = 净值 × 5% × 仓位系数；必须用 <span class="term" data-tip="Combo Order（价差组合单）：把价差两腿作为一个整体提交，按净价成交，避免两腿分别下单时的滑点与单腿成交风险。SPCX 价差大，组合单尤为关键。">价差组合单（Combo Order）</span> 限价提交；50% 张数立即成交，剩余 50% 次日补</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">6</div><div class="flow-step-body"><strong>设置 GTC 止盈单</strong><span>权利金衰减 <strong>50%</strong> 时自动平仓（GTC）。高 IV（&gt;110%）可放宽至 60%。持仓 &gt; 21 天未达标主动评估了结</span></div></div>
+        </div>
+
+        <h4>止损 / Roll 规则</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>情形</th><th>触发条件</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>正常止盈</td><td>权利金衰减 50%（高 IV 60%）</td><td>立即限价平仓，锁定利润，不持仓至到期</td></tr>
+              <tr><td>价格逼近行权价</td><td>股价距 K1 &lt; 8%（较 META 的 5% 更早，因跳空快）</td><td>评估 Roll：优先向更低行权价 + 更远 DTE 的 <span class="term" data-tip="Credit Roll：平掉旧仓同时开新仓，净额收取权利金（而非付出）。优先选择，因为它不增加成本。">Credit Roll</span>；若无法净收款，允许小额 Debit Roll（&lt; 原权利金 30%）避免行权</td></tr>
+              <tr><td>极端行情止损</td><td>浮亏达最大亏损 × <strong>70%</strong>（较 META 的 80% 更早）</td><td>市价平仓，接受损失。<strong>禁止"扛单"等反弹</strong></td></tr>
+              <tr><td>单日跳空击穿</td><td>SPCX 单日跌幅 &gt; 12% 且 K1 被击穿</td><td>开盘后不抢前 15 分钟，待价格稍稳即按 L2 处置（见第 6 节）</td></tr>
+              <tr><td>DTE 临近到期</td><td>DTE &lt; 14 天</td><td><span class="term" data-tip="Gamma 风险：临近到期时，期权 Delta 对股价变动的敏感度（Gamma）急剧上升，价内外切换会令风险瞬间放大。SPCX 高波动下尤甚。">Gamma 风险</span>急剧上升，强制减仓或提前平仓</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <hr class="divider">
+
+        <div id="s5b"></div>
+        <h3>5.2 策略二：Covered Call（备兑看涨）— 接股后增强</h3>
+        <div class="callout danger">
+          <span class="callout-icon">⚠</span>
+          <div><strong>双重前提：</strong>① <strong>遗产税硬约束</strong>——大规模 CC 仅当通过<strong>离岸公司账户</strong>持有 SPCX 正股时才可执行，个人账户正股市值严禁超过 $60,000；② <strong>阶段约束</strong>——鉴于 SPCX 是高估值、未盈利的次新股，"接货并长期持有"原则上<strong>仅在 Phase 2（首份财报后 + 全解禁后）才成立</strong>。在此之前若被行权接货，应视为<strong>非计划事件</strong>，按"分批减持或立即卖极低 Delta CC 降成本"处理，而非默认长期持有。</div>
+        </div>
+        <h4>开仓参数（DTE 30–40 天 · 仅 Phase 2 常态执行）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>股价位置（相对成本/均线）</th><th>状态 A</th><th>状态 B</th><th>状态 C</th></tr></thead>
+            <tbody>
+              <tr><td>高位区（&gt; 均线 × 1.10）</td><td>0.10 – 0.15</td><td>0.12 – 0.18</td><td>仅维护存量</td></tr>
+              <tr><td>正常区（均线 ± 8%）</td><td>0.12 – 0.18</td><td>0.15 – 0.20</td><td>0.18 – 0.25</td></tr>
+              <tr><td>低位区（&lt; 均线 × 0.92）</td><td>0.15 – 0.20</td><td>0.18 – 0.25</td><td>0.22 – 0.30</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>向上滚动（Roll Up）规则 — SPCX 空 Gamma 特别提示</h4>
+        <ul class="bullets">
+          <li><strong>触发条件：</strong>SPCX 涨至距行权价 &lt; 8%，且状态为 A/B，且 ADX &gt; 25</li>
+          <li><strong>空 Gamma 挤压预案：</strong>SPCX 流通盘极薄，向上 Gamma 挤压可令 CC 被快速逼近甚至跳空越过行权价。<strong>强势 A 状态下只对 ≤ 50% 正股卖 CC，保留另一半完整享受上涨</strong>，避免在挤压中被"锁死"上行</li>
+          <li><strong>优先操作：</strong>Credit Roll（新行权价 ≥ 当前股价 + 8%）；强势时允许 Debit Roll，付费上限 ≤ 原权利金 30%</li>
+        </ul>
+        <h4>被行权后处理</h4>
+        <ul class="bullets">
+          <li>正股被行权卖出后，于 1–3 个交易日内评估是否经离岸账户以现价重新买入（仅 Phase 2 且基本面无恶化）</li>
+          <li>被行权属计划内成功，<strong>禁止追高重买</strong></li>
+        </ul>
+
+        <hr class="divider">
+
+        <div id="s5c"></div>
+        <h3>5.3 修正版 EV 公式（SPCX 极端肥尾校准）</h3>
+        <p>标准 EV 公式直接用 Delta 近似行权概率，会系统性低估 SPCX 的左尾风险（已记录 ±20% 单日与上市初期 600%+ 极端摆动，叠加空 Gamma 放大）。本版本引入<strong>显著更高</strong>的肥尾系数，并随数据积累收敛。</p>
+        <div class="formula-box">
+<span class="comment">// Step 1: 修正行权概率（SPCX 肥尾系数按阶段取值，见下表）</span>
+P_adjusted = |Delta| × 肥尾系数
+
+<span class="comment">// Step 2: 计算修正版 EV</span>
+EV = (净权利金 × 100) × (1 − P_adjusted)
+     − (最大亏损 × P_adjusted)
+
+<span class="comment">// Step 3: 合格判断（阈值随阶段收紧）</span>
+合格条件：EV &gt; 0  AND  EV / (净权利金 × 100) &gt; 阈值
+  · Phase 0：阈值 45%
+  · Phase 1：阈值 35%
+  · Phase 2：阈值 25%（财报/解禁窗口 30%）
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>阶段</th><th>肥尾系数</th><th>合格阈值</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-red">Phase 0</span></td><td>1.75</td><td>45%</td><td>无任何 IV 历史，最保守</td></tr>
+              <tr><td><span class="badge badge-orange">Phase 1</span></td><td>1.60</td><td>35%</td><td>本手册默认基准</td></tr>
+              <tr><td><span class="badge badge-green">Phase 2</span></td><td>1.35 → 数据驱动</td><td>25%</td><td>随 IV 历史 ≥126 日，逐步用实测左尾概率替代系数</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout gold">
+          <span class="callout-icon">◆</span>
+          <div><strong>计算示例（Phase 1 · 系数 1.60 · 股价 $200）：</strong><br>
+          卖出 SPCX $160 Put（20% 价外），收权利金 $3.50；买入 $150 Put，付权利金 $0.90。<br>
+          净权利金 = $2.60 × 100 = <strong>$260</strong>；最大亏损 = ($160−$150−$2.60) × 100 = <strong>$740</strong>。<br>
+          假设短腿 Delta = 0.10，则 P_adjusted = 0.10 × 1.60 = 0.16。<br>
+          EV = $260 × (1−0.16) − $740 × 0.16 = $218.4 − $118.4 = <strong class="text-green">+$100</strong>。<br>
+          EV 率 = $100 / $260 = <strong>38.5% &gt; 35% ✓ 合格</strong>。<br>
+          年化收益 = ($2.60 / $160) × (365 / 40) × 100 ≈ <strong>14.8%</strong>（基于净权利金/行权价；DTE=40）。<br>
+          <span style="color:var(--text-muted);font-size:12.5px">⚠️ 上述权利金/Delta 为说明性数值，<strong>实际开仓前必须在 IBKR 读取真实报价、Delta 与 IV</strong>；SPCX 价差大，须以组合单中价为准。</span></div>
+        </div>
+
+        <hr class="divider">
+
+        <div id="s5d"></div>
+        <h3>5.4 IPO 三阶段策略适配总表</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>参数</th><th>Phase 0（IV 发现）</th><th>Phase 1（磨合）</th><th>Phase 2（常态）</th></tr></thead>
+            <tbody>
+              <tr><td>允许结构</td><td>仅微仓价差</td><td>仅价差</td><td>价差为主；大资金可温和裸卖</td></tr>
+              <tr><td>短腿 Delta 上限</td><td>≤ 0.08</td><td>≤ 0.12</td><td>0.10 – 0.20</td></tr>
+              <tr><td>OTM 缓冲下限</td><td>≥ 22%</td><td>≥ 18%</td><td>≥ 10%（随 IV 调整）</td></tr>
+              <tr><td>单笔风险上限</td><td>净值 0.5%</td><td>净值 2%</td><td>净值 3%</td></tr>
+              <tr><td>肥尾系数 / EV 阈值</td><td>1.75 / 45%</td><td>1.60 / 35%</td><td>1.35 / 25%</td></tr>
+              <tr><td>波动率判据</td><td>绝对 IV</td><td>绝对 IV + 合成分位</td><td>真实 IVR（≥126 日后）</td></tr>
+              <tr><td>Covered Call</td><td>不适用</td><td>仅被动接货后降成本</td><td>常态执行（离岸账户）</td></tr>
+              <tr><td>总名义敞口上限</td><td>净值 10%</td><td>净值 15%</td><td>净值 20%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="s6">
+        <div class="section-header">
+          <span class="section-num">06</span>
+          <div>
+            <div class="section-title">三级熔断机制</div>
+            <div class="section-subtitle">单日跳空为首要触发键 · 阈值较成熟标的全面收紧 · 无例外条款</div>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <span class="callout-icon">⚠</span>
+          <div><strong>SPCX 专属设计原则：</strong>成熟标的的熔断以"多日累计跌幅"为主键，但 SPCX 已记录 ±20% 单日跳空且流通盘极薄（≈4%）、做市商整体空 Gamma，<strong class="text-red">单日跳空（Gap）才是真正的杀手</strong>。因此本机制将"单日跌幅"列为<strong>第一触发键</strong>，多日累计与账户维度为并行触发键，<strong>任一满足即触发对应级别，就高不就低</strong>。所有动作为强制执行，不设"再观察一下"的缓冲。</div>
+        </div>
+
+        <div class="circuit-level l1">
+          <div class="circuit-header"><span class="circuit-dot"></span><h4>L1 · 预警（Yellow）</h4></div>
+          <div class="circuit-body">
+            <div class="trigger-list">
+              <span class="label">触发条件（任一）</span>
+              <ul>
+                <li>SPCX <strong>单日跌幅 &gt; 8%</strong>（首要键）</li>
+                <li>3 日累计跌幅 &gt; 12%</li>
+                <li>账户浮亏 &gt; 净值 3%</li>
+                <li>维持保证金使用率 &gt; 40%</li>
+                <li>当日 IV 单日跳升 &gt; 25 个百分点</li>
+              </ul>
+            </div>
+            <div class="action-list">
+              <span class="label">强制动作</span>
+              <ul>
+                <li><strong>立即停止一切新开仓</strong>（当日及次一交易日）</li>
+                <li>检查所有价差短腿与现价距离，&lt; 12% 者列入监控名单</li>
+                <li>对已盈利 &gt; 40% 的仓位提前挂 GTC 止盈，落袋为安</li>
+                <li>核对保证金余量与压力测试（再跌 10% 的保证金占用）</li>
+                <li>记录触发事件、时间、SPCX 价格与 IV 至台账</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="circuit-level l2">
+          <div class="circuit-header"><span class="circuit-dot"></span><h4>L2 · 警戒（Orange）</h4></div>
+          <div class="circuit-body">
+            <div class="trigger-list">
+              <span class="label">触发条件（任一）</span>
+              <ul>
+                <li>SPCX <strong>单日跌幅 &gt; 12%</strong>（首要键）</li>
+                <li>3 日累计跌幅 &gt; 18%</li>
+                <li>账户浮亏 &gt; 净值 6%</li>
+                <li>维持保证金使用率 &gt; 50%</li>
+                <li>任一价差短腿 K1 被击穿（股价 &lt; K1）</li>
+              </ul>
+            </div>
+            <div class="action-list">
+              <span class="label">强制动作</span>
+              <ul>
+                <li>启动 <strong>Roll / 减仓</strong>：对被击穿或濒临击穿价差，按第 5 节规则向下 + 远月 Credit Roll；无法净收款则主动减仓</li>
+                <li><strong>总名义敞口强制压缩至净值 8% 以内</strong></li>
+                <li>暂停 Covered Call 向上滚动，保留正股弹性</li>
+                <li>启用尾部对冲加仓（见第 8 节动态规则）</li>
+                <li>当日不抢开盘前 30 分钟，避免在做市商重定价的最大波动段操作</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="circuit-level l3">
+          <div class="circuit-header"><span class="circuit-dot"></span><h4>L3 · 紧急（Red）</h4></div>
+          <div class="circuit-body">
+            <div class="trigger-list">
+              <span class="label">触发条件（任一）</span>
+              <ul>
+                <li>SPCX <strong>单日跌幅 &gt; 18%</strong>（首要键）</li>
+                <li>5 日累计跌幅 &gt; 25%</li>
+                <li>自上市后高点回撤 &gt; 35%（与第 7 节联动）</li>
+                <li>账户浮亏 &gt; 净值 10%</li>
+                <li>维持保证金使用率 &gt; 55% <strong>或收到 Margin Call</strong></li>
+              </ul>
+            </div>
+            <div class="action-list">
+              <span class="label">强制动作（无例外）</span>
+              <ul>
+                <li><strong>市价平掉全部卖方价差仓位</strong>，无条件接受损失，禁止"扛单等反弹"</li>
+                <li>若被行权接货，立即评估卖极低 Delta（≤0.08）CC 降成本或分批减持</li>
+                <li>保证金不足时<strong>优先平仓而非追加保证金</strong>（避免在极端波动中放大杠杆）</li>
+                <li>正式进入第 7 节<strong>极端行情切换流程</strong>，转入观察期</li>
+                <li>当日收盘后完成事件复盘报告与责任检查</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h4>单日跳空专项应急方案（SPCX 核心风险）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>跳空情形</th><th>第一动作（开盘 0–30 分钟）</th><th>第二动作（30–90 分钟）</th></tr></thead>
+            <tbody>
+              <tr><td>向下跳空 8–12%</td><td><strong>不操作、不抢反弹</strong>，仅观察价差短腿与现价距离</td><td>按 L1/L2 处置；价格稍稳后挂限价 Roll 单，禁止市价追单</td></tr>
+              <tr><td>向下跳空 &gt; 12% 且击穿 K1</td><td>确认保护腿 K2 是否仍在价外；计算当前最大亏损敞口</td><td>价格企稳后按 L2/L3 限价了结或 Roll；保护腿被一同击穿则锁定最大亏损离场</td></tr>
+              <tr><td>向下跳空 &gt; 18%</td><td>直接进入 L3，准备全线平仓，<strong>但仍等待前 15 分钟极端波动收敛</strong></td><td>分 2–3 笔限价（中价附近）了结，避免单笔大单吃满做市商宽价差</td></tr>
+              <tr><td>向上跳空 &gt; 15%（空 CC 风险）</td><td>检查 Covered Call 是否濒临/越过行权价</td><td>对 ≤50% 正股的 CC 按需 Roll Up（见 5.2）；保留另一半享受上涨，避免被锁死</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warning">
+          <span class="callout-icon">◷</span>
+          <div><strong>开盘前 15–30 分钟铁律：</strong>SPCX 在跳空日的开盘段，做市商点差可瞬间放大至 10–15%，且价格剧烈双向甩动。<strong>除非触发 L3 必须止损，否则一律等待波动收敛后再以限价单（组合单中价）操作</strong>，严禁在开盘瞬间用市价单进出——那等同于把数个百分点直接送给做市商。</div>
+        </div>
+      </section>
+
+      <section class="section" id="s7">
+        <div class="section-header">
+          <span class="section-num">07</span>
+          <div>
+            <div class="section-title">极端行情切换机制</div>
+            <div class="section-subtitle">自上市高点 −35% 触发 · 12 月全解禁前预防性降险 · 四步恢复路径</div>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <span class="callout-icon">⚠</span>
+          <div><strong>双触发设计：</strong>SPCX 的极端切换由两类事件触发——① <strong>被动触发</strong>：自上市后最高点回撤 ≥ 35%；② <strong>主动触发</strong>：临近 2026 年 12 月 180 天全解禁（Musk 持股解锁）等已知的结构性供给冲击，提前预防性降险。前者是"已经发生"，后者是"即将发生"，<strong>两者都要求脱离常规卖方节奏</strong>。</div>
+        </div>
+
+        <h4>7.1 触发阈值</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>触发类型</th><th>判定标准</th><th>性质</th></tr></thead>
+            <tbody>
+              <tr><td>被动 · 深度回撤</td><td>SPCX 自上市后收盘最高点回撤 ≥ <strong>35%</strong></td><td><span class="badge badge-red">立即切换</span></td></tr>
+              <tr><td>被动 · 破发行价</td><td>SPCX 跌破 IPO 发行价 <strong>$135</strong> 且连续 2 日收于其下</td><td><span class="badge badge-red">立即切换</span></td></tr>
+              <tr><td>主动 · 解禁悬崖</td><td>距 12 月 180 天全解禁日 &lt; <strong>15 个交易日</strong></td><td><span class="badge badge-orange">预防性降险</span></td></tr>
+              <tr><td>主动 · 分批解禁</td><td>各 70/90/105/120/135 天解禁档位前 5 个交易日</td><td><span class="badge badge-yellow">收紧但不全停</span></td></tr>
+              <tr><td>主动 · 财报+首披露</td><td>Q2 财报 / 首份财报窗口（视交易所日历，整段视为禁区）</td><td><span class="badge badge-orange">预防性降险</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>7.2 切换执行流程（四步）</h4>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><strong>平仓 / 降险（T+0 当日）</strong><span>被动触发：市价/限价了结全部卖方价差，名义敞口归零或压至净值 5% 以内的纯防御仓。主动触发：不新开、仅了结临近到期仓，敞口压至净值 8% 以内，并加配尾部对冲。</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><strong>等待企稳（观察期，无固定天数）</strong><span>同时满足方为"企稳"：① SPCX 连续 <strong>5 个交易日</strong>单日波幅收敛至 &lt; 10%；② 当日 IV 自峰值回落 ≥ 30%；③ 价格在某区间窄幅整理、不再创新低；④ 无新的解禁/财报/重大消息在未来 10 日内。<strong>任一不满足，观察期延续，绝不抢跑。</strong></span></div></div>
+          <div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><strong>分批建仓（试探性恢复）</strong><span>以"正常仓位的 1/4"起步，仅用 Phase 0 参数（Delta ≤ 0.08、OTM ≥ 22%、极宽价差、肥尾系数 1.75）。首批存活且 EV 持续达标满 2 周，方可加至 1/2；再稳定 2 周，恢复至常规 Phase 1 节奏。</span></div></div>
+          <div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><strong>策略恢复（确认常态）</strong><span>仅当价格重回累计 VWAP 上方、IV 回到 60–110% 常态区间、且后续 10 日无重大事件时，正式恢复第 5 节标准流程。恢复后首月仍维持单笔风险上限下调一档（2% → 1.5%）。</span></div></div>
+        </div>
+
+        <div class="callout gold">
+          <span class="callout-icon">◆</span>
+          <div><strong>解禁悬崖的非对称性：</strong>180 天全解禁意味着 Musk 及早期股东的巨量股份可上市流通，理论供给冲击巨大。<strong>切换的代价（少收数周权利金）远小于在解禁砸盘中被深度套牢的代价。</strong>宁可错过、不可错杀——这是次新股卖方的第一生存法则。</div>
+        </div>
+      </section>
+
+      <section class="section" id="s8">
+        <div class="section-header">
+          <span class="section-num">08</span>
+          <div>
+            <div class="section-title">尾部对冲配置</div>
+            <div class="section-subtitle">优先用指数/波动率/反向 ETF 对冲 · 规避 SPCX 自身天价 Put · 动态增减</div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ</span>
+          <div><strong>核心理念：</strong>在 IV ≈ 100%+ 的环境下，直接买 SPCX 远月 OTM Put 极其昂贵，长期持有会严重侵蚀权利金收益。因此本策略<strong>优先使用相关性对冲与波动率对冲工具</strong>，仅在特定窗口（解禁/财报前）才少量配置 SPCX 自身 Put 作为精确对冲。</div>
+        </div>
+
+        <h4>8.1 对冲预算</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>市场/阶段状态</th><th>对冲预算（占净值）</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>常规期（Phase 1，状态 A/B）</td><td>0.5% – 1.0% / 季度</td><td>基础底仓对冲，持续滚动</td></tr>
+              <tr><td>事件临近（解禁/财报前 10 日）</td><td>1.0% – 2.0%</td><td>临时加仓，事件过后回落</td></tr>
+              <tr><td>L2 警戒 / 切换观察期</td><td>2.0% – 3.0%</td><td>防御优先，对冲先行</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:13px;color:var(--text-muted)">对冲是<strong>成本项不是盈利项</strong>，其使命是在极端下行中提供流动性与缓冲，使主仓有序撤退，而非追求对冲本身赚钱。年度对冲总支出以不超过权利金毛收入的 15% 为软上限。</p>
+        </div>
+
+        <h4>8.2 对冲工具与参数（按优先级）</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>优先级</th><th>工具</th><th>参数（Delta / DTE）</th><th>滚动周期</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-green">首选</span></td><td><strong>QQQ / 纳指 OTM Put</strong></td><td>Delta 0.10–0.15 / DTE 45–90</td><td>剩余 DTE &lt; 21 天或 Delta &gt; 0.30 时滚动</td><td>对冲科技板块系统性下行（SPCX 高 Beta 关联）</td></tr>
+              <tr><td><span class="badge badge-green">首选</span></td><td><strong>VIX 看涨 / VXX</strong></td><td>Delta 0.10–0.20 / DTE 30–60</td><td>波动率回落或到期前滚动</td><td>对冲"价格跌 + IV 飙"双杀，凸性最强</td></tr>
+              <tr><td><span class="badge badge-blue">次选</span></td><td><strong>SPCX 反向 / 做空 ETF</strong>（若已上市）</td><td>仓位 0.3%–0.8% 净值</td><td>按敞口动态调整</td><td>直接负相关，无期权时间损耗，但有跟踪误差</td></tr>
+              <tr><td><span class="badge badge-orange">仅事件窗口</span></td><td><strong>SPCX 自身远月 OTM Put</strong></td><td>Delta 0.05–0.10 / DTE 60–120</td><td>事件过后即了结</td><td>解禁/财报前的精确对冲；因 IV 极高，平时不持有</td></tr>
+              <tr><td><span class="badge badge-gray">关联补充</span></td><td><strong>BTC / IBIT Put</strong></td><td>Delta 0.10 / DTE 30–60</td><td>按 BTC 波动滚动</td><td>SPCX 持 18,712 枚 BTC，加密急跌时的补充对冲</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>8.3 动态调整规则</h4>
+        <ul class="bullets">
+          <li><strong>加仓对冲：</strong>触发任一——① 进入解禁/财报前 10 日窗口；② VIX &gt; 25 且上行；③ SPCX 当日 IV &gt; 130%；④ 触发 L1/L2 熔断；⑤ 自高点回撤 &gt; 20%（尚未到切换线但需提前防御）。</li>
+          <li><strong>减仓对冲：</strong>触发任一——① 事件窗口安全度过；② VIX 回落至 &lt; 18 且 SPCX IV &lt; 90%；③ 价格重回累计 VWAP 上方并稳定 5 日；④ 对冲浮盈 &gt; 50% 时部分止盈，落袋后重置底仓。</li>
+          <li><strong>对冲与主仓的反向纪律：</strong>主仓越激进（敞口接近上限），对冲底仓越要饱满；切换观察期主仓归零时，对冲可逐步了结但保留 VIX 凸性头寸至确认企稳。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="s9">
+        <div class="section-header">
+          <span class="section-num">09</span>
+          <div>
+            <div class="section-title">标准化操作 SOP</div>
+            <div class="section-subtitle">月度 / 每周 / 每日三级节奏 · 含阶段确认、IV 与做市商定位、事件日历核查</div>
+          </div>
+        </div>
+
+        <h4>9.1 月度 SOP</h4>
+        <div class="sop-steps">
+          <div class="sop-step"><div class="sop-step-icon">◷</div><div class="sop-step-content"><strong><span class="time-badge">每月首个交易日</span>阶段与参数复核</strong><p>确认当前处于 Phase 0/1/2（依据距首份财报天数、IV 历史样本量、解禁进度）；据此锁定本月 Delta 上限、OTM 缓冲、肥尾系数、单笔风险上限。若跨阶段，全面更新参数表。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">▦</div><div class="sop-step-content"><strong><span class="time-badge">每月首周</span>事件日历铺设</strong><p>更新未来 8 周事件日历：指数纳入（FTSE/MSCI/纳指100 快速纳入）、解禁档位、财报/披露窗口、FOMC、Musk/xAI/收购相关已知节点、BTC 重大事件。标注各自禁开仓窗口。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">◫</div><div class="sop-step-content"><strong><span class="time-badge">每月中</span>绩效与校准</strong><p>统计上月胜率、盈亏比、权利金毛/净收入、成本降低率、对冲支出占比；据实测左尾频率<strong>校准绝对 IV 区间与肥尾系数</strong>（Phase 0/1 强制每两周校准一次）。</p></div></div>
+        </div>
+
+        <h4>9.2 每周 SOP</h4>
+        <div class="sop-steps">
+          <div class="sop-step"><div class="sop-step-icon">◷</div><div class="sop-step-content"><strong><span class="time-badge">周一开盘前</span>环境分析</strong><p>读取 SPCX 累计 VWAP、当周价格区间、当日各到期 IV 水平与期限结构、做市商空 Gamma 强弱（流通量与持仓变化）；判定市场状态 A/B/C/D。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">▦</div><div class="sop-step-content"><strong><span class="time-badge">周一/周二</span>方案制定与开仓</strong><p>按状态与绝对 IV 选定 Bull Put Spread 候选；逐笔计算修正版 EV，达标者用组合单限价分批开仓（50% 当日、50% 次日）。核对无事件禁开仓窗口冲突。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">⊘</div><div class="sop-step-content"><strong><span class="time-badge">周中</span>风控核查</strong><p>检查全部持仓的短腿距现价距离、保证金使用率、对冲底仓 Delta 是否需滚动；确认所有仓位均挂有 GTC 止盈单。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">◫</div><div class="sop-step-content"><strong><span class="time-badge">周五收盘后</span>周度复盘</strong><p>更新台账；统计本周了结仓盈亏；标记下周到期临近（DTE &lt; 14）需处理的仓位；预判下周事件。</p></div></div>
+        </div>
+
+        <h4>9.3 每日 SOP</h4>
+        <div class="sop-steps">
+          <div class="sop-step"><div class="sop-step-icon">☀</div><div class="sop-step-content"><strong><span class="time-badge">开盘前</span>晨间扫描</strong><p>核查隔夜 SPCX 盘前价格与跳空幅度、BTC 走势、纳指期货、重大新闻（Musk/收购/政策）；确认当日是否落入任何禁开仓窗口；评估是否触发熔断阈值。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">◉</div><div class="sop-step-content"><strong><span class="time-badge">盘中</span>执行与监控</strong><p><strong>开盘前 15–30 分钟不主动交易</strong>（除 L3 止损）。波动收敛后执行计划内开/平仓；实时监控短腿距离与保证金；触发熔断立即按第 6 节处置。</p></div></div>
+          <div class="sop-step"><div class="sop-step-icon">◷</div><div class="sop-step-content"><strong><span class="time-badge">收盘后</span>日终结算</strong><p>登记当日全部成交（含组合单中价、Delta、IV）至台账；更新浮盈亏与敞口；确认 GTC 止盈/对冲单状态；记录当日 SPCX 收盘价、IV、累计 VWAP。</p></div></div>
+        </div>
+      </section>
+
+      <section class="section" id="s10">
+        <div class="section-header">
+          <span class="section-num">10</span>
+          <div>
+            <div class="section-title">绩效台账模板</div>
+            <div class="section-subtitle">机构级必填字段 · 因 IVR 暂不可计而记录绝对 IV 与阶段 · 季度复盘指标</div>
+          </div>
+        </div>
+
+        <h4>10.1 逐笔交易记录字段</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>字段</th><th>填写示例</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td>交易日期 / 时间</td><td>2026-07-08 22:15 SGT</td><td>对齐事件日历与盘中时段</td></tr>
+              <tr><td>所处阶段（Phase）</td><td>Phase 1</td><td>校验参数是否与阶段匹配（IVR 暂不可计，以此替代）</td></tr>
+              <tr><td>策略类型</td><td>Bull Put Spread</td><td>区分卖方价差 / Covered Call / 对冲</td></tr>
+              <tr><td>结构与行权价</td><td>卖 $160P / 买 $150P</td><td>记录价差宽度与保护腿位置</td></tr>
+              <tr><td>到期日 / DTE</td><td>2026-08-15 / 38 天</td><td>追踪时间衰减与 Gamma 风险</td></tr>
+              <tr><td>短腿 Delta</td><td>0.10</td><td>验证是否在阶段 Delta 上限内</td></tr>
+              <tr><td><strong>开仓时绝对 IV</strong></td><td>105%</td><td><strong>替代 IVR</strong>：记录该到期实测 IV，用于事后校准区间</td></tr>
+              <tr><td>累计 VWAP / 现价</td><td>VWAP $188 / 现价 $200</td><td>判定股价位置区（替代均线）</td></tr>
+              <tr><td>净权利金 / 最大亏损</td><td>$260 / $740</td><td>计算 EV 率与资金效率</td></tr>
+              <tr><td>修正版 EV / EV 率</td><td>+$100 / 38.5%</td><td>验证开仓合格性</td></tr>
+              <tr><td>张数 / 名义敞口</td><td>5 张 / 净值 1.2%</td><td>敞口与单笔风险控制</td></tr>
+              <tr><td>跳空风险备注</td><td>距财报 8 周、无近端解禁</td><td>SPCX 专项：标注开仓时的尾部环境</td></tr>
+              <tr><td>了结方式 / 盈亏</td><td>50% 衰减 GTC 平仓 / +$130</td><td>统计胜率与盈亏比</td></tr>
+              <tr><td>触发事件（如有）</td><td>无 / L1 触发并减仓</td><td>关联熔断与切换记录</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>10.2 月度 / 季度复盘指标</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>指标</th><th>目标值</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>胜率（了结仓盈利占比）</td><td><strong>&gt; 70%</strong></td><td>卖方策略应高胜率；低于 60% 须检讨 Delta/OTM 设定</td></tr>
+              <tr><td>盈亏比（平均盈利/平均亏损）</td><td><strong>&gt; 2.5</strong></td><td>价差结构下重点防止单次大亏吞噬多次小盈</td></tr>
+              <tr><td>年化权利金收益（净）</td><td>Phase 1：<strong>12% – 20%</strong></td><td>以净权利金/占用保证金折年化；Phase 2 可上修</td></tr>
+              <tr><td>最大回撤</td><td><strong>≤ 12% – 15%</strong></td><td>触及即触发熔断/切换复盘</td></tr>
+              <tr><td>成本降低率（接货后）</td><td>累计权利金 / 持仓成本</td><td>衡量 Wheel 闭环对正股成本的优化效果</td></tr>
+              <tr><td>对冲支出占比</td><td>&lt; 权利金毛收入 15%</td><td>控制对冲拖累</td></tr>
+              <tr><td>EV 模型校准偏差</td><td>实测左尾频率 vs 肥尾系数</td><td>Phase 0/1 每两周校准；偏差大则上调系数</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="s11">
+        <div class="section-header">
+          <span class="section-num">11</span>
+          <div>
+            <div class="section-title">绝对纪律红线</div>
+            <div class="section-subtitle">围绕"高权利金 + 下跌接股"核心目标 · 违反即系统性风险 · 无情形豁免</div>
+          </div>
+        </div>
+
+        <div class="redlines">
+          <div class="redline-item"><span class="redline-num">R-01</span><div class="redline-text"><strong>全程禁止裸卖 Put。</strong>所有阶段、所有档位强制使用 Bull Put Spread（仅 Phase 2 大资金、通过离岸账户、且 IV &lt; 90% 时方可申请例外）。SPCX 单日 ±20%+ 跳空叠加空 Gamma，裸卖尾部损失不可控。</div></div>
+          <div class="redline-item"><span class="redline-num">R-02</span><div class="redline-text"><strong>禁止违反阶段门槛。</strong>不得在 Phase 0/1 使用 Phase 2 的 Delta 或 OTM 参数。次新股没有 IV 历史，<strong>"看起来便宜"不构成放宽风控的理由</strong>。</div></div>
+          <div class="redline-item"><span class="redline-num">R-03</span><div class="redline-text"><strong>禁止把不可计算的 IVR 当作可用信号。</strong>在 IV 历史样本 &lt; 126 个交易日前，一切"IVR 分位"均为虚构，<strong>只认当日绝对 IV</strong>。严禁引用任何平台给出的伪 IVR 开仓。</div></div>
+          <div class="redline-item"><span class="redline-num">R-04</span><div class="redline-text"><strong>禁止在事件禁区内新开仓。</strong>财报/首披露、各解禁档位、指数纳入熔涨、FOMC、Musk 重大消息窗口一律不新开卖方仓，无论权利金多诱人。</div></div>
+          <div class="redline-item"><span class="redline-num">R-05</span><div class="redline-text"><strong>禁止在指数纳入逼空（melt-up）中盲目卖 Call/裸卖。</strong>纳指100 等被动买入会制造"先暴涨后真空"，须在纳入生效前重新评估，不被短期暴涨诱导加仓。</div></div>
+          <div class="redline-item"><span class="redline-num">R-06</span><div class="redline-text"><strong>禁止扛单。</strong>浮亏达最大亏损 70% 或触发 L3，必须按规则止损/平仓，严禁"等反弹""向下摊平裸卖"。</div></div>
+          <div class="redline-item"><span class="redline-num">R-07</span><div class="redline-text"><strong>禁止 EV 不达标开仓。</strong>修正版 EV &le; 0 或 EV 率低于阶段阈值，一律不开，不得人为下调系数凑合格。</div></div>
+          <div class="redline-item"><span class="redline-num">R-08</span><div class="redline-text"><strong>禁止超敞口 / 超杠杆。</strong>总名义敞口不得突破阶段上限（Phase 0/1 ≤ 15%）；维持保证金使用率红线 55%，触及即降险而非加保证金。</div></div>
+          <div class="redline-item"><span class="redline-num">R-09</span><div class="redline-text"><strong>禁止个人账户大额持有 SPCX 正股。</strong>NRA 美国遗产税硬约束，个人账户美国境内资产市值严禁超过 $60,000；大规模接货/CC 必须经离岸公司账户。</div></div>
+          <div class="redline-item"><span class="redline-num">R-10</span><div class="redline-text"><strong>禁止开盘瞬间市价进出。</strong>除 L3 强制止损外，开盘前 15–30 分钟一律等波动收敛、用组合单限价（中价）操作，不把点差白送做市商。</div></div>
+          <div class="redline-item"><span class="redline-num">R-11</span><div class="redline-text"><strong>禁止裸露税务合规缺口。</strong>W-8BEN 必须在有效期内；过期会触发 30% 备份预扣。开仓前确认表格状态。</div></div>
+          <div class="redline-item"><span class="redline-num">R-12</span><div class="redline-text"><strong>禁止追高重买被行权正股。</strong>被行权属计划内结果，按 Wheel 节奏处理，不得情绪化追高。</div></div>
+        </div>
+      </section>
+
+      <section class="section" id="s12">
+        <div class="section-header">
+          <span class="section-num">12</span>
+          <div>
+            <div class="section-title">应急预案与联络表</div>
+            <div class="section-subtitle">每类情境明确第一/第二动作与执行时限 · 关键联系方式</div>
+          </div>
+        </div>
+
+        <h4>12.1 应急预案</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>情境</th><th>第一动作（时限）</th><th>第二动作（时限）</th></tr></thead>
+            <tbody>
+              <tr><td><strong>开盘向下大跳空</strong></td><td>核对熔断级别、保护腿是否仍在价外（开盘 0–15 分钟，不交易）</td><td>波动收敛后按 L1/L2/L3 限价处置（15–90 分钟）</td></tr>
+              <tr><td><strong>解禁悬崖砸盘</strong></td><td>立即进入第 7 节切换：了结主仓、敞口归零（T+0）</td><td>转观察期，对冲保留，待企稳四条件满足再分批恢复（数日–数周）</td></tr>
+              <tr><td><strong>向上 Gamma 挤压（空 CC）</strong></td><td>检查 CC 是否越过行权价；确认仅对 ≤50% 正股卖了 CC（即时）</td><td>对受影响 CC 做 Credit/小额 Debit Roll Up，保留半仓上行（当日）</td></tr>
+              <tr><td><strong>保证金追缴（Margin Call）</strong></td><td><strong>优先平仓降险</strong>而非追加保证金（收到后即时）</td><td>压缩敞口至安全线，复盘杠杆来源（当日收盘前）</td></tr>
+              <tr><td><strong>W-8BEN 过期 / 备份预扣</strong></td><td>立即在 IBKR 重新提交 W-8BEN（发现即时）</td><td>就已预扣部分通过 1040-NR 申报，依 §871(a)(2) 主张资本利得豁免（年度申报）</td></tr>
+              <tr><td><strong>IBKR 系统/连接故障</strong></td><td>改用备用网络/移动端 App 接入；电话联系交易台（即时）</td><td>无法接入时电话下达平仓/对冲指令，事后核对成交（即时）</td></tr>
+              <tr><td><strong>SPCX 价差异常宽 / 无法成交</strong></td><td>改用组合单中价限价、缩小张数分批（即时）</td><td>仍无法成交则暂缓，转用指数对冲替代精确对冲（当日）</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>12.2 关键联络与顾问清单</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>对象</th><th>联系方式</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td>IBKR 交易台（Trade Desk）</td><td><strong>+1-312-542-6901</strong></td><td>系统故障时电话下单、紧急平仓</td></tr>
+              <tr><td>IBKR 保证金专线</td><td><strong>+1-877-442-2757</strong></td><td>Margin Call 沟通、保证金核算</td></tr>
+              <tr><td>IBKR 客户服务（新加坡时段）</td><td>客户端内 Live Chat / 在线工单</td><td>账户、表格、税务文件问题</td></tr>
+              <tr><td>跨境税务顾问（CPA / EA）</td><td>〔填入专属顾问〕</td><td>1040-NR、§871(a)(2)、W-8BEN、遗产税</td></tr>
+              <tr><td>离岸架构 / 信托律师</td><td>〔填入专属顾问〕</td><td>离岸账户持股、遗产税防火墙、CC 合规</td></tr>
+              <tr><td>BVI / 离岸注册代理</td><td>〔填入专属代理〕</td><td>离岸主体年检、合规维护</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:13px;color:var(--text-muted)">☎ 电话号码请于开户资料中二次核对；顾问联系方式请在实际落地前填入并定期更新。建议将本表打印置于交易工作位随手可及处。</p>
+        </div>
+      </section>
+
+      <div class="disclaimer">
+        <strong>重要声明与风险提示</strong><br>
+        本手册为<strong>策略框架与操作纪律文档</strong>，非投资建议、非要约、非对任何特定证券买卖的推荐。SPCX（SpaceX）系 <strong>2026-06-12 上市的极次新股，期权于 2026-06-16 才开始交易</strong>，本文撰写时其期权历史不足、<strong>IVR（隐含波动率百分位）在数学上尚不可计算</strong>，所有以"绝对 IV、累计 VWAP、合成分位、肥尾系数"替代传统指标的做法均为<strong>过渡性权宜方案</strong>，须随数据积累（约 2026 年 12 月后）持续校准乃至重构。<br><br>
+        文中一切价格、Delta、IV、权利金、价差宽度、年化收益均为<strong>说明性示例</strong>，<strong>实际开仓前必须在 IBKR 终端读取真实报价、希腊字母与隐含波动率</strong>，并以价差组合单中价为成交基准。SPCX 具有<strong>极高波动（±20–30% 单日）、极薄流通盘（≈4%）、做市商整体空 Gamma、巨量解禁悬崖、未盈利高估值</strong>等多重结构性风险，下行可瞬间跳空击穿保护腿，<strong>期权卖方可能蒙受远超权利金的损失，乃至本金重大亏损</strong>。<br><br>
+        本策略默认起点为 <strong>Phase 0（资本保全/观察优先）</strong>，强调"宁可错过、不可错杀"。使用者须自行评估自身风险承受能力、税务身份（NRA 须关注 W-8BEN 有效性与 $60,000 美国境内资产遗产税门槛）与合规义务，并就个性化决策咨询持牌税务、法律与投资专业人士。<strong>因使用本手册产生的一切后果由使用者自行承担。</strong>
+      </div>
+
+    </main>
+  </div>
+  <script>
+    (function(){
+      const sections=document.querySelectorAll('section[id],div[id]');
+      const navItems=document.querySelectorAll('.nav-item');
+      const obs=new IntersectionObserver(entries=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            navItems.forEach(i=>{i.style.borderLeftColor='transparent';i.style.background='';i.style.color=''});
+            document.querySelectorAll('.nav-item[href="#'+e.target.id+'"]').forEach(a=>{a.style.borderLeftColor='var(--gold)';a.style.background='var(--gold-dim)';a.style.color='var(--gold-light)'});
+          }
+        });
+      },{rootMargin:'-20% 0px -70% 0px',threshold:0});
+      sections.forEach(s=>obs.observe(s));
+    })();
+    function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open')}
+    function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open')}
+    (function(){
+      const tip=document.createElement('div');tip.id='doc-tip';document.body.appendChild(tip);let timer;
+      function show(el){const txt=el.getAttribute('data-tip');if(!txt)return;clearTimeout(timer);tip.textContent=txt;tip.classList.add('show');const r=el.getBoundingClientRect();const w=tip.offsetWidth,h=tip.offsetHeight;let x=r.left+r.width/2;x=Math.max(w/2+8,Math.min(x,window.innerWidth-w/2-8));tip.style.left=x+'px';if(r.top>h+16){tip.classList.remove('below');tip.style.top=(r.top-8)+'px';tip.style.transform='translate(-50%,-100%)';}else{tip.classList.add('below');tip.style.top=(r.bottom+8)+'px';tip.style.transform='translate(-50%,0)';}}
+      function hide(){tip.classList.remove('show');}
+      document.addEventListener('mouseover',e=>{const t=e.target.closest('.term');if(t)show(t);});
+      document.addEventListener('mouseout',e=>{if(e.target.closest('.term'))hide();});
+      document.addEventListener('click',e=>{const t=e.target.closest('.term');if(t){show(t);clearTimeout(timer);timer=setTimeout(hide,3000);}else hide();});
+      window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);
+    })();
+    (function(){
+      var btn=document.getElementById('themeToggle');if(!btn)return;
+      btn.addEventListener('click',function(){var toLight=!document.documentElement.classList.contains('theme-light');document.documentElement.classList.toggle('theme-light',toLight);try{localStorage.setItem('wm-theme',toLight?'light':'dark');}catch(e){}});
+      try{window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',function(e){if(localStorage.getItem('wm-theme'))return;document.documentElement.classList.toggle('theme-light',e.matches);});}catch(e){}
+    })();
+  </script>
+</body>
+</html>
