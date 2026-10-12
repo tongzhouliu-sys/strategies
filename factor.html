@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金融量化因子研究完全指南</title>
+<style>
+  :root {
+    --primary: #1a365d;
+    --primary-light: #2b6cb0;
+    --primary-lighter: #ebf4ff;
+    --accent: #e53e3e;
+    --accent-light: #fff5f5;
+    --success: #38a169;
+    --success-light: #f0fff4;
+    --warning: #d69e2e;
+    --warning-light: #fffff0;
+    --gray-50: #f7fafc;
+    --gray-100: #edf2f7;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e0;
+    --gray-600: #718096;
+    --gray-700: #4a5568;
+    --gray-800: #2d3748;
+    --gray-900: #1a202c;
+    --font-serif: "Georgia", "Noto Serif SC", "SimSun", serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-mono: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", "Courier New", monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--gray-800);
+    background: #fff;
+  }
+
+  /* ===== 顶部横幅 ===== */
+  .hero {
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    color: #fff;
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: .5;
+  }
+  .hero * { position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 2.4em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    font-family: var(--font-serif);
+  }
+  .hero .subtitle {
+    font-size: 1.15em;
+    opacity: .85;
+    max-width: 700px;
+    margin: 0 auto 20px;
+  }
+  .hero .badge-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .hero .badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: .82em;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+  }
+
+  /* ===== 布局 ===== */
+  .layout {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ===== 侧边栏目录 ===== */
+  .sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--gray-50);
+    border-right: 1px solid var(--gray-200);
+    padding: 30px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    font-size: .9em;
+  }
+  .sidebar h3 {
+    font-size: 1em;
+    color: var(--primary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+    letter-spacing: 1px;
+  }
+  .sidebar ul { list-style: none; }
+  .sidebar li { margin-bottom: 2px; }
+  .sidebar a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--gray-700);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all .2s;
+    font-size: .92em;
+    line-height: 1.5;
+  }
+  .sidebar a:hover {
+    background: var(--primary-lighter);
+    color: var(--primary-light);
+  }
+  .sidebar a.ch-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-top: 10px;
+  }
+  .sidebar a.sub { padding-left: 24px; font-size: .88em; color: var(--gray-600); }
+
+  /* ===== 主内容 ===== */
+  .main {
+    flex: 1;
+    padding: 40px 50px 80px;
+    min-width: 0;
+  }
+
+  /* ===== 章节标题 ===== */
+  .chapter {
+    margin-bottom: 60px;
+    scroll-margin-top: 30px;
+  }
+  .chapter-num {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: .78em;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.7em;
+    color: var(--primary);
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--primary);
+    line-height: 1.4;
+  }
+  h3 {
+    font-size: 1.25em;
+    color: var(--gray-900);
+    margin: 32px 0 14px;
+    padding-left: 14px;
+    border-left: 4px solid var(--primary-light);
+  }
+  h4 {
+    font-size: 1.08em;
+    color: var(--gray-800);
+    margin: 24px 0 10px;
+  }
+
+  p { margin-bottom: 14px; }
+
+  /* ===== 表格 ===== */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .92em;
+    background: #fff;
+  }
+  thead th {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--gray-50); }
+  tbody tr:hover { background: var(--primary-lighter); }
+  td.center, th.center { text-align: center; }
+
+  /* ===== 信息框 ===== */
+  .info-box {
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 18px 0;
+    font-size: .94em;
+    line-height: 1.7;
+  }
+  .info-box.blue   { background: var(--primary-lighter); border-left: 5px solid var(--primary-light); }
+  .info-box.red    { background: var(--accent-light);    border-left: 5px solid var(--accent); }
+  .info-box.green  { background: var(--success-light);   border-left: 5px solid var(--success); }
+  .info-box.yellow { background: var(--warning-light);   border-left: 5px solid var(--warning); }
+  .info-box .box-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 1em;
+  }
+
+  /* ===== 公式 ===== */
+  .formula {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin: 16px 0;
+    font-family: var(--font-mono);
+    font-size: .95em;
+    overflow-x: auto;
+    text-align: center;
+    line-height: 2;
+  }
+  .formula-inline {
+    font-family: var(--font-mono);
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .92em;
+  }
+
+  /* ===== 代码/流程图 ===== */
+  .code-block {
+    background: var(--gray-900);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 18px 0;
+    font-family: var(--font-mono);
+    font-size: .88em;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .comment { color: #718096; }
+  .code-block .keyword { color: #63b3ed; }
+  .code-block .string  { color: #68d391; }
+  .code-block .arrow   { color: #f6ad55; }
+
+  /* ===== 流程图 ===== */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .pipeline-step {
+    display: flex;
+    align-items: stretch;
+  }
+  .pipeline-line {
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pipeline-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    border: 3px solid var(--primary-lighter);
+    flex-shrink: 0;
+    margin-top: 18px;
+  }
+  .pipeline-connector {
+    flex: 1;
+    width: 2px;
+    background: var(--gray-300);
+  }
+  .pipeline-content {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin: 8px 0 8px 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .pipeline-content .step-label {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: .9em;
+    margin-bottom: 4px;
+  }
+  .pipeline-content p { margin-bottom: 0; font-size: .92em; color: var(--gray-700); }
+
+  /* ===== 卡片网格 ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+    margin: 20px 0;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.1);
+  }
+  .card .card-icon { font-size: 1.8em; margin-bottom: 8px; }
+  .card .card-title { font-weight: 700; font-size: 1.05em; margin-bottom: 6px; color: var(--gray-900); }
+  .card .card-desc { font-size: .9em; color: var(--gray-600); line-height: 1.6; }
+
+  /* ===== 标签 ===== */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: .78em;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag.blue   { background: #dbeafe; color: #1e40af; }
+  .tag.green  { background: #d1fae5; color: #065f46; }
+  .tag.red    { background: #fee2e2; color: #991b1b; }
+  .tag.yellow { background: #fef3c7; color: #92400e; }
+  .tag.purple { background: #ede9fe; color: #5b21b6; }
+  .tag.gray   { background: var(--gray-200); color: var(--gray-700); }
+
+  /* ===== 对比框 ===== */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .compare-box {
+    border-radius: 10px;
+    padding: 22px;
+    border: 2px solid;
+  }
+  .compare-box.left  { border-color: var(--primary-light); background: var(--primary-lighter); }
+  .compare-box.right { border-color: var(--success);       background: var(--success-light); }
+  .compare-box h4 { margin-top: 0; }
+
+  /* ===== 时间线 ===== */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 20px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gray-300);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 18px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    border: 2px solid #fff;
+  }
+  .timeline-item .tl-date { font-weight: 700; color: var(--primary); font-size: .9em; }
+
+  /* ===== 脚注 ===== */
+  .footnote {
+    font-size: .85em;
+    color: var(--gray-600);
+    border-top: 1px solid var(--gray-200);
+    padding-top: 12px;
+    margin-top: 30px;
+  }
+
+  /* ===== 返回顶部 ===== */
+  .back-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 46px; height: 46px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.3em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    display: none;
+    z-index: 999;
+    transition: background .2s;
+  }
+  .back-top:hover { background: var(--primary-light); }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main { padding: 30px 24px 60px; }
+    .hero h1 { font-size: 1.7em; }
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 打印 ===== */
+  @media print {
+    .sidebar, .back-top { display: none !important; }
+    .main { padding: 20px; }
+    .hero { padding: 30px; }
+  }
+
+  /* ===== 分隔线 ===== */
+  hr {
+    border: none;
+    height: 1px;
+    background: var(--gray-200);
+    margin: 40px 0;
+  }
+
+  /* ===== 列表 ===== */
+  ul, ol { margin: 10px 0 14px 24px; }
+  li { margin-bottom: 6px; }
+
+  /* ===== 强调 ===== */
+  strong { color: var(--gray-900); }
+  em { color: var(--gray-700); }
+
+  .section-intro {
+    font-size: 1.02em;
+    color: var(--gray-700);
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-light);
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== 顶部横幅 ==================== -->
+<div class="hero">
+  <h1>金融量化因子研究完全指南</h1>
+  <p class="subtitle">类型 · 角色 · 收益归因 · 研究方法 · 实战案例 —— 从理论根基到工业实践的系统性知识文档</p>
+  <div class="badge-row">
+    <span class="badge">📊 13个章节</span>
+    <span class="badge">📐 50+公式与模型</span>
+    <span class="badge">📋 30+数据表格</span>
+    <span class="badge">🔬 6大因子类别</span>
+    <span class="badge">🏭 工业级Pipeline</span>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ==================== 侧边栏目录 ==================== -->
+<nav class="sidebar" id="sidebar">
+  <h3>📑 目录导航</h3>
+  <ul>
+    <li><a href="#ch1" class="ch-title">第一章 因子的本质与理论基础</a></li>
+    <li><a href="#ch1-1" class="sub">1.1 什么是因子</a></li>
+    <li><a href="#ch1-2" class="sub">1.2 理论根基</a></li>
+    <li><a href="#ch1-3" class="sub">1.3 数学表达</a></li>
+    <li><a href="#ch2" class="ch-title">第二章 因子分类体系全景</a></li>
+    <li><a href="#ch2-1" class="sub">2.1 分类框架总览</a></li>
+    <li><a href="#ch2-2" class="sub">2.2 六大类详解</a></li>
+    <li><a href="#ch2-3" class="sub">2.3 频率分类</a></li>
+    <li><a href="#ch2-4" class="sub">2.4 构建机制分类</a></li>
+    <li><a href="#ch2-5" class="sub">2.5 风格属性分类</a></li>
+    <li><a href="#ch3" class="ch-title">第三章 因子数量与冗余分析</a></li>
+    <li><a href="#ch4" class="ch-title">第四章 因子角色定位</a></li>
+    <li><a href="#ch4-1" class="sub">4.1 评分因子</a></li>
+    <li><a href="#ch4-2" class="sub">4.2 风控因子</a></li>
+    <li><a href="#ch4-3" class="sub">4.3 Alpha因子</a></li>
+    <li><a href="#ch4-4" class="sub">4.4 Beta因子</a></li>
+    <li><a href="#ch4-5" class="sub">4.5 动态转化</a></li>
+    <li><a href="#ch5" class="ch-title">第五章 收益归因框架</a></li>
+    <li><a href="#ch6" class="ch-title">第六章 标准研究流程</a></li>
+    <li><a href="#ch6-1" class="sub">6.1 全流程概览</a></li>
+    <li><a href="#ch6-2" class="sub">6.2 数据预处理</a></li>
+    <li><a href="#ch6-3" class="sub">6.3 单因子检验</a></li>
+    <li><a href="#ch6-4" class="sub">6.4 正交化与去冗余</a></li>
+    <li><a href="#ch7" class="ch-title">第七章 评价数学体系</a></li>
+    <li><a href="#ch8" class="ch-title">第八章 因子合成与建模</a></li>
+    <li><a href="#ch9" class="ch-title">第九章 组合优化与风控</a></li>
+    <li><a href="#ch10" class="ch-title">第十章 前沿方法与趋势</a></li>
+    <li><a href="#ch11" class="ch-title">第十一章 经典案例</a></li>
+    <li><a href="#ch12" class="ch-title">第十二章 学习路径</a></li>
+    <li><a href="#ch13" class="ch-title">第十三章 核心结论</a></li>
+  </ul>
+</nav>
+
+<!-- ==================== 主内容 ==================== -->
+<main class="main">
+
+<!-- ===== 第一章 ===== -->
+<section class="chapter" id="ch1">
+  <span class="chapter-num">CHAPTER 01</span>
+  <h2>因子的本质与理论基础</h2>
+
+  <div class="section-intro">
+    本章回答最根本的问题：<strong>因子是什么？它为什么能预测收益？它的理论根基在哪里？</strong>
+    理解这些，是后续所有分类、评价和建模的前提。
+  </div>
+
+  <h3 id="ch1-1">1.1 什么是因子？</h3>
+  <p>在金融量化中，<strong>因子（Factor）</strong>是一个可观测的、可计算的数值特征，它与资产未来收益之间存在<strong>统计上显著的、可重复的、具有经济学解释力的</strong>关联。</p>
+  <p>更严格地说，一个合格的因子需要同时满足以下四个条件：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>条件</th><th>含义</th><th>反例</th></tr></thead>
+      <tbody>
+        <tr><td><strong>统计显著性</strong></td><td>在足够长的样本期内，因子与收益的关系不是随机噪声</td><td>仅在2019年有效的"因子"可能是过拟合</td></tr>
+        <tr><td><strong>样本外稳健性</strong></td><td>在训练集之外的时间段、其他市场仍然有效</td><td>仅在A股有效但在美股完全失效的因子需要警惕</td></tr>
+        <tr><td><strong>经济学解释力</strong></td><td>能用行为金融学、信息不对称、风险补偿等理论解释</td><td>纯数据挖掘出的"黑盒"公式缺乏持久性</td></tr>
+        <tr><td><strong>交易可行性</strong></td><td>考虑交易成本、流动性、冲击成本后仍有正收益</td><td>高换手率因子扣除手续费后收益为负</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch1-2">1.2 因子的理论根基</h3>
+  <p>因子研究建立在三大理论支柱之上：</p>
+
+  <h4>支柱一：资产定价理论（Asset Pricing Theory）</h4>
+  <p>核心公式（多因子模型）：</p>
+  <div class="formula">
+    E(R<sub>i</sub>) = R<sub>f</sub> + β<sub>i,1</sub>·λ<sub>1</sub> + β<sub>i,2</sub>·λ<sub>2</sub> + ⋯ + β<sub>i,K</sub>·λ<sub>K</sub>
+  </div>
+  <p>其中 <span class="formula-inline">β<sub>i,k</sub></span> 是资产 <em>i</em> 对第 <em>k</em> 个风险因子的暴露（因子载荷），<span class="formula-inline">λ<sub>k</sub></span> 是第 <em>k</em> 个因子的风险溢价。资产的期望收益由它对一系列系统性风险因子的暴露决定。</p>
+
+  <p><strong>经典模型演进：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>模型</th><th class="center">年份</th><th>因子</th><th>核心思想</th></tr></thead>
+      <tbody>
+        <tr><td>CAPM</td><td class="center">1964</td><td>市场超额收益（R<sub>m</sub> − R<sub>f</sub>）</td><td>唯一风险来源是市场</td></tr>
+        <tr><td>Fama-French 三因子</td><td class="center">1993</td><td>+ 市值（SMB）、价值（HML）</td><td>小盘股和低估值股票有额外溢价</td></tr>
+        <tr><td>Carhart 四因子</td><td class="center">1997</td><td>+ 动量（UMD）</td><td>过去涨的继续涨，跌的继续跌</td></tr>
+        <tr><td>Fama-French 五因子</td><td class="center">2015</td><td>+ 盈利（RMW）、投资（CMA）</td><td>高盈利、低投资的公司表现更好</td></tr>
+        <tr><td>q因子模型</td><td class="center">2015</td><td>市场、规模、投资、盈利</td><td>从投资学角度重新定义</td></tr>
+        <tr><td>Barra 风险模型</td><td class="center">持续更新</td><td>10–20个风格 + 30–40个行业</td><td>工业级风险归因与控制</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>支柱二：行为金融学（Behavioral Finance）</h4>
+  <p>传统金融假设投资者完全理性，但行为金融学揭示了系统性的认知偏差，这些偏差正是Alpha因子的来源：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>行为偏差</th><th>表现</th><th>对应因子</th></tr></thead>
+      <tbody>
+        <tr><td><strong>过度反应</strong></td><td>投资者对坏消息反应过度，导致股价超跌</td><td>短期反转因子、价值因子</td></tr>
+        <tr><td><strong>反应不足</strong></td><td>投资者对好消息反应迟缓，股价缓慢上涨</td><td>动量因子、SUE（标准化预期外盈利）</td></tr>
+        <tr><td><strong>处置效应</strong></td><td>倾向于过早卖出盈利股票、过久持有亏损股票</td><td>资本利得悬挂因子</td></tr>
+        <tr><td><strong>注意力偏差</strong></td><td>散户关注热门股票，忽视冷门股票</td><td>低关注度溢价、换手率因子</td></tr>
+        <tr><td><strong>羊群效应</strong></td><td>投资者跟随他人行为，造成泡沫和崩溃</td><td>资金流向因子、拥挤度指标</td></tr>
+        <tr><td><strong>锚定效应</strong></td><td>过度依赖某个参考价格（如52周高点）</td><td>52周高点距离因子</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>支柱三：市场微观结构理论（Market Microstructure）</h4>
+  <p>在高频和日内交易中，因子的来源不是"基本面"或"行为偏差"，而是<strong>交易机制本身的摩擦</strong>：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>微观结构特征</th><th>产生的因子逻辑</th></tr></thead>
+      <tbody>
+        <tr><td><strong>买卖价差</strong></td><td>做市商承担库存风险，价差是对做市商的补偿 → 流动性因子</td></tr>
+        <tr><td><strong>订单簿不平衡</strong></td><td>买盘远多于卖盘 → 短期价格上行压力 → 高频动量因子</td></tr>
+        <tr><td><strong>信息不对称</strong></td><td>知情交易者（机构）先行动，散户后知后觉 → 大单净量因子</td></tr>
+        <tr><td><strong>价格冲击</strong></td><td>大额交易推动价格偏离均衡 → 冲击成本因子</td></tr>
+        <tr><td><strong>日内季节性</strong></td><td>开盘前30分钟和收盘前15分钟波动率异常高 → 日内季节性因子</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch1-3">1.3 因子的数学表达</h3>
+  <p>一个因子本质上是一个<strong>映射函数</strong>：</p>
+  <div class="formula">f : 𝒟 → ℝ</div>
+  <p>其中 𝒟 是数据空间（价格序列、财务报表、新闻文本、盘口数据等），ℝ 是实数空间（因子值）。</p>
+
+  <div class="compare-grid">
+    <div class="compare-box left">
+      <h4>📊 截面因子（Cross-sectional）</h4>
+      <p>在同一时刻 <em>t</em>，对所有 <em>N</em> 只股票计算因子值：</p>
+      <div class="formula" style="text-align:left;font-size:.9em">f<sub>i</sub>(t) = g(X<sub>i</sub>(t)),  i = 1, 2, …, N</div>
+      <p><strong>用途</strong>：选股（谁比谁好）</p>
+    </div>
+    <div class="compare-box right">
+      <h4>📈 时序因子（Time-series）</h4>
+      <p>对单只股票，基于其自身历史数据计算：</p>
+      <div class="formula" style="text-align:left;font-size:.9em">f<sub>i</sub>(t) = h(X<sub>i</sub>(t), X<sub>i</sub>(t−1), …, X<sub>i</sub>(t−k))</div>
+      <p><strong>用途</strong>：择时（现在比过去好还是差）</p>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第二章 ===== -->
+<section class="chapter" id="ch2">
+  <span class="chapter-num">CHAPTER 02</span>
+  <h2>因子分类体系全景</h2>
+
+  <div class="section-intro">
+    因子可以从多个维度进行分类。本章构建最完整的分类矩阵，并对每一类因子进行详细展开。
+  </div>
+
+  <h3 id="ch2-1">2.1 分类框架总览</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>分类维度</th><th>主要类别</th><th>适用场景</th></tr></thead>
+      <tbody>
+        <tr><td><strong>数据来源</strong></td><td>基本面、量价、高频微观、分析师/事件、宏观、另类</td><td>决定数据获取难度和成本</td></tr>
+        <tr><td><strong>功能角色</strong></td><td>评分因子、风控因子、Alpha因子、Beta因子</td><td>决定因子在模型中的位置</td></tr>
+        <tr><td><strong>收益归因</strong></td><td>Alpha来源、Beta来源、特质风险来源</td><td>决定收益分解方式</td></tr>
+        <tr><td><strong>频率</strong></td><td>高频（Tick/分钟）、中频（日线）、低频（月/季）</td><td>决定持仓周期和换手率</td></tr>
+        <tr><td><strong>构建机制</strong></td><td>显式手写（Explicit）、隐式挖掘（Implicit）</td><td>决定可解释性和过拟合风险</td></tr>
+        <tr><td><strong>风格属性</strong></td><td>价值、成长、动量、质量、低波、流动性、规模</td><td>对应Barra风格框架</td></tr>
+        <tr><td><strong>线性/非线性</strong></td><td>线性因子、条件因子、交互因子</td><td>决定建模方法选择</td></tr>
+        <tr><td><strong>衰减速度</strong></td><td>快衰减（分钟/天）、慢衰减（月/年）</td><td>决定策略容量和迭代频率</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch2-2">2.2 六大核心因子类别详解</h3>
+
+  <!-- 基本面因子 -->
+  <h4>📗 第一类：基本面因子（Fundamental Factors）</h4>
+  <p><span class="tag blue">数据来源：财报</span> <span class="tag green">频率：低频</span> <span class="tag purple">容量：大</span></p>
+  <p>来源于上市公司定期财报，反映公司内在价值和经营质量。市场短期可能错误定价，但长期会回归。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子类</th><th>因子名称</th><th>计算公式 / 定义</th><th>经济学逻辑</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="5"><strong>估值</strong></td><td>市盈率（PE）</td><td>PE = P / EPS</td><td>低PE可能被低估（价值溢价）</td></tr>
+        <tr><td>市净率（PB）</td><td>PB = P / BPS</td><td>低PB反映资产折价</td></tr>
+        <tr><td>市销率（PS）</td><td>PS = P / SPS</td><td>适用于亏损公司估值</td></tr>
+        <tr><td>企业价值倍数</td><td>EV/EBITDA</td><td>剔除资本结构影响</td></tr>
+        <tr><td>股息率</td><td>DY = DPS / P</td><td>高股息提供安全垫</td></tr>
+        <tr><td rowspan="5"><strong>质量</strong></td><td>净资产收益率（ROE）</td><td>ROE = Net Income / Equity</td><td>高ROE反映盈利能力</td></tr>
+        <tr><td>投入资本回报率（ROIC）</td><td>ROIC = NOPAT / Invested Capital</td><td>剔除杠杆影响</td></tr>
+        <tr><td>毛利率</td><td>GM = (Rev − COGS) / Rev</td><td>反映产品竞争力</td></tr>
+        <tr><td>资产负债率</td><td>DR = Total Debt / Total Assets</td><td>高杠杆增加风险</td></tr>
+        <tr><td>Piotroski F-Score</td><td>9项财务指标加权（0-9分）</td><td>综合评估财务健康度</td></tr>
+        <tr><td rowspan="3"><strong>成长</strong></td><td>营收同比增长率</td><td>g = (Rev<sub>t</sub> − Rev<sub>t-4</sub>) / Rev<sub>t-4</sub></td><td>高成长公司享有估值溢价</td></tr>
+        <tr><td>净利润环比增长率</td><td>g = (NP<sub>t</sub> − NP<sub>t-1</sub>) / |NP<sub>t-1</sub>|</td><td>边际改善信号</td></tr>
+        <tr><td>研发支出占比</td><td>RD% = R&D / Revenue</td><td>反映创新投入</td></tr>
+        <tr><td rowspan="2"><strong>盈利</strong></td><td>每股收益（EPS）</td><td>EPS = Net Income / Shares</td><td>基础盈利指标</td></tr>
+        <tr><td>标准化预期外盈利（SUE）</td><td>SUE = (EPS<sub>actual</sub> − EPS<sub>expected</sub>) / σ</td><td>盈利惊喜驱动价格漂移</td></tr>
+        <tr><td rowspan="2"><strong>现金流</strong></td><td>自由现金流收益率</td><td>FCFY = FCF / Market Cap</td><td>真金白银的盈利能力</td></tr>
+        <tr><td>应计利润</td><td>Acc = (NI − CFO) / Total Assets</td><td>高应计利润暗示盈利质量差</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box yellow">
+    <div class="box-title">⚠️ 数据处理要点</div>
+    <p>财报数据有<strong>发布滞后</strong>（季报通常在季度结束后1–2个月公布），必须使用 <strong>Point-in-Time（PIT）数据</strong>，避免未来信息泄露（Look-ahead Bias）。常用TTM（滚动十二个月）消除季节性。需区分单季度数据和累计数据。</p>
+  </div>
+
+  <p><strong>数量规模</strong>：三大报表上百个基础科目 × 处理方式（TTM/单季/同比/环比/行业中性化）→ 可构建 <strong>500–1,000个</strong> 有效因子。</p>
+
+  <!-- 价量因子 -->
+  <h4>📈 第二类：价量因子（Price-Volume / Technical Factors）</h4>
+  <p><span class="tag blue">数据来源：日线/分钟线</span> <span class="tag green">频率：中频</span> <span class="tag purple">容量：中</span></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子类</th><th>因子名称</th><th>计算公式 / 定义</th><th>经济学逻辑</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3"><strong>动量</strong></td><td>N日动量</td><td>Mom<sub>N</sub> = P<sub>t</sub>/P<sub>t-N</sub> − 1</td><td>投资者反应不足，趋势延续</td></tr>
+        <tr><td>残差动量</td><td>回归残差的累积收益</td><td>个股特异动量</td></tr>
+        <tr><td>路径依赖动量</td><td>考虑路径波动率的动量调整</td><td>平滑路径的动量更可靠</td></tr>
+        <tr><td rowspan="2"><strong>反转</strong></td><td>短期反转（1日/5日）</td><td>Rev<sub>5</sub> = −(P<sub>t</sub>/P<sub>t-5</sub> − 1)</td><td>过度反应后的均值回归</td></tr>
+        <tr><td>条件反转</td><td>高波动率条件下反转效应更强</td><td>恐慌后的修复</td></tr>
+        <tr><td rowspan="4"><strong>波动率</strong></td><td>历史波动率</td><td>σ = √(Σ(r<sub>t</sub> − r̄)²/N)</td><td>低波动异象</td></tr>
+        <tr><td>特异波动率</td><td>回归残差的标准差</td><td>高特异波动 → 低未来收益</td></tr>
+        <tr><td>下行波动率</td><td>仅计算负收益的标准差</td><td>投资者更厌恶下行风险</td></tr>
+        <tr><td>已实现波动率（RV）</td><td>Σ r<sub>t</sub>²（日内高频）</td><td>更精确的波动率估计</td></tr>
+        <tr><td rowspan="3"><strong>流动性</strong></td><td>换手率</td><td>Turnover = Volume / Free Float</td><td>低换手率 → 流动性溢价</td></tr>
+        <tr><td>Amihud非流动性</td><td>ILLIQ = Σ|r<sub>t</sub>| / Amount<sub>t</sub></td><td>单位成交额引起的价格冲击</td></tr>
+        <tr><td>买卖价差</td><td>Spread = (Ask − Bid) / Mid</td><td>做市成本与信息不对称</td></tr>
+        <tr><td rowspan="3"><strong>量价关系</strong></td><td>量价相关性</td><td>Corr(Price, Volume) 的N日滚动</td><td>量价背离信号</td></tr>
+        <tr><td>OBV（能量潮）</td><td>累积有向成交量</td><td>资金进出方向</td></tr>
+        <tr><td>VWAP偏离</td><td>(P<sub>t</sub> − VWAP) / VWAP</td><td>当前价格偏离日内均价</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>开源/商业因子库数量参考：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>来源</th><th class="center">数量</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>微软Qlib Alpha158</td><td class="center">158个</td><td>基础量价因子</td></tr>
+        <tr><td>微软Qlib Alpha360</td><td class="center">360个</td><td>扩展量价因子</td></tr>
+        <tr><td>WorldQuant Alpha101</td><td class="center">101个</td><td>经典量价公式</td></tr>
+        <tr><td>整合去重后</td><td class="center">~619个</td><td>量价因子总量</td></tr>
+        <tr><td>Tushare价量子类</td><td class="center">~114个</td><td>含动量20+流动性35+反转3+风险25+Alpha101量价31</td></tr>
+        <tr><td>遗传规划挖掘</td><td class="center">10⁴–10⁶</td><td>机器自动生成的表达式</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 高频微观结构因子 -->
+  <h4>⚡ 第三类：高频微观结构因子（High-Frequency Microstructure）</h4>
+  <p><span class="tag red">数据来源：Level-2/Tick</span> <span class="tag red">频率：超高频</span> <span class="tag yellow">容量：极小</span></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子类</th><th>因子名称</th><th>定义</th><th>逻辑</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3"><strong>盘口特征</strong></td><td>订单簿不平衡（OBI）</td><td>OBI = (ΣBid<sub>vol</sub> − ΣAsk<sub>vol</sub>) / (ΣBid<sub>vol</sub> + ΣAsk<sub>vol</sub>)</td><td>买盘远大于卖盘 → 短期上行</td></tr>
+        <tr><td>加权OBI</td><td>按价格距离加权的OBI</td><td>靠近中间价的挂单信息量更大</td></tr>
+        <tr><td>盘口深度</td><td>前5档/10档累计挂单量</td><td>深度大 → 冲击成本低</td></tr>
+        <tr><td rowspan="3"><strong>成交特征</strong></td><td>大单占比</td><td>大单成交额 / 总成交额</td><td>机构参与度</td></tr>
+        <tr><td>主动买卖比</td><td>主动买入额 / 主动卖出额</td><td>买方/卖方主导</td></tr>
+        <tr><td>成交笔数分布</td><td>大/中/小单的笔数比例</td><td>散户化程度</td></tr>
+        <tr><td rowspan="2"><strong>价格冲击</strong></td><td>冲击成本</td><td>单位成交量引起的价格变动</td><td>流动性消耗速度</td></tr>
+        <tr><td>价格回复速度</td><td>冲击后价格回归均衡的时间</td><td>市场效率</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box red">
+    <div class="box-title">🔴 高频因子的关键特点</div>
+    <p>半衰期极短（分钟级）；夏普比率可能很高（>3）；但容量极小（通常仅支撑数千万至数亿资金）；需要极低延迟的交易系统（微秒级）。</p>
+  </div>
+
+  <!-- 分析师与事件因子 -->
+  <h4>📰 第四类：分析师与事件驱动因子</h4>
+  <p><span class="tag blue">数据来源：研报/公告</span> <span class="tag green">频率：中低频</span> <span class="tag purple">A股尤其有效</span></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子类</th><th>因子名称</th><th>逻辑</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="4"><strong>分析师预期</strong></td><td>盈利预测调整（Earnings Revision）</td><td>分析师集体上调盈利预测 → 基本面改善信号</td></tr>
+        <tr><td>评级变动</td><td>买入/增持评级占比变化</td></tr>
+        <tr><td>目标价偏离度</td><td>(Target Price − Current Price) / Current Price</td></tr>
+        <tr><td>分析师覆盖度</td><td>覆盖分析师数量变化</td></tr>
+        <tr><td rowspan="5"><strong>公司事件</strong></td><td>业绩预告超预期</td><td>实际利润 > 市场一致预期</td></tr>
+        <tr><td>高管/大股东增减持</td><td>内部人用真金白银投票</td></tr>
+        <tr><td>股票回购</td><td>管理层认为股价被低估</td></tr>
+        <tr><td>定增/解禁</td><td>短期供给压力</td></tr>
+        <tr><td>并购重组</td><td>资产注入预期</td></tr>
+        <tr><td rowspan="3"><strong>资金面事件</strong></td><td>融资融券余额变化</td><td>杠杆资金方向</td></tr>
+        <tr><td>龙虎榜机构席位</td><td>机构集中买入信号</td></tr>
+        <tr><td>北向资金异动</td><td>外资配置方向变化</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 风格与宏观因子 -->
+  <h4>🏛️ 第五类：风格与宏观因子</h4>
+  <p><span class="tag gray">用途：风控/归因/配置</span> <span class="tag blue">Barra体系</span></p>
+
+  <p><strong>Barra中国模型风格因子详解（CNLT）：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="center">序号</th><th>风格因子</th><th>子因子构成</th><th>经济含义</th></tr></thead>
+      <tbody>
+        <tr><td class="center">1</td><td>规模（Size）</td><td>对数流通市值</td><td>小盘股溢价</td></tr>
+        <tr><td class="center">2</td><td>贝塔（Beta）</td><td>滚动回归的市场Beta</td><td>系统性风险暴露</td></tr>
+        <tr><td class="center">3</td><td>动量（Momentum）</td><td>过去12个月收益率（剔除最近1个月）</td><td>趋势延续</td></tr>
+        <tr><td class="center">4</td><td>残差波动率</td><td>回归残差的标准差</td><td>特异风险</td></tr>
+        <tr><td class="center">5</td><td>非线性市值</td><td>市值的立方对市值回归的残差</td><td>中盘股效应</td></tr>
+        <tr><td class="center">6</td><td>账面市值比（BP）</td><td>净资产/市值</td><td>价值因子</td></tr>
+        <tr><td class="center">7</td><td>流动性</td><td>换手率的统计量</td><td>流动性溢价</td></tr>
+        <tr><td class="center">8</td><td>盈利（Earnings Yield）</td><td>预期EP、历史EP</td><td>盈利能力</td></tr>
+        <tr><td class="center">9</td><td>成长（Growth）</td><td>营收/利润增长率</td><td>成长溢价</td></tr>
+        <tr><td class="center">10</td><td>杠杆（Leverage）</td><td>资产负债率、有息负债率</td><td>财务风险</td></tr>
+        <tr><td class="center">+</td><td>行业因子</td><td>中信一级30个 / 申万一级31个</td><td>行业暴露控制</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 另类数据因子 -->
+  <h4>🛰️ 第六类：另类数据因子（Alternative Data）</h4>
+  <p><span class="tag purple">前沿领域</span> <span class="tag red">高壁垒</span> <span class="tag yellow">军备竞赛</span></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>子类</th><th>数据源</th><th>因子构建方式</th><th>应用案例</th></tr></thead>
+      <tbody>
+        <tr><td><strong>文本情绪</strong></td><td>新闻、研报、社交媒体、财报电话会议</td><td>NLP情感分析、LLM评分</td><td>新闻情感得分、管理层语调因子</td></tr>
+        <tr><td><strong>供应链图谱</strong></td><td>工商数据、进出口数据、专利引用</td><td>图神经网络（GNN）节点特征</td><td>上游涨价 → 下游成本压力</td></tr>
+        <tr><td><strong>卫星/地理</strong></td><td>卫星图像、AIS航运数据</td><td>计算机视觉、目标检测</td><td>停车场车辆计数 → 零售收入预测</td></tr>
+        <tr><td><strong>消费数据</strong></td><td>信用卡交易、App活跃度、电商数据</td><td>聚合统计、趋势拟合</td><td>App DAU增长 → 预测营收</td></tr>
+        <tr><td><strong>ESG</strong></td><td>环境/社会/治理评级、争议事件</td><td>加权评分、事件冲击</td><td>高ESG评分 → 长期低波动</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch2-3">2.3 按频率分类详解</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>频率层级</th><th>数据来源</th><th>衰减速度</th><th>持仓周期</th><th>资金容量</th><th>年化换手率</th><th>典型策略</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag red">超高频</span></td><td>Tick / Level-2</td><td>秒~分钟</td><td>秒~分钟</td><td>极小（百万~千万）</td><td>>10000%</td><td>做市、统计套利</td></tr>
+        <tr><td><span class="tag red">高频</span></td><td>分钟线/盘口快照</td><td>分钟~小时</td><td>小时~天</td><td>小（千万~亿）</td><td>2000–10000%</td><td>日内动量、OBI</td></tr>
+        <tr><td><span class="tag yellow">中频</span></td><td>日线OHLCV</td><td>天~周</td><td>天~周</td><td>中（亿~十亿）</td><td>500–2000%</td><td>量价选股、事件驱动</td></tr>
+        <tr><td><span class="tag green">低频</span></td><td>月线/财报/宏观</td><td>月~季</td><td>月~季</td><td>大（十亿~百亿）</td><td>50–500%</td><td>基本面选股、资产配置</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch2-4">2.4 按构建机制分类</h3>
+  <div class="compare-grid">
+    <div class="compare-box left">
+      <h4>✍️ 显式手写因子（Explicit）</h4>
+      <p>研究员基于金融逻辑手工编写公式。</p>
+      <ul>
+        <li><strong>优点</strong>：可解释、逻辑清晰、生命周期长</li>
+        <li><strong>缺点</strong>：数量有限、依赖人的创造力</li>
+        <li><strong>例子</strong>：Amihud、Fama-French、Piotroski F-Score</li>
+      </ul>
+    </div>
+    <div class="compare-box right">
+      <h4>🤖 隐式挖掘因子（Implicit）</h4>
+      <p>机器（GP/NN）自动搜索生成的非线性高阶算子组合。</p>
+      <ul>
+        <li><strong>优点</strong>：数量巨大、可发现人无法想到的模式</li>
+        <li><strong>缺点</strong>：可解释性差、过拟合风险高</li>
+        <li><strong>例子</strong>：遗传规划表达式、神经网络隐层特征</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="ch2-5">2.5 按风格属性分类</h3>
+  <p><strong>MSCI八大风格因子：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>风格</th><th>方向</th><th>代表因子</th><th>市场周期表现</th></tr></thead>
+      <tbody>
+        <tr><td>价值（Value）</td><td><span class="tag blue">防御型</span></td><td>BP, EP, DP</td><td>经济复苏初期表现好</td></tr>
+        <tr><td>规模（Size）</td><td><span class="tag gray">中性</span></td><td>对数市值</td><td>流动性宽松时小盘占优</td></tr>
+        <tr><td>动量（Momentum）</td><td><span class="tag yellow">行为型</span></td><td>12-1月动量</td><td>趋势市中表现好</td></tr>
+        <tr><td>质量（Quality）</td><td><span class="tag blue">防御型</span></td><td>ROE, 低杠杆</td><td>熊市中抗跌</td></tr>
+        <tr><td>产出（Yield）</td><td><span class="tag blue">防御型</span></td><td>股息率</td><td>利率下行时表现好</td></tr>
+        <tr><td>低波（Low Vol）</td><td><span class="tag blue">防御型</span></td><td>历史波动率</td><td>震荡市中表现好</td></tr>
+        <tr><td>成长（Growth）</td><td><span class="tag red">进取型</span></td><td>营收/利润增速</td><td>牛市中表现好</td></tr>
+        <tr><td>流动性（Liquidity）</td><td><span class="tag gray">中性</span></td><td>换手率</td><td>影响交易成本</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第三章 ===== -->
+<section class="chapter" id="ch3">
+  <span class="chapter-num">CHAPTER 03</span>
+  <h2>因子数量全景与冗余分析</h2>
+
+  <div class="section-intro">
+    因子数量从学术的数百个到工业的数百万个不等，但真正独立、有效、低相关的因子可能只有十几个到几百个。<strong>数量不等于质量，冗余和共线性是因子研究的核心挑战。</strong>
+  </div>
+
+  <h3>3.1 各来源因子数量汇总</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>来源</th><th class="center">因子数量</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>学术文献（Harvey & Liu, 2019）</td><td class="center">525个（去重后385个）</td><td>顶级期刊发表、具备经济学解释</td></tr>
+        <tr><td>学术文献（截至2021年）</td><td class="center">超过450个</td><td>"因子动物园"（Factor Zoo）</td></tr>
+        <tr><td>MSCI FactorLab</td><td class="center">超过197个</td><td>分为12个因子组</td></tr>
+        <tr><td>Tushare因子库</td><td class="center">202个</td><td>覆盖价量、基本面、风险等</td></tr>
+        <tr><td>天软量化因子库</td><td class="center">5,038个</td><td>覆盖7大类</td></tr>
+        <tr><td>整合Qlib + Alpha101</td><td class="center">619个</td><td>开源量价因子</td></tr>
+        <tr><td>ml-quant-trading项目</td><td class="center">204个</td><td>手工量化因子</td></tr>
+        <tr><td>TEJ因子库</td><td class="center">100+个</td><td>基本面因子为主</td></tr>
+        <tr><td>遗传规划/深度学习挖掘</td><td class="center">10⁴–10⁸</td><td>工业界实际生成量</td></tr>
+        <tr><td><strong>实盘有效因子（筛选后）</strong></td><td class="center"><strong>200–2,000个</strong></td><td>经正交化和去冗余后保留</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>3.2 冗余问题的严重性</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>研究</th><th>发现</th></tr></thead>
+      <tbody>
+        <tr><td>Robeco（2020）</td><td>150多个美股因子中，仅约 <strong>15个</strong> 能有效捕捉Alpha</td></tr>
+        <tr><td>学术研究（2022）</td><td><strong>15个因子</strong> 足以解释153个美国股票因子的绝大部分收益信号</td></tr>
+        <tr><td>Barra模型</td><td>用 <strong>10个风格因子 + 30个行业因子</strong> 即可解释组合90%以上的风险</td></tr>
+        <tr><td>PCA分析</td><td>对数百个因子做主成分分析，前5–8个主成分通常解释70%以上的方差</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>3.3 为什么会冗余？</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">数据同源</div>
+      <div class="card-desc">PE、PB、PS、EV/EBITDA本质上都在衡量"估值"，只是分母不同。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">逻辑同源</div>
+      <div class="card-desc">12个月动量、6个月动量、26周动量本质上都在捕捉"趋势延续"。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔧</div>
+      <div class="card-title">算子同源</div>
+      <div class="card-desc">对同一个基础指标用不同的时间窗口（5日/10日/20日/60日）计算，产生大量近似因子。</div>
+    </div>
+  </div>
+
+  <h3>3.4 应对冗余的方法</h3>
+  <ul>
+    <li><strong>相关性矩阵筛选</strong>：剔除相关系数 > 0.7的因子</li>
+    <li><strong>主成分分析（PCA）</strong>：降维，提取不相关主成分</li>
+    <li><strong>聚类分析</strong>：K-Means/层次聚类，将相似因子分组，每组取代表</li>
+    <li><strong>正交化</strong>：Gram-Schmidt / 对称正交化</li>
+  </ul>
+</section>
+
+<hr>
+
+<!-- ===== 第四章 ===== -->
+<section class="chapter" id="ch4">
+  <span class="chapter-num">CHAPTER 04</span>
+  <h2>因子角色定位：评分、风控、Alpha与Beta</h2>
+
+  <div class="section-intro">
+    同一个因子在不同的模型、不同的机构甚至不同的市场环境下，其扮演的角色是完全不同的。本章详细定义四种角色，并揭示它们之间的动态转化关系。
+  </div>
+
+  <h3 id="ch4-1">4.1 评分因子（Score Factors）：选股的"标尺"</h3>
+  <p><strong>定义</strong>：对股票进行<strong>横向比较和排序</strong>的因子，通过打分或排名识别更值得买入或卖出的股票。</p>
+  <p><strong>核心特征</strong>：不直接区分风险与收益来源；为组合构建提供综合性"吸引力"分数；通常是多个子因子的合成结果。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>步骤</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td><strong>排名打分法</strong></td><td>因子值 → 截面百分位排名 → 0-100分</td><td>估值排名 + 质量排名 + 动量排名</td></tr>
+        <tr><td><strong>Z-score加权法</strong></td><td>因子值 → 标准化 → 加权求和</td><td>Score = w₁z<sub>value</sub> + w₂z<sub>quality</sub> + w₃z<sub>momentum</sub></td></tr>
+        <tr><td><strong>复合评分</strong></td><td>多维度合成综合分数</td><td>Piotroski F-Score（0-9分）</td></tr>
+        <tr><td><strong>条件评分</strong></td><td>在不同市场状态下使用不同权重</td><td>牛市加大动量权重，熊市加大质量权重</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>典型评分因子：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>评分名称</th><th>构成</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>Piotroski F-Score</td><td>9项财务指标（盈利4项+杠杆3项+效率2项）</td><td>评估财务健康度，筛选优质价值股</td></tr>
+        <tr><td>Altman Z-Score</td><td>5项财务比率加权</td><td>预测破产风险</td></tr>
+        <tr><td>回报评分</td><td>成长+动量+盈利+估值</td><td>综合选股</td></tr>
+        <tr><td>风险评分</td><td>财务稳健性+经营质量</td><td>剔除高风险股票</td></tr>
+        <tr><td>ESG评分</td><td>环境+社会+治理</td><td>责任投资筛选</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch4-2">4.2 风控因子（Risk Factors）：组合的"刹车与护栏"</h3>
+  <p><strong>定义</strong>：在构建投资组合时，<strong>不希望主动暴露</strong>的因子。量化机构使用风险模型计算这些因子的暴露度，并通过优化器将其约束在基准附近（中性化）。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>评分因子（Alpha因子 / 选股因子）</th><th>风控因子（风险因子 / 风格因子）</th></tr></thead>
+      <tbody>
+        <tr><td><strong>核心目的</strong></td><td>预测超额收益，对股票进行横截面打分与排序</td><td>解释与控制风险，剥离非预期风险暴露，保持组合中性</td></tr>
+        <tr><td><strong>模型归属</strong></td><td>放入 <strong>Alpha预测模型</strong></td><td>放入 <strong>Risk风险模型</strong>（如Barra体系）作为约束条件</td></tr>
+        <tr><td><strong>核心评价指标</strong></td><td>高Rank IC、高ICIR、多空年化收益高、慢衰减</td><td>高风险解释度（R²）、低特异性风险</td></tr>
+        <tr><td><strong>使用方式</strong></td><td>计算横截面排名 → 综合得分 → 选股</td><td>计算组合暴露 → 约束偏离度 → 控制回撤</td></tr>
+        <tr><td><strong>典型代表</strong></td><td>OBI、分析师预期上调、残差动量、SUE</td><td>行业Dummy、市值、市场Beta、账面市值比</td></tr>
+        <tr><td><strong>比喻</strong></td><td>"打分器" / "油门"</td><td>"稳定器" / "刹车与护栏"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch4-3">4.3 Alpha因子：超额收益的"刀刃"</h3>
+  <p><strong>定义</strong>：能够持续预测资产相对于基准超额收益的因子，代表策略独特的选股能力。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>频率</th><th>代表因子</th><th>逻辑</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag red">高频</span></td><td>订单簿不平衡（OBI）</td><td>买卖盘供需失衡 → 短期价格方向</td></tr>
+        <tr><td><span class="tag red">高频</span></td><td>大单净量</td><td>机构资金方向</td></tr>
+        <tr><td><span class="tag yellow">中频</span></td><td>分析师盈利预期上调</td><td>信息尚未完全反映在价格中</td></tr>
+        <tr><td><span class="tag yellow">中频</span></td><td>短期反转（5日）</td><td>过度反应后的均值回归</td></tr>
+        <tr><td><span class="tag green">低频</span></td><td>特异波动率（低波异象）</td><td>高波动股票被过度追捧 → 未来收益低</td></tr>
+        <tr><td><span class="tag green">低频</span></td><td>应计利润异象</td><td>高应计利润 → 盈利质量差 → 未来收益低</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch4-4">4.4 Beta因子：系统性风险的"底仓"</h3>
+  <p><strong>定义</strong>：代表市场整体或某个板块的系统性风险暴露，承担Beta意味着获取市场平均收益或风险溢价。</p>
+
+  <div class="formula">
+    β<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>)
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="center">β 值</th><th>含义</th><th>策略定位</th></tr></thead>
+      <tbody>
+        <tr><td class="center">β = 1</td><td>与市场同步波动</td><td>被动指数基金</td></tr>
+        <tr><td class="center">β > 1</td><td>波动大于市场</td><td>进攻型/杠杆策略</td></tr>
+        <tr><td class="center">β < 1</td><td>波动小于市场</td><td>防御型/低波策略</td></tr>
+        <tr><td class="center">β = 0</td><td>与市场无关</td><td>市场中性策略</td></tr>
+        <tr><td class="center">β < 0</td><td>与市场反向</td><td>对冲/做空策略</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch4-5">4.5 四者关系与动态转化（关键洞察）</h3>
+
+  <div class="info-box red">
+    <div class="box-title">🔴 核心洞察：因子角色不是固定的，而是动态的、语境依赖的。</div>
+    <p>一个被广泛使用的Alpha策略，当资金大量涌入后，可能演变为风险因子或Beta。策略拥挤会改变资产价格结构，使其收益更多与某一系统性风险挂钩。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>转化方向</th><th>触发条件</th><th>案例</th></tr></thead>
+      <tbody>
+        <tr><td>Alpha → Beta</td><td>策略被广泛使用，资金涌入，拥挤度上升</td><td>动量因子从90年代的Alpha变为现在的Smart Beta</td></tr>
+        <tr><td>Alpha → 风控</td><td>因子暴露过大导致系统性风险</td><td>微盘股因子在2024年初从Alpha变为流动性风险</td></tr>
+        <tr><td>风控 → Alpha</td><td>市场出现结构性变化</td><td>低波动因子在熊市中产生正Alpha</td></tr>
+        <tr><td>评分 → 风控</td><td>评分极低的股票被直接剔除</td><td>F-Score < 4分的股票拉入黑名单</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>动态转化的数学表达：</strong></p>
+  <div class="formula">
+    α<sub>t</sub>(f) = α<sub>0</sub>(f) · e<sup>−γ·C<sub>t</sub></sup>
+  </div>
+  <p>其中 <span class="formula-inline">C<sub>t</sub></span> 为因子 <em>f</em> 在时刻 <em>t</em> 的拥挤度（可用持仓重合度、多空价差、资金流向衡量），<span class="formula-inline">γ > 0</span> 为拥挤衰减系数。当 <span class="formula-inline">C<sub>t</sub></span> 足够大时，<span class="formula-inline">α<sub>t</sub>(f) → 0</span>，因子从Alpha退化为Beta或噪声。</p>
+</section>
+
+<hr>
+
+<!-- ===== 第五章 ===== -->
+<section class="chapter" id="ch5">
+  <span class="chapter-num">CHAPTER 05</span>
+  <h2>因子收益归因框架</h2>
+
+  <div class="section-intro">
+    收益归因回答的核心问题是：<strong>组合赚的钱，到底是因为选股能力强（Alpha），还是因为承担了某种风险（Beta）？</strong>
+  </div>
+
+  <h3>5.1 收益分解模型</h3>
+
+  <h4>最基础的分解（CAPM）：</h4>
+  <div class="formula">
+    R<sub>i</sub> − R<sub>f</sub> = α<sub>i</sub> + β<sub>i</sub>(R<sub>m</sub> − R<sub>f</sub>) + ε<sub>i</sub>
+  </div>
+
+  <h4>多因子分解（Barra体系）：</h4>
+  <div class="formula">
+    R<sub>i</sub> = Σ<sub>k=1</sub><sup>K</sup> X<sub>ik</sub>·f<sub>k</sub> + Σ<sub>j=1</sub><sup>J</sup> D<sub>ij</sub>·γ<sub>j</sub> + ε<sub>i</sub>
+  </div>
+  <p>其中 <span class="formula-inline">X<sub>ik</sub></span> 是股票 <em>i</em> 对第 <em>k</em> 个风格因子的暴露，<span class="formula-inline">f<sub>k</sub></span> 是第 <em>k</em> 个风格因子的收益率，<span class="formula-inline">D<sub>ij</sub></span> 是行业哑变量，<span class="formula-inline">γ<sub>j</sub></span> 是行业 <em>j</em> 的收益率，<span class="formula-inline">ε<sub>i</sub></span> 是特异性收益（即Alpha）。</p>
+
+  <h3>5.2 Brinson归因模型</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>来源</th><th>公式</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td><strong>配置效应</strong></td><td>Σ<sub>j</sub> (w<sub>p,j</sub> − w<sub>b,j</sub>)(R<sub>b,j</sub> − R<sub>b</sub>)</td><td>行业超配/低配带来的收益</td></tr>
+        <tr><td><strong>选择效应</strong></td><td>Σ<sub>j</sub> w<sub>b,j</sub>(R<sub>p,j</sub> − R<sub>b,j</sub>)</td><td>行业内选股带来的收益</td></tr>
+        <tr><td><strong>交互效应</strong></td><td>Σ<sub>j</sub> (w<sub>p,j</sub> − w<sub>b,j</sub>)(R<sub>p,j</sub> − R<sub>b,j</sub>)</td><td>配置与选择的交叉项</td></tr>
+        <tr><td><strong>总超额</strong></td><td>R<sub>p</sub> − R<sub>b</sub></td><td>以上三者之和</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.3 归因在实盘中的应用</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>场景</th><th>归因发现</th><th>应对措施</th></tr></thead>
+      <tbody>
+        <tr><td>组合跑输基准</td><td>选股Alpha为负，行业配置为正</td><td>检查Alpha模型是否失效</td></tr>
+        <tr><td>回撤超预期</td><td>某风格因子暴露过大（如市值）</td><td>收紧风控约束</td></tr>
+        <tr><td>收益来源单一</td><td>90%收益来自小市值暴露</td><td>这不是Alpha，是Beta伪装</td></tr>
+        <tr><td>换手率过高</td><td>因子信号频繁翻转</td><td>增加信号平滑处理</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第六章 ===== -->
+<section class="chapter" id="ch6">
+  <span class="chapter-num">CHAPTER 06</span>
+  <h2>量化机构标准研究流程（Pipeline）</h2>
+
+  <div class="section-intro">
+    量化私募与头部机构对因子的研发遵循严密的工业化管线。本章逐步展开每个环节的具体操作、公式和判断标准。
+  </div>
+
+  <h3 id="ch6-1">6.1 全流程概览</h3>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 1：数据清洗与预处理</div>
+        <p>去极值 → 缺失值填充 → 标准化 → 行业与市值中性化</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 2：单因子有效性检验</div>
+        <p>IC / Rank IC → ICIR → 分层回测 → 衰减分析 → 换手率评估</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 3：因子正交化与去冗余</div>
+        <p>相关性筛选 → Gram-Schmidt / 对称正交化 → PCA / 聚类</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 4：多因子合成与建模</div>
+        <p>线性加权 / 树模型（XGBoost, LightGBM）/ 深度学习（LSTM, Transformer, GNN）</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 5：组合优化与风控约束</div>
+        <p>均值-方差优化 → 行业/市值/换手率约束 → Barra风险模型</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div><div class="pipeline-connector"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 6：回测与压力测试</div>
+        <p>样本内 → 样本外 → 极端情景（2020.03、2024.01微盘股危机）</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-line"><div class="pipeline-dot"></div></div>
+      <div class="pipeline-content">
+        <div class="step-label">Step 7：实盘监控与归因</div>
+        <p>因子衰减追踪 → 拥挤度监控 → 业绩归因 → 迭代/下线</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="ch6-2">6.2 Step 1：数据清洗与预处理（详解）</h3>
+
+  <h4>6.2.1 去极值（Winsorization）</h4>
+  <p><strong>目的</strong>：防止极端值扭曲因子分布和相关性计算。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>公式</th><th>适用场景</th></tr></thead>
+      <tbody>
+        <tr><td><strong>MAD法（推荐）</strong></td><td>MAD = median(|x<sub>i</sub> − median(x)|)<br>截断：[median − 5×1.4826×MAD, median + 5×1.4826×MAD]</td><td>对偏态分布更稳健</td></tr>
+        <tr><td><strong>3σ法</strong></td><td>截断：[μ − 3σ, μ + 3σ]</td><td>近似正态分布</td></tr>
+        <tr><td><strong>百分位截断</strong></td><td>低于1%分位和高于99%分位的值截断至边界</td><td>简单快速</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>6.2.2 缺失值处理</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>适用场景</th><th>风险</th></tr></thead>
+      <tbody>
+        <tr><td>行业中位数填充</td><td>财务数据缺失</td><td>假设行业内公司相似</td></tr>
+        <tr><td>历史值前向填充</td><td>低频数据（财报）</td><td>假设公司状态未变</td></tr>
+        <tr><td>截面均值填充</td><td>大面积缺失</td><td>引入噪声</td></tr>
+        <tr><td>直接剔除</td><td>缺失比例 > 30%</td><td>损失样本</td></tr>
+        <tr><td>机器学习填充</td><td>高维数据</td><td>计算成本高</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>6.2.3 标准化（Standardization）</h4>
+  <div class="formula">
+    z<sub>i</sub> = (x<sub>i</sub> − μ) / σ
+  </div>
+  <p>使因子值均值为0、标准差为1，消除量纲影响。</p>
+  <p><strong>排名标准化（更稳健）</strong>：</p>
+  <div class="formula">
+    z<sub>i</sub> = Φ<sup>−1</sup>(rank<sub>i</sub> / (N+1))
+  </div>
+  <p>其中 Φ<sup>−1</sup> 是标准正态分布的逆CDF。对异常值更稳健。</p>
+
+  <h4>6.2.4 行业与市值中性化（Neutralization）—— Alpha研究的灵魂步骤</h4>
+
+  <div class="info-box blue">
+    <div class="box-title">💡 为什么中性化是灵魂步骤？</div>
+    <p>你发现"低市盈率"的股票未来涨得好。但这可能只是因为低PE的股票通常是大盘银行股。你赚的其实是"大市值"的Beta，而不是"价值"的Alpha。中性化就是剥离这种虚假信号。</p>
+  </div>
+
+  <p><strong>方法：截面多元线性回归</strong></p>
+  <div class="formula">
+    Factor<sub>raw,i</sub> = β<sub>0</sub> + Σ<sub>j=1</sub><sup>J</sup> γ<sub>j</sub>·Industry<sub>ij</sub> + β<sub>1</sub>·ln(Size<sub>i</sub>) + ε<sub>i</sub>
+  </div>
+  <p>取残差 <span class="formula-inline">ε<sub>i</sub></span> 作为中性化后的因子值。使用对数市值是因为市值分布严重右偏，取对数后更接近正态分布。</p>
+
+  <h3 id="ch6-3">6.3 Step 2：单因子有效性检验（详解）</h3>
+
+  <h4>6.3.1 IC（Information Coefficient）与 Rank IC</h4>
+  <div class="formula">
+    IC<sub>t</sub> = Corr(f<sub>t</sub>, R<sub>t+1</sub>)<br><br>
+    RankIC<sub>t</sub> = SpearmanCorr(Rank(f<sub>t</sub>), Rank(R<sub>t+1</sub>))
+  </div>
+  <p><strong>为什么用Rank IC？</strong> 因为股票收益率分布有厚尾特征，Pearson相关系数对极端值敏感。Rank IC使用秩相关，更稳健。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th class="center">阈值</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>|Rank IC| > 0.03</td><td class="center">有效</td><td>因子有一定预测力</td></tr>
+        <tr><td>|Rank IC| > 0.05</td><td class="center">较好</td><td>因子有较强预测力</td></tr>
+        <tr><td>|Rank IC| > 0.08</td><td class="center">优秀</td><td>非常强的预测力（罕见）</td></tr>
+        <tr><td>IC > 0（正因子）</td><td class="center">—</td><td>因子值越大，未来收益越高</td></tr>
+        <tr><td>IC < 0（负因子）</td><td class="center">—</td><td>因子值越大，未来收益越低</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>6.3.2 ICIR（Information Ratio of IC）</h4>
+  <div class="formula">
+    ICIR = Mean(IC) / Std(IC)
+  </div>
+  <p>不仅要求因子平均预测力强（IC均值高），还要求预测力<strong>稳定</strong>（IC标准差小）。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="center">ICIR</th><th>评价</th></tr></thead>
+      <tbody>
+        <tr><td class="center">< 0.3</td><td>不可用</td></tr>
+        <tr><td class="center">0.3 – 0.5</td><td>一般</td></tr>
+        <tr><td class="center">0.5 – 0.8</td><td>良好</td></tr>
+        <tr><td class="center">> 0.8</td><td>优秀</td></tr>
+        <tr><td class="center">> 1.5</td><td>极优秀（需警惕过拟合）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>6.3.3 分层回测（Quantile Backtest）</h4>
+  <p><strong>步骤</strong>：</p>
+  <ol>
+    <li>每个调仓日，按因子值将全市场股票分为5组（或10组）</li>
+    <li>计算每组在下一期的平均收益率</li>
+    <li>观察各组收益是否呈<strong>单调递增/递减</strong></li>
+    <li>构建多空组合：做多Top组 + 做空Bottom组</li>
+    <li>计算多空组合的年化收益、夏普比率、最大回撤</li>
+  </ol>
+
+  <p><strong>理想结果示例：</strong></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="center">分组</th><th>因子值</th><th class="center">年化收益</th><th class="center">单调性</th></tr></thead>
+      <tbody>
+        <tr><td class="center">第1组（最低）</td><td>最低</td><td class="center">-5%</td><td class="center">✓</td></tr>
+        <tr><td class="center">第2组</td><td>↓</td><td class="center">-2%</td><td class="center">✓</td></tr>
+        <tr><td class="center">第3组</td><td>↓</td><td class="center">1%</td><td class="center">✓</td></tr>
+        <tr><td class="center">第4组</td><td>↓</td><td class="center">4%</td><td class="center">✓</td></tr>
+        <tr><td class="center">第5组（最高）</td><td>最高</td><td class="center">8%</td><td class="center">✓</td></tr>
+        <tr><td class="center"><strong>多空（5-1）</strong></td><td>—</td><td class="center"><strong>13%</strong></td><td class="center">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>6.3.4 衰减分析（Decay Analysis）</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="center">滞后期</th><th class="center">IC</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td class="center">Lag 0（当期）</td><td class="center">0.06</td><td>因子对下期收益有预测力</td></tr>
+        <tr><td class="center">Lag 1</td><td class="center">0.04</td><td>预测力开始衰减</td></tr>
+        <tr><td class="center">Lag 5</td><td class="center">0.02</td><td>预测力大幅衰减</td></tr>
+        <tr><td class="center">Lag 20</td><td class="center">0.005</td><td>几乎无预测力</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>半衰期（Half-life）</strong>：IC衰减到初始值一半所需的时间。高频因子半衰期可能是几分钟，低频因子可能是几个月。</p>
+
+  <h4>6.3.5 换手率与交易成本</h4>
+  <div class="formula">
+    Turnover = ½ · Σ<sub>i</sub> |w<sub>i,t</sub> − w<sub>i,t-1</sub>|
+  </div>
+  <div class="info-box yellow">
+    <div class="box-title">⚠️ 经验法则</div>
+    <ul>
+      <li>日线因子：单边换手率 < 30%/月</li>
+      <li>周线因子：单边换手率 < 15%/周</li>
+      <li>高频因子：换手率极高，但持仓时间极短，靠速度取胜</li>
+    </ul>
+  </div>
+
+  <h3 id="ch6-4">6.4 Step 3：因子正交化与去冗余（详解）</h3>
+
+  <div class="info-box blue">
+    <div class="box-title">💡 核心原则</div>
+    <p>你挖掘了1000个因子，但如果它们本质上都在衡量"小市值"或"短期反转"，那么把它们全加进模型不仅不能降低风险，反而会导致严重的"因子拥挤"。<strong>10个逻辑互不相同的因子，远胜于1000个高度相关的因子。</strong></p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>说明</th><th>优缺点</th></tr></thead>
+      <tbody>
+        <tr><td><strong>相关性矩阵筛选</strong></td><td>计算所有因子对的Spearman秩相关系数，剔除相关系数 > 0.7的冗余因子</td><td>简单直观，但可能遗漏间接相关</td></tr>
+        <tr><td><strong>Gram-Schmidt正交化</strong></td><td>设定因子优先级，依次剔除已知因子的影响，保留残差</td><td>结果依赖于因子输入顺序</td></tr>
+        <tr><td><strong>对称正交化</strong></td><td>F<sup>orth</sup> = F(F<sup>T</sup>F)<sup>−1/2</sup></td><td>不依赖顺序，最小化对原始因子的扰动</td></tr>
+        <tr><td><strong>PCA降维</strong></td><td>对因子矩阵做主成分分析，取前K个主成分</td><td>可解释性降低，但去冗余效果最好</td></tr>
+        <tr><td><strong>聚类分析</strong></td><td>K-Means/层次聚类，将相似因子分组，每组取代表</td><td>保留因子可解释性</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第七章 ===== -->
+<section class="chapter" id="ch7">
+  <span class="chapter-num">CHAPTER 07</span>
+  <h2>因子有效性评价的数学体系</h2>
+
+  <h3>7.1 假设检验框架</h3>
+  <p>当我们说"因子IC显著不为零"时，需要进行统计检验：</p>
+  <div class="formula">
+    t = IC̄ / (Std(IC) / √T)
+  </div>
+  <p>其中 <em>T</em> 是样本期数。通常要求 |t| > 2（即 p < 0.05）。</p>
+
+  <h3>7.2 多重假设检验问题</h3>
+  <div class="info-box red">
+    <div class="box-title">🔴 核心问题</div>
+    <p>如果你测试了1000个因子，即使所有因子都无效（纯随机），在5%显著性水平下也会有约50个因子"显著"（假阳性）。这就是"因子动物园"中大量因子不可复现的根本原因。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>校正方法</th><th>公式/逻辑</th><th>严格程度</th></tr></thead>
+      <tbody>
+        <tr><td>Bonferroni校正</td><td>p<sub>adj</sub> = p × N</td><td>最严格</td></tr>
+        <tr><td>Holm-Bonferroni</td><td>逐步校正</td><td>较严格</td></tr>
+        <tr><td>Benjamini-Hochberg (FDR)</td><td>控制错误发现率</td><td>适中</td></tr>
+        <tr><td>White's Reality Check</td><td>Bootstrap方法</td><td>灵活</td></tr>
+        <tr><td>Harvey, Liu & Zhu (2016)</td><td>要求t > 3.0（而非2.0）</td><td>针对金融数据</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.3 样本外检验（Out-of-Sample Testing）</h3>
+  <p><strong>标准做法</strong>：</p>
+  <ul>
+    <li>将数据分为<strong>训练集</strong>（如2010–2020）和<strong>测试集</strong>（如2021–2024）</li>
+    <li>在训练集上开发和筛选因子</li>
+    <li>在测试集上验证因子有效性</li>
+    <li><strong>绝不允许</strong>用测试集的数据调整因子参数</li>
+  </ul>
+
+  <p><strong>进阶：滚动窗口（Walk-Forward）</strong></p>
+  <div class="code-block">训练: [2010-2015] → 测试: [2016]
+训练: [2011-2016] → 测试: [2017]
+训练: [2012-2017] → 测试: [2018]
+训练: [2013-2018] → 测试: [2019]
+...</div>
+</section>
+
+<hr>
+
+<!-- ===== 第八章 ===== -->
+<section class="chapter" id="ch8">
+  <span class="chapter-num">CHAPTER 08</span>
+  <h2>因子合成与建模方法</h2>
+
+  <h3>8.1 线性合成方法</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>公式</th><th>适用场景</th></tr></thead>
+      <tbody>
+        <tr><td><strong>等权合成</strong></td><td>Score = (1/K)Σf<sub>k</sub></td><td>因子数量少、重要性相当</td></tr>
+        <tr><td><strong>IC加权</strong></td><td>Score = Σ IC<sub>k</sub>·f<sub>k</sub></td><td>根据预测力分配权重</td></tr>
+        <tr><td><strong>ICIR加权</strong></td><td>Score = Σ ICIR<sub>k</sub>·f<sub>k</sub></td><td>同时考虑预测力和稳定性</td></tr>
+        <tr><td><strong>Rolling Ridge</strong></td><td>滚动窗口Ridge回归</td><td>动态调整权重，防止过拟合</td></tr>
+        <tr><td><strong>最大化复合IR</strong></td><td>优化问题</td><td>考虑因子间相关性</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.2 机器学习方法</h3>
+
+  <h4>8.2.1 树模型（当前中低频主流）</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>模型</th><th>特点</th><th>优势</th></tr></thead>
+      <tbody>
+        <tr><td>XGBoost</td><td>梯度提升树</td><td>处理缺失值、正则化</td></tr>
+        <tr><td>LightGBM</td><td>直方图优化</td><td>训练速度快、内存占用小</td></tr>
+        <tr><td>CatBoost</td><td>类别特征原生支持</td><td>处理行业/板块等类别变量</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>关键超参数</strong>：</p>
+  <ul>
+    <li><span class="formula-inline">max_depth</span>：树的深度（控制过拟合）</li>
+    <li><span class="formula-inline">learning_rate</span>：学习率（通常0.01–0.1）</li>
+    <li><span class="formula-inline">n_estimators</span>：树的数量</li>
+    <li><span class="formula-inline">subsample</span>：每棵树的样本比例（防过拟合）</li>
+    <li><span class="formula-inline">feature_fraction</span>：每棵树使用的特征比例</li>
+  </ul>
+
+  <h4>8.2.2 深度学习方法</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>模型</th><th>适用场景</th><th>架构要点</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LSTM / GRU</strong></td><td>时序量价数据</td><td>输入：过去N天的特征序列 → 输出：下期收益预测</td></tr>
+        <tr><td><strong>Transformer</strong></td><td>长序列依赖</td><td>自注意力机制捕捉任意距离的时序关系</td></tr>
+        <tr><td><strong>GNN (GraphSAGE/GAT)</strong></td><td>供应链/关联网络</td><td>节点=股票，边=供应链/高管关联</td></tr>
+        <tr><td><strong>TabNet</strong></td><td>表格型因子数据</td><td>注意力机制选择重要特征</td></tr>
+        <tr><td><strong>Autoencoder</strong></td><td>因子降维</td><td>将高维因子压缩为低维隐变量</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>8.2.3 强化学习</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>应用</th></tr></thead>
+      <tbody>
+        <tr><td>DQN</td><td>离散动作空间（买入/持有/卖出）</td></tr>
+        <tr><td>PPO / SAC</td><td>连续动作空间（仓位比例）</td></tr>
+        <tr><td>多智能体RL</td><td>多个子策略协同</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.3 因子合成的注意事项</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>问题</th><th>说明</th><th>应对</th></tr></thead>
+      <tbody>
+        <tr><td><strong>过拟合</strong></td><td>训练集表现极好，测试集崩溃</td><td>交叉验证、早停、正则化</td></tr>
+        <tr><td><strong>特征重要性不稳定</strong></td><td>不同窗口训练出的重要因子不同</td><td>使用滚动窗口、集成多模型</td></tr>
+        <tr><td><strong>非线性交互</strong></td><td>因子A单独无效，但与因子B组合后有效</td><td>树模型和深度学习天然捕捉</td></tr>
+        <tr><td><strong>样本不平衡</strong></td><td>极端收益的股票极少</td><td>使用分位数回归或排序损失函数</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第九章 ===== -->
+<section class="chapter" id="ch9">
+  <span class="chapter-num">CHAPTER 09</span>
+  <h2>组合优化与风险控制</h2>
+
+  <h3>9.1 均值-方差优化（Markowitz）</h3>
+  <div class="formula">
+    max<sub>w</sub>  w<sup>T</sup>μ − (λ/2)·w<sup>T</sup>Σw − TC(w)
+  </div>
+  <p>其中 <span class="formula-inline">w</span> 为持仓权重向量，<span class="formula-inline">μ</span> 为合成后的Alpha得分向量，<span class="formula-inline">Σ</span> 为风险协方差矩阵，<span class="formula-inline">λ</span> 为风险厌恶系数，<span class="formula-inline">TC(w)</span> 为交易成本。</p>
+
+  <h3>9.2 风险模型（Barra）</h3>
+  <div class="formula">
+    Σ = X·F·X<sup>T</sup> + D
+  </div>
+  <ul>
+    <li><span class="formula-inline">X</span>：因子暴露矩阵（N × K）</li>
+    <li><span class="formula-inline">F</span>：因子收益率协方差矩阵（K × K）</li>
+    <li><span class="formula-inline">D</span>：特异性风险对角矩阵（N × N）</li>
+  </ul>
+  <p><strong>优势</strong>：将 N×N 的协方差矩阵分解为 K 个因子（K ≪ N），大幅降低估计误差。</p>
+
+  <h3>9.3 风控约束体系</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>约束类型</th><th>典型参数</th><th>目的</th></tr></thead>
+      <tbody>
+        <tr><td>行业偏离</td><td>≤ ±2%（相对基准）</td><td>防止行业赌博</td></tr>
+        <tr><td>市值偏离</td><td>≤ ±0.1个标准差</td><td>防止风格漂移</td></tr>
+        <tr><td>个股权重</td><td>≤ 2%（单只）</td><td>防止个股集中风险</td></tr>
+        <tr><td>换手率</td><td>单边 ≤ 30%/月</td><td>控制交易成本</td></tr>
+        <tr><td>Beta</td><td>|Beta − 1| ≤ 0.1</td><td>市场中性约束</td></tr>
+        <tr><td>杠杆率</td><td>≤ 1.5倍</td><td>控制尾部风险</td></tr>
+        <tr><td>流动性</td><td>持仓不超过日均成交额的5%</td><td>确保可退出</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第十章 ===== -->
+<section class="chapter" id="ch10">
+  <span class="chapter-num">CHAPTER 10</span>
+  <h2>前沿挖掘方法与行业趋势</h2>
+
+  <h3>10.1 遗传规划（Genetic Programming）</h3>
+  <p><strong>原理</strong>：将因子表达式视为"基因树"，通过选择、交叉、变异操作进化出高适应度（高IC）的因子。</p>
+
+  <p><strong>因子树示例：</strong></p>
+  <div class="code-block">          Ts_Rank
+         /       \
+    Correlation   20
+    /       \
+  Delta    Ts_Mean
+  /  \      /   \
+Close  5  Volume  10
+
+<span class="comment">对应公式：Ts_Rank(Corr(Δ(Close, 5), Ts_Mean(Volume, 10)), 20)</span></div>
+
+  <div class="info-box green">
+    <div class="box-title">✅ 华泰金工实践</div>
+    <ul>
+      <li>采用NSGA-III多目标遗传算法</li>
+      <li>同时优化IC、ICIR、换手率、衰减速度</li>
+      <li>引入<strong>动态短板惩罚机制</strong>：如果某个子目标严重不达标，大幅降低该个体的适应度</li>
+      <li>从分钟级高频数据中挖掘可解释价量因子</li>
+    </ul>
+  </div>
+
+  <p><strong>规模</strong>：可生成数百万甚至上亿个因子表达式，经筛选降维后保留200–2,000个有效低相关因子。</p>
+
+  <h3>10.2 大语言模型（LLM）与多智能体（Agentic AI）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>应用</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>因子思路生成</td><td>输入"请基于订单簿数据设计一个捕捉机构建仓行为的因子"，LLM输出候选公式</td></tr>
+        <tr><td>代码生成</td><td>自动生成因子计算代码（Python/SQL）</td></tr>
+        <tr><td>回测报告解读</td><td>自动分析IC衰减、分组单调性、异常点</td></tr>
+        <tr><td>多智能体协作</td><td>因子生成Agent → 评估Agent → 筛选Agent → 组合Agent → 归因Agent</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.3 图神经网络（GNN）</h3>
+  <p><strong>应用</strong>：将股票作为节点，供应链/高管关联/行业关系作为边，构建金融知识图谱。</p>
+  <ul>
+    <li>上游公司A业绩超预期 → 供应商B的订单可能增加 → B的股价可能上涨</li>
+    <li>同行业竞争对手C降价 → 公司D的毛利率可能承压 → D的股价可能下跌</li>
+  </ul>
+
+  <h3>10.4 行业趋势总结</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>趋势</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>从"人写因子"到"机器挖因子"</td><td>GP/DL自动生成，人负责审核逻辑</td></tr>
+        <tr><td>从"线性模型"到"非线性模型"</td><td>树模型和深度学习成为主流</td></tr>
+        <tr><td>从"单一数据"到"多源融合"</td><td>基本面+量价+文本+图谱+卫星</td></tr>
+        <tr><td>从"日频"到"全频段覆盖"</td><td>高频、中频、低频策略并行</td></tr>
+        <tr><td>从"单因子"到"因子组合"</td><td>强调正交性和低相关性</td></tr>
+        <tr><td>从"回测驱动"到"实盘驱动"</td><td>重视交易成本、冲击成本、滑点</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.5 三大研究陷阱</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>陷阱</th><th>说明</th><th>应对</th></tr></thead>
+      <tbody>
+        <tr><td><strong>多重假设检验 / 过拟合</strong></td><td>测试100万个因子，即使市场随机也会有5万个"显著"（假阳性）</td><td>交叉验证、Bonferroni校正、FDR控制、样本外测试</td></tr>
+        <tr><td><strong>因子共线性 / 拥挤</strong></td><td>1000个因子本质都在衡量同一件事 → 踩踏式回撤</td><td>正交化、相关性筛选、拥挤度监控</td></tr>
+        <tr><td><strong>逻辑缺失</strong></td><td>机器挖出的黑盒公式无经济学支撑 → 生命周期短</td><td>优先选择有行为金融学/微观结构理论支撑的因子</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第十一章 ===== -->
+<section class="chapter" id="ch11">
+  <span class="chapter-num">CHAPTER 11</span>
+  <h2>经典案例与实战复盘</h2>
+
+  <h3>案例一：动量因子的兴衰</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-date">1993年 — 发现</div>
+      <p>Jegadeesh & Titman发表论文，12-1月动量年化超额收益约8%。<span class="tag green">强Alpha</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2000年代 — 普及</div>
+      <p>大量资金涌入动量策略，Alpha开始减弱。<span class="tag yellow">Alpha减弱</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2009年3月 — 崩溃</div>
+      <p>动量因子单月亏损超30%，发生"动量崩溃"（Momentum Crash）。<span class="tag red">崩溃</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2010年代至今 — 常态化</div>
+      <p>成为公开的系统性风险因子（Smart Beta），被包装为ETF产品。<span class="tag gray">Smart Beta</span></p>
+    </div>
+  </div>
+  <div class="info-box yellow">
+    <div class="box-title">📌 教训</div>
+    <p>Alpha因子被广泛使用后，会因拥挤而退化为Beta。</p>
+  </div>
+
+  <h3>案例二：A股微盘股因子（2019–2024）</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-date">2019–2023 — 强Alpha</div>
+      <p>年化超额>30%，大量私募将微盘股作为核心Alpha。<span class="tag green">强Alpha</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2023年底 — 拥挤</div>
+      <p>微盘股持仓高度重合，量化私募规模膨胀。<span class="tag yellow">拥挤</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2024年1月 — 崩溃</div>
+      <p>微盘股指数单周跌>20%，流动性危机，踩踏式出逃。<span class="tag red">崩溃</span></p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2024年至今 — 反思</div>
+      <p>从Alpha变为风控约束，必须控制微盘股暴露。<span class="tag blue">风控</span></p>
+    </div>
+  </div>
+  <div class="info-box red">
+    <div class="box-title">📌 教训</div>
+    <p>风控因子和Alpha因子的界限是动态的。当"Alpha"过于拥挤时，它本身就是最大的风险。</p>
+  </div>
+
+  <h3>案例三：分析师预期因子在不同市场的有效性</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>市场</th><th>有效性</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>美股</td><td>中等</td><td>市场效率高，信息快速反映</td></tr>
+        <tr><td>A股</td><td><strong>强</strong></td><td>散户占比高、信息传播慢、分析师覆盖不均</td></tr>
+        <tr><td>港股</td><td>中等偏弱</td><td>流动性较差、做空机制完善</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="info-box blue">
+    <div class="box-title">📌 教训</div>
+    <p>因子的有效性高度依赖于市场微观结构和投资者构成。不能简单地将美股因子移植到A股。</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第十二章 ===== -->
+<section class="chapter" id="ch12">
+  <span class="chapter-num">CHAPTER 12</span>
+  <h2>学习路径与参考资源</h2>
+
+  <h3>12.1 推荐学习路径</h3>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🌱</div>
+      <div class="card-title">阶段一：基础（1-3个月）</div>
+      <div class="card-desc">
+        • 资产定价理论（CAPM → Fama-French → APT）<br>
+        • 行为金融学基础（过度反应、反应不足、处置效应）<br>
+        • 统计学基础（回归、相关、假设检验）<br>
+        • Python数据处理（pandas, numpy, scipy）
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📐</div>
+      <div class="card-title">阶段二：因子研究入门（3-6个月）</div>
+      <div class="card-desc">
+        • 单因子检验方法（IC/IR、分层回测）<br>
+        • 因子预处理（去极值、标准化、中性化）<br>
+        • 经典因子复现（动量、价值、质量、低波）<br>
+        • 开源框架实践（Qlib, Backtrader, Zipline）
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔬</div>
+      <div class="card-title">阶段三：进阶建模（6-12个月）</div>
+      <div class="card-desc">
+        • 多因子合成（线性加权、树模型）<br>
+        • 组合优化（均值-方差、Barra风险模型）<br>
+        • 业绩归因（Brinson、因子归因）<br>
+        • 过拟合控制（多重假设检验、样本外测试）
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <div class="card-title">阶段四：前沿与实战（12个月+）</div>
+      <div class="card-desc">
+        • 高频因子与微观结构<br>
+        • 深度学习因子挖掘（LSTM、Transformer、GNN）<br>
+        • 遗传规划与自动化因子挖掘<br>
+        • 另类数据与NLP、实盘交易系统与风控
+      </div>
+    </div>
+  </div>
+
+  <h3>12.2 经典文献</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>论文</th><th class="center">年份</th><th>贡献</th></tr></thead>
+      <tbody>
+        <tr><td>Fama & French, "Common Risk Factors in the Returns on Stocks and Bonds"</td><td class="center">1993</td><td>三因子模型</td></tr>
+        <tr><td>Jegadeesh & Titman, "Returns to Buying Winners and Selling Losers"</td><td class="center">1993</td><td>动量因子</td></tr>
+        <tr><td>Carhart, "On Persistence in Mutual Fund Performance"</td><td class="center">1997</td><td>四因子模型（+动量）</td></tr>
+        <tr><td>Novy-Marx, "The Other Side of Value"</td><td class="center">2013</td><td>盈利因子</td></tr>
+        <tr><td>Fama & French, "A Five-Factor Asset Pricing Model"</td><td class="center">2015</td><td>五因子模型</td></tr>
+        <tr><td>Harvey, Liu & Zhu, "…and the Cross-Section of Expected Returns"</td><td class="center">2016</td><td>因子动物园与多重检验</td></tr>
+        <tr><td>Gu, Kelly & Xiu, "Empirical Asset Pricing via Machine Learning"</td><td class="center">2020</td><td>ML在资产定价中的应用</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>12.3 开源工具与数据</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>工具/数据</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>微软Qlib</td><td>量化研究框架（因子挖掘、回测、建模）</td></tr>
+        <tr><td>Tushare / AKShare</td><td>A股数据获取</td></tr>
+        <tr><td>WorldQuant Brain</td><td>在线因子挖掘平台</td></tr>
+        <tr><td>Alphalens</td><td>因子分析工具（IC、分层、换手）</td></tr>
+        <tr><td>PyPortfolioOpt</td><td>组合优化</td></tr>
+        <tr><td>gplearn</td><td>遗传规划</td></tr>
+        <tr><td>LightGBM / XGBoost</td><td>树模型</td></tr>
+        <tr><td>PyTorch / TensorFlow</td><td>深度学习</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<!-- ===== 第十三章 ===== -->
+<section class="chapter" id="ch13">
+  <span class="chapter-num">CHAPTER 13</span>
+  <h2>核心结论</h2>
+
+  <div class="card-grid" style="grid-template-columns: 1fr;">
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">1️⃣ 因子的本质</div>
+      <div class="card-desc">因子是"可重复的、有经济学解释的、交易成本可行的收益预测信号"。不满足这四个条件的统计关联都是噪声或过拟合。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">2️⃣ 数量不是关键</div>
+      <div class="card-desc">因子动物园虽庞大（学术450+，工业数百万），但冗余严重，真正有效的独立因子可能只有十几个到几百个。独立经济逻辑和稳健预测能力才是核心。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">3️⃣ 评分因子与风控因子</div>
+      <div class="card-desc">评分因子是"打分器"（选股排序），风控因子是"稳定器"（控制暴露），二者在模型中分属不同模块。评分因子追求高IC，风控因子追求高R²和风险解释力。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">4️⃣ Alpha与Beta是动态的</div>
+      <div class="card-desc">Alpha与Beta是收益归因视角，而非因子固有属性。一个因子今天是Alpha，明天可能因拥挤退化为Beta。理解这种动态性是成熟量化研究者的核心素养。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">5️⃣ 系统化工程流程</div>
+      <div class="card-desc">量化机构依赖系统化工程流程：预处理 → 中性化 → 单因子检验 → 正交化 → 合成建模 → 组合优化 → 风控归因。每一步都有严格的统计标准和工程规范。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">6️⃣ 前沿方法重塑范式</div>
+      <div class="card-desc">遗传规划、深度学习（Transformer/GNN）、多智能体AI正在从"人手工写因子"转向"机器自动挖掘+人审核逻辑"的新范式。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--primary);">
+      <div class="card-title">7️⃣ 过拟合是头号敌人</div>
+      <div class="card-desc">多重假设检验、样本外测试、经济学逻辑审查是防止过拟合的三道防线。</div>
+    </div>
+    <div class="card" style="border-left: 5px solid var(--accent);">
+      <div class="card-title">8️⃣ 终极目标</div>
+      <div class="card-desc">因子研究的终极目标不是"找到最多的因子"，而是"找到少数正交的、有逻辑的、稳健的因子，并通过工程化系统将其转化为可持续的实盘收益"。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 页脚 ===== -->
+<div class="footnote">
+  <p><strong>报告说明</strong>：本报告基于量化金融领域公开学术文献、工业实践和开源框架整理而成，旨在提供系统性的学习参考。因子数量、阈值和模型参数因数据源、市场环境和机构策略不同而存在差异，实际应用中需根据具体情况进行调整。</p>
+  <p style="margin-top:8px;color:var(--gray-600);">© 2026 金融量化因子研究完全指南 · 仅供学习参考，不构成投资建议</p>
+</div>
+
+</main>
+</div>
+
+<!-- 返回顶部按钮 -->
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// 返回顶部按钮显示/隐藏
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('backTop');
+  if (window.scrollY > 600) {
+    btn.style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+  }
+});
+
+// 平滑滚动到锚点
+document.querySelectorAll('.sidebar a[href^="#"]').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
