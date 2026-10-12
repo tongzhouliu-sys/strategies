@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wheel策略美股期权量化研究完全指南（终极深度版）</title>
+<style>
+:root{--pri:#0d1b2a;--pri2:#1b263b;--pri3:#415a77;--grn:#2d6a4f;--grn2:#40916c;--grn-l:#d8f3dc;
+--red:#9b2226;--red-l:#fde8e8;--blu:#1d3557;--blu-l:#e8f0fe;--yel:#b58900;--yel-l:#fef9e7;
+--pur:#5b21b6;--pur-l:#ede9fe;--org:#9a3412;--org-l:#ffedd5;
+--g50:#f8f9fa;--g100:#e9ecef;--g200:#dee2e6;--g300:#ced4da;--g600:#6c757d;--g700:#495057;--g800:#343a40;--g900:#212529;
+--serif:"Georgia","Noto Serif SC",serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;--mono:"SF Mono",Consolas,"Courier New",monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);font-size:14px;line-height:1.92;color:var(--g800);background:#fff}
+.hero{background:linear-gradient(135deg,#060c14 0%,#162416 45%,#2a5a2a 100%);color:#fff;padding:48px 26px 42px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.01) 0,rgba(255,255,255,.01) 1px,transparent 1px,transparent 50px)}
+.hero *{position:relative;z-index:1}
+.hero h1{font-size:1.9em;font-weight:800;letter-spacing:1px;margin-bottom:8px;font-family:var(--serif)}
+.hero .sub{font-size:.97em;opacity:.78;max-width:900px;margin:0 auto 13px}
+.hero .badges{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:9px}
+.hero .badge{padding:2px 11px;border-radius:15px;font-size:.73em;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}
+.layout{display:flex;max-width:1540px;margin:0 auto}
+.sidebar{width:265px;min-width:265px;background:var(--g50);border-right:1px solid var(--g200);padding:18px 11px;position:sticky;top:0;height:100vh;overflow-y:auto;font-size:.8em}
+.sidebar h3{font-size:.86em;color:var(--grn);margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--grn);letter-spacing:1px}
+.sidebar ul{list-style:none}
+.sidebar a{display:block;padding:2px 6px;color:var(--g700);text-decoration:none;border-radius:4px;transition:.15s;font-size:.85em;line-height:1.5}
+.sidebar a:hover{background:var(--grn-l);color:var(--grn)}
+.sidebar a.ct{font-weight:700;color:var(--g900);margin-top:6px}
+.sidebar a.sb{padding-left:14px;font-size:.79em;color:var(--g600)}
+.main{flex:1;padding:30px 38px 80px;min-width:0}
+.ch{margin-bottom:50px;scroll-margin-top:18px}
+.ch-num{display:inline-block;background:var(--grn);color:#fff;font-size:.68em;font-weight:800;padding:2px 11px;border-radius:4px;letter-spacing:2px;margin-bottom:5px}
+h2{font-family:var(--serif);font-size:1.45em;color:var(--pri);margin-bottom:15px;padding-bottom:6px;border-bottom:3px solid var(--grn);line-height:1.4}
+h3{font-size:1.08em;color:var(--g900);margin:20px 0 8px;padding-left:10px;border-left:4px solid var(--grn)}
+h4{font-size:.96em;color:var(--g800);margin:15px 0 6px}
+h5{font-size:.9em;color:var(--g700);margin:12px 0 5px}
+p{margin-bottom:9px}
+.tw{overflow-x:auto;margin:10px 0 15px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+table{width:100%;border-collapse:collapse;font-size:.84em;background:#fff}
+thead th{background:var(--pri);color:#fff;padding:6px 9px;text-align:left;font-weight:600;white-space:nowrap;font-size:.87em}
+tbody td{padding:5px 9px;border-bottom:1px solid var(--g200);vertical-align:top}
+tbody tr:nth-child(even){background:var(--g50)}
+tbody tr:hover{background:var(--grn-l)}
+td.c,th.c{text-align:center}
+.ib{border-radius:6px;padding:11px 13px;margin:11px 0;font-size:.87em;line-height:1.75}
+.ib.b{background:var(--blu-l);border-left:4px solid var(--blu)}
+.ib.r{background:var(--red-l);border-left:4px solid var(--red)}
+.ib.g{background:var(--grn-l);border-left:4px solid var(--grn)}
+.ib.y{background:var(--yel-l);border-left:4px solid var(--yel)}
+.ib.p{background:var(--pur-l);border-left:4px solid var(--pur)}
+.ib.o{background:var(--org-l);border-left:4px solid var(--org)}
+.ib .bt{font-weight:700;margin-bottom:3px}
+.fm{background:var(--g50);border:1px solid var(--g200);border-radius:6px;padding:11px 15px;margin:10px 0;font-family:var(--mono);font-size:.86em;overflow-x:auto;text-align:center;line-height:2.2}
+.fi{font-family:var(--mono);background:var(--g100);padding:1px 4px;border-radius:3px;font-size:.86em}
+.cb{background:var(--g900);color:#e2e8f0;border-radius:6px;padding:13px 15px;margin:11px 0;font-family:var(--mono);font-size:.78em;line-height:1.7;overflow-x:auto;white-space:pre}
+.cb .cm{color:#718096}.cb .kw{color:#63b3ed}.cb .st{color:#68d391}.cb .ar{color:#f6ad55}.cb .rd{color:#fc8181}
+.pl{margin:15px 0}
+.pl-s{display:flex;align-items:stretch}
+.pl-l{width:30px;display:flex;flex-direction:column;align-items:center}
+.pl-d{width:10px;height:10px;border-radius:50%;background:var(--grn);border:3px solid var(--grn-l);flex-shrink:0;margin-top:12px}
+.pl-c{flex:1;width:2px;background:var(--g300)}
+.pl-b{flex:1;background:#fff;border:1px solid var(--g200);border-radius:6px;padding:9px 13px;margin:4px 0 4px 6px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.pl-b .sl{font-weight:700;color:var(--grn);font-size:.83em;margin-bottom:2px}
+.pl-b p{margin-bottom:0;font-size:.84em;color:var(--g700)}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px;margin:12px 0}
+.cd{background:#fff;border:1px solid var(--g200);border-radius:7px;padding:12px;box-shadow:0 2px 5px rgba(0,0,0,.04);transition:.2s}
+.cd:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.1)}
+.cd .ci{font-size:1.2em;margin-bottom:3px}
+.cd .ct2{font-weight:700;font-size:.92em;margin-bottom:3px;color:var(--g900)}
+.cd .cd2{font-size:.81em;color:var(--g600);line-height:1.6}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.cmp-b{border-radius:7px;padding:13px;border:2px solid}
+.cmp-b.l{border-color:var(--blu);background:var(--blu-l)}
+.cmp-b.r2{border-color:var(--grn);background:var(--grn-l)}
+.cmp-b h4{margin-top:0}
+.tg{display:inline-block;padding:2px 7px;border-radius:8px;font-size:.71em;font-weight:600;margin-right:3px}
+.tg.b{background:#dbeafe;color:#1e40af}.tg.g{background:#d1fae5;color:#065f46}
+.tg.r{background:#fee2e2;color:#991b1b}.tg.y{background:#fef3c7;color:#92400e}
+.tg.p{background:#ede9fe;color:#5b21b6}.tg.gr{background:var(--g200);color:var(--g700)}
+.tg.o{background:var(--org-l);color:var(--org)}
+.tl{position:relative;padding-left:22px;margin:12px 0}
+.tl::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:3px;background:var(--g300)}
+.tl-i{position:relative;margin-bottom:12px;padding:9px 12px;background:#fff;border:1px solid var(--g200);border-radius:6px}
+.tl-i::before{content:'';position:absolute;left:-20px;top:12px;width:9px;height:9px;border-radius:50%;background:var(--grn);border:2px solid #fff}
+.tl-i .td{font-weight:700;color:var(--grn);font-size:.83em}
+.si{font-size:.93em;color:var(--g700);margin-bottom:15px;padding:11px 13px;background:var(--g50);border-radius:6px;border-left:4px solid var(--grn)}
+hr{border:none;height:1px;background:var(--g200);margin:28px 0}
+ul,ol{margin:6px 0 9px 17px}
+li{margin-bottom:3px}
+strong{color:var(--g900)}
+.fn{font-size:.79em;color:var(--g600);border-top:1px solid var(--g200);padding-top:8px;margin-top:20px}
+.btt{position:fixed;bottom:20px;right:20px;width:36px;height:36px;background:var(--grn);color:#fff;border:none;border-radius:50%;font-size:1em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;z-index:999}
+.wd{background:var(--g50);border:2px solid var(--grn);border-radius:9px;padding:18px;margin:14px 0;text-align:center;font-family:var(--mono);font-size:.8em;line-height:2.2;overflow-x:auto}
+@media(max-width:1024px){.sidebar{display:none}.main{padding:18px 12px 46px}.hero h1{font-size:1.3em}.cmp{grid-template-columns:1fr}}
+@media print{.sidebar,.btt{display:none!important}.main{padding:12px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<h1>The Wheel 策略美股期权量化研究完全指南</h1>
+<p class="sub">有限状态机 · 多因子打分 · Greeks动态 · TIMS风控 · 深度学习 · Kelly仓位 · 回测归因 · 滚仓决策树 · 工业级Pipeline · 税务执行 · 完整案例</p>
+<div class="badges">
+<span class="badge">🎡 Wheel专属</span>
+<span class="badge">📊 15章</span>
+<span class="badge">📐 80+公式</span>
+<span class="badge">📋 60+表格</span>
+<span class="badge">💻 FSM代码</span>
+<span class="badge">🧠 DL专题</span>
+<span class="badge">📚 学术文献</span>
+<span class="badge">💰 税务执行</span>
+</div>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+<h3>📑 目录</h3>
+<ul>
+<li><a href="#c1" class="ct">Ch1 策略概述与FSM</a></li>
+<li><a href="#c1a" class="sb">1.1 核心逻辑</a></li>
+<li><a href="#c1b" class="sb">1.2 FSM四状态</a></li>
+<li><a href="#c1c" class="sb">1.3 转移矩阵</a></li>
+<li><a href="#c1d" class="sb">1.4 适用市场</a></li>
+<li><a href="#c2" class="ct">Ch2 学术理论基础</a></li>
+<li><a href="#c2a" class="sb">2.1 VRP学术根基</a></li>
+<li><a href="#c2b" class="sb">2.2 卖权等价性</a></li>
+<li><a href="#c2c" class="sb">2.3 绩效基准</a></li>
+<li><a href="#c3" class="ct">Ch3 定价与Greeks</a></li>
+<li><a href="#c4" class="ct">Ch4 IV/RV/VRP</a></li>
+<li><a href="#c5" class="ct">Ch5 五大因子体系</a></li>
+<li><a href="#c6" class="ct">Ch6 高阶打分模型</a></li>
+<li><a href="#c7" class="ct">Ch7 FSM全生命周期</a></li>
+<li><a href="#c7a" class="sb">7.1 CSP管理</a></li>
+<li><a href="#c7b" class="sb">7.2 CC管理</a></li>
+<li><a href="#c7c" class="sb">7.3 滚仓决策树</a></li>
+<li><a href="#c7d" class="sb">7.4 成本基础</a></li>
+<li><a href="#c8" class="ct">Ch8 Greeks动态与暴跌</a></li>
+<li><a href="#c9" class="ct">Ch9 合约选择最优化</a></li>
+<li><a href="#c10" class="ct">Ch10 风控体系</a></li>
+<li><a href="#c11" class="ct">Ch11 回测与归因</a></li>
+<li><a href="#c12" class="ct">Ch12 深度学习</a></li>
+<li><a href="#c13" class="ct">Ch13 执行·成本·税务</a></li>
+<li><a href="#c14" class="ct">Ch14 进阶策略变体</a></li>
+<li><a href="#c15" class="ct">Ch15 案例·学习·结论</a></li>
+</ul>
+</nav>
+
+<main class="main">
+
+<!-- ===== CH1 ===== -->
+<section class="ch" id="c1">
+<span class="ch-num">CHAPTER 01</span>
+<h2>The Wheel策略概述与有限状态机（FSM）</h2>
+
+<div class="si">Wheel策略在实战中绝非简单的"定期卖Put接盘、卖Call离场"。从量化金融视角来看，Wheel策略是一个<strong>叠加了波动率风险溢价（VRP）捕获、权益因子筛选以及动态Greeks调控的非线性有限状态机（Finite State Machine, FSM）</strong>。本报告从数学建模、因子构造、Greeks演变、Portfolio Margin风控以及工业级工程架构五个维度，对Wheel策略进行深度拆解。</div>
+
+<h3 id="c1a">1.1 核心逻辑</h3>
+<p>The Wheel的本质：<strong>用卖出期权（短Theta）的方式，以低于市价的成本获取标的资产，然后以高于成本的价格卖出标的资产，循环往复，持续收取"租金"（权利金）。</strong></p>
+
+<div class="tw">
+<table>
+<thead><tr><th>阶段</th><th>操作</th><th>收入来源</th><th>风险</th><th>结果</th></tr></thead>
+<tbody>
+<tr><td><strong>阶段1：CSP</strong></td><td>卖出Cash-Secured Put</td><td>权利金（Premium）</td><td>标的暴跌→被行权→被迫接货</td><td>未行权→收权利金→重复CSP；被行权→进入阶段2</td></tr>
+<tr><td><strong>阶段2：CC</strong></td><td>持有股票+卖出Covered Call</td><td>权利金+股息+潜在增值</td><td>标的暴涨→被行权→被迫卖出</td><td>未行权→收权利金→重复CC；被行权→回到阶段1</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>1.2 收益来源分解</h3>
+<div class="fm">The Wheel年化收益 = 权利金收入(Theta) + 股息收入(Dividend) + 标的增值/减值 ± 滚仓损益 − 交易成本</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>收益来源</th><th>典型贡献</th><th>可控性</th><th>驱动因子</th></tr></thead>
+<tbody>
+<tr><td><strong>权利金收入（Theta）</strong></td><td>年化8–20%</td><td>高（Delta/DTE/IV选择）</td><td>Theta、VRP、Skew</td></tr>
+<tr><td><strong>股息收入</strong></td><td>年化0–5%</td><td>中（选股时确定）</td><td>基本面</td></tr>
+<tr><td><strong>标的增值</strong></td><td>不确定</td><td>低（市场决定）</td><td>Delta</td></tr>
+<tr><td><strong>滚仓损益</strong></td><td>通常为正</td><td>中（时机选择）</td><td>IV、时机</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c1b">1.3 FSM四状态架构图</h3>
+<div class="wd">
+<pre>
+                   ┌─────────────────────────────────────────┐
+                   │  [S0] CASH / MARGIN (纯现金/保证金)       │
+                   └────────────────────┬────────────────────┘
+                                        │ 触发: Score > T_entry AND Margin < Limit
+                                        │ 动作: 卖出 CSP (45 DTE, 0.20 Delta)
+                                        ▼
+                   ┌─────────────────────────────────────────┐
+                   │       [S1] HOLDING_CSP (持仓 CSP)        │
+                   └──────┬──────────────────┬───────────────┘
+                          │                  │
+     触发: Profit ≥ 50%   │                  │ 触发: 到期ITM且展期无Net Credit
+     或 DTE≤7且P≤20%     │                  │ 动作: 被动行权以K_put接盘
+     动作: Buy to Close   │                  │
+                          ▼                  ▼
+  ┌───────────────────────────┐  ┌───────────────────────────┐
+  │ [S0] CASH (回归)           │  │  [S2] HOLDING_STOCK (持股)  │
+  └───────────────────────────┘  └───────────────┬───────────┘
+                                                 │ 触发: 波动率企稳, IVR>30%
+                                                 │ 动作: 卖出CC (K_call ≥ Adj_Cost)
+                                                 ▼
+                                 ┌───────────────────────────┐
+                                 │ [S3] HOLDING_STOCK_CC      │
+                                 └───────────────┬───────────┘
+                                                 │ 触发: S_T > K_call (被叫走)
+                                                 │ 或 50%止盈
+                                                 ▼
+                                 ┌───────────────────────────┐
+                                 │ [S0] CASH (回归, 循环重启)  │
+                                 └───────────────────────────┘
+</pre>
+</div>
+
+<h3 id="c1c">1.4 全生命周期状态转移矩阵（详细版）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>源</th><th>目标</th><th>触发条件（数学）</th><th>执行动作</th><th>资金变化</th><th>Greeks变化</th></tr></thead>
+<tbody>
+<tr><td><strong>S0</strong></td><td><strong>S1</strong></td><td>Score<sub>i</sub> > T<sub>entry</sub><br>AND Margin<sub>used</sub>/NLV < 0.80<br>AND IVR > 35%</td><td>Sell 1×Put(K<sub>put</sub>, T<sub>45</sub>)<br>Δ<sub>put</sub> ∈ [0.15, 0.25]<br>d₂ ≥ 1.28</td><td>占用保证金 = max(S×0.15−OTM, K×0.10)+P₀<br>收取权利金P₀</td><td>+Θ, −Γ, −ν, +|Δ|</td></tr>
+<tr><td><strong>S1</strong></td><td><strong>S0</strong></td><td>P<sub>t</sub>/P₀ ≤ 0.50<br>或 DTE≤7且P<sub>t</sub>/P₀≤0.20</td><td>Buy to Close Put</td><td>释放保证金<br>锁定50-80%权利金</td><td>所有Greeks归零</td></tr>
+<tr><td><strong>S1</strong></td><td><strong>S1</strong></td><td>S<sub>t</sub> < K<sub>put</sub><br>AND DTE ≤ 7<br>AND Roll Net Credit > 0</td><td>Roll Down & Out:<br>BTC旧Put + STO新Put(K<sub>new</sub>, T<sub>ext</sub>)</td><td>延长30-45天<br>降低行权价<br>收取净权利金ΔP</td><td>Γ/ν重置</td></tr>
+<tr><td><strong>S1</strong></td><td><strong>S2</strong></td><td>S<sub>T</sub> < K<sub>put</sub>（到期ITM）<br>AND 无法Net Credit</td><td>行权交割（Assignment）<br>以K<sub>put</sub>买入100股</td><td>消耗现金K<sub>put</sub>×100<br>C<sub>base</sub> = K<sub>put</sub> − ΣP/100</td><td>期权Greeks→0<br>持有100股（Δ=100）</td></tr>
+<tr><td><strong>S2</strong></td><td><strong>S3</strong></td><td>S<sub>t</sub> ≥ C<sub>adj</sub>·(1−δ)<br>AND IVR > 30%<br>AND 无近期除息</td><td>Sell 1×Call(K<sub>call</sub>, T<sub>30</sub>)<br>K<sub>call</sub> ≥ C<sub>adj</sub></td><td>正股冻结为Collateral<br>收取P<sub>call</sub></td><td>−Θ, −Γ(小), −ν(小)<br>−|Δ|</td></tr>
+<tr><td><strong>S3</strong></td><td><strong>S0</strong></td><td>S<sub>T</sub> > K<sub>call</sub>（到期ITM）</td><td>正股被叫走<br>以K<sub>call</sub>卖出100股</td><td>收回100×K<sub>call</sub><br>实现单轮闭环</td><td>所有归零</td></tr>
+<tr><td><strong>S3</strong></td><td><strong>S2</strong></td><td>S<sub>T</sub> < K<sub>call</sub>（到期OTM）</td><td>CC过期无价值</td><td>保留正股+权利金</td><td>期权Greeks→0</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c1d">1.5 适用市场环境</h3>
+<div class="tw">
+<table>
+<thead><tr><th>市场环境</th><th>Wheel表现</th><th>原因</th><th>调整</th></tr></thead>
+<tbody>
+<tr><td><strong>横盘/温和上涨</strong></td><td><span class="tg g">最佳</span></td><td>Theta持续收割，不被行权或少被行权</td><td>标准操作</td></tr>
+<tr><td><strong>温和下跌</strong></td><td><span class="tg y">尚可</span></td><td>CSP被行权，但权利金提供缓冲</td><td>降低Delta、增加安全垫</td></tr>
+<tr><td><strong>暴跌</strong></td><td><span class="tg r">危险</span></td><td>CSP被行权后股票继续暴跌</td><td>止损、对冲、暂停Wheel</td></tr>
+<tr><td><strong>暴涨</strong></td><td><span class="tg y">一般</span></td><td>CC被行权，错过上涨空间（收益封顶）</td><td>提高Call行权价</td></tr>
+<tr><td><strong>高波动率（VIX>25）</strong></td><td><span class="tg g">有利</span></td><td>IV高→权利金厚→收入增加</td><td>利用高IV卖出更多期权</td></tr>
+<tr><td><strong>低波动率（VIX<14）</strong></td><td><span class="tg r">不利</span></td><td>IV低→权利金薄→收入不足</td><td>暂停或选择高Beta标的</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH2 ===== -->
+<section class="ch" id="c2">
+<span class="ch-num">CHAPTER 02</span>
+<h2>学术理论基础</h2>
+
+<h3 id="c2a">2.1 波动率风险溢价（VRP）的学术根基</h3>
+<div class="ib g">
+<div class="bt">✅ VRP是The Wheel的理论基石</div>
+<p>学术研究一致表明，<strong>隐含波动率（IV）在大多数时间范围和市场制度下系统性超过已实现波动率（RV）</strong>，这一持续偏差反映了市场参与者为承担波动率风险所要求的补偿，类似于保险公司收取超过预期赔付的保费。卖权策略正是为随时间捕获这一溢价而设计。</p>
+<p><strong>VRP > 0 → 期权被系统性高估 → 卖出策略具有正期望收益</strong>。这是Wheel策略盈利的根本来源，也是其与纯方向性策略的本质区别。</p>
+</div>
+
+<div class="fm">
+VRP = IV − RV<sub>forward</sub><br>
+Variance Risk Premium = VIX²/10000 − E<sup>P</sup>[RV²]<br><br>
+实证：VRP年化约3-5个波动率点，在高IV环境中更大（恐慌时保险溢价更高）
+</div>
+
+<h3 id="c2b">2.2 卖权等价性与路径依赖</h3>
+<div class="tw">
+<table>
+<thead><tr><th>维度</th><th>CSP</th><th>CC</th><th>Wheel含义</th></tr></thead>
+<tbody>
+<tr><td>到期损益</td><td colspan="2" class="c">相同行权价下，到期损益结构相同</td><td>理论上等价</td></tr>
+<tr><td>路径依赖</td><td>保证金 = K×100（现金担保）</td><td>需持有100股正股</td><td>CSP资金效率更低</td></tr>
+<tr><td>上涨趋势</td><td>仅收权利金</td><td>权利金+增值，年化高9.36%</td><td>牛市中CC更优</td></tr>
+<tr><td>下跌趋势</td><td>权利金提供缓冲</td><td>正股亏损可能超过权利金</td><td>熊市中CSP更安全</td></tr>
+<tr><td>波动率暴露</td><td>短Vega（IV下降有利）</td><td>短Vega（IV下降有利）</td><td>相同</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c2c">2.3 学术绩效基准（关键数据）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>策略</th><th class="c">Sharpe</th><th class="c">说明</th></tr></thead>
+<tbody>
+<tr><td>卖出最深虚值Put</td><td class="c"><strong>0.90</strong></td><td>对比平值Put的0.11 → 深度虚值Put风险调整收益最高</td></tr>
+<tr><td>卖出最深虚值Call</td><td class="c">0.20</td><td>对比平值Call的0.08</td></tr>
+<tr><td>卖出2日期权</td><td class="c">0.05</td><td>短期并非总是更优</td></tr>
+<tr><td>卖出20日期权</td><td class="c"><strong>0.23</strong></td><td>~20D存在风险调整收益局部最优</td></tr>
+<tr><td>卖出45日期权</td><td class="c">~0.20</td><td>接近20D但Gamma更可控</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="ib b">
+<div class="bt">💡 学术结论 → Wheel参数选择</div>
+<ul>
+<li><strong>0.20-0.30 Delta</strong>（深度虚值）：Sharpe最高，被行权概率最低</li>
+<li><strong>20-45 DTE</strong>：风险调整收益局部最优区间</li>
+<li><strong>Put端优于Call端</strong>：卖出Put的Sharpe（0.90）远高于Call（0.20）</li>
+</ul>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH3 ===== -->
+<section class="ch" id="c3">
+<span class="ch-num">CHAPTER 03</span>
+<h2>期权定价与Greeks（Wheel视角）</h2>
+
+<h3>3.1 BSM定价公式</h3>
+<div class="fm">
+CSP（Put）: P = K·e<sup>−rT</sup>·N(−d₂) − S·e<sup>−qT</sup>·N(−d₁)<br>
+CC（Call）: C = S·e<sup>−qT</sup>·N(d₁) − K·e<sup>−rT</sup>·N(d₂)<br>
+d₁ = [ln(S/K) + (r−q+σ²/2)T] / (σ√T)<br>
+d₂ = d₁ − σ√T
+</div>
+
+<h3>3.2 完整Greeks体系（Wheel相关）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>Greek</th><th>公式</th><th>CSP（卖Put）</th><th>CC（卖Call）</th><th>Wheel含义</th></tr></thead>
+<tbody>
+<tr><td><strong>Delta (Δ)</strong></td><td>∂C/∂S</td><td>+|Δ|（正）</td><td>−|Δ|（负）</td><td>|Δ| ≈ 被行权概率；20Δ≈80%胜率</td></tr>
+<tr><td><strong>Gamma (Γ)</strong></td><td>∂²C/∂S²</td><td>−Γ（短）</td><td>−Γ（短）</td><td>标的大幅波动时不利；到期前Gamma→∞</td></tr>
+<tr><td><strong>Theta (Θ)</strong></td><td>∂C/∂t</td><td>+Θ（正）</td><td>+Θ（正）</td><td><strong>Wheel核心收入</strong>；30-45DTE衰减最快</td></tr>
+<tr><td><strong>Vega (ν)</strong></td><td>∂C/∂σ</td><td>−ν（短）</td><td>−ν（短）</td><td>IV下降有利；IV飙升产生浮亏</td></tr>
+<tr><td><strong>Vanna</strong></td><td>∂²C/∂S∂σ</td><td>—</td><td>—</td><td>IV飙升时Delta恶化（暴跌场景）</td></tr>
+<tr><td><strong>Volga</strong></td><td>∂²C/∂σ²</td><td>—</td><td>—</td><td>IV大幅变动时的凸性风险</td></tr>
+<tr><td><strong>Charm</strong></td><td>∂²C/∂S∂t</td><td>—</td><td>—</td><td>Delta随时间衰减（到期前漂移）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>3.3 Theta衰减曲线（Wheel核心）</h3>
+<div class="fm">
+ATM期权Theta ≈ −S·σ·N'(d₁) / (2√T)<br><br>
+Theta衰减速度 ∝ 1/√T → 最后30天衰减最快<br><br>
+最优DTE区间: 30-45天（Theta衰减加速但Gamma尚可控）
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th class="c">DTE</th><th class="c">Theta速度</th><th class="c">Gamma风险</th><th class="c">权利金</th><th class="c">Wheel适用</th></tr></thead>
+<tbody>
+<tr><td class="c">7天</td><td class="c">极快</td><td class="c">极高</td><td class="c">低</td><td class="c">❌ Gamma风险太大</td></tr>
+<tr><td class="c">14天</td><td class="c">快</td><td class="c">高</td><td class="c">中低</td><td class="c">⚠️ 激进</td></tr>
+<tr><td class="c">21天</td><td class="c">中快</td><td class="c">中高</td><td class="c">中</td><td class="c">⚠️ 临界点</td></tr>
+<tr><td class="c"><strong>30天</strong></td><td class="c"><strong>中快</strong></td><td class="c"><strong>中</strong></td><td class="c"><strong>中</strong></td><td class="c"><strong>✅ 推荐</strong></td></tr>
+<tr><td class="c"><strong>45天</strong></td><td class="c"><strong>中</strong></td><td class="c"><strong>中低</strong></td><td class="c"><strong>中高</strong></td><td class="c"><strong>✅ 推荐</strong></td></tr>
+<tr><td class="c">60天</td><td class="c">中慢</td><td class="c">低</td><td class="c">高</td><td class="c">⚠️ 资金效率低</td></tr>
+<tr><td class="c">90天</td><td class="c">慢</td><td class="c">低</td><td class="c">高</td><td class="c">❌ 太长</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>3.4 美式期权定价（美股个股期权）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>模型</th><th>方法</th><th>速度</th><th>精度</th><th>适用</th></tr></thead>
+<tbody>
+<tr><td><strong>Bjerksund-Stensland (2002)</strong></td><td>解析近似</td><td>极快</td><td>高</td><td>大规模Greeks计算（首选）</td></tr>
+<tr><td>Barone-Adesi & Whaley</td><td>二次近似</td><td>快</td><td>中高</td><td>快速定价</td></tr>
+<tr><td>CRR二叉树</td><td>离散DP</td><td>慢</td><td>精确</td><td>验证、奇异期权</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>校准要点</strong>：SOFR利率曲线、Hard-to-Borrow Rate、预期派息（Dividends）、提前行权判断。</p>
+</section>
+
+<hr>
+
+<!-- ===== CH4 ===== -->
+<section class="ch" id="c4">
+<span class="ch-num">CHAPTER 04</span>
+<h2>IV / RV / VRP 与波动率因子</h2>
+
+<h3>4.1 核心定义与公式</h3>
+<div class="tw">
+<table>
+<thead><tr><th>指标</th><th>公式</th><th>Wheel应用</th><th>阈值</th></tr></thead>
+<tbody>
+<tr><td><strong>IV</strong></td><td>BSM反解σ</td><td>权利金定价基础</td><td>—</td></tr>
+<tr><td><strong>RV（Parkinson）</strong></td><td>RV = √(365/(252·4ln2·N) · Σ(ln(H/L))²)</td><td>比Close-to-Close效率更高</td><td>—</td></tr>
+<tr><td><strong>RV（Garman-Klass）</strong></td><td>RV = √(1/N · Σ[½(ln(H/L))² − (2ln2−1)(ln(C/O))²])×√252</td><td>利用OHLC，效率更高</td><td>—</td></tr>
+<tr><td><strong>VRP</strong></td><td>VRP = IV<sub>30D</sub> − RV<sub>30D</sub></td><td>VRP > 0 → 卖出有利</td><td>> 3%</td></tr>
+<tr><td><strong>VRP Z-Score</strong></td><td>Z = (VRP − μ<sub>252</sub>) / σ<sub>252</sub></td><td>Z > 1 → 强卖出信号</td><td>> 1.0</td></tr>
+<tr><td><strong>IV Rank</strong></td><td>(IV−IV<sub>52wLow</sub>)/(IV<sub>52wHigh</sub>−IV<sub>52wLow</sub>)</td><td>IV相对高低</td><td>> 35%</td></tr>
+<tr><td><strong>IV Percentile</strong></td><td>过去一年IV低于当前值天数占比</td><td>IV历史分位</td><td>> 50%</td></tr>
+<tr><td><strong>IV/RV Ratio</strong></td><td>IV / RV<sub>20D</sub></td><td>溢价倍数</td><td>> 1.2</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>4.2 VIX环境下的策略调整</h3>
+<div class="tw">
+<table>
+<thead><tr><th>VIX区间</th><th>策略建议</th><th>预期年化</th><th>风险</th><th>Kelly缩放</th></tr></thead>
+<tbody>
+<tr><td>< 14</td><td>暂停或缩减仓位</td><td>2-4%</td><td>权利金过薄</td><td>0.25×</td></tr>
+<tr><td>14–25</td><td><strong>正常执行Wheel</strong></td><td><strong>7-13%</strong></td><td>最优区间</td><td>1.0×</td></tr>
+<tr><td>25–35</td><td>扩大行权价距离，降低仓位</td><td>10-15%</td><td>权利金高但下行风险大</td><td>0.7×</td></tr>
+<tr><td>> 35</td><td>暂停开新仓，管理已有仓位</td><td>—</td><td>极端风险</td><td>0×</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>4.3 Put Skew（波动率偏度）</h3>
+<div class="fm">
+Skew<sub>Put</sub> = [IV(15Δ Put) − IV(50Δ ATM)] / (0.50 − 0.15)<br><br>
+Skew越陡 → 卖出OTM Put获得的"下行保险费"越丰厚 → Wheel的Alpha来源之一
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH5 ===== -->
+<section class="ch" id="c5">
+<span class="ch-num">CHAPTER 05</span>
+<h2>Wheel五大因子体系</h2>
+
+<h3>5.0 因子分类总览</h3>
+<div class="tw">
+<table>
+<thead><tr><th>因子大类</th><th>核心问题</th><th>典型因子</th><th>数量</th></tr></thead>
+<tbody>
+<tr><td><strong>1. 选股因子</strong></td><td>什么股票适合做Wheel？</td><td>趋势、波动率、流动性、基本面、股息、事件</td><td>20-40</td></tr>
+<tr><td><strong>2. 合约选择因子</strong></td><td>选哪个Strike和Expiry？</td><td>Delta、Theta、Premium/Margin、POP、安全垫、d₂</td><td>15-30</td></tr>
+<tr><td><strong>3. 时机因子</strong></td><td>什么时候开/平/滚？</td><td>IV Rank、事件日历、Theta曲线、50%规则、21DTE规则</td><td>15-25</td></tr>
+<tr><td><strong>4. 风控因子</strong></td><td>如何防爆仓/巨亏？</td><td>保证金、分散化、下跌保护、流动性、相关性</td><td>10-20</td></tr>
+<tr><td><strong>5. 收益优化因子</strong></td><td>如何最大化年化？</td><td>年化收益率、滚仓效率、再投资、税务效率</td><td>10-15</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>5.1 选股因子（详细）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>子类</th><th>因子</th><th>计算/定义</th><th>阈值</th><th>逻辑</th></tr></thead>
+<tbody>
+<tr><td rowspan="4"><strong>趋势</strong></td><td>MA50 vs MA200</td><td>50日均线 > 200日均线</td><td>MA50 > MA200 ✓</td><td>上升趋势中做Wheel更安全</td></tr>
+<tr><td>价格位置</td><td>S / 52周高点</td><td>> 0.8</td><td>避免在下跌趋势中接货</td></tr>
+<tr><td>ADX</td><td>14日趋势强度</td><td>< 25或上升</td><td>横盘适合Wheel</td></tr>
+<tr><td>RSI</td><td>14日RSI</td><td>40-70</td><td>避免极端位置</td></tr>
+<tr><td rowspan="3"><strong>波动率</strong></td><td>IV Rank</td><td>52周位置</td><td>> 30%</td><td>IV高→权利金厚</td></tr>
+<tr><td>Vol Cone</td><td>多期限HV范围</td><td>IV在锥上方</td><td>IV偏高时卖出有利</td></tr>
+<tr><td>Beta</td><td>对SPX的Beta</td><td>0.8-1.5</td><td>太低→权利金薄；太高→风险大</td></tr>
+<tr><td rowspan="3"><strong>流动性</strong></td><td>期权日均量</td><td>20日均量</td><td>> 100张</td><td>确保可执行</td></tr>
+<tr><td>Bid-Ask Spread</td><td>(Ask−Bid)/Mid</td><td>< 2.5%（严格）</td><td>价差太大会吞噬收益</td></tr>
+<tr><td>OI</td><td>未平仓合约</td><td>> 1,000</td><td>市场深度</td></tr>
+<tr><td rowspan="4"><strong>基本面</strong></td><td>市值</td><td>总市值</td><td>> $10B</td><td>小盘股波动太大</td></tr>
+<tr><td>Altman Z-Score</td><td>破产风险</td><td>> 2.9</td><td>无破产风险</td></tr>
+<tr><td>FCF Yield</td><td>自由现金流收益率</td><td>> 3%</td><td>财务健康</td></tr>
+<tr><td>Debt/Equity</td><td>负债率</td><td>< 1.0</td><td>低杠杆→抗风险</td></tr>
+<tr><td rowspan="2"><strong>股息</strong></td><td>股息率</td><td>年度股息/股价</td><td>> 2%（可选）</td><td>额外收入</td></tr>
+<tr><td>股息增长率</td><td>5年CAGR</td><td>> 5%</td><td>长期持有价值</td></tr>
+<tr><td rowspan="2"><strong>事件</strong></td><td>财报距离</td><td>距下次财报天数</td><td>> DTE + 7天</td><td>避免财报跳空</td></tr>
+<tr><td>行业事件</td><td>FDA/并购/监管</td><td>无近期重大事件</td><td>避免二元事件</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>5.2 合约选择因子（详细）</h3>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算公式</th><th>CSP应用</th><th>CC应用</th><th>阈值</th></tr></thead>
+<tbody>
+<tr><td><strong>Delta</strong></td><td>|Δ|</td><td>20-30Δ OTM Put</td><td>20-30Δ OTM Call</td><td>20Δ≈80%胜率</td></tr>
+<tr><td><strong>DTE</strong></td><td>到期日−今天</td><td>30-45天</td><td>30-45天</td><td>Theta最快区间</td></tr>
+<tr><td><strong>权利金收益率</strong></td><td>Premium/(K×100)×(365/DTE)</td><td>年化收益率</td><td>同左</td><td>> 12%</td></tr>
+<tr><td><strong>保证金收益率</strong></td><td>Premium/Margin×(365/DTE)</td><td>单位保证金年化</td><td>同左</td><td>> 15%</td></tr>
+<tr><td><strong>POP</strong></td><td>P(到期OTM) ≈ 1−|Δ|</td><td>不被行权概率</td><td>不被Call走概率</td><td>> 75%</td></tr>
+<tr><td><strong>安全垫</strong></td><td>|S−K|/S × 100%</td><td>行权价距当前价距离</td><td>同左</td><td>> 5%</td></tr>
+<tr><td><strong>d₂安全距离</strong></td><td>d₂ = [ln(S/K)+(r−q−σ²/2)T]/(σ√T)</td><td>理论OTM概率</td><td>同左</td><td>≥ 1.28</td></tr>
+<tr><td><strong>Theta/Gamma效率</strong></td><td>|Θ|/(|Γ|×S₀)</td><td>时间收入/凸性风险</td><td>同左</td><td>越高越好</td></tr>
+<tr><td><strong>Breakeven</strong></td><td>K−Premium（CSP）<br>K+Premium（CC）</td><td>盈亏平衡价</td><td>同左</td><td>距当前价越远越安全</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH6 ===== -->
+<section class="ch" id="c6">
+<span class="ch-num">CHAPTER 06</span>
+<h2>高阶多因子打分模型</h2>
+
+<h3>6.1 核心因子数学定义</h3>
+
+<h4>(1) VRP Z-Score</h4>
+<div class="fm">VRP<sub>t</sub> = IV<sub>30D,t</sub> − RV<sub>30D,t</sub><br>Z<sub>VRP,t</sub> = (VRP<sub>t</sub> − μ<sub>VRP,252</sub>) / σ<sub>VRP,252</sub></div>
+
+<h4>(2) d₂安全距离</h4>
+<div class="fm">d₂ = [ln(S₀/K) + (r − q − σ²<sub>IV</sub>/2)T] / (σ<sub>IV</sub>√T)<br>要求: d₂ ≥ 1.28（对应90%+理论OTM概率）</div>
+
+<h4>(3) Put Skew Slope</h4>
+<div class="fm">Skew<sub>Put</sub> = [IV(15Δ Put) − IV(50Δ ATM)] / (0.50 − 0.15)</div>
+
+<h4>(4) Portfolio Margin年化资金效率（ROC<sub>PM</sub>）</h4>
+<div class="fm">ROC<sub>PM</sub> = P₀ / Margin<sub>TIMS</sub> × (365/DTE)<br>Margin<sub>TIMS</sub> ≈ max(S₀×(0.15 − (S₀−K)/S₀), 0.10×K) + P₀</div>
+
+<h4>(5) Theta/Gamma效率比</h4>
+<div class="fm">Efficiency<sub>Θ/Γ</sub> = |Θ| / (|Γ| × S₀)</div>
+
+<h3>6.2 综合打分公式</h3>
+<div class="fm">Score<sub>i</sub> = w₁·Z<sub>VRP</sub> + w₂·Skew<sub>Put</sub> + w₃·ROC<sub>PM</sub> + w₄·Z<sub>Quality</sub> − w₅·β<sub>Market</sub><br><br>推荐权重: w₁=0.25, w₂=0.20, w₃=0.25, w₄=0.20, w₅=0.10</div>
+
+<h3>6.3 三级过滤流程</h3>
+<div class="cb"><span class="cm">===== Wheel选股三级过滤 =====</span>
+
+<span class="kw">Level 1: 硬性过滤（Hard Filter）</span>
+  ✓ Bid-Ask Spread / Mid < 2.5%
+  ✓ Open Interest > 1,000
+  ✓ 距下次财报 > DTE + 7天
+  ✓ 市值 > $10B
+  → 全美股 ~500 → ~200
+
+<span class="kw">Level 2: 质量过滤（Quality Filter）</span>
+  ✓ Altman Z-Score > 2.9
+  ✓ FCF Yield > 3%
+  ✓ MA50 > MA200
+  ✓ Debt/Equity < 1.0
+  → ~200 → ~60
+
+<span class="kw">Level 3: 截面因子打分（Scoring）</span>
+  计算 Z_VRP, Skew, ROC_PM, Quality, Beta
+  Score = 0.25×Z_VRP + 0.20×Skew + 0.25×ROC_PM 
+        + 0.20×Quality − 0.10×Beta
+  排序 → 输出Top 8-12
+  → ~60 → <span class="st">Top 8-12</span></div>
+</section>
+
+<hr>
+
+<!-- ===== CH7 ===== -->
+<section class="ch" id="c7">
+<span class="ch-num">CHAPTER 07</span>
+<h2>FSM全生命周期管理</h2>
+
+<h3 id="c7a">7.1 CSP阶段（S1）完整管理规则</h3>
+<div class="tw">
+<table>
+<thead><tr><th>场景</th><th>条件</th><th>操作</th><th>数学触发</th></tr></thead>
+<tbody>
+<tr><td><strong>正常持有</strong></td><td>标的横盘/温和上涨</td><td>持有到期，收取全部权利金</td><td>S<sub>t</sub> > K<sub>put</sub> AND DTE > 21</td></tr>
+<tr><td><strong>50%止盈</strong></td><td>已获利≥50%初始权利金</td><td>Buy to Close，锁定收益</td><td>P<sub>t</sub>/P₀ ≤ 0.50</td></tr>
+<tr><td><strong>21 DTE规则</strong></td><td>剩余到期<21天</td><td>平仓或滚仓</td><td>DTE ≤ 21</td></tr>
+<tr><td><strong>Roll Down & Out</strong></td><td>标的接近行权价+可获Net Credit</td><td>BTC旧Put + STO新Put</td><td>S<sub>t</sub><K AND DTE≤7 AND Credit>0</td></tr>
+<tr><td><strong>Assignment</strong></td><td>到期ITM且无法Net Credit</td><td>以K<sub>put</sub>买入100股→进入S2</td><td>S<sub>T</sub> < K<sub>put</sub> AND DTE=0</td></tr>
+<tr><td><strong>止损</strong></td><td>标的跌破行权价>10%</td><td>平仓CSP，接受亏损</td><td>S<sub>t</sub> < K<sub>put</sub>×0.90</td></tr>
+<tr><td><strong>VIX飙升</strong></td><td>VIX > 30</td><td>暂停新开CSP</td><td>VIX > 30</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c7b">7.2 CC阶段（S2→S3）完整管理规则</h3>
+<div class="tw">
+<table>
+<thead><tr><th>场景</th><th>条件</th><th>操作</th><th>数学触发</th></tr></thead>
+<tbody>
+<tr><td><strong>开仓条件</strong></td><td>波动率企稳+IV足够</td><td>Sell Call, K<sub>call</sub>≥C<sub>adj</sub></td><td>S≥C<sub>adj</sub> AND IVR>30%</td></tr>
+<tr><td><strong>50%止盈</strong></td><td>CC权利金获利50%</td><td>Buy to Close</td><td>P<sub>t</sub>/P₀ ≤ 0.50</td></tr>
+<tr><td><strong>被叫走</strong></td><td>到期ITM</td><td>股票被卖出→回到S0</td><td>S<sub>T</sub> > K<sub>call</sub></td></tr>
+<tr><td><strong>到期未行权</strong></td><td>到期OTM</td><td>CC过期→继续卖下一期</td><td>S<sub>T</sub> < K<sub>call</sub></td></tr>
+<tr><td><strong>除息日风险</strong></td><td>外在价值<股息</td><td>提前平仓或Roll Up</td><td>Extrinsic < Dividend</td></tr>
+<tr><td><strong>标的暴跌</strong></td><td>股价远低于成本</td><td>继续卖CC降低成本或止损</td><td>S < C<sub>adj</sub>×0.90</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c7c">7.3 滚仓（Roll）完整决策树</h3>
+<div class="cb"><span class="cm">===== CSP滚仓决策树 =====</span>
+
+<span class="kw">触发条件:</span> S_t < K_put AND DTE ≤ 7
+
+<span class="kw">Step 1: 评估标的是否仍适合Wheel</span>
+  ├── 趋势破坏（MA50 < MA200）? → <span class="rd">止损平仓，不滚仓</span>
+  ├── 基本面恶化? → <span class="rd">止损平仓，不滚仓</span>
+  └── 仅短期回调? → 继续评估
+
+<span class="kw">Step 2: 寻找可获Net Credit的滚仓</span>
+  ├── Roll Down（降低行权价）
+  │     新K_new < K_old
+  │     目标: 增加安全垫
+  ├── Roll Out（延长到期日）
+  │     新DTE = 30-45天
+  │     目标: 获取更多Theta
+  └── Roll Down & Out（组合）
+        新K更低 + 新DTE更长
+        <span class="st">目标: 最大化安全垫+权利金</span>
+
+<span class="kw">Step 3: 检查Net Credit</span>
+  ├── Net Credit > 0 → <span class="st">执行滚仓 ✓</span>
+  └── Net Credit ≤ 0 → <span class="ar">不滚仓，等待到期</span>
+        ├── 到期时OTM → 收取全部权利金
+        └── 到期时ITM → 接受行权（如果愿意持有）
+
+<span class="kw">滚仓限制:</span>
+  ✗ 滚仓次数 ≤ 3次
+  ✗ 每次滚仓必须获得Net Credit
+  ✗ 新行权价不得低于原始行权价的85%</div>
+
+<h3 id="c7d">7.4 成本基础管理</h3>
+<div class="ib g">
+<div class="bt">✅ 关键规则</div>
+<ul>
+<li><strong>有效成本基础 = Put行权价 − 累计收取的权利金/100</strong></li>
+<li>例：在$95被行权，收取$2.00权利金 → 有效成本 = $95 − $2.00 = $93</li>
+<li><strong>CC行权价绝不低于有效成本基础</strong>（否则被Call走时亏损）</li>
+<li>如果计算出的K<sub>call</sub> < 成本基础 → 不卖Call，持有等待</li>
+<li>每次CC收取的权利金进一步降低成本基础</li>
+</ul>
+</div>
+
+<div class="cb"><span class="cm">===== 成本基础追踪示例 =====</span>
+
+CSP被行权: K_put = $95, 收取权利金 $2.00
+  → 成本基础 = $95 - $2.00 = <span class="st">$93.00</span>
+
+CC #1: K_call = $97, 收取权利金 $1.50
+  → 到期未行权，继续持有
+  → 成本基础 = $93.00 - $1.50 = <span class="st">$91.50</span>
+
+CC #2: K_call = $96, 收取权利金 $1.20
+  → 到期未行权，继续持有
+  → 成本基础 = $91.50 - $1.20 = <span class="st">$90.30</span>
+
+CC #3: K_call = $95, 收取权利金 $1.00
+  → 到期被行权，以$95卖出
+  → 总收益 = ($95-$90.30)×100 + $1.00×100 = <span class="st">+$570</span></div>
+</section>
+
+<hr>
+
+<!-- ===== CH8 ===== -->
+<section class="ch" id="c8">
+<span class="ch-num">CHAPTER 08</span>
+<h2>Greeks动态演变与暴跌场景</h2>
+
+<h3>8.1 暴跌场景下的Greeks连锁反应</h3>
+<div class="cb"><span class="cm">===== 标的暴跌时CSP的Greeks非线性演变 =====</span>
+
+<span class="rd">[标的股价急剧下挫 (S ↓↓)]</span>
+  │
+  ├── <span class="ar">1. Delta Bleed（Delta恶化）:</span>
+  │     Delta从 -0.20 → -0.50 → -0.80
+  │     → 变成近乎纯正股多头敞口
+  │     → 每跌$1，亏损接近$100/合约
+  │
+  ├── <span class="ar">2. Gamma Peak（Gamma峰值）:</span>
+  │     当 S 逼近 K 时，Gamma达到极大值
+  │     → Delta变化加速度达到极值
+  │     → 少量价格变动导致Delta剧烈波动
+  │
+  ├── <span class="ar">3. Vega膨胀 + Vanna效应:</span>
+  │     ├── IV随恐慌飙升（如从20%→45%）
+  │     │   → Vega产生巨大账面浮亏
+  │     └── Vanna (∂Δ/∂σ) 作用
+  │         → IV飙升进一步拉高|Delta|
+  │         → 形成正反馈恶性循环
+  │
+  └── <span class="rd">4. Margin Call连锁:</span>
+        TIMS根据增加的IV与负Delta
+        → 保证金要求 2x~4x 动态提额
+        → 可能触发强制平仓
+        → 强制平仓进一步压低股价</div>
+
+<h3>8.2 数值示例：SPX从4500跌至4000</h3>
+<div class="tw">
+<table>
+<thead><tr><th>指标</th><th class="c">初始（S=4500）</th><th class="c">暴跌后（S=4000）</th><th>变化</th></tr></thead>
+<tbody>
+<tr><td>CSP行权价</td><td class="c">K=4200</td><td class="c">K=4200</td><td>—</td></tr>
+<tr><td>Delta</td><td class="c">−0.20</td><td class="c">−0.85</td><td>恶化4.25×</td></tr>
+<tr><td>Gamma</td><td class="c">0.002</td><td class="c">0.008</td><td>增大4×</td></tr>
+<tr><td>IV</td><td class="c">18%</td><td class="c">42%</td><td>飙升133%</td></tr>
+<tr><td>Vega</td><td class="c">−$12</td><td class="c">−$35</td><td>膨胀2.9×</td></tr>
+<tr><td>期权价值</td><td class="c">$3.50</td><td class="c">$215</td><td>浮亏$211.50/合约</td></tr>
+<tr><td>TIMS保证金</td><td class="c">$8,500</td><td class="c">$32,000</td><td>暴增276%</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>8.3 TIMS压力测试矩阵</h3>
+<div class="tw">
+<table>
+<thead><tr><th>场景</th><th class="c">ΔS</th><th class="c">Δσ</th><th>CSP冲击</th><th>保证金影响</th></tr></thead>
+<tbody>
+<tr><td>Scenario 1</td><td class="c">+15%</td><td class="c">不变</td><td>+Premium（安全）</td><td>不变</td></tr>
+<tr><td>Scenario 2</td><td class="c">+7.5%</td><td class="c">−10%</td><td>+Premium（加速收息）</td><td>略降</td></tr>
+<tr><td>Scenario 5</td><td class="c">−7.5%</td><td class="c">+15%</td><td>浮亏≈1.5×Premium</td><td>+50%</td></tr>
+<tr><td>Scenario 8</td><td class="c">−15%</td><td class="c">+30%</td><td><strong>最大风险点</strong></td><td><strong>+250%</strong></td></tr>
+<tr><td>Scenario 10</td><td class="c">−15%</td><td class="c">+50%</td><td><strong>极端风险</strong></td><td><strong>+350%</strong></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH9 ===== -->
+<section class="ch" id="c9">
+<span class="ch-num">CHAPTER 09</span>
+<h2>合约选择最优化</h2>
+
+<h3>9.1 最优Delta选择</h3>
+<div class="tw">
+<table>
+<thead><tr><th class="c">Delta</th><th class="c">胜率</th><th class="c">权利金</th><th class="c">安全垫</th><th class="c">Sharpe</th><th class="c">适用</th></tr></thead>
+<tbody>
+<tr><td class="c">10Δ</td><td class="c">~90%</td><td class="c">低</td><td class="c">大</td><td class="c">—</td><td>极度保守</td></tr>
+<tr><td class="c"><strong>20Δ</strong></td><td class="c"><strong>~80%</strong></td><td class="c"><strong>中</strong></td><td class="c"><strong>中大</strong></td><td class="c"><strong>0.90</strong></td><td><strong>标准Wheel（推荐）</strong></td></tr>
+<tr><td class="c">30Δ</td><td class="c">~70%</td><td class="c">中高</td><td class="c">中</td><td class="c">—</td><td>积极/高IV</td></tr>
+<tr><td class="c">40Δ</td><td class="c">~60%</td><td class="c">高</td><td class="c">小</td><td class="c">—</td><td>激进</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>9.2 Pin Risk与到期日管理</h3>
+<div class="ib r">
+<div class="bt">🔴 Pin Risk（钉扎风险）</div>
+<p>到期日（DTE=0），若S<sub>T</sub> ≈ K<sub>put</sub>，Gamma→∞，少量交易即可导致期权在ITM/OTM间剧烈摆动。若未平仓，交易者无法确认是否会被Assignment，可能导致周末暴露巨大的未经对冲的隔夜正股风险。</p>
+<p><strong>硬性规则：到期日当天15:00 EST前，无条件平仓所有 |S<sub>T</sub>−K|/S<sub>T</sub> < 1.5% 的合约。</strong></p>
+</div>
+
+<h3>9.3 除息日提前行权（Call侧特异性风险）</h3>
+<div class="fm">Extrinsic Value = C<sub>market</sub> − max(0, S<sub>t</sub> − K<sub>call</sub>)<br><br>若 Extrinsic Value < Net Dividend → 理性买方会在除息日前一交易日提前行权</div>
+<p><strong>规则</strong>：除息日前2天扫描该条件，若满足，提前平仓CC或Roll Up，避免正股被提前强平导致失去股息收益。</p>
+</section>
+
+<hr>
+
+<!-- ===== CH10 ===== -->
+<section class="ch" id="c10">
+<span class="ch-num">CHAPTER 10</span>
+<h2>风控体系</h2>
+
+<h3>10.1 仓位管理规则</h3>
+<div class="tw">
+<table>
+<thead><tr><th>规则</th><th>参数</th><th>目的</th></tr></thead>
+<tbody>
+<tr><td>单笔仓位</td><td>< 5%组合</td><td>分散风险</td></tr>
+<tr><td>总期权暴露</td><td>< 30%组合</td><td>控制整体风险</td></tr>
+<tr><td>总保证金占用</td><td>< 70-80%</td><td>预留缓冲</td></tr>
+<tr><td>行业集中度</td><td>单行业 < 40%</td><td>避免行业风险</td></tr>
+<tr><td>标的数量</td><td>5-15个</td><td>分散化</td></tr>
+<tr><td>相关性</td><td>标的间相关系数 < 0.7</td><td>避免同涨同跌</td></tr>
+<tr><td>最大回撤止损</td><td>> 15% → 减仓50%</td><td>保护本金</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>10.2 Kelly-VIX混合仓位管理</h3>
+<div class="fm">Kelly: f* = (p·b − q) / b<br>p = 胜率(0.70-0.80), q = 1−p, b = 赔率(Premium/MaxLoss)<br><br>实际仓位 = 分数Kelly(1/4~1/2) × VIX缩放因子</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>VIX区间</th><th class="c">缩放因子</th><th class="c">实际仓位</th></tr></thead>
+<tbody>
+<tr><td>< 14</td><td class="c">0.25×</td><td class="c">极小</td></tr>
+<tr><td>14-25</td><td class="c">1.0×</td><td class="c">标准</td></tr>
+<tr><td>25-35</td><td class="c">0.7×</td><td class="c">缩减</td></tr>
+<tr><td>> 35</td><td class="c">0×</td><td class="c">暂停</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>10.3 下跌保护五层体系</h3>
+<div class="tw">
+<table>
+<thead><tr><th>层级</th><th>工具</th><th>触发</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td>第一层</td><td>权利金缓冲</td><td>下跌 < 权利金</td><td>自动保护</td></tr>
+<tr><td>第二层</td><td>Roll Down & Out</td><td>接近行权价</td><td>滚到更低Strike</td></tr>
+<tr><td>第三层</td><td>止损</td><td>跌破K > 10%</td><td>平仓CSP</td></tr>
+<tr><td>第四层</td><td>Protective Put / Collar</td><td>持有股票时</td><td>限制最大亏损</td></tr>
+<tr><td>第五层</td><td>暂停所有Wheel</td><td>VIX > 35</td><td>等待市场稳定</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>10.4 系统化风控检查清单</h3>
+<div class="tw">
+<table>
+<thead><tr><th>检查项</th><th>标准</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>购买力</td><td>现金足以覆盖行权（K×100）</td><td>防止保证金不足</td></tr>
+<tr><td>标的质量</td><td>Altman Z>2.9, FCF>3%</td><td>避免被行权后陷入困境</td></tr>
+<tr><td>IV Rank</td><td>> 50（保守）或 > 35</td><td>确保权利金覆盖风险</td></tr>
+<tr><td>权利金目标</td><td>最低0.5%/周或2%/月</td><td>确保策略经济性</td></tr>
+<tr><td>单笔仓位</td><td>< 5%组合</td><td>分散风险</td></tr>
+<tr><td>到期日</td><td>30-45 DTE</td><td>最优Theta区间</td></tr>
+<tr><td>止盈</td><td>50%利润时平仓</td><td>锁定收益，缩短Vega暴露</td></tr>
+<tr><td>止损</td><td>仓位亏损20%+时触发</td><td>限制下行风险</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH11 ===== -->
+<section class="ch" id="c11">
+<span class="ch-num">CHAPTER 11</span>
+<h2>回测与收益归因</h2>
+
+<h3>11.1 回测框架</h3>
+<div class="tw">
+<table>
+<thead><tr><th>要素</th><th>参数</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>回测期间</td><td>至少5年（含2020.03、2022熊市）</td><td>覆盖不同市场环境</td></tr>
+<tr><td>标的池</td><td>S&P 500或流动性前500</td><td>确保流动性</td></tr>
+<tr><td>执行价格</td><td>Bid（卖出）/ Ask（买入）</td><td>不用Mid！</td></tr>
+<tr><td>滑点</td><td>Spread × 0.25</td><td>保守估计</td></tr>
+<tr><td>佣金</td><td>$0.65/张</td><td>典型美股期权佣金</td></tr>
+<tr><td>保证金</td><td>Reg T（现金担保）或PM（TIMS）</td><td>CSP需全额现金</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.2 历史绩效数据</h3>
+<div class="tw">
+<table>
+<thead><tr><th>策略</th><th class="c">净收益</th><th class="c">年化</th><th class="c">最大回撤</th><th class="c">Sharpe</th></tr></thead>
+<tbody>
+<tr><td><strong>SPY Wheel（2020-2025）</strong></td><td class="c">+41%</td><td class="c">~7.1%</td><td class="c">-13%</td><td class="c">~0.6</td></tr>
+<tr><td><strong>QQQ Wheel</strong></td><td class="c">—</td><td class="c">9-13%</td><td class="c">—</td><td class="c">—</td></tr>
+<tr><td>SPY买入持有</td><td class="c">+129%</td><td class="c">—</td><td class="c">-22%</td><td class="c">—</td></tr>
+<tr><td>CBOE BXM</td><td class="c">+51.3%</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+<tr><td><strong>LLM+BN混合（19年样本外）</strong></td><td class="c">—</td><td class="c"><strong>15.3%</strong></td><td class="c"><strong>-8.2%</strong></td><td class="c"><strong>1.08</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.3 因子收益归因</h3>
+<div class="tw">
+<table>
+<thead><tr><th>收益来源</th><th>因子</th><th class="c">贡献占比</th><th>驱动因素</th></tr></thead>
+<tbody>
+<tr><td><strong>Theta衰减</strong></td><td>Theta</td><td class="c">40-50%</td><td>时间价值衰减，30-45DTE最陡</td></tr>
+<tr><td><strong>波动率风险溢价</strong></td><td>VRP</td><td class="c">20-30%</td><td>IV系统性高于RV</td></tr>
+<tr><td><strong>偏斜溢价</strong></td><td>IV Skew</td><td class="c">10-15%</td><td>虚值Put的额外溢价</td></tr>
+<tr><td><strong>股票方向性</strong></td><td>Delta</td><td class="c">10-20%</td><td>正股价格上涨</td></tr>
+<tr><td><strong>波动率均值回归</strong></td><td>Vega</td><td class="c">5-10%</td><td>IV回归均值</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH12 ===== -->
+<section class="ch" id="c12">
+<span class="ch-num">CHAPTER 12</span>
+<h2>深度学习在Wheel中的应用</h2>
+
+<h3>12.1 方法对比</h3>
+<div class="tw">
+<table>
+<thead><tr><th>方法</th><th>核心机制</th><th class="c">年化</th><th class="c">Sharpe</th><th class="c">最大回撤</th><th class="c">可解释性</th></tr></thead>
+<tbody>
+<tr><td>规则法</td><td>固定Delta/DTE</td><td class="c">~7%</td><td class="c">~0.6</td><td class="c">-13%</td><td class="c">完全</td></tr>
+<tr><td>纯LLM</td><td>直接输出决策</td><td class="c">不稳定</td><td class="c">—</td><td class="c">—</td><td class="c">低</td></tr>
+<tr><td>静态贝叶斯网络</td><td>固定结构BN</td><td class="c">中等</td><td class="c">—</td><td class="c">—</td><td class="c">高</td></tr>
+<tr><td>DRL（PPO/DQN）</td><td>序贯决策优化</td><td class="c">策略依赖</td><td class="c">—</td><td class="c">—</td><td class="c">中</td></tr>
+<tr><td><strong>LLM+贝叶斯网络</strong></td><td><strong>LLM构建上下文BN</strong></td><td class="c"><strong>15.3%</strong></td><td class="c"><strong>1.08</strong></td><td class="c"><strong>-8.2%</strong></td><td class="c"><strong>完全（27因子）</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>12.2 LLM+贝叶斯网络混合架构（Kuang & Lin, 2025）</h3>
+<div class="ib p">
+<div class="bt">🧠 核心机制</div>
+<ul>
+<li>LLM不作为直接决策者，而是根据当前市场条件构建<strong>上下文特定的贝叶斯网络</strong></li>
+<li>从18.75年、8,919笔交易的历史数据中选择类似情景填充条件概率表</li>
+<li>通过反馈循环迭代优化网络结构和数据选择</li>
+<li><strong>0%行权率</strong>（通过战略滚仓实现）</li>
+<li>每笔决策平均使用<strong>27个可解释因子</strong></li>
+<li>纯LLM、静态BN和规则法在收益和风险调整指标上均显著落后</li>
+</ul>
+</div>
+
+<h3>12.3 DRL动态行权价选择</h3>
+<div class="tw">
+<table>
+<thead><tr><th>要素</th><th>定义</th></tr></thead>
+<tbody>
+<tr><td><strong>状态</strong></td><td>IV水平、IV偏斜、期限结构、标的价格、Greeks、VRP、VIX、DTE、市场状态</td></tr>
+<tr><td><strong>动作</strong></td><td>卖Put/卖Call/持有/滚仓/平仓；行权价（Delta）；到期日</td></tr>
+<tr><td><strong>奖励</strong></td><td>单步：权利金−交易成本−风险惩罚；终端：完整周期Sharpe</td></tr>
+<tr><td><strong>约束</strong></td><td>资金、成本基础（K<sub>call</sub>≥C<sub>adj</sub>）、流动性</td></tr>
+<tr><td><strong>架构</strong></td><td>Actor-Critic + LSTM/GRU + Attention</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>12.4 其他DL应用</h3>
+<div class="tw">
+<table>
+<thead><tr><th>应用</th><th>方法</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>IV曲面特征提取</td><td>CNN</td><td>从Delta×Maturity矩阵提取预测特征</td></tr>
+<tr><td>波动率预测</td><td>Transformer</td><td>Monte Carlo采样生成"波动率云"</td></tr>
+<tr><td>被行权预测</td><td>XGBoost</td><td>输入：Delta、DTE、标的走势→输出：被行权概率</td></tr>
+<tr><td>多标的组合优化</td><td>DRL+均值方差</td><td>标的选择、仓位分配、风险分散</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH13 ===== -->
+<section class="ch" id="c13">
+<span class="ch-num">CHAPTER 13</span>
+<h2>执行、成本与税务</h2>
+
+<h3>13.1 执行优化</h3>
+<ul>
+<li><strong>严禁Market Order</strong>：使用Limit Order</li>
+<li><strong>IBKR Adaptive Algo</strong>：在Mid价挂单，以1美分/秒节奏推进，捕捉≥70% Mid-Spread</li>
+<li><strong>买卖价差</strong>：优先选择Spread < $0.10的标的</li>
+<li><strong>大仓位</strong>：>10手时流动性成为关键约束</li>
+</ul>
+
+<h3>13.2 交易成本</h3>
+<div class="tw">
+<table>
+<thead><tr><th>成本项</th><th>金额</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>佣金</td><td>$0.65/张</td><td>典型美股期权佣金</td></tr>
+<tr><td>滑点</td><td>½ × Bid-Ask Spread</td><td>流动性不足时可达5-15%</td></tr>
+<tr><td>年化交易成本</td><td>~权利金的1.4%</td><td>每周期权策略</td></tr>
+<tr><td>行权/到期</td><td>$0</td><td>不产生额外成本</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>13.3 税务（Wash Sale）</h3>
+<div class="ib r">
+<div class="bt">🔴 Wash Sale是Wheel最大的税务风险</div>
+<ul>
+<li>Wheel策略反复进入相同标的→可能触发Wash Sale</li>
+<li>损失被永久不允许扣除</li>
+<li>即使Roth IRA本身不欠税，若应税账户也有同一标的交易，仍触发</li>
+<li>Put权利金仅在到期或平仓时产生税务事件</li>
+<li>大多数Wheel收入按<strong>普通所得税率</strong>征税</li>
+</ul>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH14 ===== -->
+<section class="ch" id="c14">
+<span class="ch-num">CHAPTER 14</span>
+<h2>进阶策略变体</h2>
+
+<div class="tw">
+<table>
+<thead><tr><th>策略</th><th>描述</th><th>与Wheel关系</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><strong>标准Wheel</strong></td><td>CSP→CC循环</td><td>基准</td><td>震荡/温和上涨</td></tr>
+<tr><td><strong>ITM-Put Wheel</strong></td><td>卖出深度ITM Put（~70Δ）</td><td>更高权利金+Delta</td><td>高IV，愿意立即接货</td></tr>
+<tr><td><strong>PMCC</strong></td><td>买深度ITM LEAPS Call+卖短期OTM Call</td><td>CC的杠杆版</td><td>资金不足时</td></tr>
+<tr><td><strong>Collar</strong></td><td>持股+买OTM Put+卖OTM Call</td><td>CC+下跌保护</td><td>持股阶段</td></tr>
+<tr><td><strong>看跌垂直价差</strong></td><td>卖OTM Put+买更低Put</td><td>定义风险版CSP</td><td>风险规避</td></tr>
+<tr><td><strong>Jade Lizard</strong></td><td>卖OTM Put+卖Call Spread</td><td>CSP+Call Spread</td><td>温和看涨</td></tr>
+<tr><td><strong>Wheel on ETF</strong></td><td>在SPY/QQQ/IWM上做Wheel</td><td>指数版</td><td>不想选个股</td></tr>
+<tr><td><strong>多标的Wheel组合</strong></td><td>5-15标的分散化Wheel</td><td>组合版</td><td>标准实盘</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="ib g">
+<div class="bt">✅ ITM-Put Wheel数据</div>
+<p>在相同价格路径上，ITM Wheel收益 = $11.80权利金 + $4.65资本利得，而买入持有仅捕获$6.25未实现增值。约70%的隐含波动率转化为更丰厚的权利金流。</p>
+</div>
+</section>
+
+<hr>
+
+<!-- ===== CH15 ===== -->
+<section class="ch" id="c15">
+<span class="ch-num">CHAPTER 15</span>
+<h2>经典案例、学习路径与核心结论</h2>
+
+<h3>15.1 十大常见错误</h3>
+<div class="tw">
+<table>
+<thead><tr><th class="c">#</th><th>错误</th><th>正确做法</th></tr></thead>
+<tbody>
+<tr><td class="c">1</td><td>选高Beta/Meme股（TSLA、GME）</td><td>Beta 0.8-1.5，大中盘，Altman Z>2.9</td></tr>
+<tr><td class="c">2</td><td>仓位过重（>10%）</td><td>单笔<5%，总暴露<30%</td></tr>
+<tr><td class="c">3</td><td>下跌趋势中开CSP</td><td>MA50>MA200，趋势向上</td></tr>
+<tr><td class="c">4</td><td>财报前开仓</td><td>距财报>DTE+7天</td></tr>
+<tr><td class="c">5</td><td>不止损，无限滚仓</td><td>跌破K>10%→止损；滚仓≤3次</td></tr>
+<tr><td class="c">6</td><td>Mid价回测</td><td>Bid/Ask+滑点</td></tr>
+<tr><td class="c">7</td><td>忽略流动性</td><td>OI>1000, Spread<2.5%</td></tr>
+<tr><td class="c">8</td><td>CC行权价<成本基础</td><td>K<sub>call</sub>≥C<sub>adj</sub>，否则不卖</td></tr>
+<tr><td class="c">9</td><td>保证金>90%</td><td><70-80%</td></tr>
+<tr><td class="c">10</td><td>VIX>35继续开仓</td><td>VIX>30暂停，>35全部停止</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>15.2 学习路径</h3>
+<div class="cg">
+<div class="cd"><div class="ci">🌱</div><div class="ct2">阶段一（1-2月）</div><div class="cd2">• BSM、Greeks、Put-Call Parity<br>• CSP/CC基本概念<br>• FSM循环逻辑<br>• 模拟账户练习<br>• Hull + tastytrade</div></div>
+<div class="cd"><div class="ci">📐</div><div class="ct2">阶段二（2-4月）</div><div class="cd2">• 五大因子体系<br>• 高阶打分模型（VRP Z、d₂、Skew）<br>• IV/RV/VRP、IV Rank<br>• Theta衰减曲线<br>• 建立选股扫描器</div></div>
+<div class="cd"><div class="ci">🔬</div><div class="ct2">阶段三（4-8月）</div><div class="cd2">• FSM完整操作（CSP→CC循环）<br>• 滚仓策略（Down/Out/Up）<br>• TIMS保证金、Kelly仓位<br>• 回测（含所有摩擦）<br>• 小资金实盘</div></div>
+<div class="cd"><div class="ci">🚀</div><div class="ct2">阶段四（8月+）</div><div class="cd2">• PMCC、Collar、ITM-Put Wheel<br>• LLM+贝叶斯网络<br>• DRL动态行权价选择<br>• 多标的组合优化<br>• 税务、长期复利</div></div>
+</div>
+
+<h3>15.3 核心结论</h3>
+<div class="cg" style="grid-template-columns:1fr">
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">1️⃣ The Wheel是"非线性有限状态机"</div>
+<div class="cd2">4个状态（CASH→CSP→STOCK→STOCK+CC→CASH）× 6种转移条件。每个转移都有精确的数学触发条件和执行动作。不是"定期卖Put"，而是一个动态决策系统。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">2️⃣ VRP是理论基石，但不是免费午餐</div>
+<div class="cd2">IV>RV是Wheel盈利的根本来源。但VRP是对承担尾部风险的补偿——2018.02和2020.03证明了这一点。必须配尾部保护和严格止损。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">3️⃣ 选股 > 选合约 > 选时机</div>
+<div class="cd2">Wheel最大的风险不是期权定价错误，而是选错标的。Altman Z>2.9、FCF Yield>3%、MA50>MA200、Beta 0.8-1.5——这些选股因子比Delta/DTE选择更重要。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">4️⃣ 20Δ + 30-45 DTE是学术最优区间</div>
+<div class="cd2">深度虚值Put的Sharpe 0.90 vs 平值0.11。20-45 DTE是Theta衰减最快且Gamma可控的区间。d₂≥1.28确保90%+ OTM概率。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">5️⃣ 收益封顶是Wheel的代价</div>
+<div class="cd2">SPY Wheel五年+41% vs 买入持有+129%。Wheel用收益上限换取了风险下限（-13% vs -22%）。在牛市中必然跑输，在震荡/熊市中显著优于。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">6️⃣ LLM+贝叶斯网络是当前最优DL架构</div>
+<div class="cd2">15.3%年化、Sharpe 1.08、-8.2%回撤、0%行权率、27个可解释因子。LLM不直接决策，而是构建上下文贝叶斯网络——可解释性是核心竞争力。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">7️⃣ 风控比收益更重要</div>
+<div class="cd2">单笔<5%、总暴露<30%、保证金<70-80%、VIX>30暂停、跌破K>10%止损、到期日15:00前平仓ATM合约。这些规则是生存的关键。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--grn)">
+<div class="ct2">8️⃣ Kelly-VIX混合仓位管理</div>
+<div class="cd2">分数Kelly（1/4-1/2）× VIX缩放因子。VIX9D比VIX30D更能预测短期风险。低波动时缩减，高波动时暂停。</div>
+</div>
+<div class="cd" style="border-left:4px solid var(--red)">
+<div class="ct2">9️⃣ 终极原则</div>
+<div class="cd2">The Wheel的核心不是预测方向，而是"<strong>选好标的、卖好价格、控好风险、循环收租</strong>"。它更像一个"期权房东"——出租资本（保证金），收取租金（权利金），但必须确保"房子"（标的）不会倒塌。最终目标不是用DL替代交易纪律，而是将金融理论与因子逻辑作为约束嵌入模型，构建可解释、自适应、成本感知的Wheel策略研究体系。</div>
+</div>
+</div>
+
+<h3>15.4 未来方向</h3>
+<ul>
+<li><strong>因果推断</strong>：从相关性建模转向因果机制识别，提升因子稳健性</li>
+<li><strong>多模态融合</strong>：IV曲面+新闻文本+微观结构联合建模</li>
+<li><strong>端到端组合优化</strong>：从IV曲面直接到期权组合权重</li>
+<li><strong>联邦学习</strong>：跨机构联合训练Wheel模型</li>
+<li><strong>0DTE Wheel</strong>：适应0DTE期权崛起的新策略变体</li>
+</ul>
+</section>
+
+<div class="fn">
+<p><strong>报告说明</strong>：本报告聚焦The Wheel策略（CSP+CC循环），综合多份工业级研究报告。涵盖FSM架构、多因子打分、Greeks动态、TIMS风控、深度学习、回测归因、执行税务等。所有参数需根据个人风险偏好、账户规模和市场环境调整。</p>
+<p style="margin-top:4px;color:var(--g600)">© 2026 The Wheel策略美股期权量化研究完全指南（终极深度版）· 仅供学习参考，不构成投资建议</p>
+</div>
+
+</main>
+</div>
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('btt').style.display=window.scrollY>500?'block':'none'});
+document.querySelectorAll('.sidebar a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
+</script>
+</body>
+</html>

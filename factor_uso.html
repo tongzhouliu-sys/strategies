@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美股期权量化因子研究完全指南（深度版）</title>
+<style>
+:root{--pri:#0d1b2a;--pri2:#1b263b;--pri3:#415a77;--acc:#e0a458;--acc2:#c9772f;
+--grn:#2d6a4f;--grn-l:#d8f3dc;--red:#9b2226;--red-l:#fde8e8;
+--blu:#1d3557;--blu-l:#e8f0fe;--yel:#b58900;--yel-l:#fef9e7;
+--pur:#5b21b6;--pur-l:#ede9fe;--org:#9a3412;--org-l:#ffedd5;
+--g50:#f8f9fa;--g100:#e9ecef;--g200:#dee2e6;--g300:#ced4da;
+--g600:#6c757d;--g700:#495057;--g800:#343a40;--g900:#212529;
+--serif:"Georgia","Noto Serif SC",serif;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+--mono:"SF Mono",Consolas,"Courier New",monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);font-size:15px;line-height:1.9;color:var(--g800);background:#fff}
+.hero{background:linear-gradient(135deg,#070d15 0%,#1b263b 40%,#2c4a6b 100%);color:#fff;padding:56px 32px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0,rgba(255,255,255,.012) 1px,transparent 1px,transparent 60px)}
+.hero *{position:relative;z-index:1}
+.hero h1{font-size:2.1em;font-weight:800;letter-spacing:1px;margin-bottom:10px;font-family:var(--serif)}
+.hero .sub{font-size:1.05em;opacity:.8;max-width:850px;margin:0 auto 18px}
+.hero .badges{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.hero .badge{padding:3px 13px;border-radius:18px;font-size:.78em;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.2)}
+.layout{display:flex;max-width:1500px;margin:0 auto}
+.sidebar{width:280px;min-width:280px;background:var(--g50);border-right:1px solid var(--g200);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;font-size:.84em}
+.sidebar h3{font-size:.92em;color:var(--pri);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--acc);letter-spacing:1px}
+.sidebar ul{list-style:none}
+.sidebar a{display:block;padding:3px 8px;color:var(--g700);text-decoration:none;border-radius:5px;transition:.15s;font-size:.88em;line-height:1.5}
+.sidebar a:hover{background:var(--blu-l);color:var(--blu)}
+.sidebar a.ct{font-weight:700;color:var(--g900);margin-top:8px}
+.sidebar a.sb{padding-left:18px;font-size:.83em;color:var(--g600)}
+.main{flex:1;padding:36px 44px 80px;min-width:0}
+.ch{margin-bottom:56px;scroll-margin-top:22px}
+.ch-num{display:inline-block;background:var(--acc);color:var(--pri);font-size:.72em;font-weight:800;padding:2px 13px;border-radius:4px;letter-spacing:2px;margin-bottom:6px}
+h2{font-family:var(--serif);font-size:1.58em;color:var(--pri);margin-bottom:18px;padding-bottom:8px;border-bottom:3px solid var(--acc);line-height:1.4}
+h3{font-size:1.15em;color:var(--g900);margin:26px 0 11px;padding-left:12px;border-left:4px solid var(--acc)}
+h4{font-size:1.02em;color:var(--g800);margin:18px 0 8px}
+h5{font-size:.95em;color:var(--g700);margin:14px 0 6px}
+p{margin-bottom:11px}
+.tw{overflow-x:auto;margin:12px 0 18px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+table{width:100%;border-collapse:collapse;font-size:.88em;background:#fff}
+thead th{background:var(--pri);color:#fff;padding:8px 11px;text-align:left;font-weight:600;white-space:nowrap;font-size:.9em}
+tbody td{padding:7px 11px;border-bottom:1px solid var(--g200);vertical-align:top}
+tbody tr:nth-child(even){background:var(--g50)}
+tbody tr:hover{background:var(--blu-l)}
+td.c,th.c{text-align:center}
+.ib{border-radius:7px;padding:13px 16px;margin:13px 0;font-size:.9em;line-height:1.75}
+.ib.b{background:var(--blu-l);border-left:5px solid var(--blu)}
+.ib.r{background:var(--red-l);border-left:5px solid var(--red)}
+.ib.g{background:var(--grn-l);border-left:5px solid var(--grn)}
+.ib.y{background:var(--yel-l);border-left:5px solid var(--yel)}
+.ib.p{background:var(--pur-l);border-left:5px solid var(--pur)}
+.ib.o{background:var(--org-l);border-left:5px solid var(--org)}
+.ib .bt{font-weight:700;margin-bottom:4px}
+.fm{background:var(--g50);border:1px solid var(--g200);border-radius:7px;padding:13px 18px;margin:12px 0;font-family:var(--mono);font-size:.9em;overflow-x:auto;text-align:center;line-height:2.2}
+.fi{font-family:var(--mono);background:var(--g100);padding:1px 5px;border-radius:4px;font-size:.88em}
+.cb{background:var(--g900);color:#e2e8f0;border-radius:7px;padding:15px 18px;margin:13px 0;font-family:var(--mono);font-size:.83em;line-height:1.7;overflow-x:auto;white-space:pre}
+.cb .cm{color:#718096}.cb .kw{color:#63b3ed}.cb .st{color:#68d391}.cb .ar{color:#f6ad55}.cb .rd{color:#fc8181}
+.pl{margin:18px 0}
+.pl-s{display:flex;align-items:stretch}
+.pl-l{width:34px;display:flex;flex-direction:column;align-items:center}
+.pl-d{width:12px;height:12px;border-radius:50%;background:var(--acc);border:3px solid var(--yel-l);flex-shrink:0;margin-top:14px}
+.pl-c{flex:1;width:2px;background:var(--g300)}
+.pl-b{flex:1;background:#fff;border:1px solid var(--g200);border-radius:7px;padding:11px 15px;margin:5px 0 5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.pl-b .sl{font-weight:700;color:var(--pri);font-size:.86em;margin-bottom:2px}
+.pl-b p{margin-bottom:0;font-size:.88em;color:var(--g700)}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:13px;margin:14px 0}
+.cd{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,.04);transition:.2s}
+.cd:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.1)}
+.cd .ci{font-size:1.5em;margin-bottom:4px}
+.cd .ct2{font-weight:700;font-size:.97em;margin-bottom:4px;color:var(--g900)}
+.cd .cd2{font-size:.85em;color:var(--g600);line-height:1.6}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.cmp-b{border-radius:8px;padding:16px;border:2px solid}
+.cmp-b.l{border-color:var(--blu);background:var(--blu-l)}
+.cmp-b.r2{border-color:var(--grn);background:var(--grn-l)}
+.cmp-b h4{margin-top:0}
+.tg{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.74em;font-weight:600;margin-right:3px}
+.tg.b{background:#dbeafe;color:#1e40af}.tg.g{background:#d1fae5;color:#065f46}
+.tg.r{background:#fee2e2;color:#991b1b}.tg.y{background:#fef3c7;color:#92400e}
+.tg.p{background:#ede9fe;color:#5b21b6}.tg.gr{background:var(--g200);color:var(--g700)}
+.tg.o{background:var(--org-l);color:var(--org)}
+.tl{position:relative;padding-left:26px;margin:14px 0}
+.tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:3px;background:var(--g300)}
+.tl-i{position:relative;margin-bottom:14px;padding:11px 14px;background:#fff;border:1px solid var(--g200);border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.tl-i::before{content:'';position:absolute;left:-23px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--acc);border:2px solid #fff}
+.tl-i .td{font-weight:700;color:var(--pri);font-size:.86em}
+.si{font-size:.98em;color:var(--g700);margin-bottom:18px;padding:13px 15px;background:var(--g50);border-radius:7px;border-left:4px solid var(--acc)}
+hr{border:none;height:1px;background:var(--g200);margin:34px 0}
+ul,ol{margin:8px 0 11px 20px}
+li{margin-bottom:4px}
+strong{color:var(--g900)}
+.fn{font-size:.82em;color:var(--g600);border-top:1px solid var(--g200);padding-top:10px;margin-top:24px}
+.btt{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--pri);color:#fff;border:none;border-radius:50%;font-size:1.1em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;z-index:999}
+@media(max-width:1024px){.sidebar{display:none}.main{padding:22px 16px 50px}.hero h1{font-size:1.4em}.cmp{grid-template-columns:1fr}}
+@media print{.sidebar,.btt{display:none!important}.main{padding:16px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<h1>美股期权量化因子研究完全指南</h1>
+<p class="sub">US Equity Options · 波动率曲面 · Greeks · 五大因子体系 · 收益归因 · 十大策略 · 深度学习 · TIMS风控 · 实战案例 · 完整学习路径</p>
+<div class="badges">
+<span class="badge">📊 15章</span>
+<span class="badge">📐 60+公式</span>
+<span class="badge">📋 50+表格</span>
+<span class="badge">🧠 DL专题</span>
+<span class="badge">🏭 Pipeline</span>
+<span class="badge">📚 学术文献</span>
+<span class="badge">💻 代码示例</span>
+</div>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+<h3>📑 目录</h3>
+<ul>
+<li><a href="#c1" class="ct">Ch1 市场结构与数据</a></li>
+<li><a href="#c1a" class="sb">1.1 产品体系</a></li>
+<li><a href="#c1b" class="sb">1.2 0DTE革命</a></li>
+<li><a href="#c1c" class="sb">1.3 数据基础设施</a></li>
+<li><a href="#c2" class="ct">Ch2 定价理论</a></li>
+<li><a href="#c2a" class="sb">2.1 BSM与Greeks</a></li>
+<li><a href="#c2b" class="sb">2.2 美式期权</a></li>
+<li><a href="#c2c" class="sb">2.3 IV/RV/VRP</a></li>
+<li><a href="#c3" class="ct">Ch3 波动率曲面</a></li>
+<li><a href="#c3a" class="sb">3.1 四维分解</a></li>
+<li><a href="#c3b" class="sb">3.2 SVI/SABR拟合</a></li>
+<li><a href="#c4" class="ct">Ch4 五大因子体系</a></li>
+<li><a href="#c4a" class="sb">4.1 波动率结构因子</a></li>
+<li><a href="#c4b" class="sb">4.2 Greeks与微观流向</a></li>
+<li><a href="#c4c" class="sb">4.3 策略打分因子</a></li>
+<li><a href="#c4d" class="sb">4.4 事件与标的因子</a></li>
+<li><a href="#c4e" class="sb">4.5 风险与保证金</a></li>
+<li><a href="#c5" class="ct">Ch5 数量·冗余·增量</a></li>
+<li><a href="#c6" class="ct">Ch6 角色：评分/风控/α/β</a></li>
+<li><a href="#c7" class="ct">Ch7 收益归因</a></li>
+<li><a href="#c8" class="ct">Ch8 十大策略详解</a></li>
+<li><a href="#c9" class="ct">Ch9 研究Pipeline</a></li>
+<li><a href="#c10" class="ct">Ch10 因子评价</a></li>
+<li><a href="#c11" class="ct">Ch11 传统建模</a></li>
+<li><a href="#c12" class="ct">Ch12 深度学习</a></li>
+<li><a href="#c13" class="ct">Ch13 风控体系</a></li>
+<li><a href="#c14" class="ct">Ch14 案例复盘</a></li>
+<li><a href="#c15" class="ct">Ch15 学习路径·结论</a></li>
+</ul>
+</nav>
+
+<main class="main">
+
+<!-- ========== CH1 ========== -->
+<section class="ch" id="c1">
+<span class="ch-num">CHAPTER 01</span>
+<h2>美股期权市场结构与数据基础设施</h2>
+
+<div class="si">理解期权因子研究的前提是理解美股期权市场的独特结构。产品体系、结算方式、到期结构、0DTE革命——这些直接决定了因子的构建方式、有效性和策略容量。</div>
+
+<h3 id="c1a">1.1 产品体系详解</h3>
+<div class="tw">
+<table>
+<thead><tr><th>产品</th><th>标的</th><th>结算</th><th>到期结构</th><th>行权</th><th>特点</th><th>因子研究意义</th></tr></thead>
+<tbody>
+<tr><td><strong>SPX</strong></td><td>S&P 500</td><td>AM（周五开盘）</td><td>月度</td><td>欧式·现金</td><td>指数基准，无早期行权</td><td>波动率曲面最完整，学术基准</td></tr>
+<tr><td><strong>SPXW</strong></td><td>S&P 500</td><td>PM（收盘）</td><td>每日（周一~五）</td><td>欧式·现金</td><td>0DTE主战场</td><td>高频因子、日内GEX</td></tr>
+<tr><td><strong>SPY</strong></td><td>SPDR ETF</td><td>PM</td><td>每日</td><td>美式·实物</td><td>流动性最高，有早期行权</td><td>实盘交易首选，需考虑行权</td></tr>
+<tr><td><strong>QQQ/IWM</strong></td><td>Nasdaq/Russell ETF</td><td>PM</td><td>周度+月度</td><td>美式·实物</td><td>科技/小盘暴露</td><td>Dispersion Trading标的</td></tr>
+<tr><td><strong>个股</strong></td><td>3000+只</td><td>PM</td><td>月度+周度</td><td>美式·实物</td><td>含早期行权、股息风险</td><td>事件因子、财报IV Crush</td></tr>
+<tr><td><strong>VIX期权</strong></td><td>VIX期货</td><td>AM</td><td>月度</td><td>欧式</td><td>波动率交易工具</td><td>VIX期限结构因子</td></tr>
+<tr><td><strong>VIX期货</strong></td><td>VIX指数</td><td>现金</td><td>滚动月度</td><td>—</td><td>Contango/Backwardation</td><td>Roll Yield、期限结构策略</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c1b">1.2 0DTE革命（2022至今）</h3>
+<div class="ib o">
+<div class="bt">🔥 0DTE改变了什么？</div>
+<ul>
+<li><strong>交易量</strong>：0DTE占SPX期权交易量从2021年的~20%升至2024年的<strong>50%+</strong></li>
+<li><strong>微观结构</strong>：日内Gamma在最后几小时趋向无穷大，Theta加速衰减</li>
+<li><strong>Dealer行为</strong>：0DTE的Gamma暴露迫使Dealer在日内频繁对冲，成为价格主要驱动力</li>
+<li><strong>因子影响</strong>：传统基于月度期权的因子（如30D IV）在短端信息含量下降；需要新的0DTE专属因子</li>
+<li><strong>策略影响</strong>：卖0DTE的Gamma风险极大（最后几小时Gamma爆炸），传统"卖期权收Theta"需要重新评估</li>
+<li><strong>扩展</strong>：从SPX扩展到NVDA、TSLA、AAPL等大市值个股</li>
+</ul>
+</div>
+
+<h3 id="c1c">1.3 数据基础设施详解</h3>
+<div class="tw">
+<table>
+<thead><tr><th>数据源</th><th>覆盖</th><th>核心字段</th><th>频率</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td><strong>OptionMetrics IvyDB</strong></td><td>1996至今，3000+标的</td><td>价格、IV、Greeks、成交量、OI、波动率曲面文件（204网格点/日/标的）</td><td>日频</td><td>学术研究金标准</td></tr>
+<tr><td><strong>OPRA</strong></td><td>全美股期权</td><td>逐笔/快照报价链（Bid/Ask/Last/IV/OI/Vol/Greeks）</td><td>实时/毫秒</td><td>实盘、高频因子</td></tr>
+<tr><td><strong>CBOE DataShop</strong></td><td>SPX/VIX/SKEW</td><td>VIX、SKEW、PCR、0DTE统计、Put-Call OI</td><td>日频</td><td>宏观/情绪因子</td></tr>
+<tr><td><strong>OCC</strong></td><td>全美股</td><td>OI、行权数据、TIMS保证金</td><td>日频</td><td>GEX、风控</td></tr>
+<tr><td><strong>SpotGamma</strong></td><td>SPX/SPY/大市值</td><td>GEX、Dealer Positioning、Flip Level、Dark Pool</td><td>日频/日内</td><td>微观结构因子</td></tr>
+<tr><td><strong>Menthor Q</strong></td><td>SPX/QQQ</td><td>GEX、Vanna、Charm、Dealer Gamma</td><td>日频</td><td>高阶Greeks因子</td></tr>
+<tr><td><strong>Unusual Whales</strong></td><td>全美股</td><td>UOA、Sweep、Block Trade、期权流</td><td>实时</td><td>知情交易信号</td></tr>
+<tr><td><strong>FRED / Bloomberg</strong></td><td>宏观</td><td>SOFR、国债、信用利差、DXY</td><td>日频</td><td>宏观因子</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>IvyDB波动率曲面文件规格</strong>：每日每只证券约204个网格点（17个Delta × 12个到期日），Delta范围10–90（步长5），到期日10天至2年。可直接构建<strong>Delta×Maturity二维矩阵</strong>作为CNN输入。</p>
+</section>
+
+<hr>
+
+<!-- ========== CH2 ========== -->
+<section class="ch" id="c2">
+<span class="ch-num">CHAPTER 02</span>
+<h2>期权定价理论基础</h2>
+
+<h3 id="c2a">2.1 Black-Scholes-Merton与完整Greeks体系</h3>
+<div class="fm">
+C = S·N(d₁) − K·e<sup>−rT</sup>·N(d₂)<br>
+P = K·e<sup>−rT</sup>·N(−d₂) − S·N(−d₁)<br>
+d₁ = [ln(S/K) + (r + σ²/2)T] / (σ√T)<br>
+d₂ = d₁ − σ√T
+</div>
+
+<p><strong>完整Greeks体系（含二阶和三阶）：</strong></p>
+<div class="tw">
+<table>
+<thead><tr><th>Greek</th><th>阶数</th><th>公式</th><th>含义</th><th>因子应用</th></tr></thead>
+<tbody>
+<tr><td><strong>Delta (Δ)</strong></td><td>一阶</td><td>∂C/∂S = N(d₁)</td><td>方向敏感度</td><td>Delta中性、方向因子</td></tr>
+<tr><td><strong>Gamma (Γ)</strong></td><td>二阶</td><td>∂²C/∂S² = N'(d₁)/(Sσ√T)</td><td>Delta变化速度</td><td>Gamma Scalping、GEX</td></tr>
+<tr><td><strong>Vega (ν)</strong></td><td>一阶</td><td>∂C/∂σ = S√T·N'(d₁)</td><td>波动率敏感度</td><td>VRP、波动率交易</td></tr>
+<tr><td><strong>Theta (Θ)</strong></td><td>一阶</td><td>∂C/∂t</td><td>时间衰减</td><td>Theta收割、到期管理</td></tr>
+<tr><td><strong>Rho (ρ)</strong></td><td>一阶</td><td>∂C/∂r</td><td>利率敏感度</td><td>利率变动时调整</td></tr>
+<tr><td><strong>Vanna</strong></td><td>二阶交叉</td><td>∂²C/∂S∂σ</td><td>IV变化时Delta变化</td><td>IV变动时的方向风险</td></tr>
+<tr><td><strong>Volga (Vomma)</strong></td><td>二阶</td><td>∂²C/∂σ²</td><td>Vega变化速度</td><td>波动率凸性</td></tr>
+<tr><td><strong>Charm</strong></td><td>二阶交叉</td><td>∂²C/∂S∂t</td><td>Delta随时间衰减</td><td>到期前Delta漂移</td></tr>
+<tr><td><strong>Speed</strong></td><td>三阶</td><td>∂³C/∂S³</td><td>Gamma变化速度</td><td>大幅波动时的风险</td></tr>
+<tr><td><strong>Color</strong></td><td>三阶</td><td>∂³C/∂S²∂t</td><td>Gamma随时间变化</td><td>0DTE Gamma爆炸</td></tr>
+<tr><td><strong>Veta</strong></td><td>二阶交叉</td><td>∂²C/∂σ∂t</td><td>Vega随时间衰减</td><td>到期前Vega衰减</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c2b">2.2 美式期权定价（美股个股期权特有）</h3>
+<div class="ib r">
+<div class="bt">🔴 为什么不能用欧式BSM？</div>
+<p>美股个股期权是<strong>美式（American Style）</strong>，支持提前行权。深度ITM的Call（尤其是有股息的标的）可能被提前行权。直接使用欧式公式会低估期权价值、错算Greeks。</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>模型</th><th>方法</th><th>速度</th><th>精度</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td><strong>Bjerksund-Stensland (2002)</strong></td><td>解析近似（行使边界近似）</td><td>极快</td><td>高</td><td>大规模Greeks计算（首选）</td></tr>
+<tr><td><strong>Barone-Adesi & Whaley (1987)</strong></td><td>二次近似</td><td>快</td><td>中高</td><td>快速定价</td></tr>
+<tr><td><strong>CRR二叉树</strong></td><td>离散时间动态规划</td><td>慢</td><td>精确</td><td>精确验证、奇异期权</td></tr>
+<tr><td><strong>Longstaff-Schwartz (LSM)</strong></td><td>蒙特卡洛 + 最小二乘回归</td><td>中</td><td>高</td><td>多因子、路径依赖</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>校准要点</strong>：</p>
+<ul>
+<li><strong>无风险利率</strong>：使用SOFR曲线（替代LIBOR），按到期日插值</li>
+<li><strong>借贷成本</strong>：Hard-to-Borrow Rate（做空成本）影响Put-Call Parity</li>
+<li><strong>股息</strong>：预期派息日期和金额，影响早期行权决策</li>
+<li><strong>提前行权判断</strong>：深度ITM + 即将除息 → 高概率提前行权</li>
+</ul>
+
+<h3 id="c2c">2.3 IV · RV · VRP 详解</h3>
+
+<h4>隐含波动率（IV）的计算</h4>
+<div class="fm">
+给定市场价格 C<sub>mkt</sub>，求解 σ 使得：<br>
+C<sub>BSM</sub>(S, K, T, r, σ) = C<sub>mkt</sub><br><br>
+数值方法：Newton-Raphson / Brent's Method / Bisection
+</div>
+
+<h4>已实现波动率（RV）的多种估计</h4>
+<div class="tw">
+<table>
+<thead><tr><th>估计方法</th><th>公式</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td><strong>Close-to-Close</strong></td><td>RV = √(252/N · Σ ln(S<sub>t</sub>/S<sub>t-1</sub>)²)</td><td>最常用，但忽略日内信息</td></tr>
+<tr><td><strong>Parkinson</strong></td><td>RV = √(1/(4N·ln2) · Σ (ln(H/L))²) × √252</td><td>利用High/Low，效率提升5倍</td></tr>
+<tr><td><strong>Garman-Klass</strong></td><td>RV = √(1/N · Σ [½(ln(H/L))² − (2ln2−1)(ln(C/O))²]) × √252</td><td>利用OHLC，效率提升8倍</td></tr>
+<tr><td><strong>Yang-Zhang</strong></td><td>结合开盘跳空</td><td>处理隔夜跳空</td></tr>
+<tr><td><strong>已实现方差（高频）</strong></td><td>RV = Σ r<sub>t,i</sub>²（日内分钟收益）</td><td>最精确，需高频数据</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>波动率风险溢价（VRP）</h4>
+<div class="fm">
+VRP = IV − RV<sub>forward</sub><br>
+VRP<sub>ratio</sub> = IV / RV − 1<br>
+Variance Risk Premium = VIX²/10000 − E[RV²]
+</div>
+
+<div class="ib g">
+<div class="bt">✅ VRP的实证特征</div>
+<ul>
+<li>IV长期系统性高于RV，年化溢价约3–5个波动率点</li>
+<li>VRP在高IV环境中更大（恐慌时保险溢价更高）</li>
+<li>VRP在低IV环境中被压缩（拥挤）</li>
+<li>IV/HV比率偏高后：20天后低于基准−0.29%，30天后−0.72%</li>
+<li>IV Rank和IV Percentile未显示可靠预测能力（Walter et al., 2026）</li>
+</ul>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH3 ========== -->
+<section class="ch" id="c3">
+<span class="ch-num">CHAPTER 03</span>
+<h2>波动率曲面：四维分解与拟合</h2>
+
+<h3 id="c3a">3.1 四维分解框架</h3>
+<div class="tw">
+<table>
+<thead><tr><th>维度</th><th>含义</th><th>典型度量</th><th>经济含义</th><th>主成分解释力</th></tr></thead>
+<tbody>
+<tr><td><strong>水平（Level）</strong></td><td>整体波动率</td><td>ATM IV、VIX</td><td>市场风险定价</td><td>PC1解释77%变异</td></tr>
+<tr><td><strong>偏斜（Skew）</strong></td><td>OTM Put溢价</td><td>25Δ RR、IV Slope</td><td>尾部风险厌恶</td><td>PC1解释77%变异</td></tr>
+<tr><td><strong>曲率（Curvature）</strong></td><td>微笑凸度</td><td>25Δ BF、IV Convexity</td><td>极端事件定价</td><td>—</td></tr>
+<tr><td><strong>期限（Term）</strong></td><td>不同到期日差异</td><td>IV<sub>LT</sub>−IV<sub>1M</sub></td><td>短vs长期风险</td><td>PC1解释60%变异</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c3b">3.2 SVI模型详解</h3>
+<div class="fm">
+SVI参数化（Gatheral, 2004）：<br><br>
+w(k) = a + b · [ρ(k − m) + √((k − m)² + σ²)]<br><br>
+其中 w = σ²T（总方差），k = ln(K/F)（对数行权价）<br>
+参数：a（水平）, b（斜率）, ρ（旋转）, m（平移）, σ（ATM曲率）
+</div>
+
+<p><strong>无套利约束</strong>：</p>
+<ul>
+<li><strong>Butterfly无套利</strong>：∂²C/∂K² ≥ 0（密度非负）</li>
+<li><strong>Calendar无套利</strong>：∂w/∂T ≥ 0（总方差随到期日递增）</li>
+<li>Gatheral条件：确保拟合曲线不产生套利机会</li>
+</ul>
+
+<h4>SABR模型</h4>
+<div class="fm">
+dF = σF<sup>β</sup> dW₁<br>
+dσ = ασ dW₂<br>
+dW₁·dW₂ = ρ dt<br><br>
+参数：α（初始波动率）, β（CEV指数）, ρ（相关性）, ν（Vol-of-Vol）
+</div>
+
+<div class="ib b">
+<div class="bt">💡 SVI vs SABR 选择</div>
+<ul>
+<li><strong>SVI</strong>：截面拟合（同一到期日不同Strike），提取纯净Total Variance Curve</li>
+<li><strong>SABR</strong>：动态建模（波动率随时间演变），计算平滑Greeks</li>
+<li>实践中常结合使用：SVI拟合曲面 → SABR平滑动态</li>
+</ul>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH4 ========== -->
+<section class="ch" id="c4">
+<span class="ch-num">CHAPTER 04</span>
+<h2>五大因子分类体系详解</h2>
+
+<div class="si">美股期权因子的核心不再是PE/ROE，而是<strong>波动率曲面形状、Greeks敞口、做市商仓位、期权链流动性和保证金效率</strong>。本章对五大类因子逐一展开，给出每个因子的具体计算公式和经济学逻辑。</div>
+
+<h3 id="c4a">4.1 波动率结构因子（Vol Surface & Term）</h3>
+<p><span class="tg o">核心因子类</span> <span class="tg b">数量：基础30-50 / 衍生数百</span></p>
+
+<h4>4.1.1 水平因子</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算公式</th><th>数据需求</th><th>因子逻辑</th><th>文献</th></tr></thead>
+<tbody>
+<tr><td><strong>ATM IV</strong></td><td>(IV<sub>ATM_Call</sub> + IV<sub>ATM_Put</sub>) / 2</td><td>期权链</td><td>市场对未来波动的定价</td><td>基础</td></tr>
+<tr><td><strong>IV−RV Spread</strong></td><td>ATM IV − RV<sub>20D</sub></td><td>期权+标的</td><td>波动率风险溢价</td><td>Bollerslev et al.</td></tr>
+<tr><td><strong>VRP</strong></td><td>E<sup>Q</sup>[Var] − E<sup>P</sup>[Var]</td><td>风险中性+物理测度</td><td>方差风险溢价</td><td>Carr & Wu (2009)</td></tr>
+<tr><td><strong>IV Rank</strong></td><td>(IV−IV<sub>52wLow</sub>)/(IV<sub>52wHigh</sub>−IV<sub>52wLow</sub>)</td><td>历史IV</td><td>IV相对高低</td><td>tastytrade</td></tr>
+<tr><td><strong>IV Percentile</strong></td><td>Count(IV<sub>hist</sub><IV<sub>now</sub>)/252</td><td>历史IV</td><td>IV历史分位</td><td>tastytrade</td></tr>
+<tr><td><strong>VIX</strong></td><td>CBOE VIX Index</td><td>SPX期权</td><td>市场恐慌指标</td><td>CBOE</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>4.1.2 偏斜因子</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算公式</th><th>因子逻辑</th><th>文献</th></tr></thead>
+<tbody>
+<tr><td><strong>25Δ Risk Reversal</strong></td><td>IV<sub>25ΔPut</sub> − IV<sub>25ΔCall</sub></td><td>下行恐惧程度</td><td>经典</td></tr>
+<tr><td><strong>IV Slope</strong></td><td>IV<sub>LT_ATM</sub> − IV<sub>1M_ATM</sub></td><td>期限结构斜率</td><td>Vasquez (2017)</td></tr>
+<tr><td><strong>Option Skewness</strong></td><td>IV<sub>OTM_Put</sub> − IV<sub>ATM_Call</sub></td><td>Put溢价</td><td>Xing, Zhang & Zhao (2010)</td></tr>
+<tr><td><strong>Risk-Neutral Skewness</strong></td><td>从期权价格提取的风险中性三阶矩</td><td>不同期限的尾部预期</td><td>Borochin et al. (2020)</td></tr>
+<tr><td><strong>CBOE SKEW Index</strong></td><td>SPX 14Δ OTM期权加权</td><td>黑天鹅预期</td><td>CBOE</td></tr>
+<tr><td><strong>Put Skew Steepness</strong></td><td>(IV<sub>20ΔPut</sub>−IV<sub>40ΔPut</sub>)/(40Δ−20Δ)</td><td>Put侧偏度陡峭度</td><td>策略因子</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>4.1.3 曲率与高阶矩因子</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算</th><th>因子逻辑</th><th>增量价值</th></tr></thead>
+<tbody>
+<tr><td><strong>25Δ Butterfly</strong></td><td>(IV<sub>25ΔPut</sub>+IV<sub>25ΔCall</sub>)/2 − IV<sub>ATM</sub></td><td>微笑凸度</td><td>⭐⭐⭐</td></tr>
+<tr><td><strong>IV Convexity</strong></td><td>蝶式价差隐含波动率</td><td>极端事件定价</td><td>⭐⭐⭐</td></tr>
+<tr><td><strong>Risk-Neutral Kurtosis</strong></td><td>风险中性四阶矩</td><td>厚尾预期</td><td>⭐⭐⭐</td></tr>
+<tr><td><strong>Variance Asymmetry</strong></td><td>上行半方差 − 下行半方差</td><td>上下行风险不对称</td><td>⭐⭐</td></tr>
+<tr><td><strong>Implied Tail Loss</strong></td><td>GPD拟合：β(K), ξ</td><td>尾部形状与尺度</td><td>⭐⭐⭐</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="ib p">
+<div class="bt">🔮 关键发现（Walter et al., 2026）</div>
+<p>在控制160个股票因子后，<strong>8个期权因子仍有非零SDF载荷</strong>，主要集中在<strong>跳跃尾部、峰度和IV凸性</strong>。其中4个在Bonferroni校正后依然显著。这是期权因子相对股票因子最具增量价值的部分。</p>
+</div>
+
+<h4>4.1.4 期限结构因子</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算</th><th>因子逻辑</th></tr></thead>
+<tbody>
+<tr><td><strong>Term Slope</strong></td><td>IV<sub>6M</sub> − IV<sub>1M</sub></td><td>正→平静（Contango）；负→恐慌（Backwardation）</td></tr>
+<tr><td><strong>Term Curvature</strong></td><td>IV<sub>1M</sub> − 2·IV<sub>3M</sub> + IV<sub>6M</sub></td><td>期限结构弯曲</td></tr>
+<tr><td><strong>VIX Contango</strong></td><td>VIX<sub>futures</sub>/VIX<sub>spot</sub> − 1</td><td>VIX期货期限结构形态</td></tr>
+<tr><td><strong>Implied Moment Slope</strong></td><td>Moment<sub>6M</sub> − Moment<sub>1M</sub></td><td>中期偏度斜率携带正溢价（Zhang & Olmo, 2026）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c4b">4.2 Greeks与微观流向因子</h3>
+<p><span class="tg r">高频/日级</span> <span class="tg b">数量：50-100个</span></p>
+
+<h4>4.2.1 Dealer仓位因子（GEX体系）</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算</th><th>逻辑</th><th>数据源</th></tr></thead>
+<tbody>
+<tr><td><strong>Net GEX</strong></td><td>Σ<sub>contracts</sub> Γ<sub>i</sub> × OI<sub>i</sub> × 100 × S²</td><td>Dealer净Gamma → 正=抑制波动，负=放大波动</td><td>OCC + 期权链</td></tr>
+<tr><td><strong>GEX Flip Level</strong></td><td>GEX(S) = 0 的标的价格</td><td>关键支撑/阻力位</td><td>SpotGamma</td></tr>
+<tr><td><strong>Dealer Delta</strong></td><td>Σ Δ<sub>i</sub> × OI<sub>i</sub></td><td>Dealer对冲方向</td><td>Menthor Q</td></tr>
+<tr><td><strong>Dealer Vanna</strong></td><td>Σ Vanna<sub>i</sub> × OI<sub>i</sub></td><td>IV变化时的Dealer对冲流</td><td>Menthor Q</td></tr>
+<tr><td><strong>Dealer Charm</strong></td><td>Σ Charm<sub>i</sub> × OI<sub>i</sub></td><td>时间流逝导致的Dealer对冲流</td><td>Menthor Q</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="ib b">
+<div class="bt">💡 GEX交易规则</div>
+<ul>
+<li><strong>GEX > 0（正Gamma）</strong>：Dealer买跌卖涨 → 抑制波动 → 做均值回归（Mean Reversion）</li>
+<li><strong>GEX < 0（负Gamma）</strong>：Dealer追涨杀跌 → 放大波动 → 做动量/突破（Momentum）</li>
+<li><strong>GEX Flip</strong>：GEX从正转负的价格 → 波动率机制切换点</li>
+<li><strong>极端负GEX</strong>：Gamma Squeeze风险（如GME 2021.01）</li>
+</ul>
+</div>
+
+<h4>4.2.2 流量因子</h4>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算</th><th>逻辑</th></tr></thead>
+<tbody>
+<tr><td><strong>Put-Call Ratio (PCR)</strong></td><td>Put Volume / Call Volume 或 Put OI / Call OI</td><td>PCR > 1.2 → 恐慌（反转信号）；< 0.6 → 贪婪</td></tr>
+<tr><td><strong>Delta Volume Flow</strong></td><td>Σ (Call Vol × Δ − Put Vol × Δ) × 100</td><td>净方向性资金流</td></tr>
+<tr><td><strong>Net Premium Flow</strong></td><td>Call买入权利金 − Put买入权利金</td><td>方向性偏好</td></tr>
+<tr><td><strong>OI Change</strong></td><td>OI<sub>t</sub> − OI<sub>t-1</sub></td><td>新开仓（新方向）vs 平仓（获利了结）</td></tr>
+<tr><td><strong>Unusual Activity (UOA)</strong></td><td>Volume / OI > 5 且 Volume > 1000</td><td>知情交易者信号</td></tr>
+<tr><td><strong>Sweep Ratio</strong></td><td>Sweep订单占比</td><td>紧急/知情交易</td></tr>
+<tr><td><strong>0DTE Net Flow</strong></td><td>当日到期合约净买入</td><td>日内Gamma/Theta驱动</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c4c">4.3 策略打分与收益率因子（Sell-side / Income策略）</h3>
+<p><span class="tg g">策略专属</span> <span class="tg b">数量：20-40个</span></p>
+
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算公式</th><th>用途</th><th>判断标准</th></tr></thead>
+<tbody>
+<tr><td><strong>Premium / Margin</strong></td><td>期权费 / 保证金占用 × (365/DTE)</td><td>年化保证金收益率</td><td>> 15%优秀</td></tr>
+<tr><td><strong>安全垫</strong></td><td>|S − K| / S</td><td>被行权缓冲距离</td><td>> 5%安全</td></tr>
+<tr><td><strong>POP</strong></td><td>P(S<sub>T</sub> > K) 基于Log-Normal + Drift</td><td>理论胜率</td><td>> 70%保守</td></tr>
+<tr><td><strong>Theta / |Vega|</strong></td><td>每日Theta / 绝对Vega</td><td>每单位波动率风险的时间收入</td><td>> 0.1良好</td></tr>
+<tr><td><strong>Theta / Margin</strong></td><td>每日Theta收入 / 保证金</td><td>保证金效率</td><td>—</td></tr>
+<tr><td><strong>IV Crush Ratio</strong></td><td>IV<sub>pre-earnings</sub> / IV<sub>post-earnings</sub></td><td>财报后卖期权Alpha</td><td>> 1.5有利</td></tr>
+<tr><td><strong>Expected Move</strong></td><td>ATM Straddle Price / S</td><td>市场预期变动幅度</td><td>—</td></tr>
+<tr><td><strong>Bid-Ask / Mid</strong></td><td>(Ask − Bid) / Mid</td><td>流动性过滤</td><td>< 5%可接受</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c4d">4.4 标的与事件驱动因子</h3>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算/定义</th><th>逻辑</th></tr></thead>
+<tbody>
+<tr><td><strong>Earnings Straddle IV</strong></td><td>财报前ATM Straddle隐含变动率</td><td>市场对财报波动的定价</td></tr>
+<tr><td><strong>IV/RV Ratio (Earnings)</strong></td><td>财报期IV / 历史60D RV</td><td>财报挤压溢价大小</td></tr>
+<tr><td><strong>Historical Earnings Move</strong></td><td>过去8次财报的实际变动均值</td><td>Expected Move是否合理</td></tr>
+<tr><td><strong>ATR (14D)</strong></td><td>14日平均真实波幅</td><td>标的波动状态</td></tr>
+<tr><td><strong>Vol Cone</strong></td><td>多期限历史波动率范围（10/30/60/90/180D）</td><td>当前IV在历史中的位置</td></tr>
+<tr><td><strong>ADX</strong></td><td>趋势强度指标</td><td>方向性策略选择</td></tr>
+<tr><td><strong>FOMC/CPI/NFP Event</strong></td><td>事件日历（0/1）</td><td>全市场波动率跳升</td></tr>
+<tr><td><strong>OpEx / Triple Witching</strong></td><td>期权到期日（0/1）</td><td>Pin Risk、Gamma到期</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="c4e">4.5 风险与保证金因子</h3>
+<div class="tw">
+<table>
+<thead><tr><th>因子</th><th>计算/定义</th><th>用途</th><th>阈值</th></tr></thead>
+<tbody>
+<tr><td><strong>TIMS Margin占用率</strong></td><td>组合保证金 / 账户净值</td><td>爆仓风险</td><td>< 70%</td></tr>
+<tr><td><strong>Stress Test P&L</strong></td><td>±6%/±10%/±15%标的变动下的组合P&L</td><td>尾部压力</td><td>最大亏损 < 5%</td></tr>
+<tr><td><strong>Pin Risk概率</strong></td><td>P(|S<sub>T</sub> − K| < 0.5) 基于Log-Normal</td><td>到期日行权不确定性</td><td>< 10%</td></tr>
+<tr><td><strong>Early Exercise概率</strong></td><td>深度ITM + 除息日临近</td><td>美式期权特有风险</td><td>—</td></tr>
+<tr><td><strong>Bid-Ask Spread %</strong></td><td>(Ask−Bid)/Mid × 100%</td><td>流动性过滤</td><td>< 5-10%</td></tr>
+<tr><td><strong>OI / Volume</strong></td><td>未平仓 / 成交量</td><td>流动性深度</td><td>OI > 100</td></tr>
+<tr><td><strong>Net Portfolio Delta</strong></td><td>Σ Δ<sub>i</sub> × w<sub>i</sub></td><td>方向暴露</td><td>|Δ| < 0.05</td></tr>
+<tr><td><strong>Net Portfolio Vega</strong></td><td>Σ ν<sub>i</sub> × w<sub>i</sub></td><td>波动率暴露</td><td>限额内</td></tr>
+<tr><td><strong>Net Portfolio Gamma</strong></td><td>Σ Γ<sub>i</sub> × w<sub>i</sub></td><td>凸性暴露</td><td>限额内</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH5 ========== -->
+<section class="ch" id="c5">
+<span class="ch-num">CHAPTER 05</span>
+<h2>因子数量、冗余与增量信息</h2>
+
+<h3>5.1 各层级因子数量全景</h3>
+<div class="tw">
+<table>
+<thead><tr><th>层级</th><th class="c">数量</th><th>来源</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>股票因子动物园</td><td class="c">~160个</td><td>Feng, Giglio & Xiu (2020)</td><td>股票截面因子基准</td></tr>
+<tr><td>期权隐含特征全库</td><td class="c">137个</td><td>Walter et al. (2026)</td><td>股票级42 + 期权桶级19 + 合约级16 + 其他</td></tr>
+<tr><td>LASSO筛选后代表性因子</td><td class="c">20个</td><td>双重选择LASSO</td><td>低相关多空因子</td></tr>
+<tr><td>具有增量SDF载荷</td><td class="c"><strong>8个</strong></td><td>控制160个股票因子后</td><td>跳跃尾部、峰度、IV凸性</td></tr>
+<tr><td>Bonferroni校正后显著</td><td class="c"><strong>4个</strong></td><td>最严格检验</td><td>最稳健的期权特有维度</td></tr>
+<tr><td>本报告五大类合计</td><td class="c">145–270个</td><td>手工构建</td><td>基础因子</td></tr>
+<tr><td>曲面矩阵衍生</td><td class="c">数百个</td><td>不同Delta/Expiry采样</td><td>204网格点 × 多种算子</td></tr>
+<tr><td>ML/DL挖掘</td><td class="c">数千+</td><td>CNN隐层、GP</td><td>隐式特征</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>5.2 期权因子与股票因子的关系</h3>
+<div class="ib r">
+<div class="bt">🔴 核心实证发现（Walter, Zimmer & Ulrich, 2026）</div>
+<p>使用Feng, Giglio & Xiu (2020)的<strong>双重选择LASSO方法</strong>：</p>
+<ul>
+<li>样本内，<strong>股票因子解释了约91%的期权因子方差</strong></li>
+<li>加入期权因子并未显著提高最大夏普比率</li>
+<li>但8个期权因子在控制股票因子后仍有非零SDF载荷</li>
+<li>4个因子在Bonferroni校正后依然显著</li>
+</ul>
+<p><strong>核心启示</strong>：期权市场增加的是少数几个定价相关的维度，而非一个全新的因子动物园。应聚焦于期权因子的<strong>增量信息</strong>（跳跃尾部、峰度、IV凸性），而非独立构建一套期权因子体系。</p>
+</div>
+
+<h3>5.3 冗余来源与降维方法</h3>
+<div class="tw">
+<table>
+<thead><tr><th>冗余来源</th><th>示例</th><th>降维方法</th></tr></thead>
+<tbody>
+<tr><td>期限冗余</td><td>7D/14D/30D IV高度相关</td><td>PCA → PC1(Level), PC2(Slope), PC3(Curv)</td></tr>
+<tr><td>Delta冗余</td><td>25Δ与30Δ Put IV几乎相同</td><td>仅保留标准Delta（10/25/50）</td></tr>
+<tr><td>股票因子映射</td><td>91%方差被股票因子解释</td><td>双重选择LASSO筛选增量</td></tr>
+<tr><td>高阶矩冗余</td><td>不同期限Skew/Kurt相关</td><td>取主成分或关键期限</td></tr>
+<tr><td>策略因子冗余</td><td>POP与安全垫高度相关</td><td>保留一个</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH6 ========== -->
+<section class="ch" id="c6">
+<span class="ch-num">CHAPTER 06</span>
+<h2>因子角色：评分、风控、Alpha与Beta</h2>
+
+<h3>6.1 评分因子 vs 风控因子</h3>
+<div class="tw">
+<table>
+<thead><tr><th>维度</th><th>评分因子（Scoring / Alpha）</th><th>风控因子（Risk / Constraint）</th></tr></thead>
+<tbody>
+<tr><td><strong>核心目的</strong></td><td>在全美股期权链（数百标的×上万合约）中筛选性价比最高的合约</td><td>控制组合Greeks暴露，防止黑天鹅爆仓</td></tr>
+<tr><td><strong>模型归属</strong></td><td>Alpha预测引擎 / 策略选择器</td><td>Risk模型 / TIMS保证金引擎 / 约束优化器</td></tr>
+<tr><td><strong>评价指标</strong></td><td>VRP Z-Score、POP、Premium/Margin、Put Skew Steepness</td><td>Net Δ/ν/Γ、TIMS占用率、VaR、Pin Risk</td></tr>
+<tr><td><strong>操作</strong></td><td>排序 → 选择Top N合约 → 建仓</td><td>计算暴露 → 与限额比较 → 拒绝/减仓/对冲</td></tr>
+<tr><td><strong>比喻</strong></td><td>"油门"——选哪个期权、选哪个策略</td><td>"刹车+护栏"——不要亏太多、不要爆仓</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>6.2 评分因子的具体应用</h3>
+<div class="cb"><span class="cm">===== 评分因子选股流程（以卖出CSP为例）=====</span>
+
+<span class="kw">Step 1</span>: 全美股扫描 → 筛选流动性（OI>100, Spread<5%）
+<span class="kw">Step 2</span>: 计算每个合约的评分因子
+  - VRP Z-Score:        <span class="st">+2.3</span>  <span class="cm">(IV显著高于RV → 适合卖)</span>
+  - Put Skew Steepness: <span class="st">+1.8</span>  <span class="cm">(OTM Put溢价高 → 卖Put有Alpha)</span>
+  - Premium/Margin:     <span class="st">18.5%</span> <span class="cm">(年化 → 收益足够)</span>
+  - POP:                <span class="st">78%</span>   <span class="cm">(胜率可接受)</span>
+  - 安全垫 |S-K|/S:     <span class="st">6.2%</span>  <span class="cm">(缓冲足够)</span>
+<span class="kw">Step 3</span>: 综合评分 = w₁·VRP_Z + w₂·Skew + w₃·Yield + w₄·POP
+<span class="kw">Step 4</span>: 排序 → 选择Top 20合约 → 进入风控检查</div>
+
+<h3>6.3 Alpha与Beta（期权版）</h3>
+<div class="fm">期权收益 = 结构性波动率风险溢价 (Vol Beta) + 曲面错价与微观Alpha (Vol Alpha)</div>
+
+<div class="cmp">
+<div class="cmp-b l">
+<h4>📊 期权Beta（Smart Beta / Vol Risk Premia）</h4>
+<ul>
+<li><strong>定义</strong>：承担结构性风险的补偿</li>
+<li><strong>代表</strong>：Short VRP（卖跨/卖宽跨/CSP/CC）</li>
+<li><strong>特点</strong>：胜率80%+，胖尾分布</li>
+<li><strong>容量</strong>：极大（数百亿）</li>
+<li><strong>衰减</strong>：极慢（结构性存在）</li>
+</ul>
+</div>
+<div class="cmp-b r2">
+<h4>🎯 期权Alpha（Vol Relative Value）</h4>
+<ul>
+<li><strong>定义</strong>：定价残差、曲面扭曲、供需失衡</li>
+<li><strong>代表</strong>：曲面套利、Dispersion、GEX、Event Vol</li>
+<li><strong>特点</strong>：夏普高但容量小</li>
+<li><strong>容量</strong>：小（数千万至数亿）</li>
+<li><strong>衰减</strong>：快（需持续迭代）</li>
+</ul>
+</div>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH7 ========== -->
+<section class="ch" id="c7">
+<span class="ch-num">CHAPTER 07</span>
+<h2>期权收益归因框架（Greeks分解）</h2>
+
+<div class="fm">
+dP ≈ Δ·dS + ½Γ·(dS)² + ν·dσ + Θ·dt + ½Volga·(dσ)² + Vanna·dS·dσ + ε<sub>jump</sub>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>收益来源</th><th>公式项</th><th>正值含义</th><th>策略对应</th><th>归因占比（卖跨示例）</th></tr></thead>
+<tbody>
+<tr><td><strong>方向（Delta）</strong></td><td>Δ·dS</td><td>方向正确</td><td>方向交易</td><td class="c">~5%</td></tr>
+<tr><td><strong>曲率（Gamma）</strong></td><td>½Γ·(dS)²</td><td>标的大幅波动时获利（长Gamma）</td><td>买期权、Gamma Scalping</td><td class="c">−18%</td></tr>
+<tr><td><strong>波动率（Vega）</strong></td><td>ν·dσ</td><td>IV上升获利（长Vega）</td><td>做多/做空波动率</td><td class="c">+28%</td></tr>
+<tr><td><strong>时间（Theta）</strong></td><td>Θ·dt</td><td>时间流逝获利（正Theta=卖方）</td><td>卖期权</td><td class="c">+84%</td></tr>
+<tr><td><strong>Vol凸性（Volga）</strong></td><td>½Volga·(dσ)²</td><td>IV大幅变动时获利</td><td>蝶式</td><td class="c">~1%</td></tr>
+<tr><td><strong>交叉（Vanna）</strong></td><td>Vanna·dS·dσ</td><td>方向和IV同时有利变动</td><td>Risk Reversal</td><td class="c">~1%</td></tr>
+<tr><td><strong>跳跃/残差</strong></td><td>ε</td><td>模型无法解释</td><td>尾部风险</td><td class="c">~2%</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="cb"><span class="cm">===== 日度P&L归因报告模板 =====</span>
+
+日期: 2026-07-11    组合: SPX Iron Condor + AAPL CSP + TSLA CC
+
+<span class="kw">总 P&L: +$52,300</span>
+
+<span class="st">  Theta P&L:    +$41,000  (78.4%)</span>  <span class="cm">← 时间衰减（核心）</span>
+<span class="st">  Vega P&L:     +$15,200  (29.1%)</span>  <span class="cm">← IV从19.2%降至18.5%</span>
+<span class="st">  Delta P&L:    +$3,100   ( 5.9%)</span>  <span class="cm">← 方向中性，贡献极小</span>
+<span class="ar">  Gamma P&L:    -$9,500   (-18.2%)</span> <span class="cm">← 短Gamma，SPX日内波动1.2%</span>
+<span class="st">  Volga P&L:    +$800     ( 1.5%)</span>
+<span class="st">  残差/Jump:    +$1,700   ( 3.3%)</span>
+
+<span class="kw">Greeks 暴露:</span>
+  Net Delta:  <span class="kw">+0.02</span>  (|Δ|<0.05 ✓)
+  Net Gamma:  <span class="rd">-18,500</span> (限额: -25,000 ✓)
+  Net Vega:   <span class="rd">-120,000</span>
+  Net Theta:  <span class="st">+41,000</span>/day
+
+<span class="kw">保证金:</span>
+  TIMS Margin: <span class="kw">$385,000</span> / 账户 <span class="kw">$620,000</span> = <span class="ar">62.1%</span> (< 70% ✓)</div>
+</section>
+
+<hr>
+
+<!-- ========== CH8 ========== -->
+<section class="ch" id="c8">
+<span class="ch-num">CHAPTER 08</span>
+<h2>十大策略类型详解</h2>
+
+<div class="tw">
+<table>
+<thead><tr><th>#</th><th>策略</th><th>核心逻辑</th><th>关键因子</th><th>Greeks特征</th><th>胜率</th><th>容量</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>VRP收割（卖跨/卖宽跨）</strong></td><td>IV>RV，卖出期权收取溢价</td><td>VRP、Theta、IV水平</td><td>+Θ, −Γ, −ν</td><td>75-85%</td><td>大</td></tr>
+<tr><td>2</td><td><strong>CSP / Covered Call</strong></td><td>卖出OTM Put/Call，收取权利金</td><td>Premium/Margin、POP、安全垫</td><td>+Θ, −Γ(小), −ν(小)</td><td>80-90%</td><td>大</td></tr>
+<tr><td>3</td><td><strong>Delta中性/Gamma Scalping</strong></td><td>买期权+动态Delta对冲</td><td>Gamma、RV、Hedging频率</td><td>+Γ, −Θ, +ν</td><td>40-50%</td><td>中</td></tr>
+<tr><td>4</td><td><strong>波动率曲面套利</strong></td><td>SVI/SABR拟合→买低估卖高估</td><td>Skew、Term、PC残差</td><td>市场中性</td><td>60-70%</td><td>中</td></tr>
+<tr><td>5</td><td><strong>Dispersion Trading</strong></td><td>卖指数Vol+买个股Vol</td><td>隐含相关性、个股IV</td><td>相关性暴露</td><td>55-65%</td><td>大</td></tr>
+<tr><td>6</td><td><strong>事件驱动（财报）</strong></td><td>财报IV Crush套利</td><td>Earnings IV、IV/RV、Historical Move</td><td>事件风险</td><td>60-75%</td><td>小</td></tr>
+<tr><td>7</td><td><strong>0DTE策略</strong></td><td>当日到期，日内Gamma/Theta极端</td><td>0DTE Flow、日内GEX</td><td>极端Γ/Θ</td><td>—</td><td>极小</td></tr>
+<tr><td>8</td><td><strong>GEX方向策略</strong></td><td>GEX>0均值回归，GEX<0做突破</td><td>GEX、Flip Level</td><td>机制切换</td><td>—</td><td>中</td></tr>
+<tr><td>9</td><td><strong>VIX期限结构</strong></td><td>Contango/Backwardation交易</td><td>Term Slope、Roll Yield</td><td>VIX暴露</td><td>55-65%</td><td>中</td></tr>
+<tr><td>10</td><td><strong>波动率曲面做市</strong></td><td>在曲面各节点报价赚Bid-Ask</td><td>曲面形状、库存、Greeks</td><td>库存风险</td><td>—</td><td>机构</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>8.1 CSP（Cash-Secured Put）详细操作</h3>
+<div class="cb"><span class="cm">===== CSP策略执行流程 =====</span>
+
+<span class="kw">选股条件：</span>
+  ✓ 标的趋势向上或横盘（ADX < 25 或 MA50 > MA200）
+  ✓ IV Rank > 30%（IV相对偏高 → 权利金厚）
+  ✓ 流动性充足（OI > 500, Spread < 3%）
+  ✓ 无近期重大事件（财报、FDA、并购）
+
+<span class="kw">合约选择：</span>
+  到期日: 30-45 DTE（Theta衰减最快区间）
+  行权价: 20-30 Delta（约85%胜率）
+  安全垫: |S - K| / S > 5%
+
+<span class="kw">仓位管理：</span>
+  单标的保证金 < 账户的 5%
+  总保证金占用 < 70%
+  POP > 75%
+
+<span class="kw">退出规则：</span>
+  ✓ 获利 50% 权利金 → 平仓
+  ✓ 到期前 7 天 → 平仓或展期
+  ✗ 标的跌破行权价 → 评估是否接货或止损</div>
+</section>
+
+<hr>
+
+<!-- ========== CH9 ========== -->
+<section class="ch" id="c9">
+<span class="ch-num">CHAPTER 09</span>
+<h2>标准研究流程（Pipeline）</h2>
+
+<div class="pl">
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 1：数据获取与美式期权定价</div>
+<p>OPRA报价链 → 美式定价（Bjerksund-Stensland / CRR）→ 校准SOFR利率、Hard-to-Borrow Rate、预期派息 → 计算理论价与全Greeks（含Vanna、Volga、Charm）</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 2：波动率曲面拟合</div>
+<p>SVI截面拟合（Gatheral无套利约束）→ 跨到期日SABR动态 → 提取ATM IV、25Δ Skew、Term Slope、PC1/2/3 → 计算平滑Greeks</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 3：因子构建与预处理</div>
+<p>构建VRP、GEX、PCR、POP、Premium/Margin等 → 去极值（MAD）→ 标准化（Z-score）→ 中性化（剔除VIX水平影响后看Skew增量）</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 4：单因子检验（区分对冲模式）</div>
+<p><strong>Delta中性检验</strong>：每天将Delta对冲归零，纯粹检验因子对Vega/Gamma收益的预测。<strong>非对冲检验</strong>：直接检验因子对策略P&L的预测。Rank IC & Straddle/Strangle回测。</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 5：考虑执行成本的回测</div>
+<p>滑点：卖出 Ask−Spread×0.25，买入 Bid+Spread×0.25。流动性：剔除OI<100或Spread>5%。包含：保证金变化、展期成本、早期行权。</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div><div class="pl-c"></div></div>
+<div class="pl-b"><div class="sl">Step 6：组合优化与TIMS约束</div>
+<p>Reg T（15-20%固定）或PM（OCC TIMS）→ ±6%~±15% Stress Test → 计算真实Margin → Yield on Margin最大化 → 优化持仓权重</p></div></div>
+<div class="pl-s"><div class="pl-l"><div class="pl-d"></div></div>
+<div class="pl-b"><div class="sl">Step 7：实盘监控与归因</div>
+<p>每日Greeks报告 → P&L归因（Δ/Γ/ν/Θ）→ VaR/CVaR → 保证金预警 → 因子衰减追踪 → 拥挤度监控</p></div></div>
+</div>
+
+<div class="ib r">
+<div class="bt">🔴 回测致命陷阱清单</div>
+<ol>
+<li><strong>Mid价回测</strong>：实际在Bid/Ask，价差5-15% → 必须用Bid/Ask或加滑点</li>
+<li><strong>忽略流动性</strong>：深度OTM日均成交量仅10张 → 大资金无法执行</li>
+<li><strong>忽略保证金</strong>：卖期权需大量保证金，不足被强平</li>
+<li><strong>忽略早期行权</strong>：美式深度ITM + 除息 → 提前行权</li>
+<li><strong>忽略事件跳跃</strong>：财报/FOMC跳空无法用连续模型捕捉</li>
+<li><strong>忽略展期成本</strong>：月度策略每月展期，滑点累积</li>
+<li><strong>忽略容量</strong>：期权市场容量远小于股票市场</li>
+</ol>
+</div>
+</section>
+
+<hr>
+
+<!-- ========== CH10-15 由于篇幅继续 ========== -->
+
+<section class="ch" id="c10">
+<span class="ch-num">CHAPTER 10</span>
+<h2>因子评价方法</h2>
+<div class="tw">
+<table>
+<thead><tr><th>类别</th><th>指标</th><th>公式/定义</th><th>阈值</th></tr></thead>
+<tbody>
+<tr><td rowspan="4"><strong>预测力</strong></td>
+<td>Rank IC</td><td>SpearmanCorr(Rank(f<sub>t</sub>), Rank(R<sub>t+1</sub>))</td><td>>0.03有效，>0.05好</td></tr>
+<tr><td>ICIR</td><td>Mean(IC)/Std(IC)</td><td>>0.5良好，>0.8优秀</td></tr>
+<tr><td>RMSE（IV→RV）</td><td>√(Σ(IV−RV)²/N)</td><td>vs朴素模型</td></tr>
+<tr><td>分组单调性</td><td>5/10组收益单调性</td><td>严格单调</td></tr>
+<tr><td rowspan="5"><strong>经济表现</strong></td>
+<td>年化收益</td><td>扣成本后</td><td>8-15%（卖期权）</td></tr>
+<tr><td>Sharpe</td><td>年化收益/年化波动</td><td>>1.0</td></tr>
+<tr><td>最大回撤</td><td>峰到谷最大亏损</td><td><15%</td></tr>
+<tr><td>胜率</td><td>盈利交易占比</td><td>>70%（卖期权）</td></tr>
+<tr><td>盈亏比</td><td>平均盈利/平均亏损</td><td>>0.3</td></tr>
+<tr><td rowspan="3"><strong>风险</strong></td>
+<td>VaR(99%)</td><td>99%置信度日最大亏损</td><td><3%</td></tr>
+<tr><td>CVaR/ES</td><td>超VaR部分均值</td><td>—</td></tr>
+<tr><td>容量加权收益</td><td>考虑市场容量</td><td>—</td></tr>
+<tr><td rowspan="2"><strong>曲面</strong></td>
+<td>套利违规</td><td>Butterfly/Calendar检验</td><td>0次</td></tr>
+<tr><td>PCA解释比</td><td>PC1+PC2+PC3方差占比</td><td>>85%</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<section class="ch" id="c11">
+<span class="ch-num">CHAPTER 11</span>
+<h2>建模方法：传统定价模型</h2>
+<div class="tw">
+<table>
+<thead><tr><th>模型</th><th>年份</th><th>核心假设</th><th>适用</th><th>局限</th></tr></thead>
+<tbody>
+<tr><td>BSM</td><td>1973</td><td>σ恒定、对数正态</td><td>基准、Greeks</td><td>无Skew</td></tr>
+<tr><td>Dupire局部波动率</td><td>1994</td><td>σ=σ(S,t)</td><td>精确拟合曲面</td><td>动态对冲差</td></tr>
+<tr><td>Heston</td><td>1993</td><td>σ随机（CIR）</td><td>Skew、VarSwap</td><td>参数估计难</td></tr>
+<tr><td>SABR</td><td>2002</td><td>随机σ+利率</td><td>平滑Greeks</td><td>—</td></tr>
+<tr><td>SVI</td><td>2004</td><td>参数化方差</td><td>截面拟合</td><td>静态</td></tr>
+<tr><td>Merton/Bates</td><td>1976/96</td><td>BSM+泊松跳跃</td><td>尾部、财报</td><td>参数不稳</td></tr>
+<tr><td>Rough Bergomi</td><td>2016</td><td>fBM (H<0.5)</td><td>短期Skew</td><td>计算复杂</td></tr>
+<tr><td>Bjerksund-Stensland</td><td>2002</td><td>美式解析近似</td><td>美股个股</td><td>近似</td></tr>
+<tr><td>CRR二叉树</td><td>1979</td><td>离散DP</td><td>美式精确</td><td>慢</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<section class="ch" id="c12">
+<span class="ch-num">CHAPTER 12</span>
+<h2>建模方法：深度学习专题</h2>
+
+<h3>12.1 IV曲面深度学习</h3>
+<div class="tw">
+<table>
+<thead><tr><th>方法</th><th>架构</th><th>输入</th><th>输出</th><th>关键发现</th></tr></thead>
+<tbody>
+<tr><td><strong>CNN图像识别</strong></td><td>ResNet/VGG on IV Surface</td><td>Delta×Maturity矩阵</td><td>收益预测</td><td>与现有特征不相关，无法被潜在因子解释（Kelly等；Höfler 2024）</td></tr>
+<tr><td><strong>VAE压缩</strong></td><td>Encoder→10D→Decoder</td><td>IV曲面</td><td>潜在变量→定价</td><td>美式Put/亚式期权高精度（Ding等 2026）</td></tr>
+<tr><td><strong>扩散模型</strong></td><td>条件Diffusion</td><td>当前IVS+标的</td><td>次日IVS增量+收益</td><td>联合套利惩罚，跨股票泛化（Yang等 2026）</td></tr>
+<tr><td><strong>GNN</strong></td><td>Hexagon-Net / FA-GSTN</td><td>图结构（股票节点）</td><td>IVS预测</td><td>跨视图对齐，结构化演化建模</td></tr>
+<tr><td><strong>Transformer</strong></td><td>时序Attention</td><td>(时间,Delta,Maturity)张量</td><td>曲面动态</td><td>长距离依赖</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>12.2 深度对冲与强化学习</h3>
+<div class="tw">
+<table>
+<thead><tr><th>方向</th><th>方法</th><th>关键发现</th></tr></thead>
+<tbody>
+<tr><td>0DTE对冲</td><td>DRL（PPO/SAC）</td><td>纯数据驱动，跨机制稳健，跳跃影响显著</td></tr>
+<tr><td>IVS反馈对冲</td><td>RNN-FNN（LSTM+FF）</td><td>2020-23样本外，持续优于Delta-Gamma（Gauthier等 2025）</td></tr>
+<tr><td>多智能体Vol交易</td><td>MADRL</td><td>价格发现建模为不确定性（OPHR 2026）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>12.3 损失函数与验证</h3>
+<div class="tw">
+<table>
+<thead><tr><th>目标</th><th>损失函数</th><th>期权特定</th></tr></thead>
+<tbody>
+<tr><td>收益预测</td><td>IC Loss / Rank IC Loss</td><td>横截面排序</td></tr>
+<tr><td>曲面重建</td><td>MSE + λ·Arbitrage Penalty</td><td>无套利约束</td></tr>
+<tr><td>定价</td><td>MSE / Huber</td><td>Bid-Ask加权</td></tr>
+<tr><td>对冲</td><td>Sharpe Loss / CVaR</td><td>尾部控制</td></tr>
+<tr><td>生成</td><td>Diffusion / GAN</td><td>曲面平滑性</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>12.4 关键挑战</h3>
+<div class="tw">
+<table>
+<thead><tr><th>挑战</th><th>表现</th><th>应对</th></tr></thead>
+<tbody>
+<tr><td>无套利约束</td><td>IVS必须满足静态/动态无套利</td><td>损失函数加套利惩罚</td></tr>
+<tr><td>曲面稀疏性</td><td>深度虚值/远月报价稀疏</td><td>VAE填补、核平滑</td></tr>
+<tr><td>0DTE高频</td><td>分钟级曲面变化</td><td>高频训练、在线学习</td></tr>
+<tr><td>交易成本</td><td>价差大（小盘5-15%）</td><td>成本感知损失</td></tr>
+<tr><td>容量限制</td><td>期权容量远小于股票</td><td>容量加权评估</td></tr>
+<tr><td>非平稳</td><td>市场结构变化快</td><td>滚动训练、对抗验证</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<section class="ch" id="c13">
+<span class="ch-num">CHAPTER 13</span>
+<h2>风控体系</h2>
+
+<h3>13.1 Greeks约束矩阵</h3>
+<div class="tw">
+<table>
+<thead><tr><th>Greek</th><th>约束</th><th>违反后果</th><th>对冲工具</th></tr></thead>
+<tbody>
+<tr><td>Delta</td><td>|Net Δ| < 0.05 × Notional</td><td>方向性亏损</td><td>标的正股/期货</td></tr>
+<tr><td>Gamma</td><td>|Net Γ| < 限额</td><td>大幅波动时巨亏</td><td>买入/卖出期权</td></tr>
+<tr><td>Vega</td><td>|Net ν| < 限额</td><td>IV跳升时巨亏</td><td>跨期/跨品种对冲</td></tr>
+<tr><td>Theta</td><td>Net Θ > 目标</td><td>收益不足</td><td>调整卖方/买方比例</td></tr>
+<tr><td>Vanna</td><td>监控</td><td>IV+方向同时不利</td><td>Risk Reversal</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>13.2 TIMS保证金</h3>
+<div class="ib y">
+<div class="bt">⚠️ 美股保证金体系</div>
+<ul>
+<li><strong>Reg T</strong>：固定15-20%，简单但效率低</li>
+<li><strong>Portfolio Margin (PM)</strong>：OCC TIMS模型，风险抵扣，效率高</li>
+<li><strong>压力测试</strong>：±6%~±15%标的变动 → 计算真实Margin</li>
+<li><strong>目标</strong>：使用率 < 70%，预留30%应对追加</li>
+<li><strong>追加场景</strong>：VIX飙升 → 保证金要求急剧上升 → 强制平仓</li>
+</ul>
+</div>
+
+<h3>13.3 尾部风险管理</h3>
+<div class="tw">
+<table>
+<thead><tr><th>工具</th><th>应用</th><th>频率</th></tr></thead>
+<tbody>
+<tr><td>VaR(99%) / CVaR</td><td>日常风控</td><td>每日</td></tr>
+<tr><td>压力测试（2020.03/2018.02/2008.10）</td><td>极端存活</td><td>每周</td></tr>
+<tr><td>尾部对冲（深度OTM Put / VIX Call）</td><td>限制最大亏损</td><td>持续</td></tr>
+<tr><td>流动性过滤（Spread>5-10%剔除）</td><td>防滑点</td><td>每笔</td></tr>
+<tr><td>到期管理（避免大量Gamma到期）</td><td>Pin Risk</td><td>到期前7天</td></tr>
+<tr><td>相关性监控（危机时→1）</td><td>分散化失效</td><td>每日</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<hr>
+
+<section class="ch" id="c14">
+<span class="ch-num">CHAPTER 14</span>
+<h2>经典案例复盘</h2>
+
+<h3>案例一：2018.02.05 "Volmageddon"</h3>
+<div class="tl">
+<div class="tl-i"><div class="td">2017年</div><p>VIX长期<12，大量资金做空波动率（卖跨、做空XIV）。VRP收割成为"最拥挤交易"。</p></div>
+<div class="tl-i"><div class="td">2018.02.05</div><p>VIX从17→37（+116%）。XIV单日亏损96%，次日清盘。卖跨策略巨亏。做空波动率的Alpha瞬间变成致命的系统性风险。</p></div>
+<div class="tl-i"><div class="td">教训</div><p>① 拥挤的Alpha就是最大的风险 ② 卖波动率必须配尾部对冲 ③ 杠杆做空波动率是"捡硬币在压路机前"</p></div>
+</div>
+
+<h3>案例二：2020年3月 波动率海啸</h3>
+<div class="tl">
+<div class="tl-i"><div class="td">2020.02-03</div><p>VIX从12→82（历史最高）。SPX单月-34%。流动性枯竭，价差扩大5-10倍。保证金追缴→强制平仓→流动性进一步恶化。</p></div>
+<div class="tl-i"><div class="td">期权市场影响</div><p>极端Put Skew（OTM Put IV远超Call）。曲面严重扭曲。做市商撤退。</p></div>
+<div class="tl-i"><div class="td">教训</div><p>① 相关性趋向1，分散化失效 ② 保证金在危机中消失 ③ 必须持有尾部对冲 ④ 流动性在需要时最稀缺</p></div>
+</div>
+
+<h3>案例三：2021.01 GameStop Gamma Squeeze</h3>
+<div class="tl">
+<div class="tl-i"><div class="td">机制</div><p>散户买OTM Call → Dealer短Gamma → Dealer买标的对冲 → 股价涨 → Delta增大 → Dealer买更多 → 正反馈。GME: $20→$483 (+2315%)。</p></div>
+<div class="tl-i"><div class="td">关键因子</div><p>GEX极端负值、OI急剧上升、Call Volume/OI > 5（UOA）。</p></div>
+<div class="tl-i"><div class="td">教训</div><p>① GEX和OI是预测Gamma Squeeze的关键 ② 极端负GEX产生自我强化循环 ③ 做空高GEX标的极度危险</p></div>
+</div>
+
+<h3>案例四：0DTE崛起（2022至今）</h3>
+<div class="tl">
+<div class="tl-i"><div class="td">数据</div><p>0DTE占SPX交易量50%+。日内Gamma在最后几小时趋向∞。传统卖期权策略在0DTE上风险极大。</p></div>
+<div class="tl-i"><div class="td">新因子</div><p>0DTE Net Flow、0DTE GEX、0DTE Pin Level、0DTE Theta/Gamma比率。</p></div>
+</div>
+</section>
+
+<hr>
+
+<section class="ch" id="c15">
+<span class="ch-num">CHAPTER 15</span>
+<h2>学习路径与核心结论</h2>
+
+<h3>15.1 学习路径</h3>
+<div class="cg">
+<div class="cd"><div class="ci">🌱</div><div class="ct2">阶段一：基础（1-3月）</div><div class="cd2">• BSM、Greeks、Put-Call Parity<br>• IV/RV/VRP、VIX<br>• 基本策略（卖跨/买跨/铁蝶）<br>• Python + yfinance + CBOE<br>• Hull教材</div></div>
+<div class="cd"><div class="ci">📐</div><div class="ct2">阶段二：波动率建模（3-6月）</div><div class="cd2">• SVI/SABR曲面拟合（代码实现）<br>• Term Structure、Skew、PC分析<br>• GARCH/HAR-RV<br>• Heston/跳跃扩散/美式定价<br>• Sinclair《Volatility Trading》</div></div>
+<div class="cd"><div class="ci">🔬</div><div class="ct2">阶段三：策略与风控（6-12月）</div><div class="cd2">• VRP收割、Dispersion回测<br>• Greeks管理、TIMS、VaR<br>• 交易成本建模<br>• 组合优化（Markowitz+Margin）<br>• Taleb《Dynamic Hedging》</div></div>
+<div class="cd"><div class="ci">🚀</div><div class="ct2">阶段四：前沿（12月+）</div><div class="cd2">• 0DTE、GEX、Dealer Positioning<br>• CNN/VAE/Diffusion做IV曲面<br>• DRL对冲、多智能体<br>• Rough Vol、VarSwap<br>• 论文：Kelly/Höfler/Ding/Yang</div></div>
+</div>
+
+<h3>15.2 核心文献</h3>
+<div class="tw">
+<table>
+<thead><tr><th>文献</th><th>年份</th><th>贡献</th></tr></thead>
+<tbody>
+<tr><td>Black & Scholes / Merton</td><td>1973</td><td>BSM定价</td></tr>
+<tr><td>Gatheral, "The Volatility Surface"</td><td>2006</td><td>SVI、无套利曲面</td></tr>
+<tr><td>Carr & Wu, "Variance Risk Premiums"</td><td>2009</td><td>VRP理论</td></tr>
+<tr><td>Xing, Zhang & Zhao</td><td>2010</td><td>期权偏斜因子</td></tr>
+<tr><td>Vasquez</td><td>2017</td><td>IV Slope因子</td></tr>
+<tr><td>Borochin, Chang & Wu</td><td>2020</td><td>风险中性偏度</td></tr>
+<tr><td>Feng, Giglio & Xiu</td><td>2020</td><td>160个股票因子、双重选择LASSO</td></tr>
+<tr><td>Kelly, Kuznetsov, Malamud & Xu</td><td>2022</td><td>CNN做IV曲面预测</td></tr>
+<tr><td>Höfler</td><td>2024</td><td>CNN Delta对冲期权收益</td></tr>
+<tr><td>Walter, Zimmer & Ulrich</td><td>2026</td><td>137个期权因子、91%方差、8个增量</td></tr>
+<tr><td>Ding et al.</td><td>2026</td><td>VAE期权定价</td></tr>
+<tr><td>Yang et al.</td><td>2026</td><td>扩散模型IVS生成</td></tr>
+<tr><td>Zhang & Olmo</td><td>2026</td><td>隐含矩期限结构</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>15.3 工具与数据</h3>
+<div class="tw">
+<table>
+<thead><tr><th>工具</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>OptionMetrics IvyDB</td><td>历史期权数据（学术金标准）</td></tr>
+<tr><td>ORATS / Market Data</td><td>期权分析平台、历史IV</td></tr>
+<tr><td>SpotGamma / Menthor Q</td><td>GEX、Dealer Positioning</td></tr>
+<tr><td>Unusual Whales</td><td>UOA、Sweep、期权流</td></tr>
+<tr><td>Interactive Brokers API</td><td>实盘交易、期权链</td></tr>
+<tr><td>Python (QuantLib, py_vollib)</td><td>期权定价、Greeks</td></tr>
+<tr><td>PyTorch / TensorFlow</td><td>深度学习</td></tr>
+<tr><td>gplearn</td><td>遗传规划因子挖掘</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>15.4 核心结论</h3>
+<div class="cg" style="grid-template-columns:1fr">
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">1️⃣ 期权因子 ≠ 股票因子</div>
+<div class="cd2">核心是波动率曲面（水平/偏斜/曲率/期限）、Greeks、GEX、VRP、保证金效率。但91%方差被股票因子解释，增量集中在跳跃尾部、峰度、IV凸性。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">2️⃣ IV曲面是核心信息载体</div>
+<div class="cd2">四维分解（水平/偏斜/曲率/期限）是基本框架。期限结构比短期水平更有信息量。中期偏度斜率携带显著正溢价。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">3️⃣ VRP是Beta，曲面错价是Alpha</div>
+<div class="cd2">卖期权收VRP = Smart Beta（高胜率、胖尾）。曲面套利、Dispersion、GEX = 真正的Alpha（高夏普、小容量）。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">4️⃣ 收益归因 = Greeks分解</div>
+<div class="cd2">dP ≈ Δ·dS + ½Γ·(dS)² + ν·dσ + Θ·dt + 残差。理解每一分钱来源是风控和优化的基础。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">5️⃣ 风控 = Greeks + TIMS + 尾部</div>
+<div class="cd2">不是行业中性，而是Delta中性、Gamma/Vega限制、TIMS保证金、尾部对冲、流动性过滤。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">6️⃣ 深度学习是独特工具</div>
+<div class="cd2">CNN提取曲面模式、扩散模型生成曲面、VAE压缩、DRL对冲。但必须直面无套利约束、稀疏性、0DTE、成本、容量。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--acc)">
+<div class="ct2">7️⃣ 回测必须考虑期权摩擦</div>
+<div class="cd2">Bid-Ask（5-15%）、流动性、保证金、早期行权、展期成本——忽略任何一个都严重高估收益。</div>
+</div>
+<div class="cd" style="border-left:5px solid var(--red)">
+<div class="ct2">8️⃣ 终极原则</div>
+<div class="cd2">期权量化的核心不是预测方向，而是"定价波动率、管理Greeks、收割溢价、控制尾部"。目标不是用DL替代经济逻辑，而是将金融理论作为约束嵌入模型，构建可解释、可迭代、成本感知的研究体系。</div>
+</div>
+</div>
+
+<h3>15.5 未来方向</h3>
+<ul>
+<li><strong>多模态融合</strong>：IV曲面图像 + 文本 + 图结构联合建模</li>
+<li><strong>0DTE高频DL</strong>：分钟级曲面在线学习</li>
+<li><strong>因果推断</strong>：从相关性到因果机制</li>
+<li><strong>可解释性</strong>：Attention可视化、SHAP</li>
+<li><strong>端到端组合优化</strong>：IVS → 期权组合权重</li>
+<li><strong>联邦学习</strong>：跨机构联合训练</li>
+</ul>
+</section>
+
+<div class="fn">
+<p><strong>报告说明</strong>：本报告聚焦美股期权量化因子研究，综合多份研究报告核心内容。因子数量、阈值和参数因标的、市场环境和策略类型不同而存在差异。所有回测结果需考虑交易成本、流动性和容量限制。</p>
+<p style="margin-top:5px;color:var(--g600)">© 2026 美股期权量化因子研究完全指南（深度版）· 仅供学习参考，不构成投资建议</p>
+</div>
+
+</main>
+</div>
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('btt').style.display=window.scrollY>500?'block':'none'});
+document.querySelectorAll('.sidebar a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
+</script>
+</body>
+</html>
